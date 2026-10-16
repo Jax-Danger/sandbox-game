@@ -1,0 +1,99 @@
+using Prowl.Runtime;
+
+namespace Sandbox;
+
+/// <summary>Per-frame weapon input, already gated by menus.</summary>
+public readonly record struct WeaponInput(bool PrimaryDown, bool PrimaryHeld, bool PrimaryUp, bool SecondaryDown, bool SecondaryHeld,
+    bool Reload, float Wheel);
+
+/// <summary>Base class for everything in the weapon switcher (hands, physgun, toolgun, guns).</summary>
+public abstract class Weapon
+{
+    public abstract string Id { get; }
+    public abstract string Name { get; }
+    public abstract int Slot { get; }   // 1-based slot column, like GMod/HL2
+    public abstract Icon Icon { get; }
+    /// <summary>True while this weapon wants the mouse wheel (e.g. physgun pushing a prop).</summary>
+    public virtual bool CapturesWheel => false;
+    public virtual string? AmmoText => null;
+    public virtual void Equip(SandboxGame g) { }
+    public virtual void Holster(SandboxGame g) { }
+    public abstract void Tick(SandboxGame g, WeaponInput input, float dt);
+}
+
+public sealed class PhysGunWeapon : Weapon
+{
+    public override string Id => "weapon_physgun";
+    public override string Name => "Physics Gun";
+    public override int Slot => 1;
+    public override Icon Icon => Icon.Magnet;
+    public override bool CapturesWheel => _g?.PhysGun.Held is not null;
+    private SandboxGame? _g;
+
+    public override void Equip(SandboxGame g) => _g = g;
+    public override void Holster(SandboxGame g) => g.PhysGun.Release(keepVelocity: false);
+    public override void Tick(SandboxGame g, WeaponInput i, float dt)
+        => g.Notify(g.PhysGun.Update(g.Player, i.PrimaryDown, i.PrimaryHeld, i.SecondaryDown, i.Wheel));
+}
+
+public sealed class ToolGunWeapon : Weapon
+{
+    public override string Id => "weapon_toolgun";
+    public override string Name => "Tool Gun";
+    public override int Slot => 1;
+    public override Icon Icon => Icon.Wrench;
+    public override void Holster(SandboxGame g) => g.ToolGun.CancelPending();
+    public override void Tick(SandboxGame g, WeaponInput i, float dt)
+    {
+        if (i.PrimaryDown) g.Notify(g.ToolGun.Fire(g.Player));
+        if (i.SecondaryDown) g.Notify(g.ToolGun.Secondary(g.Player));
+    }
+}
+
+/// <summary>Owns the weapon list, the current weapon and switching (number keys / mouse wheel).</summary>
+public sealed class WeaponSystem
+{
+    private readonly List<Weapon> _all = [];
+    public IReadOnlyList<Weapon> All => _all;
+    public Weapon Current { get; private set; } = null!;
+    public float TimeSinceSwitch { get; private set; } = 99f;
+    public bool IsToolGun => Current is ToolGunWeapon;
+
+    public void Add(Weapon w)
+    {
+        _all.Add(w);
+        _all.Sort((a, b) => a.Slot != b.Slot ? a.Slot.CompareTo(b.Slot) : 0);
+    }
+
+    public T Get<T>() where T : Weapon => _all.OfType<T>().First();
+
+    public void Select(SandboxGame g, Weapon w)
+    {
+        if (ReferenceEquals(w, Current)) return;
+        Current?.Holster(g);
+        Current = w;
+        TimeSinceSwitch = 0f;
+        w.Equip(g);
+        g.Sounds.Play("sfx_weapon_switch", 0.5f);
+    }
+
+    public void SelectSlot(SandboxGame g, int slot)
+    {
+        Weapon[] inSlot = _all.Where(w => w.Slot == slot).ToArray();
+        if (inSlot.Length == 0) return;
+        int idx = Array.IndexOf(inSlot, Current);
+        Select(g, inSlot[(idx + 1) % inSlot.Length]);
+    }
+
+    public void Cycle(SandboxGame g, int dir)
+    {
+        int i = _all.IndexOf(Current);
+        Select(g, _all[((i + dir) % _all.Count + _all.Count) % _all.Count]);
+    }
+
+    public void Tick(SandboxGame g, WeaponInput input, float dt)
+    {
+        TimeSinceSwitch += dt;
+        Current.Tick(g, input, dt);
+    }
+}

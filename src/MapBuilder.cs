@@ -7,7 +7,7 @@ namespace Sandbox;
 /// <summary>Builds the static test map: a big floor, ramps, walls, and a few platforms.</summary>
 public static class MapBuilder
 {
-    public static void Build(Scene scene, Shader shader)
+    public static DirectionalLight Build(Scene scene, Shader shader)
     {
         GameObject lightGo = new("Directional Light");
         DirectionalLight light = lightGo.AddComponent<DirectionalLight>();
@@ -47,6 +47,7 @@ public static class MapBuilder
         Box(scene, shader, "Step 1", new Float3(-10f, 0.25f, -12f), new Float3(3f, 0.5f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 2", new Float3(-13f, 0.5f, -12f), new Float3(3f, 1f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 3", new Float3(-16f, 0.75f, -12f), new Float3(3f, 1.5f, 3f), Float3.Zero, concrete);
+        return light;
     }
 
     private static void Box(Scene scene, Shader shader, string name, Float3 position, Float3 size, Float3 euler, Color color, bool collide = true)

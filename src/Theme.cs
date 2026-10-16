@@ -9,34 +9,43 @@ namespace Sandbox;
 /// </summary>
 public static class Theme
 {
-    // Palette (dark, GMod-like slate with a blue accent).
+    // Palette: s&box-style frosted glass over a cool slate, one blue accent.
     public static readonly Color Backdrop = Color.FromArgb(150, 6, 8, 12);
-    public static readonly Color Panel = Color.FromArgb(232, 24, 27, 33);
-    public static readonly Color PanelRaised = Color.FromArgb(240, 34, 38, 46);
-    public static readonly Color PanelSunken = Color.FromArgb(235, 17, 19, 24);
-    public static readonly Color Hud = Color.FromArgb(200, 18, 20, 26);
-    public static readonly Color Border = Color.FromArgb(60, 255, 255, 255);
-    public static readonly Color Hover = Color.FromArgb(255, 48, 54, 66);
-    public static readonly Color Accent = Color.FromArgb(255, 64, 156, 255);
-    public static readonly Color AccentSoft = Color.FromArgb(255, 36, 72, 120);
-    public static readonly Color Text = Color.FromArgb(255, 236, 239, 244);
-    public static readonly Color TextMuted = Color.FromArgb(255, 150, 158, 172);
-    public static readonly Color TextFaint = Color.FromArgb(255, 98, 106, 120);
-    public static readonly Color Success = Color.FromArgb(255, 88, 200, 120);
-    public static readonly Color Warning = Color.FromArgb(255, 245, 180, 70);
-    public static readonly Color Danger = Color.FromArgb(255, 235, 85, 85);
-    public static readonly Color Shadow = Color.FromArgb(120, 0, 0, 0);
+    public static readonly Color Glass = Color.FromArgb(150, 20, 23, 30);       // main frosted panels
+    public static readonly Color GlassTop = Color.FromArgb(175, 38, 42, 52);    // top of the glass gradient
+    public static readonly Color Panel = Color.FromArgb(225, 22, 25, 31);
+    public static readonly Color PanelRaised = Color.FromArgb(26, 255, 255, 255);
+    public static readonly Color PanelSunken = Color.FromArgb(90, 0, 0, 0);
+    public static readonly Color Hud = Color.FromArgb(110, 12, 14, 18);         // minimal in-game chips
+    public static readonly Color Border = Color.FromArgb(34, 255, 255, 255);
+    public static readonly Color BorderStrong = Color.FromArgb(70, 255, 255, 255);
+    public static readonly Color Hover = Color.FromArgb(40, 255, 255, 255);
+    public static readonly Color Press = Color.FromArgb(60, 255, 255, 255);
+    public static readonly Color Accent = Color.FromArgb(255, 77, 163, 255);
+    public static readonly Color AccentSoft = Color.FromArgb(110, 77, 163, 255);
+    public static readonly Color Text = Color.FromArgb(255, 240, 243, 248);
+    public static readonly Color TextMuted = Color.FromArgb(200, 210, 216, 228);
+    public static readonly Color TextFaint = Color.FromArgb(130, 200, 206, 220);
+    public static readonly Color Success = Color.FromArgb(255, 92, 214, 140);
+    public static readonly Color Warning = Color.FromArgb(255, 250, 190, 80);
+    public static readonly Color Danger = Color.FromArgb(255, 255, 99, 99);
+    public static readonly Color Shadow = Color.FromArgb(90, 0, 0, 0);
 
     // Spacing (logical pixels before UI scale).
     public const float Xs = 4f, Sm = 8f, Md = 12f, Lg = 16f, Xl = 24f, Xxl = 32f;
-    public const float Radius = 10f, RadiusSm = 6f;
+    public const float Radius = 16f, RadiusSm = 10f, RadiusXs = 6f;
+    public const float Blur = 18f;
 
     // Type scale.
-    public const float Caption = 12f, Body = 14f, Label = 16f, Title = 20f, Heading = 28f, Display = 56f;
+    public const float Micro = 11f, Caption = 12f, Body = 14f, Label = 15f, Title = 19f, Heading = 26f, Display = 64f;
 
     // Animation.
-    public const float OpenSpeed = 9f;   // 1/s, menu open/close
-    public const float ToastLife = 3.2f, ToastFade = 0.35f;
+    public const float OpenSpeed = 7f;   // 1/s, menu open/close
+    public const float ToastLife = 2.6f, ToastFade = 0.35f;
+    public const float SpringStiffness = 420f, SpringDamping = 26f;
+
+    /// <summary>User UI scale multiplier from Settings.</summary>
+    public static float UserScale { get; set; } = 1f;
 
     private static FontFile? _regular, _semibold, _bold;
     public static FontFile Regular => _regular ??= Load("Inter-Regular.ttf");
@@ -47,7 +56,7 @@ public static class Theme
     public static float Scale { get; private set; } = 1f;
 
     public static void UpdateScale(float width, float height)
-        => Scale = Math.Clamp(MathF.Min(width / 1280f, height / 720f), 0.75f, 2.5f);
+        => Scale = Math.Clamp(MathF.Min(width / 1280f, height / 720f), 0.75f, 2.5f) * UserScale;
 
     public static float S(float v) => v * Scale;
 

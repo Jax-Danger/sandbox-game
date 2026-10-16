@@ -8,6 +8,9 @@ public enum ToolMode { Weld, Remover, Balloon }
 /// <summary>Display info for a tool, shown in the spawn menu and the HUD tool info box.</summary>
 public sealed record ToolInfo(ToolMode Mode, string Name, string Category, string Description, string Left, string? Right);
 
+/// <summary>A slider shown in the spawn menu's Tools context panel.</summary>
+public sealed record ToolSetting(string Name, float Min, float Max, Func<float> Get, Action<float> Set, Func<float, string> Format, string Help);
+
 /// <summary>Toolgun: left click applies the current mode to the prop under the crosshair.</summary>
 public sealed class ToolGun(PropManager props)
 {
@@ -43,6 +46,29 @@ public sealed class ToolGun(PropManager props)
     };
 
     public void CancelPending() => _weldFirst = null;
+
+    public IEnumerable<ToolSetting> SettingsFor(ToolMode mode)
+    {
+        switch (mode)
+        {
+            case ToolMode.Weld:
+                yield return new ToolSetting("Weld strength", 0f, 1f, () => WeldStrength, v => WeldStrength = v,
+                    v => v >= 0.995f ? "Rigid" : $"{v * 100f:0}%", "Lower values give a springy joint that flexes under load.");
+                break;
+            case ToolMode.Balloon:
+                yield return new ToolSetting("Balloon force", 0.5f, 3f, () => BalloonForce, v => BalloonForce = v,
+                    v => $"{v:0.00}× weight", "Above 1.00× the prop rises; below it, the balloon only lightens the prop.");
+                break;
+        }
+    }
+
+    /// <summary>Right click: cancels a pending weld.</summary>
+    public string? Secondary(Player player)
+    {
+        if (PendingWeld is null) return null;
+        _weldFirst = null;
+        return "Weld selection cleared";
+    }
 
     public string? Fire(Player player)
     {
@@ -84,7 +110,7 @@ public sealed class ToolGun(PropManager props)
         }
     }
 
-    public void Weld(Prop a, Prop b)
+    public void Weld(Prop a, Prop b, bool recordUndo = true)
     {
         // A ball socket at A's center keeps the relative position; a fixed-angle constraint locks rotation.
         BallSocketConstraint socket = a.Go.AddComponent<BallSocketConstraint>();
@@ -98,7 +124,7 @@ public sealed class ToolGun(PropManager props)
         PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
         a.Body.SetActive(true);
         b.Body.SetActive(true);
-        props.PushUndo(new WeldUndo(a, b, socket, angle));
+        if (recordUndo) props.PushUndo(new WeldUndo(a, b, socket, angle));
     }
 
     private sealed class WeldUndo(Prop a, Prop b, BallSocketConstraint socket, FixedAngleConstraint angle) : IUndoable
@@ -129,6 +155,7 @@ public sealed class Balloon : MonoBehaviour
 {
     private const float Gravity = 9.81f;
     private float _lift = 1.45f; // multiple of the prop's weight
+    public float Lift => _lift;
 
     private Prop _prop = null!;
     private GameObject? _visual;

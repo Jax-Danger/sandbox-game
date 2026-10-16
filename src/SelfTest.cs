@@ -1,6 +1,7 @@
 using Jitter2.Dynamics;
 using Prowl.Runtime;
 using Prowl.Vector;
+using Color = Prowl.Vector.Color;
 
 namespace Sandbox;
 
@@ -65,7 +66,7 @@ public sealed class SelfTest
                 _restBarrelY = Y(barrel);
 
                 // Physgun: aim at the cube and grab it.
-                g.SelectTool(ActiveTool.PhysGun, null);
+                g.SelectPhysGun();
                 Aim(g, cube.Go.Transform.Position);
                 Check(Float3.Dot(g.Player.Forward, Float3.Normalize(cube.Go.Transform.Position - g.Player.EyePosition)) > 0.99f, "camera aims at the cube");
                 g.PhysGun.Update(g.Player, primaryDown: true, primaryHeld: true, secondaryDown: false, wheel: 0f);
@@ -99,7 +100,7 @@ public sealed class SelfTest
                 Check(g.PhysGun.Held is null, "releasing left mouse drops the cube");
 
                 // Toolgun: weld sphere to plank, balloon the barrel.
-                g.SelectTool(ActiveTool.ToolGun, ToolMode.Weld);
+                g.SelectTool(ToolMode.Weld);
                 g.ToolGun.Apply(sphere);
                 g.ToolGun.Apply(plank);
                 Check(sphere.Go.GetComponent<FixedAngleConstraint>().IsValid() && sphere.Go.GetComponent<BallSocketConstraint>().IsValid(),
@@ -134,6 +135,35 @@ public sealed class SelfTest
                 Aim(g, g.Player.FeetPosition + g.Player.Forward * 4f);
                 Prop spawned = g.SpawnAtCrosshair(PropKind.BigCrate);
                 Check(spawned.Alive && Y(spawned) > 0.5f && Y(spawned) < 3f, $"spawn at crosshair placed a crate on the floor (y {Y(spawned):0.00})");
+
+                // Save/load round trip (props, welds, frozen state, balloons).
+                {
+                    Prop a2 = g.Props.Spawn(PropKind.Cube, new Float3(8f, 0.6f, 0f), 0f);
+                    Prop b2 = g.Props.Spawn(PropKind.Cube, new Float3(9.2f, 0.6f, 0f), 0f);
+                    g.ToolGun.Weld(a2, b2);
+                    b2.SetFrozen(true);
+                    a2.SetColor(new Color(0.1f, 0.9f, 0.2f, 1f));
+                    string path = Path.Combine(Path.GetTempPath(), "sandbox-selftest-save.json");
+                    int saved = MapSave.Save(g.Props, path);
+                    g.ClearMap();
+                    int loaded = MapSave.Load(g, path);
+                    int welds = g.Props.Props.Sum(p => p.Go.GetComponents<FixedAngleConstraint>().Count());
+                    int frozen = g.Props.Props.Count(p => p.Frozen);
+                    Check(saved == loaded && loaded >= 3 && welds == 1 && frozen == 1, $"save/load restores props, weld and frozen state ({saved} saved, {loaded} loaded, {welds} weld, {frozen} frozen)");
+                    Check(g.Props.Props.Any(p => MathF.Abs(p.BaseColor.G - 0.9f) < 0.01f), "save/load restores colours");
+                }
+
+                // Settings JSON round trip.
+                {
+                    string old = Settings.FilePath;
+                    Settings.FilePath = Path.Combine(Path.GetTempPath(), "sandbox-selftest-settings.json");
+                    var st = new Settings { MouseSensitivity = 2.5f, FieldOfView = 95f, Graphics = GraphicsQuality.Medium, ShowFps = true };
+                    st.Save();
+                    Settings back = Settings.Load();
+                    Check(back.MouseSensitivity == 2.5f && back.FieldOfView == 95f && back.Graphics == GraphicsQuality.Medium && back.ShowFps,
+                        "settings save and load from JSON");
+                    Settings.FilePath = old;
+                }
 
                 g.ClearMap();
                 Check(g.Props.Props.Count == 0, "clear map removed every prop");

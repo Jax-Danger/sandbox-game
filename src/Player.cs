@@ -12,7 +12,8 @@ public sealed class Player
 {
     public const float EyeHeight = 1.65f;
     private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6f, Gravity = 20f;
-    private const float FlySpeed = 10f, LookSensitivity = 0.12f;
+    private const float FlySpeed = 10f;
+    public float LookSensitivity { get; set; } = 0.12f;
 
     private readonly GameObject _body;
     private readonly CharacterController _controller;

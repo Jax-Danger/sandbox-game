@@ -14,11 +14,17 @@ public sealed class Prop
     public required Rigidbody3D Body { get; init; }
     public required PropKind Kind { get; init; }
     public required Material Material { get; init; }
-    public required Color BaseColor { get; init; }
+    public required Color BaseColor { get; set; }
     /// <summary>Distance from center to the bottom face (used when spawning on surfaces).</summary>
     public float HalfHeight { get; init; }
     public bool Frozen { get; private set; }
     public bool Alive => Go.IsValid() && Go.Scene != null;
+
+    public void SetColor(Color c)
+    {
+        BaseColor = c;
+        if (!Frozen) Material.SetColor("_MainColor", c);
+    }
 
     public void SetFrozen(bool frozen)
     {
