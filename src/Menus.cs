@@ -120,6 +120,8 @@ public sealed class Menus
         float cy = ty + Theme.S(56), lx = x + pad, cw = pw - 2 * pad, vx = lx + Theme.S(240), vw = cw - Theme.S(240);
         void Row(string label, string? value = null)
         {
+            // Card per setting row (s&box style) so the panel reads as structured, not empty.
+            Ui.Panel(paper, $"st_rc_{label}", lx - Theme.S(10), cy - Theme.S(5), cw + Theme.S(20), Theme.S(38), Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
             Ui.Text(paper, $"st_l_{label}", lx, cy, Theme.S(230), Theme.S(28), label, Theme.Body, Theme.Text);
             if (value is not null)
                 Ui.Text(paper, $"st_v_{label}", vx, cy, vw, Theme.S(28), value, Theme.Body, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
@@ -165,7 +167,8 @@ public sealed class Menus
         g.ApplySettingsLive();
 
         float bw = Theme.S(150), bh = Theme.S(40);
+        Ui.Panel(paper, "st_sep", x + pad, y + ph - pad - bh - Theme.S(16), pw - 2 * pad, Theme.S(1), Theme.Hover, 0f, shadow: false).IsNotInteractable();
         Ui.Button(paper, "st_back", x + pw - pad - bw, y + ph - pad - bh, bw, bh, "Done", () => Back(g), selected: true, icon: Icon.Check, radius: bh / 2f);
-        Ui.Button(paper, "st_reset", x + pad, y + ph - pad - bh, bw, bh, "Reset", () => g.ResetSettings(), ghost: true, icon: Icon.Undo, radius: bh / 2f);
+        Ui.Button(paper, "st_reset", x + pad - Theme.S(14), y + ph - pad - bh, Theme.S(120), bh, "Reset", () => g.ResetSettings(), ghost: true, icon: Icon.Undo, radius: bh / 2f);
     }
 }

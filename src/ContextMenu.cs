@@ -111,7 +111,7 @@ public sealed class ContextMenu
             cy += Theme.S(40);
 
             Ui.Button(paper, "cx_del", cx, cy, cw, Theme.S(36), "Delete prop", () => g.Enqueue(() => { g.Props.Remove(p); Selected = null; g.Notify($"Removed {p.Go.Name}"); }),
-                icon: Icon.Trash, radius: Theme.S(18), baseColor: Color.FromArgb(70, 255, 90, 90));
+                icon: Icon.Trash, radius: Theme.S(18), baseColor: Color.FromArgb(200, 200, 60, 60));
             cy += Theme.S(52);
         }
         else
