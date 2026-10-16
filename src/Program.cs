@@ -10,7 +10,7 @@ internal static class Program
         if (args.Any(static a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase)))
         {
             game.SelfTest = new SelfTest();
-            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = 16, TargetFps = 60 });
+            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = 20, TargetFps = 60 });
             return game.SelfTest.ExitCode;
         }
 

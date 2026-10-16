@@ -24,6 +24,7 @@ public sealed class Carry
         if (!g.Player.Trace(Reach, out RaycastHit hit)) return null;
         Prop? p = g.Props.FromBody(hit.Rigidbody);
         if (p is null) return null;
+        if (p.Go.GetComponent<SandboxButton>() is { } button) { button.Press(g); return null; }
         if (p.Frozen) return $"{p.Go.Name} is frozen";
         if (p.Body.Mass > MaxMass) return $"Too heavy ({p.Body.Mass:0} kg)";
         if (ReferenceEquals(g.PhysGun.Held, p)) return null;

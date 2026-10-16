@@ -67,6 +67,12 @@ public sealed class SandboxGame : Game
         Weapons.Add(new ShotgunWeapon());
         Weapons.Add(new RocketLauncherWeapon());
         Weapons.Add(new GrenadeWeapon());
+        foreach (Weapon wpn in Weapons.All)
+        {
+            Weapon w0 = wpn;
+            SpawnCatalog.Register(new SpawnEntry(w0.Id, w0.Name, MenuTab.Weapons, w0.Slot switch { 1 => "Melee", 2 => "Sandbox", 5 => "Explosives", _ => "Guns" },
+                w0.Icon, null, (g, _, _) => { g.Weapons.Select(g, w0); return w0.Name; }));
+        }
         Weapons.Add(new ToolGunWeapon());
         Weapons.Select(this, Weapons.Get<PhysGunWeapon>());
 
@@ -269,11 +275,14 @@ public sealed class SandboxGame : Game
             pos = Player.EyePosition + Player.Forward * 5f;
         string name = entry.Spawn(this, pos, Player.Yaw);
         LastSpawned = entry;
-        if (Weapons.Current is not SpawnGunWeapon) SpawnGunEntry = entry;
-        RecentSpawns.Remove(entry);
-        RecentSpawns.Insert(0, entry);
-        if (RecentSpawns.Count > 8) RecentSpawns.RemoveAt(8);
-        Notify($"Spawned {name}");
+        if (entry.Tab != MenuTab.Weapons)
+        {
+            if (Weapons.Current is not SpawnGunWeapon) SpawnGunEntry = entry;
+            RecentSpawns.Remove(entry);
+            RecentSpawns.Insert(0, entry);
+            if (RecentSpawns.Count > 8) RecentSpawns.RemoveAt(8);
+        }
+        if (entry.Tab != MenuTab.Weapons) Notify($"Spawned {name}");
         Sounds.Play("sfx_spawn", 0.6f, pos);
         return name;
     }

@@ -333,7 +333,7 @@ public sealed class Thruster : MonoBehaviour
         return t;
     }
 
-    public bool Firing => ForceOn || Input.GetKey(Key);
+    public bool Firing => ForceOn || KeyState.Held(Key);
 
     public override void FixedUpdate()
     {
@@ -360,7 +360,7 @@ public sealed class WheelMotor : MonoBehaviour
     public override void Update()
     {
         if (Joint is null || !Joint.IsValid()) return;
-        float dir = ForceInput != 0f ? ForceInput : (Input.GetKey(Fwd) ? 1f : 0f) - (Input.GetKey(Back) ? 1f : 0f);
+        float dir = ForceInput != 0f ? ForceInput : (KeyState.Held(Fwd) ? 1f : 0f) - (KeyState.Held(Back) ? 1f : 0f);
         Joint.MotorTargetVelocity = dir * Speed;
         if (dir != 0f) GetComponent<Rigidbody3D>()?.SetActive(true);
     }

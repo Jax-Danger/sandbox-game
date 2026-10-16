@@ -18,7 +18,10 @@ public sealed class SelfTest
     private Prop? _target, _barrel;
     private PistolWeapon? _pistol;
     private Buggy? _buggy;
-    private Prop? _thrust;
+    private Prop? _thrust, _xbarrel, _button, _ball;
+    private Ragdoll? _dummy;
+    private float _ballMaxY;
+    private int _explBefore;
     private float _thrustY;
     private Float3 _buggyStart;
     private readonly List<string> _failures = [];
@@ -358,6 +361,36 @@ public sealed class SelfTest
                 break;
             case 780:
                 Check(_thrust!.Go.Transform.Position.Y > _thrustY + 1f, $"thruster lifts the prop ({_thrustY:0.0} -> {_thrust.Go.Transform.Position.Y:0.0})");
+                // Entities.
+                _dummy = EntityCatalog.SpawnDummy(g, new Float3(-20f, 0f, -20f), 0f);
+                _xbarrel = EntityCatalog.SpawnBarrel(g, new Float3(-24f, 0.6f, -20f));
+                _button = EntityCatalog.SpawnButton(g, new Float3(-26f, 0.3f, -24f), 0f);
+                _ball = EntityCatalog.SpawnBall(g, new Float3(-45f, 4f, 40f));
+                Prop lightEnt = EntityCatalog.SpawnLight(g, new Float3(-30f, 0.3f, -20f));
+                Check(lightEnt.Go.GetComponentsInChildren<PointLight>().Any(), "light entity glows");
+                Check(SpawnCatalog.Entries.Count(e => e.Tab == MenuTab.Entities) >= 6, "entities tab lists NPCs, barrel, ball, light, button");
+                break;
+            case 860:
+                {
+                    float py = _dummy!.Pelvis.Go.Transform.Position.Y;
+                    Check(py > 0.75f && !_dummy.Pelvis.Go.GetComponent<DummyBrain>().Limp, $"NPC dummy stands (pelvis y {py:0.00})");
+                    Fx.Push(_dummy.Limbs[1].Body, new Float3(0f, 0f, 60f), _dummy.Limbs[1].Go.Transform.Position);
+                    var sb = _button!.Go.GetComponent<SandboxButton>();
+                    sb.Press(g);
+                    Check(sb.On && KeyState.Held(sb.Key), $"button toggles its key ({sb.Key})");
+                    sb.Press(g);
+                    _xbarrel!.Go.GetComponent<ExplosiveBarrel>().Damage(100f);
+                    _ballMaxY = 0f;
+                    _explBefore = g.Fx.Explosions;
+                }
+                break;
+            case > 860 and < 960:
+                if (_frame > 900) _ballMaxY = MathF.Max(_ballMaxY, _ball!.Go.Transform.Position.Y);
+                break;
+            case 960:
+                Check(_dummy!.Pelvis.Go.GetComponent<DummyBrain>().Limp, "hitting the dummy makes it go limp");
+                Check(g.Fx.Explosions > _explBefore && !_xbarrel!.Alive, "explosive barrel blows up when damaged");
+                Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0

@@ -28,6 +28,7 @@ public static class SpawnCatalog
         }
         Ragdoll.Register();
         VehicleSystem.Register();
+        EntityCatalog.Register();
     }
 
     public static void Register(SpawnEntry e)

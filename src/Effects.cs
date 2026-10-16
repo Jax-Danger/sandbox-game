@@ -106,6 +106,7 @@ public sealed class Fx(SandboxGame g)
         Sparks(hit.Point, hit.Normal, 4);
         Decal(hit.Point, hit.Normal, hit.Rigidbody);
         Push(hit.Rigidbody, dir * impulse, hit.Point);
+        if (hit.Rigidbody?.GameObject is { } hgo && hgo.GetComponent<SandboxButton>() is { } btn) btn.Press(g);
         hit.Rigidbody?.GameObject.GetComponent<ExplosiveBarrel>()?.Damage(impulse * 1.5f);
         g.Sounds.Play("sfx_impact", 0.35f, hit.Point, 0.9f + Random.Shared.NextSingle() * 0.2f);
         return hit.Point;
