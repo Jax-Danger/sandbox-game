@@ -185,7 +185,16 @@ public sealed class ViewModel
                 var m = new Material(shader);
                 m.SetColor("_MainColor", part.Color);
                 try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
-                if (part.Emissive) m.SetFloat("_EmissionIntensity", 2f);
+                if (part.Emissive && !Application.IsHeadless)
+                {
+                    m.SetTexture("_EmissionTex", ProcTex.Solid((byte)(part.Color.R * 255), (byte)(part.Color.G * 255), (byte)(part.Color.B * 255)));
+                    m.SetFloat("_EmissionIntensity", 1.2f);
+                    if (def.Id == "physgun" && part.Shape == 'c' && go.GetComponent<PointLight>() is null)
+                    {
+                        PointLight glow = go.AddComponent<PointLight>();
+                        glow.Color = part.Color; glow.Range = 0.6f; glow.Intensity = 0.5f; glow.CastShadows = false;
+                    }
+                }
                 r.Material = m;
             }
         SetVisible(false);
@@ -221,9 +230,15 @@ public sealed class ViewModel
         // Procedural layers.
         _sway += (new Float2(-mouseDelta.X, mouseDelta.Y) * 0.0009f - _sway) * Math.Clamp(dt * 10f, 0f, 1f);
         _sway = new Float2(Math.Clamp(_sway.X, -0.04f, 0.04f), Math.Clamp(_sway.Y, -0.04f, 0.04f));
-        float acc = -_recoil * 220f - _recoilVel * 22f;          // critically-damped-ish spring back to rest
-        _recoilVel += acc * dt;
-        _recoil += _recoilVel * dt;
+        // Spring back to rest, sub-stepped (semi-implicit) so it stays stable at low frame rates.
+        int steps = Math.Clamp((int)MathF.Ceiling(dt * 240f), 1, 60);
+        float h = dt / steps;
+        for (int i = 0; i < steps; i++)
+        {
+            _recoilVel += (-_recoil * 220f - _recoilVel * 22f) * h;
+            _recoil += _recoilVel * h;
+        }
+        if (!float.IsFinite(_recoil)) { _recoil = 0f; _recoilVel = 0f; }
         _bobAmount += (Math.Clamp(moveSpeed / 6f, 0f, 1.2f) - _bobAmount) * Math.Clamp(dt * 8f, 0f, 1f);
         _bobPhase += dt * (6f + moveSpeed * 0.9f);
 

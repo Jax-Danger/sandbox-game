@@ -240,6 +240,14 @@ public sealed class SelfTest
                     // View model: rig built with the standard bones, clips sample and blend.
                     ViewModel? vm = g.Weapons.Current.Vm;
                     Check(vm is not null && ViewModelDef.StandardBones.All(b => vm.Bones.ContainsKey(b)), "view model rig has the standard bones");
+                    if (vm is not null)
+                    {
+                        Float3 rest = vm.Bones["weapon"].Transform.LocalPosition;
+                        vm.Kick(1f);
+                        for (int i = 0; i < 20; i++) vm.Update(0.15f, Float2.Zero, 0f); // ~7 FPS
+                        float drift = Float3.Length(vm.Bones["weapon"].Transform.LocalPosition - rest);
+                        Check(drift < 0.05f, $"view-model recoil stays stable at low FPS (drift {drift:0.000})");
+                    }
                     VmClip reload = ViewModels.Create("smg").Clips["reload"];
                     BonePose mid = reload.Sample("weapon", 0.5f), end = reload.Sample("weapon", reload.Length);
                     Check(MathF.Abs(mid.Rot.Z) > 20f && MathF.Abs(end.Rot.Z) < 0.01f, $"reload clip tilts the weapon and returns to rest ({mid.Rot.Z:0})");

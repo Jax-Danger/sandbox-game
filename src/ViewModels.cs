@@ -42,9 +42,15 @@ public static class ViewModels
                 d.Bones[4] = ("arm_l", "vm_root", new Float3(-0.22f, -0.34f, 0.12f), new Float3(10f, 6f, 0f));
                 break;
             case "physgun":
-                W('b', 0.07f, 0.09f, 0.36f, 0f, 0.04f, 0.12f, GunLight);
-                W('c', 0.05f, 0.14f, 0f, 0f, 0.04f, 0.33f, Accent, 90f, true);
-                W('b', 0.04f, 0.10f, 0.05f, 0f, -0.03f, 0.0f, Gun);
+                // Gravity-gun style: chunky rear housing, slim body, three claw prongs around a glowing core.
+                W('b', 0.08f, 0.085f, 0.10f, 0f, 0.045f, 0.02f, Gun);
+                W('b', 0.065f, 0.075f, 0.24f, 0f, 0.045f, 0.16f, GunLight);
+                W('b', 0.07f, 0.012f, 0.20f, 0f, 0.088f, 0.14f, Accent, 0f, true);
+                W('c', 0.040f, 0.06f, 0f, 0f, 0.045f, 0.30f, Accent, 90f, true);
+                W('b', 0.014f, 0.014f, 0.11f, 0.040f, 0.075f, 0.31f, Gun);
+                W('b', 0.014f, 0.014f, 0.11f, -0.040f, 0.075f, 0.31f, Gun);
+                W('b', 0.014f, 0.014f, 0.11f, 0f, 0.005f, 0.31f, Gun);
+                W('b', 0.04f, 0.10f, 0.05f, 0f, -0.03f, 0.0f, Gun, 12f);
                 break;
             case "toolgun":
                 W('b', 0.06f, 0.08f, 0.24f, 0f, 0.04f, 0.08f, new Color(0.85f, 0.85f, 0.88f, 1f));
@@ -56,22 +62,33 @@ public static class ViewModels
                 W('s', 0.09f, 0f, 0f, 0f, 0.05f, 0.24f, Accent, 0f, true);
                 break;
             case "pistol":
-                W('b', 0.035f, 0.045f, 0.19f, 0f, 0.035f, 0.08f, Gun);
-                W('b', 0.03f, 0.09f, 0.045f, 0f, -0.02f, 0.0f, GunLight, 12f);
+                W('b', 0.036f, 0.034f, 0.20f, 0f, 0.048f, 0.085f, Gun);                 // slide
+                W('b', 0.032f, 0.022f, 0.17f, 0f, 0.022f, 0.075f, GunLight);            // frame
+                W('b', 0.034f, 0.10f, 0.05f, 0f, -0.025f, 0.0f, GunLight, 14f);         // grip
+                W('b', 0.008f, 0.012f, 0.012f, 0f, 0.07f, 0.17f, Gun);                  // front sight
+                W('b', 0.022f, 0.008f, 0.010f, 0f, 0.068f, 0.0f, Accent, 0f, true);    // glowing rear sight
+                W('c', 0.012f, 0.02f, 0f, 0f, 0.048f, 0.19f, Gun, 90f);                 // barrel tip
                 d.Bones[3] = ("muzzle", "weapon", new Float3(0f, 0.035f, 0.18f), Float3.Zero);
                 d.RecoilKick = 1.0f;
                 break;
             case "smg":
-                W('b', 0.05f, 0.07f, 0.30f, 0f, 0.035f, 0.10f, Gun);
-                W('b', 0.03f, 0.12f, 0.04f, 0f, -0.04f, 0.10f, GunLight);
-                W('c', 0.025f, 0.10f, 0f, 0f, 0.04f, 0.29f, GunLight, 90f);
+                W('b', 0.05f, 0.065f, 0.26f, 0f, 0.035f, 0.10f, Gun);                   // receiver
+                W('b', 0.028f, 0.13f, 0.045f, 0f, -0.05f, 0.12f, GunLight, -8f);        // magazine
+                W('b', 0.035f, 0.08f, 0.045f, 0f, -0.02f, 0.0f, GunLight, 12f);         // grip
+                W('c', 0.022f, 0.12f, 0f, 0f, 0.04f, 0.29f, GunLight, 90f);             // barrel
+                W('b', 0.035f, 0.045f, 0.13f, 0f, 0.025f, -0.10f, Gun);                 // stock
+                W('b', 0.018f, 0.018f, 0.12f, 0f, 0.076f, 0.10f, Gun);                  // top rail
+                W('b', 0.024f, 0.018f, 0.018f, 0f, 0.092f, 0.06f, Accent, 0f, true);   // red-dot sight
                 d.Bones[3] = ("muzzle", "weapon", new Float3(0f, 0.04f, 0.34f), Float3.Zero);
                 d.RecoilKick = 0.45f;
                 break;
             case "shotgun":
-                W('b', 0.05f, 0.06f, 0.30f, 0f, 0.03f, 0.04f, Wood);
-                W('c', 0.035f, 0.42f, 0f, 0f, 0.06f, 0.30f, Gun, 90f);
-                W('c', 0.045f, 0.16f, 0f, 0f, 0.025f, 0.30f, Wood, 90f);
+                W('b', 0.05f, 0.065f, 0.12f, 0f, 0.045f, 0.06f, Gun);                   // receiver
+                W('b', 0.045f, 0.06f, 0.20f, 0f, 0.02f, -0.07f, Wood, -6f);             // stock
+                W('c', 0.032f, 0.42f, 0f, 0f, 0.065f, 0.33f, Gun, 90f);                 // barrel
+                W('c', 0.026f, 0.34f, 0f, 0f, 0.035f, 0.30f, GunLight, 90f);            // tube magazine
+                W('c', 0.045f, 0.14f, 0f, 0f, 0.035f, 0.30f, Wood, 90f);                // pump
+                W('b', 0.010f, 0.010f, 0.010f, 0f, 0.085f, 0.53f, Accent, 0f, true);   // bead sight
                 d.Bones[3] = ("muzzle", "weapon", new Float3(0f, 0.06f, 0.52f), Float3.Zero);
                 d.Bones[5] = ("hand_l", "arm_l", new Float3(0.08f, 0.04f, 0.26f), Float3.Zero);
                 d.RecoilKick = 2.2f;

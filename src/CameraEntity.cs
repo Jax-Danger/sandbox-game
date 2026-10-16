@@ -44,7 +44,7 @@ public static class CameraFeeds
         r.Mesh = Mesh.CreateCylinder(0.14f, 0.12f, 16);
         var m = new Material(g.Shader);
         m.SetColor("_MainColor", new Color(0.05f, 0.06f, 0.08f, 1f));
-        m.SetColor("_EmissionColor", new Color(0.2f, 0.5f, 1f, 1f));
+        if (!Application.IsHeadless) { m.SetTexture("_EmissionTex", ProcTex.Solid(40, 110, 255)); m.SetFloat("_EmissionIntensity", 1.5f); }
         r.Material = m;
         _cams.Add(p);
     }

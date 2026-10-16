@@ -85,13 +85,20 @@ public sealed class WeaponSystem
 
     public T Get<T>() where T : Weapon => _all.OfType<T>().First();
 
+    private const float HolsterTime = 0.14f;
+    private ViewModel? _holsterVm;
+    private float _holsterLeft;
+
     public void Select(SandboxGame g, Weapon w)
     {
         if (ReferenceEquals(w, Current)) return;
         if (Current is not null)
         {
             Current.Holster(g);
-            Current.Vm?.SetVisible(false);
+            // Visual-only holster: the old view model dips away, then the new one draws.
+            if (_holsterVm is not null && !ReferenceEquals(_holsterVm, Current.Vm)) _holsterVm.SetVisible(false);
+            if (Current.Vm is { } old && old.Root.Enabled && !g.InVehicle && !Application.IsHeadless) { _holsterVm = old; _holsterLeft = HolsterTime; old.Play("holster"); }
+            else Current.Vm?.SetVisible(false);
         }
         Current = w;
         TimeSinceSwitch = 0f;
@@ -100,8 +107,8 @@ public sealed class WeaponSystem
         {
             try { w.Vm ??= new ViewModel(ViewModels.Create(vmId), g.Player.CameraObject, g.Shader); }
             catch (Exception e) { Console.WriteLine($"[viewmodel] {vmId}: {e.Message}"); }
-            w.Vm?.SetVisible(true);
-            w.Vm?.Play("draw");
+            if (_holsterVm is not null && !ReferenceEquals(_holsterVm, w.Vm)) w.Vm?.SetVisible(false);
+            else { _holsterVm = null; w.Vm?.SetVisible(true); w.Vm?.Play("draw"); }
         }
         g.Sounds.Play("sfx_weapon_switch", 0.5f);
     }
@@ -130,6 +137,15 @@ public sealed class WeaponSystem
     /// <summary>Animates the current view model; hidden while driving.</summary>
     public void Animate(SandboxGame g, float dt, Float2 mouse)
     {
+        if (_holsterVm is not null)
+        {
+            _holsterLeft -= MathF.Max(dt, 1f / 120f);
+            _holsterVm.Update(dt, mouse, g.Player.Speed);
+            if (_holsterLeft > 0f && !g.InVehicle) return;
+            _holsterVm.SetVisible(false);
+            _holsterVm = null;
+            Current?.Vm?.Play("draw");
+        }
         if (Current?.Vm is not { } vm) return;
         vm.SetVisible(!g.InVehicle);
         vm.Update(dt, mouse, g.Player.Speed);
