@@ -19,6 +19,13 @@
     <EmbeddedResource Remove="external/**" />
   </ItemGroup>
 
+  <!-- RID-specific publish flattens natives into the app folder but skips Prowl's loose
+       Libraries/<rid>/native files (miniaudioex), so copy them next to the executable. -->
+  <ItemGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <None Include="external/Prowl/Libraries/$(RuntimeIdentifier)/native/*" Link="%(Filename)%(Extension)"
+          CopyToOutputDirectory="PreserveNewest" CopyToPublishDirectory="PreserveNewest" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="external/Prowl/Prowl.Runtime/Prowl.Runtime.csproj" />
   </ItemGroup>

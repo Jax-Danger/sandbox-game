@@ -12,6 +12,30 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 | ![Entities](docs/v4-entities.png) | ![Context menu](docs/v3-context.png) |
 | ![Settings](docs/v3-settings.png) | ![Pause](docs/v3-pause.png) |
 
+## Download & run
+
+Grab the zip for your platform from [Releases](https://github.com/Jax-Danger/sandbox-game/releases). The builds are self-contained, so no .NET install is needed.
+
+| Platform | Zip | Run |
+|---|---|---|
+| Windows 10/11 | `Sandbox-<ver>-win-x64.zip` | Unzip and run `Sandbox-win-x64\Sandbox.exe`. If SmartScreen warns, choose *More info → Run anyway*. |
+| Linux x64 | `Sandbox-<ver>-linux-x64.zip` | `unzip …; chmod +x Sandbox-linux-x64/Sandbox; ./Sandbox-linux-x64/Sandbox`. Needs OpenGL 4.1+ drivers. |
+| macOS Apple Silicon | `Sandbox-<ver>-osx-arm64.zip` | Unzip and open `Sandbox.app`. |
+| macOS Intel | `Sandbox-<ver>-osx-x64.zip` | Unzip and open `Sandbox.app`. |
+
+The macOS app is unsigned, so Gatekeeper blocks the first launch. Right-click → **Open**, or run `xattr -dr com.apple.quarantine Sandbox.app`. Prowl requests an OpenGL **4.1 core** forward-compatible context, which is the highest version macOS supports, so it works there.
+
+### Building releases yourself
+
+```bash
+./build-all.sh 0.1.0                # all four: win-x64, linux-x64, osx-x64, osx-arm64 → dist/
+./build-all.sh 0.1.0 linux-x64      # just one
+```
+```powershell
+./build-all.ps1 -Version 0.1.0
+```
+Build macOS on a Mac when you can, because `build-all.sh` ad-hoc codesigns the `.app`, which Apple Silicon requires. CI (`packaging/ci/build.yml`; copy it to `.github/workflows/` to enable it) builds all four on every push, runs the headless self-test and an xvfb smoke run on Linux, and uploads them as artifacts. Pushing a `v*` tag publishes a GitHub Release with the zips.
+
 ## Run on Windows
 
 1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).

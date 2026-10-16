@@ -1,0 +1,71 @@
+name: build
+
+on:
+  push:
+    branches: [main]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - { rid: linux-x64, os: ubuntu-latest }
+          - { rid: win-x64,   os: ubuntu-latest }
+          - { rid: osx-x64,   os: macos-latest }   # macOS runner so the app gets ad-hoc codesigned
+          - { rid: osx-arm64, os: macos-latest }
+    runs-on: ${{ matrix.os }}
+    steps:
+      - uses: actions/checkout@v4
+        with: { submodules: recursive }
+      - uses: actions/setup-dotnet@v4
+        with: { dotnet-version: "10.0.x" }
+      - name: Version
+        shell: bash
+        run: |
+          if [[ "$GITHUB_REF" == refs/tags/v* ]]; then echo "VERSION=${GITHUB_REF_NAME#v}" >> $GITHUB_ENV
+          else echo "VERSION=0.1.0-ci.${GITHUB_RUN_NUMBER}" >> $GITHUB_ENV; fi
+      - name: Headless self-test
+        if: matrix.rid == 'linux-x64'
+        run: |
+          dotnet build Sandbox.csproj -c Debug
+          dotnet bin/Debug/net10.0/Sandbox.dll --headless
+      - name: Publish
+        shell: bash
+        run: ./build-all.sh "$VERSION" ${{ matrix.rid }}
+      - name: Smoke-run under xvfb
+        if: matrix.rid == 'linux-x64'
+        run: |
+          sudo apt-get update -qq && sudo apt-get install -y -qq xvfb libgl1 libglx-mesa0 > /dev/null
+          set +e
+          timeout 25 xvfb-run -a -s "-screen 0 1280x720x24" dist/Sandbox-linux-x64/Sandbox > smoke.log 2>&1
+          code=$?; tail -20 smoke.log
+          # 124 = still running when the timer expired, i.e. it started and kept rendering.
+          [ $code -eq 124 ] || { echo "game exited early with $code"; exit 1; }
+      - uses: actions/upload-artifact@v4
+        with:
+          name: Sandbox-${{ matrix.rid }}
+          path: dist/*.zip
+
+  release:
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/download-artifact@v4
+        with: { path: artifacts, merge-multiple: true }
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: artifacts/*.zip
+          generate_release_notes: true
+          body: |
+            Self-contained builds (no .NET install needed). Unzip and run:
+            - **Windows**: `Sandbox-win-x64\Sandbox.exe` (SmartScreen: More info → Run anyway).
+            - **Linux**: `chmod +x Sandbox-linux-x64/Sandbox && ./Sandbox-linux-x64/Sandbox` (needs OpenGL 4.1+).
+            - **macOS** (Apple Silicon: `osx-arm64`, Intel: `osx-x64`): open `Sandbox.app`. It is unsigned, so right-click → Open the first time, or run `xattr -dr com.apple.quarantine Sandbox.app`.
