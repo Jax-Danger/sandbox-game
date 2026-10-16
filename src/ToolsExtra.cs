@@ -270,19 +270,22 @@ public sealed class RopeVisual : MonoBehaviour
 {
     private Float3 _localA, _localB;
     private Prop? _b;
-    private LineRenderer? _line;
     private GameObject? _lineGo;
     private static Material? _mat;
 
     public void Init(Float3 localA, Prop b, Float3 localB)
     {
         _localA = localA; _b = b; _localB = localB;
-        _mat ??= new Material(Shader.LoadDefault(DefaultShader.Line));
+        if (_mat is null)
+        {
+            _mat = new Material(Shader.LoadDefault(DefaultShader.Standard));
+            _mat.SetColor("_MainColor", new Color(0.55f, 0.42f, 0.28f, 1f));
+            try { _mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+        }
         _lineGo = new GameObject("Rope");
-        _line = _lineGo.AddComponent<LineRenderer>();
-        _line.Material = _mat;
-        _line.StartWidth = _line.EndWidth = 0.03f;
-        _line.StartColor = _line.EndColor = new Color(0.55f, 0.42f, 0.28f, 1f);
+        MeshRenderer r = _lineGo.AddComponent<MeshRenderer>();
+        r.Mesh = Fx.UnitBeam(0.03f);
+        r.Material = _mat;
         GameObject.Scene?.Add(_lineGo);
         Update();
     }
@@ -295,12 +298,10 @@ public sealed class RopeVisual : MonoBehaviour
 
     public override void Update()
     {
-        if (_line is null) return;
-        if (_b is null || !_b.Alive) { Destroy(); return; }
-        _line.Points = [Transform.TransformPoint(_localA), _b.Go.Transform.TransformPoint(_localB)];
+        if (_lineGo is null) return;
+        if (_b is null || !_b.Alive || !GameObject.EnabledInHierarchy) { Destroy(); return; }
+        Fx.Stretch(_lineGo, Transform.TransformPoint(_localA), _b.Go.Transform.TransformPoint(_localB));
     }
-
-    public override void OnDisable() { if (_lineGo is not null && _lineGo.IsValid() && !GameObject.EnabledInHierarchy) _lineGo.Scene?.Remove(_lineGo); }
 }
 
 /// <summary>Key-bound thruster: pushes the prop opposite to the surface normal while its key is held.</summary>

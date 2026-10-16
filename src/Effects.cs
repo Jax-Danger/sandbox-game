@@ -15,7 +15,6 @@ public sealed class Fx(SandboxGame g)
     private readonly List<Timed> _live = [];
     private readonly Queue<GameObject> _decals = new();
     private const int MaxDecals = 64;
-    private Material? _lineMat;
     private readonly Dictionary<string, Material> _mats = [];
 
     private Material Mat(string key, Color c, float emission = 0f)
@@ -55,20 +54,26 @@ public sealed class Fx(SandboxGame g)
         Add(go, 0.05f);
     }
 
+    /// <summary>Thin emissive box stretched between two points (mesh-based so it works without the Line shader).</summary>
+    public static void Stretch(GameObject go, Float3 from, Float3 to)
+    {
+        Float3 d = to - from;
+        float len = Float3.Length(d);
+        go.Transform.Position = from + d * 0.5f;
+        if (len > 1e-4f) go.Transform.Forward = d / len;
+        go.Transform.LocalScale = new Float3(1f, 1f, MathF.Max(0.001f, len));
+    }
+
     public void Tracer(Float3 from, Float3 to)
     {
-        _lineMat ??= new Material(Shader.LoadDefault(DefaultShader.Line));
-        var go = new GameObject("tracer");
-        LineRenderer lr = go.AddComponent<LineRenderer>();
-        lr.Material = _lineMat;
-        lr.Points = [from, to];
-        lr.StartWidth = 0.015f;
-        lr.EndWidth = 0.008f;
-        lr.StartColor = new Color(1f, 0.85f, 0.5f, 0.9f);
-        lr.EndColor = new Color(1f, 0.9f, 0.6f, 0.3f);
-        g.World.Add(go);
-        Add(go, 0.06f);
+        GameObject go = Prim("tracer", UnitBeam(0.012f), Mat("tracer", new Color(1f, 0.85f, 0.5f, 1f), 5f), from);
+        Stretch(go, from, to);
+        Add(go, 0.05f);
     }
+
+    private static readonly Dictionary<float, Mesh> _beams = [];
+    /// <summary>A 1 m long (Z) beam mesh of the given thickness; scale Z to set length.</summary>
+    public static Mesh UnitBeam(float thickness) => _beams.TryGetValue(thickness, out Mesh? m) ? m : _beams[thickness] = Mesh.CreateCube(new Float3(thickness, thickness, 1f));
 
     public void Sparks(Float3 at, Float3 normal, int count = 6)
     {
