@@ -4,8 +4,13 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 
 `Prowl.Runtime` is not on NuGet, so this repo vendors it as a git submodule at `external/Prowl`, pinned to the `v1.0-preview` tag (`50d287009738cd3ea7b6350221ae58f639a4aa39`).
 
-![HUD](docs/sandbox-hud.png)
-![Spawn menu](docs/sandbox-spawn-menu.png)
+| | |
+|---|---|
+| ![Main menu](docs/v3-main.png) | ![Physgun](docs/v4-physgun.png) |
+| ![SMG](docs/v4-smg.png) | ![Buggy](docs/v4-drive.png) |
+| ![Spawn menu](docs/v4-props.png) | ![Tools](docs/v4-tools.png) |
+| ![Entities](docs/v4-entities.png) | ![Context menu](docs/v3-context.png) |
+| ![Settings](docs/v3-settings.png) | ![Pause](docs/v3-pause.png) |
 
 ## Run on Windows
 
@@ -31,32 +36,46 @@ The first build downloads Prowl's NuGet dependencies, so it needs internet and t
 
 A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. The props use Prowl's default grid texture.
 
-The HUD shows a crosshair, the current tool and mode (top left), the prop count (top right), a control hint line (bottom) and short messages such as "Welded …" or "Undone …".
+The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a ring when you aim at a prop, a prop-count chip bottom-left, a weapon/ammo chip bottom-right (a speedometer while driving), and small notification pills. The weapon switcher strip shows for about two seconds after you switch, then fades out.
 
 ## Controls
 
 | Input | Action |
 | --- | --- |
-| Mouse | Look (the cursor is locked while playing) |
-| W A S D | Walk |
-| Shift | Run (in noclip: fly faster) |
-| Space | Jump (in noclip: fly up) |
-| Ctrl | Fly down (noclip only) |
-| V | Toggle noclip (fly through everything) |
-| Hold Q or Tab | Spawn menu: click Cube, Sphere, Plank, Barrel, Big Crate or Ramp to spawn it where the crosshair points |
-| 1 | Physgun |
-| 2 | Toolgun: Weld |
-| 3 | Toolgun: Remover |
-| 4 | Toolgun: Balloon |
-| Z | Undo the last spawn, weld or balloon |
-| Esc | Pause menu: Resume, Clear map, Quit |
+| Mouse | Look (cursor locked while playing) |
+| W A S D / Shift / Space | Walk / run / jump |
+| Ctrl | Fly down (noclip) |
+| V | Toggle noclip |
+| Hold Q or Tab | Spawn menu: Spawnlists, Entities, Vehicles, Weapons, Tools, Utilities |
+| Hold C | Context menu: click a prop to edit freeze, colour, material, mass or delete it. Also has the current tool's settings |
+| 1 … 5, mouse wheel | Weapon slots (press a number again to cycle within the slot): **1** Hands, Crowbar · **2** Physgun, Tool gun, Spawn gun · **3** Pistol, SMG · **4** Shotgun · **5** Rocket launcher, Grenades |
+| Left / right mouse | Primary / secondary fire |
+| R | Reload (in a vehicle: flip the buggy upright) |
+| F | Inspect weapon |
+| E | Pick up / drop a light prop (left click throws it) · press a button · enter / exit a vehicle |
+| T G Y H U J | Default keys for thrusters, wheels and buttons |
+| Z | Undo |
+| F3 | FPS counter |
+| Esc | Pause menu: Resume, Save, Load, Clear map, Settings, Main menu |
 
-**Physgun (1):** hold left mouse on a prop to pick it up. The mouse wheel pushes it away or pulls it in. Let go to drop or throw it (it keeps its velocity). Right-click while holding to **freeze** it in place (it turns blue). Grabbing a frozen prop unfreezes it.
+**Hands (1):** E picks up anything up to 15 kg and carries it in front of you. Left click throws it; E again drops it. With nothing held, left click gives a light shove.
 
-**Toolgun (2–4):** left click applies the mode:
-- **Weld:** click one prop, then a second, and they're locked together.
-- **Remover:** click a prop to delete it.
-- **Balloon:** click a prop to tie a red balloon to it. Each balloon pulls up with about 1.4× the prop's weight, so it floats away. Freeze it or weld it to something heavy.
+**Physgun:** hold left mouse on a prop (or a single ragdoll limb) to grab it. A pulsing beam connects you to it. The wheel pushes or pulls. Right-click freezes it. Let go to throw.
+
+**Tool gun:** pick a tool in the spawn menu's Tools tab. Its settings appear there and in the C menu.
+- Constraints: **Weld**, **Rope** (two points, slack setting), **Ball socket** (pivot).
+- Construction: **Balloon**, **Remover**, **Thruster** (hold its key), **Wheel** (motorised, forward/back keys), **Duplicator** (right click copies, left click pastes).
+- Render: **Colour** (right click picks a colour up from a prop), **Material** (plastic, wood, metal, rubber, ice, concrete; changes friction/bounce), **Light**.
+
+**Spawn gun:** left click spawns whatever you last picked in the spawn menu, where you aim. Right click cycles your recent spawns.
+
+**Weapons:** hitscan guns push props and ragdolls, leave decals and sparks, and set off explosive barrels. Rockets and grenades explode with a physics blast. Each gun has a magazine plus reserve ammo; R reloads.
+
+**Entities tab:** Ragdoll; NPC Dummy (stands until you hit it, then goes limp); Explosive Barrel (shoot it, blast it, or slam it); Bouncy Ball; Light; Button (press E or shoot it to toggle its key, which drives thrusters and wheels bound to that key).
+
+**Vehicles tab:** Buggy. Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
+
+**Saving:** Esc → Save / Load writes `%AppData%/ProwlSandbox/saves/quicksave.json`. Props, colours, frozen state, welds, balloons and ragdolls are saved. Buggies, thrusters, wheels, ropes, lights and entity behaviours are not saved yet.
 
 ## Adding your own models and sounds
 
