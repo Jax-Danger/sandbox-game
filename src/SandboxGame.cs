@@ -11,6 +11,7 @@ public sealed class SandboxGame : Game
 
     /// <summary>Optional forced UI state for screenshots (see README "Screenshot mode").</summary>
     public string? ShotState { get; set; }
+    private float _perfSum, _perfMax; private int _perfN;
 
     public Scene World { get; private set; } = null!;
     public PropManager Props { get; private set; } = null!;
@@ -149,6 +150,14 @@ public sealed class SandboxGame : Game
                 Menus.Go(Screen.Playing);
                 SelectPhysGun();
                 break;
+            case "perf":
+                Menus.Go(Screen.Playing);
+                int perfN = int.TryParse(Environment.GetEnvironmentVariable("SANDBOX_PERF_PROPS"), out var pn) ? pn : 200;
+                for (int i = 0; i < perfN; i++)
+                    Props.Spawn(PropManager.AllKinds[i % PropManager.AllKinds.Length],
+                        new Float3(-10f + (i % 20) * 1.1f, 2f + (i / 20) * 1.3f, 6f + (i % 7) * 0.4f), i * 17f, recordUndo: false);
+                for (int i = 0; i < (perfN > 0 ? 8 : 0); i++) Ragdoll.Spawn(this, new Float3(-8f + i * 2.2f, 1.2f, 2f), i * 40f, recordUndo: false);
+                break;
             case "ragdoll":
                 Menus.Go(Screen.Playing);
                 Ragdoll.Spawn(this, new Float3(-0.5f, 1.2f, -3.5f), 160f);
@@ -176,6 +185,15 @@ public sealed class SandboxGame : Game
     {
         _frames++;
         float dt = Time.UnscaledDeltaTime;
+        if (ShotState == "perf")
+        {
+            _perfSum += dt; _perfMax = MathF.Max(_perfMax, dt); _perfN++;
+            if (_perfSum > 2f)
+            {
+                Console.WriteLine($"PERF t={Time.UnscaledTotalTime:0.0}s props={Props.Props.Count} frame avg {_perfSum / _perfN * 1000f:0.0} ms max {_perfMax * 1000f:0.0} ms");
+                _perfSum = 0; _perfMax = 0; _perfN = 0;
+            }
+        }
         _hud.Tick(dt);
         while (_pending.Count > 0) _pending.Dequeue()();
         Time.TimeScale = Menus.Screen is Screen.Paused or Screen.Settings && Menus.Blocking && ShotState is null ? 0f : 1f;
@@ -327,8 +345,12 @@ public sealed class SandboxGame : Game
     }
 
     /// <summary>Spawn a catalog entry where the crosshair points.</summary>
+    /// <summary>Soft cap on player-spawned props (sbox_maxprops style); Jitter already sleeps resting bodies.</summary>
+    public const int MaxProps = 400;
+
     public string Spawn(SpawnEntry entry)
     {
+        if (Props.Props.Count >= MaxProps) return $"Prop limit reached ({MaxProps}). Clean up with Undo or Clear map.";
         Float3 pos;
         if (Player.Trace(40f, out RaycastHit hit))
             pos = hit.Point + hit.Normal * (entry.HalfHeight + 0.1f) + new Float3(0f, 0.1f, 0f);

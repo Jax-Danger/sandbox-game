@@ -432,6 +432,24 @@ public sealed class SelfTest
                     Check(g.Props.Props.Any(p => p.Entity == "ent_barrel" && p.Go.GetComponent<ExplosiveBarrel>().IsValid()), "explosive barrel keeps its behaviour after load");
                     g.ClearMap();
                 }
+                {
+                    // Performance: 200 props + 8 ragdolls, then time physics steps directly (Jitter sleeps resting bodies).
+                    for (int i = 0; i < 200; i++)
+                        g.Props.Spawn(PropManager.AllKinds[i % PropManager.AllKinds.Length], new Float3(30f + (i % 20) * 1.1f, 1f + (i / 20) * 1.3f, 30f), i * 17f, recordUndo: false);
+                    for (int i = 0; i < 8; i++) Ragdoll.Spawn(g, new Float3(30f + i * 2.2f, 1.2f, 26f), 0f, recordUndo: false);
+                    var sw = System.Diagnostics.Stopwatch.StartNew();
+                    for (int i = 0; i < 120; i++) g.World.Physics.Update();
+                    double settle = sw.Elapsed.TotalMilliseconds / 120.0;
+                    for (int i = 0; i < 240; i++) g.World.Physics.Update();
+                    sw.Restart();
+                    for (int i = 0; i < 60; i++) g.World.Physics.Update();
+                    double rest = sw.Elapsed.TotalMilliseconds / 60.0;
+                    Check(settle < 16f, $"physics with {g.Props.Props.Count} props + 8 ragdolls: {settle:0.00} ms/step falling, {rest:0.00} ms/step at rest");
+                    while (g.Props.Props.Count < SandboxGame.MaxProps)
+                        g.Props.Spawn(PropKind.SmallCrate, new Float3(60f, 1f + g.Props.Props.Count * 0.01f, 60f), 0f, recordUndo: false);
+                    Check(g.Spawn(SpawnCatalog.Find("prop_cube")!).Contains("limit"), "prop limit blocks spawning past " + SandboxGame.MaxProps);
+                    g.ClearMap();
+                }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
