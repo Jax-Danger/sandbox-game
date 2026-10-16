@@ -27,6 +27,7 @@ public static class SpawnCatalog
                 Icons.For(k), kind, (g, pos, yaw) => g.Props.Spawn(kind, pos, yaw).Go.Name, PropManager.HalfHeightOf(k)));
         }
         Ragdoll.Register();
+        VehicleSystem.Register();
     }
 
     public static void Register(SpawnEntry e)

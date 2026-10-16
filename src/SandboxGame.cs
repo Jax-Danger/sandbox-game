@@ -121,6 +121,10 @@ public sealed class SandboxGame : Game
                 Menus.Go(Screen.Playing);
                 Weapons.Select(this, Weapons.Get<SmgWeapon>());
                 break;
+            case "drive":
+                Menus.Go(Screen.Playing);
+                Vehicles.Enter(Vehicles.SpawnBuggy(Player.FeetPosition + new Float3(0f, 1.2f, 3f), 0f));
+                break;
             case "ragdoll":
                 Menus.Go(Screen.Playing);
                 Ragdoll.Spawn(this, new Float3(-0.5f, 1.2f, -3.5f), 160f);
@@ -207,6 +211,8 @@ public sealed class SandboxGame : Game
 
     private void ShotTick()
     {
+        if (ShotState == "drive" && Vehicles.Driving is { } car)
+            car.Drive(Time.UnscaledTotalTime > 7f ? 0.6f : 0f, Time.UnscaledTotalTime < 8.5f, false, false);
         if (ShotState == "smg" && Time.UnscaledTotalTime > 6f)
         {
             var smg = Weapons.Get<SmgWeapon>();
@@ -296,6 +302,7 @@ public sealed class SandboxGame : Game
     {
         PhysGun.Release(keepVelocity: false);
         ToolGun.CancelPending();
+        Vehicles.ClearAll();
         Props.ClearAll();
         Fx.Clear();
         Notify("Map cleared", ToastKind.Danger);

@@ -156,6 +156,14 @@ public sealed class Player
         CameraObject.Transform.LocalEulerAngles = new Float3(_pitch - _punch + sx, _yaw + sy, 0f);
     }
 
+    /// <summary>Moves the player (feet) without collision, e.g. when leaving a vehicle.</summary>
+    public void Teleport(Float3 feet, bool moveCamera = true)
+    {
+        _body.Transform.Position = feet;
+        _verticalVelocity = 0f;
+        if (moveCamera) CameraObject.Transform.Position = feet + new Float3(0f, EyeHeight, 0f);
+    }
+
     /// <summary>For tests: aim the view.</summary>
     public void SetLook(float yaw, float pitch)
     {

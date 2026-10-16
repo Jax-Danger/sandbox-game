@@ -99,7 +99,8 @@ public sealed class Hud
             Ui.Text(paper, "hud_noclip_t", m + lw + Theme.S(6), h - m - ch, nw, ch, "NOCLIP", Theme.Micro, Theme.Warning, Theme.Bold, TextAlignment.MiddleCenter);
         }
 
-        // Bottom-right: weapon icon + name (+ ammo), one small chip.
+        // Bottom-right: weapon icon + name (+ ammo), one small chip. Replaced by the speedometer while driving.
+        if (game.InVehicle) return;
         Weapon wpn = game.Weapons.Current;
         string label = game.Weapons.IsToolGun ? ToolGun.InfoFor(game.ToolGun.Mode).Name : wpn.Name;
         string? ammo = wpn.AmmoText;

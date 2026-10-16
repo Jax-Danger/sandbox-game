@@ -17,6 +17,8 @@ public sealed class SelfTest
     private float _vmRestY;
     private Prop? _target, _barrel;
     private PistolWeapon? _pistol;
+    private Buggy? _buggy;
+    private Float3 _buggyStart;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
     private float _restBarrelY, _frozenY;
@@ -289,7 +291,32 @@ public sealed class SelfTest
                     Aim(g, c.Go.Transform.Position);
                     cb.Strike(g);
                     Check(cb.Hits == 1 && Float3.Length(c.Body.LinearVelocity) > 1f, "crowbar hit knocks a prop");
+                    g.ClearMap();
+                    _buggy = g.Vehicles.SpawnBuggy(g.Player.FeetPosition + new Float3(4f, 1.2f, 0f), 0f);
+                    _buggyStart = _buggy.Go.Transform.Position;
                     Check(g.Weapons.All.Select(w => w.Id).Distinct().Count() == g.Weapons.All.Count && g.Weapons.All.Count >= 10, $"weapon switcher has {g.Weapons.All.Count} weapons");
+                }
+                break;
+            case 600:
+                {
+                    Buggy b = _buggy!;
+                    Check(b.Front.Concat(b.Rear).Count(w => w.IsGrounded) >= 3, $"buggy rests on its wheels (y {b.Go.Transform.Position.Y:0.00})");
+                    Aim(g, b.Go.Transform.Position);
+                    Check(g.Vehicles.TryUse() && g.InVehicle, "E enters the buggy");
+                    _buggyStart = b.Go.Transform.Position;
+                }
+                break;
+            case > 600 and < 720:
+                _buggy!.Drive(0f, true, false, false);
+                g.Vehicles.Tick(Time.DeltaTime, false);
+                _buggy.Drive(0f, true, false, false);
+                break;
+            case 720:
+                {
+                    Buggy b = _buggy!;
+                    float moved = Float3.Length(b.Go.Transform.Position - _buggyStart);
+                    Check(moved > 3f && b.SpeedKmh > 5f, $"throttle drives the buggy ({moved:0.0} m, {b.SpeedKmh:0} km/h, gear {b.Gear})");
+                    Check(g.Vehicles.TryUse() && !g.InVehicle && Float3.Length(g.Player.FeetPosition - b.Go.Transform.Position) < 4f, "E exits beside the buggy");
                 }
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
