@@ -68,6 +68,7 @@ public static class CameraFeeds
             _cam.FarClipPlane = 300f;
             _cam.ClearFlags = CameraClearFlags.Skybox;
             _cam.Target = _rt;
+            try { _cam.Effects = [new TonemapperEffect()]; } catch { } // match the main view's exposure
             _cam.Enabled = false; // rendered manually, never as a scene camera
             g.World.Add(_camGo);
         }

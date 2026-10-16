@@ -6,7 +6,7 @@ namespace Sandbox;
 public enum Icon
 {
     Cube, Sphere, Plank, Barrel, Crate, Ramp, Grid, Bolt, Wrench, Sliders, Search, Gear, Play, Power, Back,
-    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand, Camera,
+    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand, Camera, Smg, Shotgun,
 }
 
 /// <summary>Stroke-based vector icons drawn with Quill on a 24x24 grid (1.75px strokes, round caps).</summary>
@@ -158,6 +158,18 @@ public static class Icons
                 break;
             case Icon.Pistol:
                 Closed(3, 7, 21, 7, 21, 11, 11, 11, 10, 19, 6, 19, 7, 11, 3, 11);
+                break;
+            case Icon.Smg:
+                // Receiver + barrel, forward magazine, grip, stub stock.
+                Closed(5, 8, 18, 8, 18, 12, 5, 12); Line(18, 10, 22, 10);
+                Closed(11, 12, 14, 12, 13, 19, 10.5f, 19); Line(7, 12, 6.5f, 16);
+                Line(5, 9, 2, 10, 2, 13);
+                break;
+            case Icon.Shotgun:
+                // Long barrel over tube, pump, angled stock.
+                Line(9, 9, 23, 9); Line(9, 11.5f, 21, 11.5f);
+                Closed(13, 11.5f, 18, 11.5f, 18, 14, 13, 14);
+                Closed(9, 8, 9, 13, 5, 16, 1.5f, 16, 1.5f, 12.5f, 5, 11, 5, 8);
                 break;
             case Icon.Car:
                 Closed(3, 16, 3, 12, 6, 7.5f, 16, 7.5f, 19.5f, 12, 21, 12.5f, 21, 16);

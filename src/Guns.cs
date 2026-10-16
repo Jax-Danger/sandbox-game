@@ -97,7 +97,7 @@ public sealed class SmgWeapon : Firearm
     public override string Id => "weapon_smg";
     public override string Name => "SMG";
     public override int Slot => 3;
-    public override Icon Icon => Icon.Pistol;
+    public override Icon Icon => Icon.Smg;
     public override string? ViewModelId => "smg";
     public override int MagSize => 30;
     public override float FireInterval => 0.075f;
@@ -112,7 +112,7 @@ public sealed class ShotgunWeapon : Firearm
     public override string Id => "weapon_shotgun";
     public override string Name => "Shotgun";
     public override int Slot => 4;
-    public override Icon Icon => Icon.Pistol;
+    public override Icon Icon => Icon.Shotgun;
     public override string? ViewModelId => "shotgun";
     public override int MagSize => 6;
     public override float FireInterval => 0.85f;
