@@ -15,6 +15,8 @@ public sealed class SelfTest
     private Ragdoll? _ragdoll;
     private Prop? _carryCube, _heavy;
     private float _vmRestY;
+    private Prop? _target, _barrel;
+    private PistolWeapon? _pistol;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
     private float _restBarrelY, _frozenY;
@@ -245,6 +247,49 @@ public sealed class SelfTest
                     ViewModel vm = g.Weapons.Current.Vm!;
                     float dy = MathF.Abs(vm.Bones["arm_r"].Transform.LocalPosition.Y - _vmRestY);
                     Check(vm.CurrentClip == "inspect" && dy > 0.005f, $"inspect animates the arm bone (moved {dy:0.000} m)");
+
+                    // Weapons: pistol hitscan pushes a prop, uses ammo, reload refills.
+                    g.Player.SetLook(0f, 0f);
+                    _target = g.Props.Spawn(PropKind.Cube, g.Player.EyePosition + g.Player.Forward * 6f, 0f, recordUndo: false);
+                    _target.Body.AffectedByGravity = false;
+                    _pistol = g.Weapons.Get<PistolWeapon>();
+                    g.Weapons.Select(g, _pistol);
+                    Aim(g, _target.Go.Transform.Position);
+                    g.Weapons.Tick(g, new WeaponInput(true, true, false, false, false, false, 0f), 0.016f);
+                    Check(_pistol.Mag == 11 && Float3.Length(_target.Body.LinearVelocity) > 1f,
+                        $"pistol shot uses ammo and pushes the prop (v {Float3.Length(_target.Body.LinearVelocity):0.0})");
+                    _pistol.Mag = 3;
+                    g.Weapons.Tick(g, new WeaponInput(false, false, false, false, false, true, 0f), 0.016f);
+                    Check(_pistol.Reloading, "R starts a reload");
+                }
+                break;
+            case > 420 and < 540:
+                g.Weapons.Tick(g, new WeaponInput(false, false, false, false, false, false, 0f), 1f / 30f);
+                if (_frame == 500)
+                {
+                    Check(!_pistol!.Reloading && _pistol.Mag == 12, $"reload refills the magazine ({_pistol.Mag})");
+                    // Rocket at a cube on the floor; grenade dropped at our feet-ish.
+                    g.ClearMap();
+                    _barrel = g.Props.Spawn(PropKind.Cube, g.Player.FeetPosition + new Float3(0f, 0.5f, 8f), 0f, recordUndo: false);
+                    Aim(g, _barrel.Go.Transform.Position);
+                    var rpg = g.Weapons.Get<RocketLauncherWeapon>();
+                    g.Weapons.Select(g, rpg);
+                    g.Weapons.Tick(g, new WeaponInput(true, true, false, false, false, false, 0f), 0.016f);
+                    Check(rpg.Mag == 0, "rocket launcher fires a rocket");
+                }
+                break;
+            case 540:
+                {
+                    Check(g.Fx.Explosions >= 1 && Float3.Length(_barrel!.Body.LinearVelocity) > 2f,
+                        $"rocket explodes and blasts the prop (explosions {g.Fx.Explosions}, v {Float3.Length(_barrel!.Body.LinearVelocity):0.0})");
+                    var cb = g.Weapons.Get<CrowbarWeapon>();
+                    g.Weapons.Select(g, cb);
+                    Prop c = g.Props.Spawn(PropKind.Cube, g.Player.EyePosition + g.Player.Forward * 1.3f, 0f, recordUndo: false);
+                    c.Body.AffectedByGravity = false;
+                    Aim(g, c.Go.Transform.Position);
+                    cb.Strike(g);
+                    Check(cb.Hits == 1 && Float3.Length(c.Body.LinearVelocity) > 1f, "crowbar hit knocks a prop");
+                    Check(g.Weapons.All.Select(w => w.Id).Distinct().Count() == g.Weapons.All.Count && g.Weapons.All.Count >= 10, $"weapon switcher has {g.Weapons.All.Count} weapons");
                 }
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;

@@ -57,9 +57,16 @@ public sealed class SandboxGame : Game
         Scene.Load(World);
         Sounds.Init(World, Player.CameraObject);
 
+        Fx = new Fx(this);
         Weapons.Add(new HandsWeapon());
+        Weapons.Add(new CrowbarWeapon());
         Weapons.Add(new PhysGunWeapon());
         Weapons.Add(new SpawnGunWeapon());
+        Weapons.Add(new PistolWeapon());
+        Weapons.Add(new SmgWeapon());
+        Weapons.Add(new ShotgunWeapon());
+        Weapons.Add(new RocketLauncherWeapon());
+        Weapons.Add(new GrenadeWeapon());
         Weapons.Add(new ToolGunWeapon());
         Weapons.Select(this, Weapons.Get<PhysGunWeapon>());
 
@@ -110,6 +117,10 @@ public sealed class SandboxGame : Game
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
             case "pause": Menus.Go(Screen.Paused); break;
+            case "smg":
+                Menus.Go(Screen.Playing);
+                Weapons.Select(this, Weapons.Get<SmgWeapon>());
+                break;
             case "ragdoll":
                 Menus.Go(Screen.Playing);
                 Ragdoll.Spawn(this, new Float3(-0.5f, 1.2f, -3.5f), 160f);
@@ -145,6 +156,7 @@ public sealed class SandboxGame : Game
         {
             Player.Update(Time.DeltaTime, allowInput: false);
             Weapons.Animate(this, Time.DeltaTime, Float2.Zero);
+            Fx.Tick(Time.DeltaTime);
             Vehicles.Tick(Time.DeltaTime, allowInput: false);
             SelfTest.Step(this);
             return;
@@ -162,6 +174,7 @@ public sealed class SandboxGame : Game
         Vehicles.Tick(Time.DeltaTime, input);
         if (!InVehicle) Player.Update(Time.DeltaTime, input);
         Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
+        Fx.Tick(Time.DeltaTime);
         Prop? aimed = !InVehicle && Player.Trace(80f, out RaycastHit aim) ? Props.FromBody(aim.Rigidbody) : null;
         AimingAtProp = aimed is not null;
         UpdateHighlight(Context.Open ? Context.Hovered ?? Context.Selected : Weapons.Current is PhysGunWeapon or ToolGunWeapon ? aimed : null);
@@ -194,6 +207,12 @@ public sealed class SandboxGame : Game
 
     private void ShotTick()
     {
+        if (ShotState == "smg" && Time.UnscaledTotalTime > 6f)
+        {
+            var smg = Weapons.Get<SmgWeapon>();
+            smg.Mag = 30;
+            Weapons.Tick(this, new WeaponInput(false, true, false, false, false, false, 0f), Time.DeltaTime);
+        }
         if (ShotState == "toolgun" && _shotToasts < 3 && Time.UnscaledTotalTime > 7.5f + _shotToasts * 0.4f)
         {
             Notify(_shotToasts switch { 0 => "Spawned Cube #6", 1 => "Welded Cube #1 to Cube #2", _ => "Undone: Sphere #3" });
@@ -259,6 +278,7 @@ public sealed class SandboxGame : Game
     /// <summary>Most recent distinct spawn entries, newest first (spawn gun right click cycles these).</summary>
     public List<SpawnEntry> RecentSpawns { get; } = [];
     public Carry Carry { get; } = new();
+    public Fx Fx { get; private set; } = null!;
 
     public Prop SpawnAtCrosshair(PropKind kind)
     {
@@ -277,6 +297,7 @@ public sealed class SandboxGame : Game
         PhysGun.Release(keepVelocity: false);
         ToolGun.CancelPending();
         Props.ClearAll();
+        Fx.Clear();
         Notify("Map cleared", ToastKind.Danger);
     }
 

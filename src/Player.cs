@@ -141,7 +141,20 @@ public sealed class Player
         return l > 1e-4f ? flat / l : Float3.Zero;
     }
 
-    private void ApplyCamera() => CameraObject.Transform.LocalEulerAngles = new Float3(_pitch, _yaw, 0f);
+    private float _shake, _punch;
+    /// <summary>Camera shake (explosions), decays over ~0.5 s.</summary>
+    public void Shake(float amount) => _shake = MathF.Max(_shake, amount);
+    /// <summary>View punch: kicks the view up by degrees and springs back (weapon recoil).</summary>
+    public void Punch(float degrees) => _punch += degrees;
+
+    private void ApplyCamera()
+    {
+        float dt = MathF.Min(Time.DeltaTime, 0.05f);
+        _punch -= _punch * MathF.Min(1f, dt * 10f);
+        _shake = MathF.Max(0f, _shake - dt * 1.5f);
+        float sx = (Random.Shared.NextSingle() - 0.5f) * _shake * 3f, sy = (Random.Shared.NextSingle() - 0.5f) * _shake * 3f;
+        CameraObject.Transform.LocalEulerAngles = new Float3(_pitch - _punch + sx, _yaw + sy, 0f);
+    }
 
     /// <summary>For tests: aim the view.</summary>
     public void SetLook(float yaw, float pitch)
