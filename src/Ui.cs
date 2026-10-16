@@ -81,10 +81,11 @@ public static class Ui
     }
 
     public static void Text(Paper paper, string id, float x, float y, float w, float h, string text, float size,
-        Color color, FontFile? font = null, TextAlignment align = TextAlignment.MiddleLeft)
+        Color color, FontFile? font = null, TextAlignment align = TextAlignment.MiddleLeft, bool overlay = false)
     {
-        paper.Box(id).PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).IsNotInteractable()
+        var b = paper.Box(id).PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).IsNotInteractable()
             .Text(text, font ?? Theme.Regular).TextColor(A(color)).FontSize(Theme.S(size)).Alignment(align);
+        if (overlay) b.Layer(Layer.Overlay);
     }
 
     public static void Paragraph(Paper paper, string id, float x, float y, float w, float h, string text, float size, Color color)

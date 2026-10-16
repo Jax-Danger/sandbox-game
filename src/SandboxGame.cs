@@ -135,6 +135,7 @@ public sealed class SandboxGame : Game
             case "tools": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Balloon); break;
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
+            case "weapons": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Weapons; break;
             case "pause": Menus.Go(Screen.Paused); break;
             case "smg":
                 Menus.Go(Screen.Playing);

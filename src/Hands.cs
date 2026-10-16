@@ -82,7 +82,7 @@ public sealed class HandsWeapon : Weapon
     public override string Id => "weapon_hands";
     public override string Name => "Hands";
     public override int Slot => 1;
-    public override Icon Icon => Icon.Eye;
+    public override Icon Icon => Icon.Hand;
     public override string? ViewModelId => "hands";
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {

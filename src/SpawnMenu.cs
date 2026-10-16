@@ -211,9 +211,9 @@ public sealed class SpawnMenu(IconRenderer icons)
         float px = (float)paper.PointerPos.X + Theme.S(16), py = (float)paper.PointerPos.Y + Theme.S(18);
         float tw = Theme.S(190), th = Theme.S(50);
         Ui.Glass(paper, "sm_tip", px, py, tw, th, Theme.S(Theme.RadiusSm), strong: true).IsNotInteractable().Layer(Layer.Overlay);
-        Ui.Text(paper, "sm_tip_name", px + Theme.S(Theme.Md), py + Theme.S(5), tw, Theme.S(22), e.Name, Theme.Body, Theme.Text, Theme.SemiBold);
-        Ui.Text(paper, "sm_tip_hint", px + Theme.S(Theme.Md), py + Theme.S(25), tw, Theme.S(18), $"{e.Category} · click to spawn",
-            Theme.Micro, Theme.TextMuted);
+        Ui.Text(paper, "sm_tip_name", px + Theme.S(Theme.Md), py + Theme.S(5), tw, Theme.S(22), e.Name, Theme.Body, Theme.Text, Theme.SemiBold, overlay: true);
+        Ui.Text(paper, "sm_tip_hint", px + Theme.S(Theme.Md), py + Theme.S(25), tw, Theme.S(18), e.Tab == MenuTab.Weapons ? $"{e.Category} · click to equip" : $"{e.Category} · click to spawn",
+            Theme.Micro, Theme.TextMuted, overlay: true);
     }
 
     // ---------------------------------------------------------------- tools
