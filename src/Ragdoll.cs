@@ -13,6 +13,7 @@ public sealed class Ragdoll
 {
     public List<Prop> Limbs { get; } = [];
     public string Name { get; private set; } = "Ragdoll";
+    public bool IsDummy { get; set; }
     public Prop Pelvis => Limbs[0];
     private static int _counter;
 

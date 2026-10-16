@@ -305,7 +305,7 @@ public sealed class SpawnMenu(IconRenderer icons)
         cy += Theme.S(34);
         float bw = Theme.S(190), bh = Theme.S(38), gap = Theme.S(Theme.Md);
         Ui.Button(paper, "sm_util_undo", cx, cy, bw, bh, "Undo", () => game.Enqueue(game.Undo), icon: Icon.Undo, radius: bh / 2f);
-        Ui.Button(paper, "sm_util_clear", cx + bw + gap, cy, bw, bh, "Clear props", () => game.Enqueue(game.ClearMap), icon: Icon.Trash, radius: bh / 2f);
+        Ui.Button(paper, "sm_util_clear", cx + bw + gap, cy, bw, bh, "Clear props", () => game.Enqueue(() => game.ClearMap()), icon: Icon.Trash, radius: bh / 2f);
         Ui.Button(paper, "sm_util_save", cx + 2 * (bw + gap), cy, bw, bh, "Save map", () => game.Enqueue(game.SaveMap), icon: Icon.Save, radius: bh / 2f);
         Ui.Button(paper, "sm_util_load", cx + 3 * (bw + gap), cy, bw, bh, "Load map", () => game.Enqueue(game.LoadMap), icon: Icon.Load, radius: bh / 2f);
         cy += bh + Theme.S(Theme.Xl);

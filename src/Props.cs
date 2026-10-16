@@ -20,6 +20,8 @@ public sealed class Prop
     public float HalfHeight { get; init; }
     public bool Frozen { get; private set; }
     public string Surface { get; private set; } = "Plastic";
+    /// <summary>Entity type id for special props (ent_barrel, ent_ball, ent_light, ent_button); null for plain props.</summary>
+    public string? Entity { get; set; }
     private float _highlight;
 
     public void SetSurface(SurfaceMaterial m)
@@ -60,6 +62,7 @@ public sealed class Prop
 
     public void SetFrozen(bool frozen)
     {
+        if (frozen == Frozen && frozen == (Body.MotionType == MotionType.Static)) return;
         Frozen = frozen;
         ApplyTint();
         if (frozen)

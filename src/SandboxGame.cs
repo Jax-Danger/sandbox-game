@@ -368,19 +368,20 @@ public sealed class SandboxGame : Game
         Sounds.Play("sfx_undo", 0.5f);
     }
 
-    public void ClearMap()
+    public void ClearMap(bool notify = true)
     {
         PhysGun.Release(keepVelocity: false);
         ToolGun.CancelPending();
         Vehicles.ClearAll();
         Props.ClearAll();
         Fx.Clear();
-        Notify("Map cleared", ToastKind.Danger);
+        KeyState.Toggled.Clear();
+        if (notify) Notify("Map cleared", ToastKind.Danger);
     }
 
     public void SaveMap()
     {
-        try { Notify($"Saved {MapSave.Save(Props, MapSave.DefaultPath)} props"); }
+        try { Notify($"Saved {MapSave.Save(this, MapSave.DefaultPath)} props"); }
         catch (Exception e) { Notify($"Save failed: {e.Message}", ToastKind.Danger); }
     }
 

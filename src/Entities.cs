@@ -96,18 +96,33 @@ public static class EntityCatalog
         SpawnCatalog.Register(new SpawnEntry("ent_button", "Button", MenuTab.Entities, "Interactive", Icon.Play, null, (g, pos, yaw) => SpawnButton(g, pos, yaw).Go.Name, 0.3f));
     }
 
-    public static Ragdoll SpawnDummy(SandboxGame g, Prowl.Vector.Float3 feet, float yaw)
+    public static Ragdoll SpawnDummy(SandboxGame g, Prowl.Vector.Float3 feet, float yaw, bool recordUndo = true)
     {
-        Ragdoll rd = Ragdoll.Spawn(g, feet + new Prowl.Vector.Float3(0f, 0.05f, 0f), yaw);
+        Ragdoll rd = Ragdoll.Spawn(g, feet + new Prowl.Vector.Float3(0f, 0.05f, 0f), yaw, recordUndo);
+        rd.IsDummy = true;
         DummyBrain brain = rd.Pelvis.Go.AddComponent<DummyBrain>();
         brain.Doll = rd;
         brain.StandHeight = feet.Y + 1.0f;
         return rd;
     }
 
-    public static Prop SpawnBarrel(SandboxGame g, Prowl.Vector.Float3 pos)
+    /// <summary>Turns an existing prop into the given entity type (used by spawning and map loading).</summary>
+    public static void Decorate(SandboxGame g, Prop p, string entity, string? key = null)
     {
-        Prop p = g.Props.Spawn(PropKind.Barrel, pos, 0f);
+        switch (entity)
+        {
+            case "ent_barrel": MakeBarrel(g, p); break;
+            case "ent_ball": MakeBall(p, keepColor: true); break;
+            case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); break;
+            case "ent_button": MakeButton(g, p, Enum.TryParse(key, out KeyCode k) ? k : KeyCode.T); break;
+        }
+    }
+
+    public static Prop SpawnBarrel(SandboxGame g, Prowl.Vector.Float3 pos) => MakeBarrel(g, g.Props.Spawn(PropKind.Barrel, pos, 0f));
+
+    private static Prop MakeBarrel(SandboxGame g, Prop p)
+    {
+        p.Entity = "ent_barrel";
         p.SetColor(new Prowl.Vector.Color(0.80f, 0.16f, 0.12f, 1f));
         p.Go.Name = p.Go.Name.Replace("Barrel", "Explosive Barrel");
         p.Go.AddComponent<ExplosiveBarrel>().Game = g;
@@ -115,10 +130,12 @@ public static class EntityCatalog
         return p;
     }
 
-    public static Prop SpawnBall(SandboxGame g, Prowl.Vector.Float3 pos)
+    public static Prop SpawnBall(SandboxGame g, Prowl.Vector.Float3 pos) => MakeBall(g.Props.Spawn(PropKind.Sphere, pos, 0f), keepColor: false);
+
+    private static Prop MakeBall(Prop p, bool keepColor)
     {
-        Prop p = g.Props.Spawn(PropKind.Sphere, pos, 0f);
-        p.SetColor(ToolGun.HueColor(Random.Shared.NextSingle()));
+        p.Entity = "ent_ball";
+        if (!keepColor) p.SetColor(ToolGun.HueColor(Random.Shared.NextSingle()));
         p.SetSurface(SurfaceMaterial.Get("Rubber"));
         p.Body.Restitution = 0.95f;
         p.Body.Friction = 0.3f;
@@ -130,6 +147,7 @@ public static class EntityCatalog
     public static Prop SpawnLight(SandboxGame g, Prowl.Vector.Float3 pos)
     {
         Prop p = g.Props.Spawn(PropKind.SmallCrate, pos, 0f);
+        p.Entity = "ent_light";
         p.Go.Name = p.Go.Name.Replace("Small Crate", "Light");
         p.SetColor(new Prowl.Vector.Color(1f, 0.92f, 0.7f, 1f));
         g.ToolGun.SetHit(p, pos + new Prowl.Vector.Float3(0f, 0.3f, 0f), Prowl.Vector.Float3.UnitY);
@@ -141,8 +159,11 @@ public static class EntityCatalog
     }
 
     public static Prop SpawnButton(SandboxGame g, Prowl.Vector.Float3 pos, float yaw)
+        => MakeButton(g, g.Props.Spawn(PropKind.SmallCrate, pos, yaw), ToolGun.ThrusterKeys[Math.Clamp(g.ToolGun.ThrusterKey, 0, ToolGun.ThrusterKeys.Length - 1)]);
+
+    private static Prop MakeButton(SandboxGame g, Prop p, KeyCode key)
     {
-        Prop p = g.Props.Spawn(PropKind.SmallCrate, pos, yaw);
+        p.Entity = "ent_button";
         p.Go.Name = p.Go.Name.Replace("Small Crate", "Button");
         p.SetColor(new Prowl.Vector.Color(0.25f, 0.27f, 0.30f, 1f));
         var cap = new GameObject("ButtonCap");
@@ -155,7 +176,7 @@ public static class EntityCatalog
         r.Material = m;
         SandboxButton b = p.Go.AddComponent<SandboxButton>();
         b.Cap = m;
-        b.Key = ToolGun.ThrusterKeys[Math.Clamp(g.ToolGun.ThrusterKey, 0, ToolGun.ThrusterKeys.Length - 1)];
+        b.Key = key;
         p.SetFrozen(true);
         return p;
     }

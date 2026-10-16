@@ -167,7 +167,7 @@ public sealed class SelfTest
                     b2.SetFrozen(true);
                     a2.SetColor(new Color(0.1f, 0.9f, 0.2f, 1f));
                     string path = Path.Combine(Path.GetTempPath(), "sandbox-selftest-save.json");
-                    int saved = MapSave.Save(g.Props, path);
+                    int saved = MapSave.Save(g, path);
                     g.ClearMap();
                     int loaded = MapSave.Load(g, path);
                     int welds = g.Props.Props.Sum(p => p.Go.GetComponents<FixedAngleConstraint>().Count());
@@ -400,6 +400,35 @@ public sealed class SelfTest
                     }
                     Check(ok == SoundGen.Ids.Length, $"procedural WAVs generated ({ok}/{SoundGen.Ids.Length})");
                     g.Sounds.Play("sfx_explosion"); // must not throw without a device
+                }
+                {
+                    // Full save/load round trip of the new object types.
+                    g.ClearMap();
+                    ToolGun t = g.ToolGun;
+                    Prop a = g.Props.Spawn(PropKind.Cube, new Float3(30f, 0.6f, 30f), 0f), b = g.Props.Spawn(PropKind.Cube, new Float3(33f, 0.6f, 30f), 0f);
+                    t.Rope(a, Float3.Zero, b, Float3.Zero);
+                    Thruster.Attach(g.Props, a, a.Go.Transform.Position + new Float3(0f, 0.5f, 0f), Float3.UnitY, 2f, KeyCode.Y);
+                    t.AttachWheel(b, b.Go.Transform.Position + new Float3(0.5f, 0f, 0f), Float3.UnitX);
+                    t.AttachLight(b, b.Go.Transform.Position + new Float3(0f, 0.6f, 0f), 9f, new Color(1f, 0.5f, 0.2f, 1f));
+                    a.SetSurface(SurfaceMaterial.Get("Metal")); a.SetMass(42f);
+                    EntityCatalog.SpawnBarrel(g, new Float3(36f, 0.6f, 30f));
+                    EntityCatalog.SpawnBall(g, new Float3(38f, 0.6f, 30f));
+                    Prop btn = EntityCatalog.SpawnButton(g, new Float3(40f, 0.3f, 30f), 0f);
+                    EntityCatalog.SpawnDummy(g, new Float3(30f, 0f, 36f), 0f);
+                    g.Vehicles.SpawnBuggy(new Float3(36f, 1.2f, 36f), 90f);
+                    string path = Path.Combine(Path.GetTempPath(), "sandbox-selftest-full.json");
+                    MapSave.SaveData before2 = MapSave.Capture(g);
+                    MapSave.Save(g, path);
+                    MapSave.Load(g, path);
+                    MapSave.SaveData after = MapSave.Capture(g);
+                    string Sum(MapSave.SaveData d) => $"props {d.Props.Count}, ropes {d.Ropes.Count}, thrusters {d.Thrusters.Count}, wheels {d.Wheels.Count}, lights {d.Lights.Count}, " +
+                        $"entities {string.Join("+", d.Props.Where(p => p.Entity != null).Select(p => p.Entity).OrderBy(x => x))}, dummies {d.Ragdolls.Count(r => r.Dummy)}, buggies {d.Buggies.Count}";
+                    Check(Sum(before2) == Sum(after) && after.Ropes.Count == 1 && after.Thrusters.Count == 1 && after.Wheels.Count == 1 && after.Buggies.Count == 1,
+                        $"full save/load round trip ({Sum(after)})");
+                    Prop a2 = g.Props.Props.First(p => p.Kind == PropKind.Cube && p.Surface == "Metal");
+                    Check(MathF.Abs(a2.Body.Mass - 42f) < 0.01f && a2.Go.GetComponent<Thruster>()?.Key == KeyCode.Y, "loaded prop keeps mass, material and thruster key");
+                    Check(g.Props.Props.Any(p => p.Entity == "ent_barrel" && p.Go.GetComponent<ExplosiveBarrel>().IsValid()), "explosive barrel keeps its behaviour after load");
+                    g.ClearMap();
                 }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 _done = true;

@@ -156,35 +156,40 @@ public sealed partial class ToolGun
 
             case ToolMode.Light:
             {
-                var go = new GameObject("Light");
-                go.SetParent(prop.Go, false);
-                go.Transform.Position = point + normal * 0.08f;
-                PointLight l = go.AddComponent<PointLight>();
-                l.Range = LightRange;
-                l.Color = HueColor(LightHue, 0.5f, 1f);
-                l.Intensity = 4f;
-                l.CastShadows = false;
-                MeshRenderer r = go.AddComponent<MeshRenderer>();
-                r.Mesh = Mesh.CreateSphere(0.08f, 8, 10);
-                var mat = new Material(props.Shader);
-                mat.SetColor("_MainColor", l.Color);
-                try { mat.SetTexture("_EmissionTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
-                mat.SetFloat("_EmissionIntensity", 3f);
-                r.Material = mat;
+                GameObject go = AttachLight(prop, point + normal * 0.08f, LightRange, HueColor(LightHue, 0.5f, 1f));
                 props.PushUndo(new ActionUndo($"Undone: light on {prop.Go.Name}", () => { if (go.IsValid()) go.Scene?.Remove(go); }));
                 return $"Light attached to {prop.Go.Name}";
             }
-
             case ToolMode.Duplicator:
                 return null; // handled in Fire (paste) / Secondary (copy)
         }
         return null;
     }
 
-    public string Rope(Prop a, Float3 localA, Prop b, Float3 localB)
+    public GameObject AttachLight(Prop prop, Float3 worldPos, float range, Color color)
+    {
+        var go = new GameObject("Light");
+        go.SetParent(prop.Go, false);
+        go.Transform.Position = worldPos;
+        PointLight l = go.AddComponent<PointLight>();
+        l.Range = range;
+        l.Color = color;
+        l.Intensity = 4f;
+        l.CastShadows = false;
+        MeshRenderer r = go.AddComponent<MeshRenderer>();
+        r.Mesh = Mesh.CreateSphere(0.08f, 8, 10);
+        var mat = new Material(props.Shader);
+        mat.SetColor("_MainColor", color);
+        try { mat.SetTexture("_EmissionTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+        mat.SetFloat("_EmissionIntensity", 3f);
+        r.Material = mat;
+        return go;
+    }
+
+    public string Rope(Prop a, Float3 localA, Prop b, Float3 localB, float? length = null, bool recordUndo = true)
     {
         Float3 wa = a.Go.Transform.TransformPoint(localA), wb = b.Go.Transform.TransformPoint(localB);
-        float len = MathF.Max(0.2f, Float3.Length(wb - wa) * RopeSlack);
+        float len = length ?? MathF.Max(0.2f, Float3.Length(wb - wa) * RopeSlack);
         DistanceLimitConstraint c = a.Go.AddComponent<DistanceLimitConstraint>();
         c.Anchor = localA;
         c.ConnectedAnchor = localB;
@@ -196,7 +201,7 @@ public sealed partial class ToolGun
         v.Init(localA, b, localB);
         a.Body.SetActive(true);
         b.Body.SetActive(true);
-        props.PushUndo(new ActionUndo($"Undone: rope", () => { if (a.Alive) { a.Go.RemoveComponent(c); v.Destroy(); } }));
+        if (recordUndo) props.PushUndo(new ActionUndo($"Undone: rope", () => { if (a.Alive) { a.Go.RemoveComponent(c); v.Destroy(); } }));
         return $"Roped {a.Go.Name} to {b.Go.Name} ({len:0.0} m)";
     }
 
@@ -211,7 +216,7 @@ public sealed partial class ToolGun
         return $"Ball-socketed {a.Go.Name} to {b.Go.Name}";
     }
 
-    private string AttachWheel(Prop prop, Float3 point, Float3 normal)
+    public string AttachWheel(Prop prop, Float3 point, Float3 normal, float? speed = null, (KeyCode, KeyCode)? keys = null, bool recordUndo = true)
     {
         const float radius = 0.4f, width = 0.18f;
         var go = new GameObject($"Wheel on {prop.Go.Name}");
@@ -240,10 +245,10 @@ public sealed partial class ToolGun
         h.MotorTargetVelocity = 0f;
         h.ConnectedBody = prop.Body;
         PhysicsWorld.IgnoreCollisionBetween(body, prop.Body);
-        var (fwd, back) = WheelKeyPairs[Math.Clamp(WheelKeys, 0, WheelKeyPairs.Length - 1)];
+        var (fwd, back) = keys ?? WheelKeyPairs[Math.Clamp(WheelKeys, 0, WheelKeyPairs.Length - 1)];
         WheelMotor m = go.AddComponent<WheelMotor>();
-        m.Joint = h; m.Fwd = fwd; m.Back = back; m.Speed = WheelSpeed;
-        props.PushUndo(new ActionUndo($"Undone: wheel", () => props.Remove(wheel)));
+        m.Joint = h; m.Fwd = fwd; m.Back = back; m.Speed = speed ?? WheelSpeed;
+        if (recordUndo) props.PushUndo(new ActionUndo($"Undone: wheel", () => props.Remove(wheel)));
         return $"Wheel on {prop.Go.Name} ({fwd} / {back})";
     }
 
@@ -271,6 +276,9 @@ public sealed class RopeVisual : MonoBehaviour
     private Float3 _localA, _localB;
     private Prop? _b;
     private GameObject? _lineGo;
+    public Float3 LocalA => _localA;
+    public Float3 LocalB => _localB;
+    public Prop? Other => _b;
     private static Material? _mat;
 
     public void Init(Float3 localA, Prop b, Float3 localB)
@@ -313,6 +321,7 @@ public sealed class Thruster : MonoBehaviour
     public bool ForceOn; // tests / always-on
     private Rigidbody3D? _body;
     private GameObject? _visual;
+    public GameObject? Visual => _visual;
 
     public static Thruster Attach(PropManager props, Prop p, Float3 point, Float3 normal, float multiple, KeyCode key)
     {
