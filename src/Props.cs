@@ -5,7 +5,8 @@ using Prowl.Vector;
 
 namespace Sandbox;
 
-public enum PropKind { Cube, Sphere, Plank, Barrel, BigCrate, Ramp }
+/// <summary>Limb = a ragdoll body part (not spawnable on its own).</summary>
+public enum PropKind { Cube, Sphere, Plank, Barrel, BigCrate, Ramp, Limb }
 
 /// <summary>A spawned, physics-driven prop.</summary>
 public sealed class Prop
@@ -95,10 +96,11 @@ public sealed class PropManager(Scene scene, Shader shader)
     public IReadOnlyList<Prop> Props => _props;
     public int UndoCount => _undo.Count;
 
-    public static readonly PropKind[] AllKinds = Enum.GetValues<PropKind>();
+    public static readonly PropKind[] AllKinds = Enum.GetValues<PropKind>().Where(k => k != PropKind.Limb).ToArray();
 
     public static string DisplayName(PropKind k) => k switch
     {
+        PropKind.Limb => "Limb",
         PropKind.Cube => "Cube",
         PropKind.Sphere => "Sphere",
         PropKind.Plank => "Plank",
@@ -111,6 +113,7 @@ public sealed class PropManager(Scene scene, Shader shader)
     /// <summary>Half of the prop's height, so a spawn can rest on the surface it targets.</summary>
     public static float HalfHeightOf(PropKind k) => k switch
     {
+        PropKind.Limb => 0.3f,
         PropKind.Cube => 0.5f,
         PropKind.Sphere => 0.5f,
         PropKind.Plank => 0.075f,
@@ -225,8 +228,19 @@ public sealed class PropManager(Scene scene, Shader shader)
     {
         foreach (Prop p in _props.ToArray())
             Remove(p);
+        Ragdoll.All.Clear();
         _undo.Clear();
     }
+
+    /// <summary>Registers an externally built body (e.g. a ragdoll limb) as a prop so tools and the physgun work on it.</summary>
+    public Prop Adopt(GameObject go, Rigidbody3D body, Material material, Color color, PropKind kind, float halfHeight)
+    {
+        var p = new Prop { Go = go, Body = body, Kind = kind, Material = material, BaseColor = color, HalfHeight = halfHeight };
+        _props.Add(p);
+        return p;
+    }
+
+    public bool Contains(Prop p) => _props.Contains(p);
 
     public void PushUndo(IUndoable action) => _undo.Push(action);
 

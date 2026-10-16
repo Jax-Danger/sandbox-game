@@ -19,8 +19,9 @@ public static class ProcTex
                 int i = (y * w + x) * 4;
                 data[i] = r; data[i + 1] = g; data[i + 2] = b; data[i + 3] = a;
             }
-        t = new Texture2D((uint)w, (uint)h, false);
-        t.SetData(new Memory<byte>(data));
+        t = new Texture2D((uint)w, (uint)h, false, TextureImageFormat.Color4b);
+        t.SetData<byte>(data);
+        t.SetTextureFilters(TextureMin.Linear, TextureMag.Linear);
         try { t.SetWrapModes(TextureWrap.Repeat, TextureWrap.Repeat); } catch { }
         return Cache[key] = t;
     }

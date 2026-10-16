@@ -20,6 +20,7 @@ public static class MapSave
 
     public sealed class SaveData
     {
+    public List<float[]> Ragdolls { get; set; } = [];
         public int Version { get; set; } = 1;
         public List<PropData> Props { get; set; } = [];
         public List<int[]> Welds { get; set; } = [];
@@ -31,7 +32,12 @@ public static class MapSave
     public static int Save(PropManager props, string path)
     {
         var data = new SaveData();
-        List<Prop> list = props.Props.ToList();
+        List<Prop> list = props.Props.Where(p => p.Kind != PropKind.Limb).ToList();
+        foreach (Ragdoll rd in Ragdoll.All.Where(r => r.Alive))
+        {
+            Float3 pp = rd.Pelvis.Go.Transform.Position;
+            data.Ragdolls.Add([pp.X, pp.Y - 1f, pp.Z]);
+        }
         foreach (Prop p in list)
         {
             Float3 pos = p.Go.Transform.Position;
@@ -78,6 +84,8 @@ public static class MapSave
         foreach (int[] w in data.Welds)
             if (w.Length == 2 && w[0] < spawned.Count && w[1] < spawned.Count)
                 g.ToolGun.Weld(spawned[w[0]], spawned[w[1]], recordUndo: false);
+        foreach (float[] r in data.Ragdolls)
+            if (r.Length == 3) Ragdoll.Spawn(g, new Float3(r[0], MathF.Max(r[1], 0.05f), r[2]), 0f, recordUndo: false);
         return spawned.Count;
     }
 }

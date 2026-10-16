@@ -1,0 +1,124 @@
+using Prowl.Runtime;
+using Prowl.Runtime.Resources;
+using Prowl.Vector;
+
+namespace Sandbox;
+
+/// <summary>
+/// A physics ragdoll: ten rigid-body limbs joined with ball sockets plus cone limits
+/// (Prowl's BallSocketConstraint + ConeLimitConstraint, the same constraints the joint samples use).
+/// Every limb is registered as a <see cref="Prop"/>, so the physgun, toolgun, weapons and explosions work per limb.
+/// </summary>
+public sealed class Ragdoll
+{
+    public List<Prop> Limbs { get; } = [];
+    public string Name { get; private set; } = "Ragdoll";
+    public Prop Pelvis => Limbs[0];
+    private static int _counter;
+
+    private sealed record LimbDef(string Name, Float3 Center, Float3 Size, bool Sphere, int Parent, Float3 Joint, float ConeDeg, float Mass);
+
+    // Built for a 1.8 m figure standing with its feet at y = 0, facing +Z. Parent index -1 = root.
+    private static readonly LimbDef[] Defs =
+    [
+        new("Pelvis",     new(0f, 1.00f, 0f),      new(0.34f, 0.20f, 0.20f), false, -1, default, 0f, 8f),
+        new("Torso",      new(0f, 1.37f, 0f),      new(0.40f, 0.50f, 0.24f), false, 0, new(0f, 1.10f, 0f), 30f, 14f),
+        new("Head",       new(0f, 1.77f, 0f),      new(0.26f, 0.26f, 0.26f), true,  1, new(0f, 1.63f, 0f), 45f, 4f),
+        new("Upper arm L", new(-0.28f, 1.44f, 0f), new(0.11f, 0.32f, 0.11f), false, 1, new(-0.28f, 1.60f, 0f), 85f, 2f),
+        new("Lower arm L", new(-0.28f, 1.12f, 0f), new(0.10f, 0.30f, 0.10f), false, 3, new(-0.28f, 1.28f, 0f), 70f, 1.5f),
+        new("Upper arm R", new(0.28f, 1.44f, 0f),  new(0.11f, 0.32f, 0.11f), false, 1, new(0.28f, 1.60f, 0f), 85f, 2f),
+        new("Lower arm R", new(0.28f, 1.12f, 0f),  new(0.10f, 0.30f, 0.10f), false, 5, new(0.28f, 1.28f, 0f), 70f, 1.5f),
+        new("Upper leg L", new(-0.10f, 0.68f, 0f), new(0.14f, 0.42f, 0.14f), false, 0, new(-0.10f, 0.90f, 0f), 60f, 6f),
+        new("Lower leg L", new(-0.10f, 0.24f, 0f), new(0.13f, 0.44f, 0.13f), false, 7, new(-0.10f, 0.46f, 0f), 75f, 4f),
+        new("Upper leg R", new(0.10f, 0.68f, 0f),  new(0.14f, 0.42f, 0.14f), false, 0, new(0.10f, 0.90f, 0f), 60f, 6f),
+        new("Lower leg R", new(0.10f, 0.24f, 0f),  new(0.13f, 0.44f, 0.13f), false, 9, new(0.10f, 0.46f, 0f), 75f, 4f),
+    ];
+
+    public static Ragdoll Spawn(SandboxGame g, Float3 feet, float yawDegrees, bool recordUndo = true)
+    {
+        var rd = new Ragdoll { Name = $"Ragdoll #{++_counter}" };
+        float yaw = yawDegrees * MathF.PI / 180f;
+        float c = MathF.Cos(yaw), s = MathF.Sin(yaw);
+        Float3 Rot(Float3 v) => new(v.X * c + v.Z * s, v.Y, -v.X * s + v.Z * c);
+
+        var skin = new Color(0.85f, 0.68f, 0.55f, 1f);
+        var shirt = new Color(0.30f, 0.45f, 0.70f, 1f);
+        var pants = new Color(0.22f, 0.24f, 0.28f, 1f);
+
+        for (int i = 0; i < Defs.Length; i++)
+        {
+            LimbDef d = Defs[i];
+            var go = new GameObject($"{rd.Name} {d.Name}");
+            go.Transform.Position = feet + Rot(d.Center);
+            go.Transform.LocalEulerAngles = new Float3(0f, yawDegrees, 0f);
+            Color col = d.Name == "Head" || d.Name.StartsWith("Lower arm") ? skin : d.Name == "Torso" || d.Name.StartsWith("Upper arm") ? shirt : pants;
+            var mat = new Material(g.Shader);
+            mat.SetColor("_MainColor", col);
+            MeshRenderer r = go.AddComponent<MeshRenderer>();
+            r.Material = mat;
+            Rigidbody3D body = go.AddComponent<Rigidbody3D>();
+            if (d.Sphere)
+            {
+                r.Mesh = Mesh.CreateSphere(d.Size.X / 2f, 12, 16);
+                go.AddComponent<SphereCollider>().Radius = d.Size.X / 2f;
+            }
+            else
+            {
+                r.Mesh = Mesh.CreateCube(d.Size);
+                go.AddComponent<BoxCollider>().Size = d.Size;
+            }
+            body.Mass = d.Mass;
+            g.World.Add(go);
+            Prop p = g.Props.Adopt(go, body, mat, col, PropKind.Limb, d.Size.Y / 2f);
+            p.SetSurface(SurfaceMaterial.Get("Rubber"));
+            rd.Limbs.Add(p);
+        }
+
+        // Joints: socket on the child at the joint point, then a cone around the limb's long axis.
+        for (int i = 0; i < Defs.Length; i++)
+        {
+            LimbDef d = Defs[i];
+            if (d.Parent < 0) continue;
+            Prop child = rd.Limbs[i], parent = rd.Limbs[d.Parent];
+            BallSocketConstraint sock = child.Go.AddComponent<BallSocketConstraint>();
+            sock.Anchor = d.Joint - d.Center; // limb rotation is yaw-only and anchors are local, so the unrotated offset is right
+            sock.Softness = 0.002f;
+            sock.ConnectedBody = parent.Body;
+            ConeLimitConstraint cone = child.Go.AddComponent<ConeLimitConstraint>();
+            cone.Axis = new Float3(0f, 1f, 0f);
+            cone.MinAngle = 0f;
+            cone.MaxAngle = d.ConeDeg;
+            cone.Softness = 0.01f;
+            cone.ConnectedBody = parent.Body;
+        }
+        for (int i = 0; i < rd.Limbs.Count; i++)
+            for (int j = i + 1; j < rd.Limbs.Count; j++)
+                PhysicsWorld.IgnoreCollisionBetween(rd.Limbs[i].Body, rd.Limbs[j].Body);
+
+        All.Add(rd);
+        if (recordUndo) g.Props.PushUndo(new RagdollUndo(g.Props, rd));
+        return rd;
+    }
+
+    public static readonly List<Ragdoll> All = [];
+
+    public bool Alive => Limbs.Any(l => l.Alive);
+
+    public void Remove(PropManager props)
+    {
+        foreach (Prop l in Limbs) props.Remove(l);
+        All.Remove(this);
+    }
+
+    private sealed class RagdollUndo(PropManager props, Ragdoll rd) : IUndoable
+    {
+        public string Label => $"Undone: {rd.Name}";
+        public void Undo() => rd.Remove(props);
+    }
+
+    public static void Register()
+    {
+        SpawnCatalog.Register(new SpawnEntry("npc_ragdoll", "Ragdoll", MenuTab.Entities, "NPCs", Icon.Eye, null,
+            (g, pos, yaw) => Spawn(g, pos, yaw).Name, 0f));
+    }
+}

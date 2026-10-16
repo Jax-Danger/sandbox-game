@@ -108,6 +108,10 @@ public sealed class SandboxGame : Game
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
             case "pause": Menus.Go(Screen.Paused); break;
+            case "ragdoll":
+                Menus.Go(Screen.Playing);
+                Ragdoll.Spawn(this, new Float3(-0.5f, 1.2f, -3.5f), 160f);
+                break;
             case "context":
                 Menus.Go(Screen.Playing);
                 Context.Open = true;

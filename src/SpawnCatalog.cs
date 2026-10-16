@@ -26,6 +26,7 @@ public static class SpawnCatalog
             Register(new SpawnEntry($"prop_{k.ToString().ToLowerInvariant()}", PropManager.DisplayName(k), MenuTab.Spawnlists, cat,
                 Icons.For(k), kind, (g, pos, yaw) => g.Props.Spawn(kind, pos, yaw).Go.Name, PropManager.HalfHeightOf(k)));
         }
+        Ragdoll.Register();
     }
 
     public static void Register(SpawnEntry e)

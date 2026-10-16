@@ -12,6 +12,7 @@ namespace Sandbox;
 public sealed class SelfTest
 {
     private int _frame;
+    private Ragdoll? _ragdoll;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
     private float _restBarrelY, _frozenY;
@@ -58,6 +59,7 @@ public sealed class SelfTest
         switch (_frame)
         {
             case 120:
+                _ragdoll = Ragdoll.Spawn(g, new Float3(-10f, 0.3f, 6f), 0f, recordUndo: false);
                 Console.WriteLine("Self-test: props settled");
                 foreach ((string name, Prop p) in _p)
                     Check(Y(p) < 2.5f && Y(p) > -0.5f, $"{name} fell and rests on the floor (y {Y(p):0.00})");
@@ -110,6 +112,16 @@ public sealed class SelfTest
                 break;
 
             case 330:
+                {
+                    Ragdoll rd = _ragdoll!;
+                    float neck = Float3.Length(rd.Limbs[2].Go.Transform.Position - rd.Limbs[1].Go.Transform.Position);
+                    float knee = Float3.Length(rd.Limbs[8].Go.Transform.Position - rd.Limbs[7].Go.Transform.Position);
+                    Check(rd.Limbs.Count == 11 && rd.Limbs.All(l => g.Props.FromBody(l.Body) == l), "ragdoll has 11 limbs registered as props");
+                    Check(rd.Pelvis.Go.Transform.Position.Y < 0.9f && rd.Limbs.All(l => l.Go.Transform.Position.Y > -0.2f),
+                        $"ragdoll collapsed onto the floor (pelvis y {rd.Pelvis.Go.Transform.Position.Y:0.00})");
+                    Check(neck < 0.55f && knee < 0.6f, $"ragdoll joints held together (neck {neck:0.00}, knee {knee:0.00})");
+                    rd.Remove(g.Props);
+                }
                 Check(Y(cube) < 2f, $"released cube fell back down (y {Y(cube):0.00})");
                 Check(Y(barrel) > _restBarrelY + 1f, $"balloon lifts the barrel (y {_restBarrelY:0.00} -> {Y(barrel):0.00})");
                 {
@@ -152,6 +164,7 @@ public sealed class SelfTest
                     Check(saved == loaded && loaded >= 3 && welds == 1 && frozen == 1, $"save/load restores props, weld and frozen state ({saved} saved, {loaded} loaded, {welds} weld, {frozen} frozen)");
                     Check(g.Props.Props.Any(p => MathF.Abs(p.BaseColor.G - 0.9f) < 0.01f), "save/load restores colours");
                 }
+
 
                 // Context menu edits.
                 {
