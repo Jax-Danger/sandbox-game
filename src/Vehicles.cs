@@ -19,10 +19,11 @@ public sealed class Buggy
     public List<WheelCollider> Rear { get; } = [];
     public string Name => Go.Name;
 
-    public float MaxSteerDeg = 32f, MaxEngineTorque = 260f, IdleRpm = 900f, MaxRpm = 6500f, FinalDrive = 3.9f, BrakeTorque = 1600f;
+    public float MaxSteerDeg = 34f, TopSpeedKmh = 78f, MaxEngineTorque = 95f, IdleRpm = 900f, MaxRpm = 6500f, FinalDrive = 3.9f, BrakeTorque = 1600f;
     public float[] Gears = [3.4f, 2.1f, 1.45f, 1.1f, 0.88f];
     public float ReverseRatio = 3.4f, ShiftUp = 6000f, ShiftDown = 2600f;
     public int Gear { get; private set; } = 1;
+    private float _steer;
     public float Rpm { get; private set; }
     public float SpeedKmh => Float3.Dot(Body.LinearVelocity, Go.Transform.Forward) * 3.6f;
     public static readonly Float3 SeatOffset = new(0f, 0.55f, -0.25f);
@@ -42,8 +43,9 @@ public sealed class Buggy
         r.Material = mat;
         Body = Go.AddComponent<Rigidbody3D>();
         Body.Mass = 450f;
+        Body.AngularDamping = 0.05f;
         Body.LinearDamping = 0.0001f;
-        Body.AngularDamping = 0.0001f;
+        Body.AngularDamping = 0.05f;
         Go.AddComponent<BoxCollider>().Size = size;
         g.World.Add(Go);
 
@@ -86,7 +88,7 @@ public sealed class Buggy
             wc.SuspensionFrequency = 2.2f;
             wc.SuspensionDampingRatio = 0.7f;
             wc.ForwardFriction = 2.5f;
-            wc.SidewaysFriction = 1.4f;
+            wc.SidewaysFriction = 1.6f;
             wc.visualTransform = visual.Transform;
             g.World.Add(wheel);
             (front ? Front : Rear).Add(wc);
@@ -113,9 +115,14 @@ public sealed class Buggy
     public void Drive(float steer, bool accel, bool decel, bool handbrake)
     {
         if (!Go.IsValid()) return;
-        float steerRad = steer * MaxSteerDeg * MathF.PI / 180f;
-        foreach (WheelCollider w in Front) w.SteerAngle = steerRad;
         float fwd = Float3.Dot(Body.LinearVelocity, Go.Transform.Forward);
+        // Smooth steering that tightens at speed (less twitchy, GMod-jeep-like).
+        float speedK = Math.Clamp(MathF.Abs(fwd) * 3.6f / TopSpeedKmh, 0f, 1f);
+        _steer += (steer - _steer) * 0.15f;
+        float steerRad = _steer * MaxSteerDeg * (1f - 0.55f * speedK) * MathF.PI / 180f;
+        foreach (WheelCollider w in Front) w.SteerAngle = steerRad;
+        // Handbrake lets the rear step out a bit for drifts.
+        foreach (WheelCollider w in Rear) w.SidewaysFriction = handbrake ? 0.8f : 1.6f;
         float throttle = 0f;
         bool braking = false;
         if (accel) { if (Gear < 1) Gear = 1; throttle = 1f; }
@@ -137,6 +144,9 @@ public sealed class Buggy
             Rpm = RpmFor(av, ratio);
         }
         float t = Math.Clamp(Rpm / MaxRpm, 0f, 1f);
+        // Rev limiter / top speed governor.
+        if (Gear > 0 && fwd * 3.6f > TopSpeedKmh) throttle = 0f;
+        if (Gear < 0 && -fwd * 3.6f > 25f) throttle = 0f;
         float torque = MaxEngineTorque * Math.Clamp(1f - 1.25f * (t - 0.6f) * (t - 0.6f), 0.2f, 1f) * throttle;
         float perWheel = Rear.Count > 0 ? torque * ratio * 0.9f / Rear.Count : 0f;
         foreach (WheelCollider w in Front) { w.MotorTorque = 0f; w.BrakeTorque = braking ? BrakeTorque : 0f; }

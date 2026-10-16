@@ -320,10 +320,11 @@ public sealed class SelfTest
                 {
                     Buggy b = _buggy!;
                     float moved = Float3.Length(b.Go.Transform.Position - _buggyStart);
-                    Check(moved > 3f && b.SpeedKmh > 5f, $"throttle drives the buggy ({moved:0.0} m, {b.SpeedKmh:0} km/h, gear {b.Gear})");
+                    Check(moved > 3f && b.SpeedKmh > 15f && b.SpeedKmh < 55f, $"throttle drives the buggy at a sane pace ({moved:0.0} m, {b.SpeedKmh:0} km/h, gear {b.Gear})");
                     Check(g.Vehicles.TryUse() && !g.InVehicle && Float3.Length(g.Player.FeetPosition - b.Go.Transform.Position) < 4f, "E exits beside the buggy");
                 }
                 {
+                    g.ClearMap();
                     // Extra tools.
                     ToolGun t = g.ToolGun;
                     Float3 basePos = new(20f, 0.6f, 20f);
@@ -354,6 +355,7 @@ public sealed class SelfTest
                     _thrustY = _thrust.Go.Transform.Position.Y;
                     // Duplicator: copy bb (via secondary needs aim) — use the API path: aim + Secondary + Fire.
                     t.Mode = ToolMode.Duplicator;
+                    g.Player.Teleport(a.Go.Transform.Position + new Float3(0f, -0.6f, -4f));
                     Aim(g, a.Go.Transform.Position);
                     string? cp = t.Secondary(g.Player);
                     Check(t.HasCopy, $"duplicator copies ({cp})");
