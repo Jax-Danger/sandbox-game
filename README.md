@@ -103,7 +103,7 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 **Vehicles tab:** Buggy. Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
 
-**Saving:** Esc → Save / Load writes `%AppData%/ProwlSandbox/saves/quicksave.json`. Props, colours, frozen state, welds, balloons and ragdolls are saved. Buggies, thrusters, wheels, ropes, lights and entity behaviours are not saved yet.
+**Saving:** Esc → Save / Load writes `%AppData%/ProwlSandbox/saves/quicksave.json`. Everything is saved: props (colour, material, mass, frozen), welds, balloons, ropes, ball-sockets, thrusters, wheels, lights, buttons (with their keys), explosive barrels, bouncy balls, NPC dummies, ragdolls, cameras and buggies. Procedural textures are on by default; set `SANDBOX_PROCTEX=0` to use flat colours instead.
 
 ## Adding your own models and sounds
 
