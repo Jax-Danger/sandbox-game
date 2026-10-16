@@ -14,6 +14,9 @@ internal static class Program
             return game.SelfTest.ExitCode;
         }
 
+        int shot = Array.IndexOf(args, "--shot");
+        if (shot >= 0 && shot + 1 < args.Length) game.ShotState = args[shot + 1];
+
         game.Run("Sandbox", 1280, 720);
         return 0;
     }

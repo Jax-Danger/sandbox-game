@@ -198,6 +198,15 @@ public sealed class PropManager(Scene scene, Shader shader)
         return null;
     }
 
+    /// <summary>Representative colour for icons.</summary>
+    public static Color IconColor(PropKind kind) => ColorFor(kind, kind == PropKind.Sphere ? 5 : 4);
+
+    public static System.Drawing.Color IconColorDrawing(PropKind kind)
+    {
+        Color c = IconColor(kind);
+        return System.Drawing.Color.FromArgb(255, (int)(c.R * 255), (int)(c.G * 255), (int)(c.B * 255));
+    }
+
     private static Color ColorFor(PropKind kind, int index)
     {
         Color[] palette =

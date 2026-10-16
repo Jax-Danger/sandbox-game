@@ -5,12 +5,33 @@ namespace Sandbox;
 
 public enum ToolMode { Weld, Remover, Balloon }
 
+/// <summary>Display info for a tool, shown in the spawn menu and the HUD tool info box.</summary>
+public sealed record ToolInfo(ToolMode Mode, string Name, string Category, string Description, string Left, string? Right);
+
 /// <summary>Toolgun: left click applies the current mode to the prop under the crosshair.</summary>
 public sealed class ToolGun(PropManager props)
 {
     private Prop? _weldFirst;
 
     public ToolMode Mode { get; set; } = ToolMode.Weld;
+
+    /// <summary>Weld strength 0..1. 1 is rigid; lower values make the joint softer and springier.</summary>
+    public float WeldStrength { get; set; } = 1f;
+
+    /// <summary>Balloon lift as a multiple of the prop's weight (1 = hovers, above 1 = rises).</summary>
+    public float BalloonForce { get; set; } = 1.45f;
+
+    public static readonly ToolInfo[] Tools =
+    [
+        new(ToolMode.Weld, "Weld", "Constraints", "Joins two props together so they move as one.",
+            "Select a prop, then a second to weld them", "Cancel the current selection"),
+        new(ToolMode.Balloon, "Balloon", "Construction", "Ties a balloon to a prop that pulls it upwards.",
+            "Tie a balloon to a prop", null),
+        new(ToolMode.Remover, "Remover", "Construction", "Deletes a prop and any welds attached to it.",
+            "Remove the prop you're looking at", null),
+    ];
+
+    public static ToolInfo InfoFor(ToolMode m) => Tools.First(t => t.Mode == m);
     public Prop? PendingWeld => _weldFirst is { Alive: true } ? _weldFirst : null;
 
     public static string Describe(ToolMode m) => m switch
@@ -42,7 +63,7 @@ public sealed class ToolGun(PropManager props)
 
             case ToolMode.Balloon:
             {
-                Balloon balloon = Balloon.Attach(props, prop);
+                Balloon balloon = Balloon.Attach(props, prop, BalloonForce);
                 props.PushUndo(new BalloonUndo(prop, balloon));
                 return $"Balloon tied to {prop.Go.Name}";
             }
@@ -68,9 +89,12 @@ public sealed class ToolGun(PropManager props)
         // A ball socket at A's center keeps the relative position; a fixed-angle constraint locks rotation.
         BallSocketConstraint socket = a.Go.AddComponent<BallSocketConstraint>();
         socket.Anchor = Float3.Zero;
+        float softness = (1f - Math.Clamp(WeldStrength, 0f, 1f)) * 0.05f;
+        socket.Softness = softness;
         socket.ConnectedBody = b.Body;
         FixedAngleConstraint angle = a.Go.AddComponent<FixedAngleConstraint>();
         angle.ConnectedBody = b.Body;
+        angle.Softness = softness;
         PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
         a.Body.SetActive(true);
         b.Body.SetActive(true);
@@ -103,15 +127,17 @@ public sealed class ToolGun(PropManager props)
 /// <summary>Lifts its prop with a steady upward force. Shows a red sphere above the prop.</summary>
 public sealed class Balloon : MonoBehaviour
 {
-    public const float LiftPerBalloon = 14f; // newtons per kg of the prop's mass. Gravity is ~9.8.
+    private const float Gravity = 9.81f;
+    private float _lift = 1.45f; // multiple of the prop's weight
 
     private Prop _prop = null!;
     private GameObject? _visual;
 
-    public static Balloon Attach(PropManager props, Prop prop)
+    public static Balloon Attach(PropManager props, Prop prop, float liftMultiple)
     {
         Balloon b = prop.Go.AddComponent<Balloon>();
         b._prop = prop;
+        b._lift = liftMultiple;
 
         GameObject visual = new("Balloon");
         MeshRenderer r = visual.AddComponent<MeshRenderer>();
@@ -130,7 +156,7 @@ public sealed class Balloon : MonoBehaviour
     {
         if (_prop is null || !_prop.Alive) return;
         if (!_prop.Frozen)
-            _prop.Body.AddForce(new Float3(0f, _prop.Body.Mass * LiftPerBalloon, 0f));
+            _prop.Body.AddForce(new Float3(0f, _prop.Body.Mass * Gravity * _lift, 0f));
     }
 
     public override void Update()
