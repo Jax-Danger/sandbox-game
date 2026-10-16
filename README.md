@@ -38,7 +38,7 @@ The macOS app is unsigned, so Gatekeeper blocks the first launch. Right-click â†
 ```powershell
 ./build-all.ps1 -Version 0.1.0
 ```
-Build macOS on a Mac when you can, because `build-all.sh` ad-hoc codesigns the `.app`, which Apple Silicon requires. CI (`packaging/ci/build.yml`; copy it to `.github/workflows/` to enable it) builds all four on every push, runs the headless self-test and an xvfb smoke run on Linux, and uploads them as artifacts. Pushing a `v*` tag publishes a GitHub Release with the zips.
+Build macOS on a Mac when you can, because `build-all.sh` ad-hoc codesigns the `.app`, which Apple Silicon requires. CI (`.github/workflows/build.yml`) builds all four on every push, runs the headless self-test and an xvfb smoke run on Linux, and uploads them as artifacts. Pushing a `v*` tag publishes a GitHub Release with the zips.
 
 ## Run on Windows
 
