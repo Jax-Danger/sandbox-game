@@ -232,14 +232,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             Go = go, Body = body, Kind = kind, Material = material, BaseColor = color,
             HalfHeight = HalfHeightOf(kind),
         };
-        prop0.SetSurface(SurfaceMaterial.Get(kind switch
-        {
-            PropKind.Plank or PropKind.BigCrate or PropKind.Ramp or PropKind.SmallCrate => "Wood",
-            PropKind.Pole => "Metal",
-            PropKind.BigBall => "Rubber",
-            PropKind.Barrel => "Metal",
-            _ => "Plastic",
-        }));
+        prop0.SetSurface(SurfaceMaterial.Get(DefaultSurface(kind)));
         var prop = prop0;
         _props.Add(prop);
         if (recordUndo)
@@ -308,6 +301,15 @@ public sealed class PropManager(Scene scene, Shader shader)
         Color c = IconColor(kind);
         return System.Drawing.Color.FromArgb(255, (int)(c.R * 255), (int)(c.G * 255), (int)(c.B * 255));
     }
+
+    public static string DefaultSurface(PropKind kind) => kind switch
+        {
+            PropKind.Plank or PropKind.BigCrate or PropKind.Ramp or PropKind.SmallCrate => "Wood",
+            PropKind.Pole => "Metal",
+            PropKind.BigBall => "Rubber",
+            PropKind.Barrel => "Metal",
+            _ => "Plastic",
+        };
 
     private static Color ColorFor(PropKind kind, int index)
     {

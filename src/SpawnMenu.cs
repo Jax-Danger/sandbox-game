@@ -90,7 +90,8 @@ public sealed class SpawnMenu(IconRenderer icons)
         float isz = Theme.S(16);
         Ui.Icon(paper, "sm_search_ic", x + Theme.S(12), y + (h - isz) / 2f, isz, Icon.Search, Theme.TextFaint);
         float inset = Theme.S(36);
-        paper.Box("sm_search").PositionType(PositionType.SelfDirected).Position(x + inset, y).Size(w - inset - Theme.S(14), h)
+        float lh = Theme.S(Theme.Body) * 1.3f; // TextField draws from the top; size it to one line and centre it
+        paper.Box("sm_search").PositionType(PositionType.SelfDirected).Position(x + inset, y + (h - lh) / 2f).Size(w - inset - Theme.S(14), lh)
             .FontSize(Theme.S(Theme.Body))
             .TextField(_search, Theme.Regular, v => { _search = v; _scroll = 0f; },
                 Theme.ToVector(Theme.Text), "Search…", Theme.ToVector(Theme.TextFaint));

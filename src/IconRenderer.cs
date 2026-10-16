@@ -65,6 +65,7 @@ public sealed class IconRenderer
         r.Mesh = mesh;
         var mat = new Material(shader);
         mat.SetColor("_MainColor", PropManager.IconColor(kind));
+        SurfaceMaterial.Get(PropManager.DefaultSurface(kind)).ApplyVisual(mat);
         r.Material = mat;
         subject.Transform.LocalEulerAngles = new Float3(kind == PropKind.Ramp ? -20f : 0f, 25f, 0f);
         scene.Add(subject);
