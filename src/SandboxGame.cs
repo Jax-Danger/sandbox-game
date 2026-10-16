@@ -57,7 +57,9 @@ public sealed class SandboxGame : Game
         Scene.Load(World);
         Sounds.Init(World, Player.CameraObject);
 
+        Weapons.Add(new HandsWeapon());
         Weapons.Add(new PhysGunWeapon());
+        Weapons.Add(new SpawnGunWeapon());
         Weapons.Add(new ToolGunWeapon());
         Weapons.Select(this, Weapons.Get<PhysGunWeapon>());
 
@@ -169,8 +171,12 @@ public sealed class SandboxGame : Game
         if (!input) return;
 
         if (Input.GetKeyDown(KeyCode.F3)) { Settings.ShowFps = !Settings.ShowFps; Settings.Save(); }
-        if (Input.GetKeyDown(KeyCode.E) && Vehicles.TryUse()) return;
-        if (InVehicle) return;
+        if (Input.GetKeyDown(KeyCode.E) && Carry.Held is null && Vehicles.TryUse()) return;
+        if (InVehicle) { Carry.Drop(); return; }
+        if (Input.GetKeyDown(KeyCode.E)) Notify(Carry.Use(this));
+        Carry.Update(this);
+        bool carrying = Carry.Held is not null;
+        if (carrying && Input.GetMouseButtonDown(0)) Carry.Throw(this);
         if (Input.GetKeyDown(KeyCode.V)) Player.ToggleNoclip();
         if (Input.GetKeyDown(KeyCode.Z)) Undo();
         for (int k = 1; k <= 9; k++)
@@ -179,6 +185,7 @@ public sealed class SandboxGame : Game
         float wheel = Input.MouseWheelDelta;
         if (wheel != 0f && !Weapons.Current.CapturesWheel) { Weapons.Cycle(this, wheel > 0 ? -1 : 1); wheel = 0f; }
 
+        if (carrying) return; // hands are busy
         Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0),
             Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), wheel), dt);
     }
@@ -235,12 +242,21 @@ public sealed class SandboxGame : Game
             pos = Player.EyePosition + Player.Forward * 5f;
         string name = entry.Spawn(this, pos, Player.Yaw);
         LastSpawned = entry;
+        if (Weapons.Current is not SpawnGunWeapon) SpawnGunEntry = entry;
+        RecentSpawns.Remove(entry);
+        RecentSpawns.Insert(0, entry);
+        if (RecentSpawns.Count > 8) RecentSpawns.RemoveAt(8);
         Notify($"Spawned {name}");
         Sounds.Play("sfx_spawn", 0.6f, pos);
         return name;
     }
 
     public SpawnEntry? LastSpawned { get; set; }
+    /// <summary>What the spawn gun fires: the last thing picked in the spawn menu.</summary>
+    public SpawnEntry? SpawnGunEntry { get; set; }
+    /// <summary>Most recent distinct spawn entries, newest first (spawn gun right click cycles these).</summary>
+    public List<SpawnEntry> RecentSpawns { get; } = [];
+    public Carry Carry { get; } = new();
 
     public Prop SpawnAtCrosshair(PropKind kind)
     {

@@ -13,6 +13,7 @@ public sealed class SelfTest
 {
     private int _frame;
     private Ragdoll? _ragdoll;
+    private Prop? _carryCube, _heavy;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
     private float _restBarrelY, _frozenY;
@@ -191,6 +192,41 @@ public sealed class SelfTest
                 g.ClearMap();
                 Check(g.Props.Props.Count == 0, "clear map removed every prop");
 
+                // Carry setup: a light cube in front of the player, picked up with E.
+                g.Player.SetLook(0f, 0f);
+                _carryCube = g.Props.Spawn(PropKind.Cube, g.Player.EyePosition + g.Player.Forward * 1.8f, 0f);
+                _heavy = g.Props.Spawn(PropKind.BigCrate, g.Player.FeetPosition + g.Player.CameraObject.Transform.Right * 2.2f + new Float3(0f, 1.1f, 0f), 0f);
+                _heavy.SetMass(100f);
+                break;
+            case 335:
+                Aim(g, _carryCube!.Go.Transform.Position);
+                g.Carry.Use(g);
+                Check(ReferenceEquals(g.Carry.Held, _carryCube), "E picks up a light prop");
+                break;
+            case > 335 and < 390:
+                g.Carry.Update(g);
+                break;
+            case 390:
+                {
+                    float d = Float3.Length(_carryCube!.Go.Transform.Position - (g.Player.EyePosition + g.Player.Forward * Carry.HoldDistance));
+                    Check(d < 0.5f, $"carried prop follows the view (off by {d:0.00} m)");
+                    g.Carry.Throw(g);
+                    Check(g.Carry.Held is null && Float3.Length(_carryCube.Body.LinearVelocity) > 5f, "left click throws the carried prop");
+                    Aim(g, _heavy!.Go.Transform.Position);
+                    string? msg = g.Carry.Use(g);
+                    Check(g.Carry.Held is null && msg?.Contains("heavy") == true, $"weight limit refuses heavy props ({msg})");
+
+                    // Spawn gun fires the selected entry; right click cycles recent spawns.
+                    g.Weapons.Select(g, g.Weapons.Get<SpawnGunWeapon>());
+                    g.SpawnGunEntry = SpawnCatalog.Find("prop_barrel");
+                    g.Player.SetLook(0f, 30f);
+                    int n = g.Props.Props.Count;
+                    g.Weapons.Tick(g, new WeaponInput(true, true, false, false, false, false, 0f), 0.016f);
+                    Check(g.Props.Props.Count == n + 1 && g.Props.Props[^1].Kind == PropKind.Barrel, "spawn gun spawns the selected entry");
+                    g.Weapons.Tick(g, new WeaponInput(false, false, false, true, true, false, 0f), 0.016f);
+                    Check(g.SpawnGunEntry is not null, $"spawn gun right click cycles recent ({g.SpawnGunEntry?.Name})");
+                    Check(g.Weapons.All[0] is HandsWeapon, "hands are weapon slot 1");
+                }
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0

@@ -25,7 +25,7 @@ public sealed class PhysGunWeapon : Weapon
 {
     public override string Id => "weapon_physgun";
     public override string Name => "Physics Gun";
-    public override int Slot => 1;
+    public override int Slot => 2;
     public override Icon Icon => Icon.Magnet;
     public override bool CapturesWheel => _g?.PhysGun.Held is not null;
     private SandboxGame? _g;
@@ -40,7 +40,7 @@ public sealed class ToolGunWeapon : Weapon
 {
     public override string Id => "weapon_toolgun";
     public override string Name => "Tool Gun";
-    public override int Slot => 1;
+    public override int Slot => 2;
     public override Icon Icon => Icon.Wrench;
     public override void Holster(SandboxGame g) => g.ToolGun.CancelPending();
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
@@ -62,7 +62,9 @@ public sealed class WeaponSystem
     public void Add(Weapon w)
     {
         _all.Add(w);
-        _all.Sort((a, b) => a.Slot != b.Slot ? a.Slot.CompareTo(b.Slot) : 0);
+        List<Weapon> ordered = _all.OrderBy(x => x.Slot).ToList(); // OrderBy is stable: insertion order within a slot
+        _all.Clear();
+        _all.AddRange(ordered);
     }
 
     public T Get<T>() where T : Weapon => _all.OfType<T>().First();
