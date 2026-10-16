@@ -48,7 +48,8 @@ public static class AssetRegistry
     {
         string rel = Current.Sounds.TryGetValue(id, out string? r) ? r : $"sounds/{id}.wav";
         string full = Path.Combine(Root, rel);
-        return File.Exists(full) ? full : null;
+        if (File.Exists(full)) return full;
+        return SoundGen.PathFor(id); // procedural placeholder
     }
 
     /// <summary>
@@ -135,7 +136,8 @@ public sealed class SoundSystem
         if (clip is null) return;
         try
         {
-            AudioSource src = _pool.FirstOrDefault(s => !s.IsPlaying) ?? NewSource();
+            AudioSource? src = _pool.FirstOrDefault(s => !s.IsPlaying) ?? (_pool.Count < 32 ? NewSource() : null);
+            if (src is null) return; // too many sounds at once
             src.Spatial = at is not null;
             if (at is { } p) src.Transform.Position = p;
             src.Clip = clip;
@@ -148,7 +150,7 @@ public sealed class SoundSystem
     }
 
     /// <summary>Creates a looping source (engine, physgun hum). Returns null when audio is unavailable.</summary>
-    public AudioSource? Loop(string id, GameObject host)
+    public AudioSource? Loop(string id, GameObject host, float volume = 0.5f)
     {
         if (!Available) return null;
         AudioClip? clip = Clip(id);
@@ -157,7 +159,8 @@ public sealed class SoundSystem
         src.Clip = clip;
         src.Loop = true;
         src.Spatial = true;
-        src.Volume = 0f;
+        src.Volume = volume * Volume;
+        src.MaxDistance = 40f;
         src.Play();
         return src;
     }

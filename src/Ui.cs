@@ -29,6 +29,9 @@ public sealed class Spring(float value)
 /// </summary>
 public static class Ui
 {
+    /// <summary>Played on every button/toggle/segment click (wired to the UI click sound).</summary>
+    public static Action? ClickSound;
+
     public static float Alpha { get; set; } = 1f;
     public static float Dt { get; set; } = 1f / 60f;
     private static readonly Dictionary<string, Spring> Springs = [];
@@ -121,7 +124,7 @@ public static class Ui
             .BorderWidth(1f)
             .Scale(k).TransformOrigin(0.5f, 0.5f)
             .Focused.BorderColor(A(Theme.Accent)).BorderWidth(2f).End();
-        if (enabled) b.OnClick(0, (_, _) => onClick());
+        if (enabled) b.OnClick(0, (_, _) => { ClickSound?.Invoke(); onClick(); });
 
         // Content: [icon] text. Paper ignores padding for a box's own text, so labels are separate boxes.
         float isz = Theme.S(size + 4);
@@ -164,7 +167,7 @@ public static class Ui
         float t = SpringTo(id + "#t", value ? 1f : 0f, value ? 1f : 0f);
         paper.Box(id).PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).Rounded(h / 2f)
             .BackgroundColor(A(value ? Theme.Accent : Theme.Hover)).BorderColor(A(Theme.Border)).BorderWidth(1f)
-            .OnClick(0, (_, _) => set(!value));
+            .OnClick(0, (_, _) => { ClickSound?.Invoke(); set(!value); });
         Rect(paper, id + "_k", x + Theme.S(2) + t * (w - knob - Theme.S(4)), y + Theme.S(2), knob, knob, Color.White, knob / 2f);
     }
 
@@ -179,7 +182,7 @@ public static class Ui
         {
             int captured = i;
             paper.Box($"{id}_{i}").PositionType(PositionType.SelfDirected).Position(x + i * seg, y).Size(seg, h)
-                .BackgroundColor(Color.FromArgb(0, 0, 0, 0)).OnClick(0, (_, _) => set(captured));
+                .BackgroundColor(Color.FromArgb(0, 0, 0, 0)).OnClick(0, (_, _) => { ClickSound?.Invoke(); set(captured); });
             Text(paper, $"{id}_{i}_t", x + i * seg, y, seg, h, options[i], Theme.Body, i == selected ? Color.White : Theme.TextMuted,
                 i == selected ? Theme.SemiBold : Theme.Regular, TextAlignment.MiddleCenter);
         }

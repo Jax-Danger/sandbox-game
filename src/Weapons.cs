@@ -52,7 +52,13 @@ public sealed class ToolGunWeapon : Weapon
     public override void Holster(SandboxGame g) => g.ToolGun.CancelPending();
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {
-        if (i.PrimaryDown) g.Notify(g.ToolGun.Fire(g.Player));
+        if (i.PrimaryDown)
+        {
+            g.Notify(g.ToolGun.Fire(g.Player));
+            g.Sounds.Play("sfx_tool", 0.5f);
+            Vm?.Play("fire");
+            Vm?.Kick(0.3f);
+        }
         if (i.SecondaryDown) g.Notify(g.ToolGun.Secondary(g.Player));
     }
 }

@@ -390,6 +390,17 @@ public sealed class SelfTest
             case 960:
                 Check(_dummy!.Pelvis.Go.GetComponent<DummyBrain>().Limp, "hitting the dummy makes it go limp");
                 Check(g.Fx.Explosions > _explBefore && !_xbarrel!.Alive, "explosive barrel blows up when damaged");
+                {
+                    // Procedural audio: every placeholder renders to a valid WAV.
+                    int ok = 0;
+                    foreach (string id in SoundGen.Ids)
+                    {
+                        string? p = AssetRegistry.SoundPath(id);
+                        if (p is not null && new FileInfo(p).Length > 1000 && File.ReadAllBytes(p).AsSpan(0, 4).SequenceEqual("RIFF"u8)) ok++;
+                    }
+                    Check(ok == SoundGen.Ids.Length, $"procedural WAVs generated ({ok}/{SoundGen.Ids.Length})");
+                    g.Sounds.Play("sfx_explosion"); // must not throw without a device
+                }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;

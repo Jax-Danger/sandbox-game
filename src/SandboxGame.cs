@@ -56,6 +56,8 @@ public sealed class SandboxGame : Game
         _spawnMenu = new SpawnMenu(_icons);
         Scene.Load(World);
         Sounds.Init(World, Player.CameraObject);
+        Ui.ClickSound = () => Sounds.Play("sfx_ui_click", 0.35f);
+        _hum = Sounds.Loop("sfx_physgun_hum", Player.CameraObject, 0f);
 
         Fx = new Fx(this);
         Weapons.Add(new HandsWeapon());
@@ -167,6 +169,7 @@ public sealed class SandboxGame : Game
             Player.Update(Time.DeltaTime, allowInput: false);
             Weapons.Animate(this, Time.DeltaTime, Float2.Zero);
             Fx.Tick(Time.DeltaTime);
+        AmbientAudio(Time.DeltaTime);
             Vehicles.Tick(Time.DeltaTime, allowInput: false);
             SelfTest.Step(this);
             return;
@@ -245,6 +248,33 @@ public sealed class SandboxGame : Game
         _spawnMenu.Open = !Menus.Blocking && !InVehicle && (held || _spawnMenu.SearchFocused);
         Context.Open = !Menus.Blocking && !_spawnMenu.Open && !InVehicle && Input.GetKey(KeyCode.C);
         Context.Update(this, Input.GetMouseButtonDown(0), _pointerOverContextUi);
+    }
+
+    private AudioSource? _hum;
+    private float _stepTimer;
+
+    /// <summary>Footsteps while walking and the physgun hum while holding something.</summary>
+    private void AmbientAudio(float dt)
+    {
+        if (!InVehicle && Player.Speed > 0.5f && Player.IsGrounded)
+        {
+            _stepTimer -= dt * Player.Speed / 4.5f;
+            if (_stepTimer <= 0f)
+            {
+                _stepTimer = 0.45f;
+                Sounds.Play("sfx_footstep", 0.25f, null, 0.9f + Random.Shared.NextSingle() * 0.2f);
+            }
+        }
+        if (_hum is not null)
+        {
+            try
+            {
+                bool holding = PhysGun.Held is not null && !InVehicle;
+                _hum.Volume += ((holding ? 0.35f : 0f) * Sounds.Volume - _hum.Volume) * MathF.Min(1f, dt * 10f);
+                _hum.Pitch = 1f + (holding ? MathF.Min(0.4f, Float3.Length(PhysGun.Held!.Body.LinearVelocity) * 0.04f) : 0f);
+            }
+            catch { }
+        }
     }
 
     private void UpdateHighlight(Prop? p)
