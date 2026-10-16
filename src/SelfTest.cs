@@ -445,6 +445,11 @@ public sealed class SelfTest
                     for (int i = 0; i < 60; i++) g.World.Physics.Update();
                     double rest = sw.Elapsed.TotalMilliseconds / 60.0;
                     Check(settle < 16f, $"physics with {g.Props.Props.Count} props + 8 ragdolls: {settle:0.00} ms/step falling, {rest:0.00} ms/step at rest");
+                    g.ClearMap();
+                    Prop cam = CameraFeeds.Spawn(g, new Float3(0f, 1f, 5f), 0f);
+                    string camPath = Path.Combine(Path.GetTempPath(), "sandbox-cam-test.json");
+                    MapSave.Save(g, camPath); MapSave.Load(g, camPath);
+                    Check(CameraFeeds.Active is { Entity: "ent_camera" } && CameraFeeds.All.Count == 1, "camera entity spawns and survives save/load");
                     while (g.Props.Props.Count < SandboxGame.MaxProps)
                         g.Props.Spawn(PropKind.SmallCrate, new Float3(60f, 1f + g.Props.Props.Count * 0.01f, 60f), 0f, recordUndo: false);
                     Check(g.Spawn(SpawnCatalog.Find("prop_cube")!).Contains("limit"), "prop limit blocks spawning past " + SandboxGame.MaxProps);

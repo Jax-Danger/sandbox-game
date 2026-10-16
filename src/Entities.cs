@@ -92,6 +92,7 @@ public static class EntityCatalog
         SpawnCatalog.Register(new SpawnEntry("npc_dummy", "NPC Dummy", MenuTab.Entities, "NPCs", Icon.Eye, null, (g, pos, yaw) => SpawnDummy(g, pos, yaw).Name, 0f));
         SpawnCatalog.Register(new SpawnEntry("ent_barrel", "Explosive Barrel", MenuTab.Entities, "Fun", Icon.Barrel, null, (g, pos, yaw) => SpawnBarrel(g, pos).Go.Name, 0.55f));
         SpawnCatalog.Register(new SpawnEntry("ent_ball", "Bouncy Ball", MenuTab.Entities, "Fun", Icon.Sphere, null, (g, pos, yaw) => SpawnBall(g, pos).Go.Name, 0.5f));
+        SpawnCatalog.Register(new SpawnEntry("ent_camera", "Camera", MenuTab.Entities, "Utility", Icon.Camera, null, (g, pos, yaw) => CameraFeeds.Spawn(g, pos, yaw).Go.Name, 0.3f));
         SpawnCatalog.Register(new SpawnEntry("ent_light", "Light", MenuTab.Entities, "Lighting", Icon.Power, null, (g, pos, yaw) => SpawnLight(g, pos).Go.Name, 0.3f));
         SpawnCatalog.Register(new SpawnEntry("ent_button", "Button", MenuTab.Entities, "Interactive", Icon.Play, null, (g, pos, yaw) => SpawnButton(g, pos, yaw).Go.Name, 0.3f));
     }
@@ -114,6 +115,7 @@ public static class EntityCatalog
             case "ent_barrel": MakeBarrel(g, p); break;
             case "ent_ball": MakeBall(p, keepColor: true); break;
             case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); break;
+            case "ent_camera": CameraFeeds.Make(g, p); break;
             case "ent_button": MakeButton(g, p, Enum.TryParse(key, out KeyCode k) ? k : KeyCode.T); break;
         }
     }

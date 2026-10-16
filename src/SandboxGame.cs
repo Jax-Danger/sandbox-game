@@ -150,6 +150,15 @@ public sealed class SandboxGame : Game
                 Menus.Go(Screen.Playing);
                 SelectPhysGun();
                 break;
+            case "camera":
+                Menus.Go(Screen.Playing);
+                {
+                    Float3 at = new(3.4f, 0.6f, 2.2f);
+                    Prop camProp = CameraFeeds.Spawn(this, at, 0f, recordUndo: false);
+                    camProp.SetFrozen(true);
+                    camProp.Go.Transform.Rotation = Quaternion.LookRotation(Float3.Normalize(new Float3(0.2f, 1.0f, -2.2f) - at), Float3.UnitY);
+                }
+                break;
             case "perf":
                 Menus.Go(Screen.Playing);
                 int perfN = int.TryParse(Environment.GetEnvironmentVariable("SANDBOX_PERF_PROPS"), out var pn) ? pn : 200;
@@ -195,6 +204,7 @@ public sealed class SandboxGame : Game
             }
         }
         _hud.Tick(dt);
+        CameraFeeds.Tick(this);
         while (_pending.Count > 0) _pending.Dequeue()();
         Time.TimeScale = Menus.Screen is Screen.Paused or Screen.Settings && Menus.Blocking && ShotState is null ? 0f : 1f;
 
@@ -396,6 +406,7 @@ public sealed class SandboxGame : Game
         PhysGun.Release(keepVelocity: false);
         ToolGun.CancelPending();
         Vehicles.ClearAll();
+        CameraFeeds.Clear();
         Props.ClearAll();
         Fx.Clear();
         KeyState.Toggled.Clear();
@@ -432,6 +443,7 @@ public sealed class SandboxGame : Game
 
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         _hud.Draw(paper, w, h, this, dt, chrome);
+        if (chrome) CameraFeeds.Draw(paper, w, h);
         _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);
         Context.Draw(paper, w, h, dt, this);
         _spawnMenu.Draw(paper, w, h, dt, this);

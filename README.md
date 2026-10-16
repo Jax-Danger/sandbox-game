@@ -12,6 +12,10 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 | ![Entities](docs/v4-entities.png) | ![Context menu](docs/v3-context.png) |
 | ![Settings](docs/v3-settings.png) | ![Pause](docs/v3-pause.png) |
 
+## Camera
+
+Spawn **Entities → Utility → Camera** and aim it with the physgun. The newest camera streams to a picture-in-picture monitor in the top right, rendered to a RenderTexture every other frame. Cameras are saved with the map.
+
 ## Download & run
 
 Grab the zip for your platform from [Releases](https://github.com/Jax-Danger/sandbox-game/releases). The builds are self-contained, so no .NET install is needed.

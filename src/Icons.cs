@@ -6,7 +6,7 @@ namespace Sandbox;
 public enum Icon
 {
     Cube, Sphere, Plank, Barrel, Crate, Ramp, Grid, Bolt, Wrench, Sliders, Search, Gear, Play, Power, Back,
-    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand,
+    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand, Camera,
 }
 
 /// <summary>Stroke-based vector icons drawn with Quill on a 24x24 grid (1.75px strokes, round caps).</summary>
@@ -171,6 +171,11 @@ public static class Icons
             case Icon.Load:
                 Line(12, 3.5f, 12, 15); Line(7, 10, 12, 15, 17, 10);
                 Line(4, 17, 4, 20, 20, 20, 20, 17);
+                break;
+            case Icon.Camera:
+                c.BeginPath(); c.RoundedRect(X(3), Y(7), 13 * s, 10 * s, 2 * s); c.Stroke();
+                Line(16, 10, 21, 7, 21, 17, 16, 14);
+                Circle(9.5f, 12, 2.6f);
                 break;
             case Icon.Hand:
                 // Open palm: four fingers, thumb, rounded palm.
