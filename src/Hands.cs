@@ -82,6 +82,7 @@ public sealed class HandsWeapon : Weapon
     public override string Name => "Hands";
     public override int Slot => 1;
     public override Icon Icon => Icon.Eye;
+    public override string? ViewModelId => "hands";
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {
         if (!i.PrimaryDown || g.Carry.Held is not null) return;
@@ -101,6 +102,7 @@ public sealed class SpawnGunWeapon : Weapon
     public override string Name => "Spawn Gun";
     public override int Slot => 2;
     public override Icon Icon => Icon.Cube;
+    public override string? ViewModelId => "spawngun";
     public override string? AmmoText => _g?.SpawnGunEntry?.Name ?? "Cube";
     private SandboxGame? _g;
     public override void Equip(SandboxGame g) => _g = g;
@@ -112,6 +114,7 @@ public sealed class SpawnGunWeapon : Weapon
         {
             SpawnEntry e = g.SpawnGunEntry ?? SpawnCatalog.Find("prop_cube")!;
             g.Spawn(e);
+            Vm?.Play("fire");
         }
         if (i.SecondaryDown && g.RecentSpawns.Count > 0)
         {

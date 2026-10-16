@@ -144,6 +144,7 @@ public sealed class SandboxGame : Game
         if (SelfTest is not null)
         {
             Player.Update(Time.DeltaTime, allowInput: false);
+            Weapons.Animate(this, Time.DeltaTime, Float2.Zero);
             Vehicles.Tick(Time.DeltaTime, allowInput: false);
             SelfTest.Step(this);
             return;
@@ -160,6 +161,7 @@ public sealed class SandboxGame : Game
 
         Vehicles.Tick(Time.DeltaTime, input);
         if (!InVehicle) Player.Update(Time.DeltaTime, input);
+        Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
         Prop? aimed = !InVehicle && Player.Trace(80f, out RaycastHit aim) ? Props.FromBody(aim.Rigidbody) : null;
         AimingAtProp = aimed is not null;
         UpdateHighlight(Context.Open ? Context.Hovered ?? Context.Selected : Weapons.Current is PhysGunWeapon or ToolGunWeapon ? aimed : null);
@@ -187,7 +189,7 @@ public sealed class SandboxGame : Game
 
         if (carrying) return; // hands are busy
         Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0),
-            Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), wheel), dt);
+            Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), wheel, Input.GetKeyDown(KeyCode.F)), dt);
     }
 
     private void ShotTick()

@@ -58,6 +58,66 @@ The HUD shows a crosshair, the current tool and mode (top left), the prop count 
 - **Remover:** click a prop to delete it.
 - **Balloon:** click a prop to tie a red balloon to it. Each balloon pulls up with about 1.4× the prop's weight, so it floats away. Freeze it or weld it to something heavy.
 
+## Adding your own models and sounds
+
+Everything visual or audible has a placeholder (primitive meshes, procedurally generated WAVs), so you can swap assets in one at a time without touching code. Assets live in `assets/` and get copied next to the exe when you build.
+
+| What | Drop it here | Id examples |
+|---|---|---|
+| Prop / entity / vehicle model | `assets/models/<id>.glb` (or `.gltf`, `.fbx`, `.obj`) | `prop_cube`, `prop_barrel`, `vehicle_buggy` |
+| View model (first-person arms + weapon) | `assets/models/vm_<weapon>.glb` | `vm_pistol`, `vm_smg`, `vm_shotgun`, `vm_rpg`, `vm_grenade`, `vm_crowbar`, `vm_physgun`, `vm_toolgun`, `vm_spawngun`, `vm_hands` |
+| Sound | `assets/sounds/<id>.wav` | `sfx_pistol`, `sfx_impact`, `sfx_spawn`, `sfx_ui_click` |
+| View model animation clips | `assets/viewmodels/<weapon>.clips.json` | `smg.clips.json` |
+
+If the file name doesn't match the id, map it in `assets/manifest.json`:
+
+```json
+{
+  "models":     { "vm_pistol": "models/my_glock.fbx", "prop_barrel": "models/barrel_v2.glb" },
+  "sounds":     { "sfx_pistol": "sounds/glock_shot.wav" },
+  "modelScale": { "vm_pistol": 0.01 }
+}
+```
+
+Missing or broken files are logged once and the placeholder is used, so the game never fails because of an asset.
+
+### View models: bone names
+
+Each view model is a small bone hierarchy parented to the camera (+Z forward, +Y up, metres):
+
+```
+vm_root            (camera-space root; walk bob, mouse sway and recoil are applied here)
+├── arm_r          right forearm
+│   └── hand_r     right hand
+│       └── weapon the gun itself (fire/reload/inspect move this)
+│           └── muzzle  muzzle point (flash and tracers start here)
+└── arm_l          left forearm
+    └── hand_l     left hand (reload grabs the mag with this)
+```
+
+For your own model, name the nodes exactly like this (any extra nodes are fine). When `vm_<weapon>` loads, those nodes become the animated bones and the primitive placeholder meshes are skipped. Bones you leave out are created as empty nodes. If you don't have arms, a model containing only `weapon` and `muzzle` works too.
+
+### View models: animation clips
+
+Clips are keyframed offsets from each bone's rest pose (`pos` in metres, `rot` in Euler degrees). Built-in clips are `idle` (loops), `draw`, `holster`, `fire`, `reload` and `inspect`. To override or add one, write `assets/viewmodels/<weapon>.clips.json`:
+
+```json
+{
+  "reload": {
+    "length": 1.2,
+    "loop": false,
+    "keys": [
+      { "t": 0.0, "ease": "Linear", "bones": {} },
+      { "t": 0.4, "ease": "InOut",  "bones": { "weapon": { "pos": [0, -0.03, 0], "rot": [8, 0, -35] },
+                                                "hand_l": { "pos": [0, -0.18, -0.06], "rot": [20, 0, 0] } } },
+      { "t": 1.2, "ease": "Back",   "bones": {} }
+    ]
+  }
+}
+```
+
+The `ease` value is how the pose gets *to* that key: `Linear`, `In`, `Out`, `InOut` or `Back` (overshoot). A bone missing from a key is at rest for that key. One-shot clips crossfade in and out over 0.08 s, on top of the looping `idle`. Procedural bob, sway and recoil are added on top of that. The game plays `fire` on each shot, `reload` on R, `inspect` on F, and `draw`/`holster` when you switch weapons.
+
 ## Headless self-test
 
 ```bat

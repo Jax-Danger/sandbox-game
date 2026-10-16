@@ -14,6 +14,7 @@ public sealed class SelfTest
     private int _frame;
     private Ragdoll? _ragdoll;
     private Prop? _carryCube, _heavy;
+    private float _vmRestY;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
     private float _restBarrelY, _frozenY;
@@ -226,6 +227,24 @@ public sealed class SelfTest
                     g.Weapons.Tick(g, new WeaponInput(false, false, false, true, true, false, 0f), 0.016f);
                     Check(g.SpawnGunEntry is not null, $"spawn gun right click cycles recent ({g.SpawnGunEntry?.Name})");
                     Check(g.Weapons.All[0] is HandsWeapon, "hands are weapon slot 1");
+
+                    // View model: rig built with the standard bones, clips sample and blend.
+                    ViewModel? vm = g.Weapons.Current.Vm;
+                    Check(vm is not null && ViewModelDef.StandardBones.All(b => vm.Bones.ContainsKey(b)), "view model rig has the standard bones");
+                    VmClip reload = ViewModels.Create("smg").Clips["reload"];
+                    BonePose mid = reload.Sample("weapon", 0.5f), end = reload.Sample("weapon", reload.Length);
+                    Check(MathF.Abs(mid.Rot.Z) > 20f && MathF.Abs(end.Rot.Z) < 0.01f, $"reload clip tilts the weapon and returns to rest ({mid.Rot.Z:0})");
+                    Check(vm!.Play("inspect") && vm.ClipPlaying, "inspect clip plays");
+                    _vmRestY = vm.Bones["arm_r"].Transform.LocalPosition.Y;
+                }
+                break;
+            case > 390 and < 420:
+                break;
+            case 420:
+                {
+                    ViewModel vm = g.Weapons.Current.Vm!;
+                    float dy = MathF.Abs(vm.Bones["arm_r"].Transform.LocalPosition.Y - _vmRestY);
+                    Check(vm.CurrentClip == "inspect" && dy > 0.005f, $"inspect animates the arm bone (moved {dy:0.000} m)");
                 }
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;

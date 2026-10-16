@@ -1,10 +1,11 @@
 using Prowl.Runtime;
+using Prowl.Vector;
 
 namespace Sandbox;
 
 /// <summary>Per-frame weapon input, already gated by menus.</summary>
 public readonly record struct WeaponInput(bool PrimaryDown, bool PrimaryHeld, bool PrimaryUp, bool SecondaryDown, bool SecondaryHeld,
-    bool Reload, float Wheel);
+    bool Reload, float Wheel, bool Inspect = false);
 
 /// <summary>Base class for everything in the weapon switcher (hands, physgun, toolgun, guns).</summary>
 public abstract class Weapon
@@ -16,6 +17,10 @@ public abstract class Weapon
     /// <summary>True while this weapon wants the mouse wheel (e.g. physgun pushing a prop).</summary>
     public virtual bool CapturesWheel => false;
     public virtual string? AmmoText => null;
+    /// <summary>View model definition id (see ViewModels.Create / assets/viewmodels). Null = no view model.</summary>
+    public virtual string? ViewModelId => null;
+    /// <summary>The live view model for this weapon (created by WeaponSystem on first equip).</summary>
+    public ViewModel? Vm { get; set; }
     public virtual void Equip(SandboxGame g) { }
     public virtual void Holster(SandboxGame g) { }
     public abstract void Tick(SandboxGame g, WeaponInput input, float dt);
@@ -27,6 +32,7 @@ public sealed class PhysGunWeapon : Weapon
     public override string Name => "Physics Gun";
     public override int Slot => 2;
     public override Icon Icon => Icon.Magnet;
+    public override string? ViewModelId => "physgun";
     public override bool CapturesWheel => _g?.PhysGun.Held is not null;
     private SandboxGame? _g;
 
@@ -42,6 +48,7 @@ public sealed class ToolGunWeapon : Weapon
     public override string Name => "Tool Gun";
     public override int Slot => 2;
     public override Icon Icon => Icon.Wrench;
+    public override string? ViewModelId => "toolgun";
     public override void Holster(SandboxGame g) => g.ToolGun.CancelPending();
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {
@@ -72,10 +79,21 @@ public sealed class WeaponSystem
     public void Select(SandboxGame g, Weapon w)
     {
         if (ReferenceEquals(w, Current)) return;
-        Current?.Holster(g);
+        if (Current is not null)
+        {
+            Current.Holster(g);
+            Current.Vm?.SetVisible(false);
+        }
         Current = w;
         TimeSinceSwitch = 0f;
         w.Equip(g);
+        if (w.ViewModelId is { } vmId)
+        {
+            try { w.Vm ??= new ViewModel(ViewModels.Create(vmId), g.Player.CameraObject, g.Shader); }
+            catch (Exception e) { Console.WriteLine($"[viewmodel] {vmId}: {e.Message}"); }
+            w.Vm?.SetVisible(true);
+            w.Vm?.Play("draw");
+        }
         g.Sounds.Play("sfx_weapon_switch", 0.5f);
     }
 
@@ -97,5 +115,15 @@ public sealed class WeaponSystem
     {
         TimeSinceSwitch += dt;
         Current.Tick(g, input, dt);
+        if (input.Inspect && Current.Vm is { ClipPlaying: false } ivm) ivm.Play("inspect");
+    }
+
+    /// <summary>Animates the current view model; hidden while driving.</summary>
+    public void Animate(SandboxGame g, float dt, Float2 mouse)
+    {
+        if (Current?.Vm is not { } vm) return;
+        vm.SetVisible(!g.InVehicle);
+        vm.Update(dt, mouse, g.Player.Speed);
+        if (Environment.GetEnvironmentVariable("VMDBG") == "1" && Time.FrameCount % 60 == 0) Console.WriteLine($"vm {vm.Def.Id} en={vm.Root.EnabledInHierarchy} scene={vm.Root.Scene != null} muzzle={vm.MuzzlePosition} eye={g.Player.EyePosition} fwd={g.Player.Forward} kids={vm.Root.GetChildrenDeep().Count()}");
     }
 }

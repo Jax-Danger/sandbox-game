@@ -23,6 +23,8 @@ public sealed class Player
     public Camera Camera { get; }
     public bool Noclip { get; private set; }
     public bool IsGrounded => _controller.IsGrounded;
+    /// <summary>Horizontal move speed this frame (0 in the air / noclip); drives view-model bob.</summary>
+    public float Speed { get; private set; }
     public Float3 FeetPosition => _body.Transform.Position;
     public Float3 EyePosition => CameraObject.Transform.Position;
     public Float3 Forward => CameraObject.Transform.Forward;
@@ -42,6 +44,7 @@ public sealed class Player
         Camera.ClearFlags = CameraClearFlags.SolidColor;
         Camera.ClearColor = new Color(0.53f, 0.70f, 0.86f, 1f);
         Camera.FieldOfView = 70f;
+        Camera.NearClipPlane = 0.02f; // view models sit ~0.15 m from the eye
         Camera.NearClipPlane = 0.05f;
         Camera.FarClipPlane = 400f;
         scene.Add(CameraObject);
@@ -85,6 +88,7 @@ public sealed class Player
 
         if (Noclip)
         {
+            Speed = 0f;
             ApplyCamera();
             float speed = FlySpeed * (run ? 3f : 1f) * dt;
             Float3 pos = CameraObject.Transform.Position;
@@ -104,6 +108,7 @@ public sealed class Player
         float len = Float3.Length(wish);
         if (len > 1e-4f) wish /= len;
         wish *= run ? RunSpeed : WalkSpeed;
+        Speed = _controller.IsGrounded ? Float3.Length(wish) : 0f;
 
         if (_controller.IsGrounded)
         {

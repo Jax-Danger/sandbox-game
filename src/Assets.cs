@@ -58,7 +58,11 @@ public static class AssetRegistry
     public static bool TryAttachModel(string id, GameObject parent, out GameObject? instance)
     {
         instance = null;
-        if (!Current.Models.TryGetValue(id, out string? rel)) return false;
+        // Manifest entry wins; otherwise fall back to the naming convention assets/models/<id>.(glb|gltf|fbx|obj).
+        if (!Current.Models.TryGetValue(id, out string? rel))
+            rel = new[] { "glb", "gltf", "fbx", "obj" }.Select(ext => Path.Combine("models", $"{id}.{ext}"))
+                .FirstOrDefault(r => File.Exists(Path.Combine(Root, r)));
+        if (rel is null) return false;
         string full = Path.Combine(Root, rel);
         if (!File.Exists(full)) return false;
         if (_failed.Contains(id)) return false;
