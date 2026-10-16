@@ -19,8 +19,8 @@ public static class SpawnCatalog
             PropKind kind = k;
             string cat = k switch
             {
-                PropKind.Plank or PropKind.Ramp => "Construction",
-                PropKind.Barrel or PropKind.BigCrate => "Containers",
+                PropKind.Plank or PropKind.Ramp or PropKind.Pole or PropKind.Panel => "Construction",
+                PropKind.Barrel or PropKind.BigCrate or PropKind.SmallCrate => "Containers",
                 _ => "Shapes",
             };
             Register(new SpawnEntry($"prop_{k.ToString().ToLowerInvariant()}", PropManager.DisplayName(k), MenuTab.Spawnlists, cat,

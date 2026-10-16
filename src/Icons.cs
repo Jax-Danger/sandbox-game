@@ -188,6 +188,10 @@ public static class Icons
         PropKind.Barrel => Icon.Barrel,
         PropKind.BigCrate => Icon.Crate,
         PropKind.Ramp => Icon.Ramp,
+        PropKind.SmallCrate => Icon.Crate,
+        PropKind.Pole => Icon.Plank,
+        PropKind.Panel => Icon.Grid,
+        PropKind.BigBall => Icon.Sphere,
         _ => Icon.Cube,
     };
 
@@ -196,6 +200,14 @@ public static class Icons
         ToolMode.Weld => Icon.Link,
         ToolMode.Balloon => Icon.Balloon,
         ToolMode.Remover => Icon.Trash,
+        ToolMode.Rope => Icon.Link,
+        ToolMode.BallSocket => Icon.Sphere,
+        ToolMode.Thruster => Icon.Bolt,
+        ToolMode.Wheel => Icon.Car,
+        ToolMode.Colour => Icon.Eye,
+        ToolMode.Material => Icon.Grid,
+        ToolMode.Light => Icon.Power,
+        ToolMode.Duplicator => Icon.Folder,
         _ => Icon.Wrench,
     };
 }

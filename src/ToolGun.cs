@@ -3,7 +3,7 @@ using Prowl.Vector;
 
 namespace Sandbox;
 
-public enum ToolMode { Weld, Remover, Balloon }
+public enum ToolMode { Weld, Remover, Balloon, Rope, BallSocket, Thruster, Wheel, Colour, Material, Light, Duplicator }
 
 /// <summary>Display info for a tool, shown in the spawn menu and the HUD tool info box.</summary>
 public sealed record ToolInfo(ToolMode Mode, string Name, string Category, string Description, string Left, string? Right);
@@ -12,7 +12,7 @@ public sealed record ToolInfo(ToolMode Mode, string Name, string Category, strin
 public sealed record ToolSetting(string Name, float Min, float Max, Func<float> Get, Action<float> Set, Func<float, string> Format, string Help);
 
 /// <summary>Toolgun: left click applies the current mode to the prop under the crosshair.</summary>
-public sealed class ToolGun(PropManager props)
+public sealed partial class ToolGun(PropManager props)
 {
     private Prop? _weldFirst;
 
@@ -32,6 +32,19 @@ public sealed class ToolGun(PropManager props)
             "Tie a balloon to a prop", null),
         new(ToolMode.Remover, "Remover", "Construction", "Deletes a prop and any welds attached to it.",
             "Remove the prop you're looking at", null),
+        new(ToolMode.Rope, "Rope", "Constraints", "Ties a slack rope between two points on props.",
+            "Click a point, then a second point", "Cancel the first point"),
+        new(ToolMode.BallSocket, "Ball socket", "Constraints", "Pins two props together at a point; they can swivel freely.",
+            "Click the pivot on a prop, then the prop to pin it to", "Cancel the first point"),
+        new(ToolMode.Thruster, "Thruster", "Construction", "Adds a thruster that pushes while you hold its key.",
+            "Place a thruster on a prop", null),
+        new(ToolMode.Wheel, "Wheel", "Construction", "Adds a motorised wheel; hold its keys to drive it forwards / backwards.",
+            "Attach a wheel where you click", null),
+        new(ToolMode.Colour, "Colour", "Render", "Paints a prop.", "Paint the prop", "Pick up the prop's colour"),
+        new(ToolMode.Material, "Material", "Render", "Changes a prop's surface (friction and bounce).", "Apply the material", null),
+        new(ToolMode.Light, "Light", "Render", "Attaches a glowing light to a prop.", "Attach a light", null),
+        new(ToolMode.Duplicator, "Duplicator", "Construction", "Copies a prop and its settings, then pastes copies.",
+            "Paste the copied prop where you aim", "Copy the prop you're looking at"),
     ];
 
     public static ToolInfo InfoFor(ToolMode m) => Tools.First(t => t.Mode == m);
@@ -45,7 +58,7 @@ public sealed class ToolGun(PropManager props)
         _ => m.ToString(),
     };
 
-    public void CancelPending() => _weldFirst = null;
+    public void CancelPending() { _weldFirst = null; _linkFirst = null; }
 
     public IEnumerable<ToolSetting> SettingsFor(ToolMode mode)
     {
@@ -54,6 +67,9 @@ public sealed class ToolGun(PropManager props)
             case ToolMode.Weld:
                 yield return new ToolSetting("Weld strength", 0f, 1f, () => WeldStrength, v => WeldStrength = v,
                     v => v >= 0.995f ? "Rigid" : $"{v * 100f:0}%", "Lower values give a springy joint that flexes under load.");
+                break;
+            default:
+                foreach (ToolSetting t in ExtraSettings(mode)) yield return t;
                 break;
             case ToolMode.Balloon:
                 yield return new ToolSetting("Balloon force", 0.5f, 3f, () => BalloonForce, v => BalloonForce = v,
@@ -65,6 +81,7 @@ public sealed class ToolGun(PropManager props)
     /// <summary>Right click: cancels a pending weld.</summary>
     public string? Secondary(Player player)
     {
+        if (ExtraSecondary(player) is { } extra) return extra;
         if (PendingWeld is null) return null;
         _weldFirst = null;
         return "Weld selection cleared";
@@ -73,6 +90,8 @@ public sealed class ToolGun(PropManager props)
     public string? Fire(Player player)
     {
         if (!player.Trace(120f, out RaycastHit hit)) return "Nothing there";
+        _lastHit = hit;
+        if (Mode == ToolMode.Duplicator) return Paste(hit);
         Prop? prop = props.FromBody(hit.Rigidbody);
         if (prop is null) return "That's the map, not a prop";
         return Apply(prop);
@@ -93,6 +112,10 @@ public sealed class ToolGun(PropManager props)
                 props.PushUndo(new BalloonUndo(prop, balloon));
                 return $"Balloon tied to {prop.Go.Name}";
             }
+
+            case ToolMode.Rope or ToolMode.BallSocket or ToolMode.Thruster or ToolMode.Wheel or ToolMode.Colour
+                or ToolMode.Material or ToolMode.Light or ToolMode.Duplicator:
+                return ApplyExtra(prop);
 
             case ToolMode.Weld:
             default:

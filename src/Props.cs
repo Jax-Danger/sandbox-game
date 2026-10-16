@@ -6,7 +6,7 @@ using Prowl.Vector;
 namespace Sandbox;
 
 /// <summary>Limb = a ragdoll body part (not spawnable on its own).</summary>
-public enum PropKind { Cube, Sphere, Plank, Barrel, BigCrate, Ramp, Limb }
+public enum PropKind { Cube, Sphere, Plank, Barrel, BigCrate, Ramp, SmallCrate, Pole, Panel, BigBall, Limb }
 
 /// <summary>A spawned, physics-driven prop.</summary>
 public sealed class Prop
@@ -107,6 +107,10 @@ public sealed class PropManager(Scene scene, Shader shader)
         PropKind.Barrel => "Barrel",
         PropKind.BigCrate => "Big Crate",
         PropKind.Ramp => "Ramp",
+        PropKind.SmallCrate => "Small Crate",
+        PropKind.Pole => "Pole",
+        PropKind.Panel => "Panel",
+        PropKind.BigBall => "Big Ball",
         _ => k.ToString(),
     };
 
@@ -120,6 +124,10 @@ public sealed class PropManager(Scene scene, Shader shader)
         PropKind.Barrel => 0.55f,
         PropKind.BigCrate => 1f,
         PropKind.Ramp => 0.6f,
+        PropKind.SmallCrate => 0.3f,
+        PropKind.Pole => 1.5f,
+        PropKind.Panel => 1f,
+        PropKind.BigBall => 1f,
         _ => 0.5f,
     };
 
@@ -174,6 +182,36 @@ public sealed class PropManager(Scene scene, Shader shader)
                 body.Mass = 6f;
                 break;
             }
+            case PropKind.SmallCrate:
+            {
+                var size = new Float3(0.6f, 0.6f, 0.6f);
+                renderer.Mesh = Mesh.CreateCube(size);
+                go.AddComponent<BoxCollider>().Size = size;
+                body.Mass = 1.2f;
+                break;
+            }
+            case PropKind.Pole:
+            {
+                renderer.Mesh = Mesh.CreateCylinder(0.08f, 3f, 12);
+                CylinderCollider c = go.AddComponent<CylinderCollider>();
+                c.Radius = 0.08f;
+                c.Height = 3f;
+                body.Mass = 2f;
+                break;
+            }
+            case PropKind.Panel:
+            {
+                var size = new Float3(2f, 2f, 0.1f);
+                renderer.Mesh = Mesh.CreateCube(size);
+                go.AddComponent<BoxCollider>().Size = size;
+                body.Mass = 3f;
+                break;
+            }
+            case PropKind.BigBall:
+                renderer.Mesh = Mesh.CreateSphere(1f, 20, 28);
+                go.AddComponent<SphereCollider>().Radius = 1f;
+                body.Mass = 5f;
+                break;
             case PropKind.Ramp:
             {
                 // No wedge primitive in Prowl; a ramp is a wide, tilted slab.
@@ -193,7 +231,9 @@ public sealed class PropManager(Scene scene, Shader shader)
         };
         prop0.SetSurface(SurfaceMaterial.Get(kind switch
         {
-            PropKind.Plank or PropKind.BigCrate or PropKind.Ramp => "Wood",
+            PropKind.Plank or PropKind.BigCrate or PropKind.Ramp or PropKind.SmallCrate => "Wood",
+            PropKind.Pole => "Metal",
+            PropKind.BigBall => "Rubber",
             PropKind.Barrel => "Metal",
             _ => "Plastic",
         }));
@@ -279,6 +319,9 @@ public sealed class PropManager(Scene scene, Shader shader)
             PropKind.BigCrate => new Color(0.55f, 0.40f, 0.22f, 1f),
             PropKind.Barrel => new Color(0.30f, 0.45f, 0.30f, 1f),
             PropKind.Ramp => new Color(0.6f, 0.6f, 0.65f, 1f),
+            PropKind.SmallCrate => new Color(0.66f, 0.50f, 0.30f, 1f),
+            PropKind.Pole => new Color(0.75f, 0.75f, 0.78f, 1f),
+            PropKind.Panel => new Color(0.82f, 0.84f, 0.88f, 1f),
             _ => palette[index % palette.Length],
         };
     }

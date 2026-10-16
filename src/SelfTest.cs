@@ -18,6 +18,8 @@ public sealed class SelfTest
     private Prop? _target, _barrel;
     private PistolWeapon? _pistol;
     private Buggy? _buggy;
+    private Prop? _thrust;
+    private float _thrustY;
     private Float3 _buggyStart;
     private readonly List<string> _failures = [];
     private readonly Dictionary<string, Prop> _p = [];
@@ -142,7 +144,7 @@ public sealed class SelfTest
                 string? u2 = g.Props.Undo();
                 Check(u2?.Contains("weld") == true && !sphere.Go.GetComponent<FixedAngleConstraint>().IsValid(), $"Z undoes the weld ({u2})");
                 string? u3 = g.Props.Undo();
-                Check(g.Props.Props.Count == before - 1 && !_p["Ramp"].Alive, $"Z undoes the last spawn ({u3})");
+                Check(g.Props.Props.Count == before - 1 && !_p[PropManager.AllKinds[^1].ToString()].Alive, $"Z undoes the last spawn ({u3})");
 
                 g.ToolGun.Mode = ToolMode.Remover;
                 g.ToolGun.Apply(plank);
@@ -318,6 +320,44 @@ public sealed class SelfTest
                     Check(moved > 3f && b.SpeedKmh > 5f, $"throttle drives the buggy ({moved:0.0} m, {b.SpeedKmh:0} km/h, gear {b.Gear})");
                     Check(g.Vehicles.TryUse() && !g.InVehicle && Float3.Length(g.Player.FeetPosition - b.Go.Transform.Position) < 4f, "E exits beside the buggy");
                 }
+                {
+                    // Extra tools.
+                    ToolGun t = g.ToolGun;
+                    Float3 basePos = new(20f, 0.6f, 20f);
+                    Prop a = g.Props.Spawn(PropKind.Cube, basePos, 0f), bb = g.Props.Spawn(PropKind.Cube, basePos + new Float3(3f, 0f, 0f), 0f);
+                    t.Mode = ToolMode.Rope;
+                    t.SetHit(a, a.Go.Transform.Position, Float3.UnitY); t.Apply(a);
+                    t.SetHit(bb, bb.Go.Transform.Position, Float3.UnitY); string? rope = t.Apply(bb);
+                    Check(a.Go.GetComponent<DistanceLimitConstraint>().IsValid() && a.Go.GetComponent<RopeVisual>().IsValid(), $"rope tool links two props ({rope})");
+                    t.Mode = ToolMode.BallSocket;
+                    Prop c1 = g.Props.Spawn(PropKind.Sphere, basePos + new Float3(0f, 0f, 3f), 0f);
+                    t.SetHit(c1, c1.Go.Transform.Position, Float3.UnitY); t.Apply(c1);
+                    t.SetHit(bb, bb.Go.Transform.Position, Float3.UnitY); t.Apply(bb);
+                    Check(c1.Go.GetComponent<BallSocketConstraint>().IsValid(), "ball socket tool pins props");
+                    t.Mode = ToolMode.Colour; t.PaintHue = 0.33f;
+                    Color col0 = a.BaseColor; t.Apply(a);
+                    Check(MathF.Abs(a.BaseColor.G - col0.G) + MathF.Abs(a.BaseColor.R - col0.R) > 0.05f, "colour tool paints");
+                    t.Mode = ToolMode.Material; t.MaterialIndex = 4; t.Apply(a);
+                    Check(a.Surface == SurfaceMaterial.All[4].Name, $"material tool sets {a.Surface}");
+                    t.Mode = ToolMode.Light; t.SetHit(bb, bb.Go.Transform.Position + new Float3(0f, 0.5f, 0f), Float3.UnitY); t.Apply(bb);
+                    Check(bb.Go.GetComponentsInChildren<PointLight>().Any(), "light tool attaches a light");
+                    t.Mode = ToolMode.Wheel; t.SetHit(bb, bb.Go.Transform.Position + new Float3(0.5f, 0f, 0f), Float3.UnitX);
+                    int n0 = g.Props.Props.Count; t.Apply(bb);
+                    Check(g.Props.Props.Count == n0 + 1 && g.Props.Props[^1].Go.GetComponent<HingeJoint>().IsValid(), "wheel tool adds a hinged wheel");
+                    t.Mode = ToolMode.Thruster;
+                    _thrust = g.Props.Spawn(PropKind.Cube, basePos + new Float3(-4f, 0f, 0f), 0f);
+                    t.SetHit(_thrust, _thrust.Go.Transform.Position - new Float3(0f, 0.5f, 0f), -Float3.UnitY); t.Apply(_thrust);
+                    _thrust.Go.GetComponent<Thruster>().ForceOn = true;
+                    _thrustY = _thrust.Go.Transform.Position.Y;
+                    // Duplicator: copy bb (via secondary needs aim) — use the API path: aim + Secondary + Fire.
+                    t.Mode = ToolMode.Duplicator;
+                    Aim(g, a.Go.Transform.Position);
+                    string? cp = t.Secondary(g.Player);
+                    Check(t.HasCopy, $"duplicator copies ({cp})");
+                }
+                break;
+            case 780:
+                Check(_thrust!.Go.Transform.Position.Y > _thrustY + 1f, $"thruster lifts the prop ({_thrustY:0.0} -> {_thrust.Go.Transform.Position.Y:0.0})");
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0
