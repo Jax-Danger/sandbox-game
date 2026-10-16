@@ -1,0 +1,149 @@
+using Jitter2.Dynamics;
+using Prowl.Runtime;
+using Prowl.Vector;
+
+namespace Sandbox;
+
+/// <summary>
+/// Scripted headless check (dotnet run -- --headless). Exercises spawning, falling, physgun
+/// grab/hold/freeze/unfreeze, weld, balloon, remover, undo, clear, and the walking player.
+/// </summary>
+public sealed class SelfTest
+{
+    private int _frame;
+    private readonly List<string> _failures = [];
+    private readonly Dictionary<string, Prop> _p = [];
+    private float _restBarrelY, _frozenY;
+    private bool _done;
+
+    public int ExitCode { get; private set; } = 1;
+
+    public void Begin(SandboxGame g)
+    {
+        g.Props.ClearAll();
+        float x = -5f;
+        foreach (PropKind k in PropManager.AllKinds)
+        {
+            _p[k.ToString()] = g.Props.Spawn(k, new Float3(x, 3f, 6f), 0f);
+            x += 2.5f;
+        }
+    }
+
+    private void Check(bool ok, string what)
+    {
+        Console.WriteLine($"  [{(ok ? "PASS" : "FAIL")}] {what}");
+        if (!ok) _failures.Add(what);
+    }
+
+    private static float Y(Prop p) => p.Go.Transform.Position.Y;
+
+    private void Aim(SandboxGame g, Float3 target)
+    {
+        Float3 dir = Float3.Normalize(target - g.Player.EyePosition);
+        float yaw = MathF.Atan2(dir.X, dir.Z) * 180f / MathF.PI;
+        float pitch = MathF.Asin(Math.Clamp(dir.Y, -1f, 1f)) * 180f / MathF.PI;
+        g.Player.SetLook(yaw, -pitch);
+        if (Float3.Dot(g.Player.Forward, dir) < 0.99f) g.Player.SetLook(yaw, pitch);
+        if (Float3.Dot(g.Player.Forward, dir) < 0.99f) g.Player.SetLook(-yaw, -pitch);
+        if (Float3.Dot(g.Player.Forward, dir) < 0.99f) g.Player.SetLook(-yaw, pitch);
+    }
+
+    public void Step(SandboxGame g)
+    {
+        _frame++;
+        if (_done) return;
+        Prop cube = _p["Cube"], sphere = _p["Sphere"], barrel = _p["Barrel"], plank = _p["Plank"];
+
+        switch (_frame)
+        {
+            case 120:
+                Console.WriteLine("Self-test: props settled");
+                foreach ((string name, Prop p) in _p)
+                    Check(Y(p) < 2.5f && Y(p) > -0.5f, $"{name} fell and rests on the floor (y {Y(p):0.00})");
+                Check(g.Player.IsGrounded && MathF.Abs(g.Player.FeetPosition.Y) < 0.3f,
+                    $"player stands on the floor (feet y {g.Player.FeetPosition.Y:0.00})");
+                _restBarrelY = Y(barrel);
+
+                // Physgun: aim at the cube and grab it.
+                g.SelectTool(ActiveTool.PhysGun, null);
+                Aim(g, cube.Go.Transform.Position);
+                Check(Float3.Dot(g.Player.Forward, Float3.Normalize(cube.Go.Transform.Position - g.Player.EyePosition)) > 0.99f, "camera aims at the cube");
+                g.PhysGun.Update(g.Player, primaryDown: true, primaryHeld: true, secondaryDown: false, wheel: 0f);
+                Check(ReferenceEquals(g.PhysGun.Held, cube), "physgun grabbed the cube under the crosshair");
+                // Look up a little so the held cube should lift.
+                g.Player.SetLook(g.Player.Yaw, 0f);
+                break;
+
+            case > 120 and < 200:
+                g.PhysGun.Update(g.Player, false, true, false, _frame == 150 ? -1f : 0f);
+                break;
+
+            case 200:
+            {
+                Float3 eye = g.Player.EyePosition;
+                float dist = Float3.Length(cube.Go.Transform.Position - eye);
+                Check(Y(cube) > 1.0f, $"held cube is lifted off the floor (y {Y(cube):0.00}, {dist:0.0} m from eye)");
+                // Freeze with right click while holding.
+                g.PhysGun.Update(g.Player, false, true, secondaryDown: true, 0f);
+                Check(cube.Frozen && cube.Body.MotionType == MotionType.Static && g.PhysGun.Held is null, "right click froze the held cube and let go");
+                _frozenY = Y(cube);
+                break;
+            }
+
+            case 260:
+                Check(MathF.Abs(Y(cube) - _frozenY) < 0.05f, $"frozen cube stays in the air (y {Y(cube):0.00})");
+                Aim(g, cube.Go.Transform.Position);
+                g.PhysGun.Update(g.Player, true, true, false, 0f);
+                Check(!cube.Frozen && ReferenceEquals(g.PhysGun.Held, cube), "clicking the frozen cube unfroze and grabbed it");
+                g.PhysGun.Update(g.Player, false, false, false, 0f); // release
+                Check(g.PhysGun.Held is null, "releasing left mouse drops the cube");
+
+                // Toolgun: weld sphere to plank, balloon the barrel.
+                g.SelectTool(ActiveTool.ToolGun, ToolMode.Weld);
+                g.ToolGun.Apply(sphere);
+                g.ToolGun.Apply(plank);
+                Check(sphere.Go.GetComponent<FixedAngleConstraint>().IsValid() && sphere.Go.GetComponent<BallSocketConstraint>().IsValid(),
+                    "weld added fixed-angle + ball-socket constraints");
+                g.ToolGun.Mode = ToolMode.Balloon;
+                g.ToolGun.Apply(barrel);
+                break;
+
+            case 330:
+                Check(Y(cube) < 2f, $"released cube fell back down (y {Y(cube):0.00})");
+                Check(Y(barrel) > _restBarrelY + 1f, $"balloon lifts the barrel (y {_restBarrelY:0.00} -> {Y(barrel):0.00})");
+                {
+                    float d = Float3.Length(sphere.Go.Transform.Position - plank.Go.Transform.Position);
+                    Console.WriteLine($"  (welded sphere-plank distance {d:0.00})");
+                }
+
+                // Undo order: balloon, then weld, then the last spawn (ramp).
+                int before = g.Props.Props.Count;
+                string? u1 = g.Props.Undo();
+                Check(u1?.Contains("balloon") == true && !barrel.Go.GetComponent<Balloon>().IsValid(), $"Z undoes the balloon ({u1})");
+                string? u2 = g.Props.Undo();
+                Check(u2?.Contains("weld") == true && !sphere.Go.GetComponent<FixedAngleConstraint>().IsValid(), $"Z undoes the weld ({u2})");
+                string? u3 = g.Props.Undo();
+                Check(g.Props.Props.Count == before - 1 && !_p["Ramp"].Alive, $"Z undoes the last spawn ({u3})");
+
+                g.ToolGun.Mode = ToolMode.Remover;
+                g.ToolGun.Apply(plank);
+                Check(!plank.Alive && g.Props.Props.Count == before - 2, "remover deleted the plank");
+
+                // Spawn at the crosshair: look at the floor in front.
+                g.Player.SetLook(0f, 0f);
+                Aim(g, g.Player.FeetPosition + g.Player.Forward * 4f);
+                Prop spawned = g.SpawnAtCrosshair(PropKind.BigCrate);
+                Check(spawned.Alive && Y(spawned) > 0.5f && Y(spawned) < 3f, $"spawn at crosshair placed a crate on the floor (y {Y(spawned):0.00})");
+
+                g.ClearMap();
+                Check(g.Props.Props.Count == 0, "clear map removed every prop");
+
+                _done = true;
+                ExitCode = _failures.Count == 0 ? 0 : 1;
+                Console.WriteLine(_failures.Count == 0
+                    ? "Sandbox self-test passed."
+                    : $"Sandbox self-test FAILED ({_failures.Count}): {string.Join("; ", _failures)}");
+                break;
+        }
+    }
+}
