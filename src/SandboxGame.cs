@@ -30,11 +30,14 @@ public sealed class SandboxGame : Game
     private readonly Hud _hud = new();
     private readonly IconRenderer _icons = new();
     private SpawnMenu _spawnMenu = null!;
+    public ContextMenu Context { get; } = new();
+    private bool _pointerOverContextUi;
+    private Prop? _lastHighlight;
     private readonly Queue<Action> _pending = new();
     private int _frames, _shotToasts;
 
     /// <summary>True when a menu (spawn menu, main/pause/settings) owns the mouse.</summary>
-    public bool MenuOpen => Menus.Blocking || _spawnMenu.Open;
+    public bool MenuOpen => Menus.Blocking || _spawnMenu.Open || Context.Open;
 
     public void Enqueue(Action a) => _pending.Enqueue(a);
     public void Notify(string? message, ToastKind? kind = null) => _hud.Notify(message, kind);
@@ -105,6 +108,11 @@ public sealed class SandboxGame : Game
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
             case "pause": Menus.Go(Screen.Paused); break;
+            case "context":
+                Menus.Go(Screen.Playing);
+                Context.Open = true;
+                Context.Selected = Props.Props[1];
+                break;
             default:
                 if (ShotState is not null) { Menus.Go(Screen.Playing); ShotHooks?.Invoke(this, ShotState); }
                 break;
@@ -136,6 +144,7 @@ public sealed class SandboxGame : Game
         }
 
         if (ShotState is null) HandleMenus();
+        else if (ShotState == "context") { Context.Open = true; UpdateHighlight(Context.Selected); }
         else ShotTick();
         bool gameplay = !MenuOpen;
         bool input = gameplay && ShotState is null;
@@ -145,7 +154,9 @@ public sealed class SandboxGame : Game
 
         Vehicles.Tick(Time.DeltaTime, input);
         if (!InVehicle) Player.Update(Time.DeltaTime, input);
-        AimingAtProp = !InVehicle && Player.Trace(80f, out RaycastHit aim) && Props.FromBody(aim.Rigidbody) is not null;
+        Prop? aimed = !InVehicle && Player.Trace(80f, out RaycastHit aim) ? Props.FromBody(aim.Rigidbody) : null;
+        AimingAtProp = aimed is not null;
+        UpdateHighlight(Context.Open ? Context.Hovered ?? Context.Selected : Weapons.Current is PhysGunWeapon or ToolGunWeapon ? aimed : null);
         if (!gameplay)
         {
             PhysGun.Release(keepVelocity: false);
@@ -188,6 +199,15 @@ public sealed class SandboxGame : Game
         }
         bool held = Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.Tab);
         _spawnMenu.Open = !Menus.Blocking && !InVehicle && (held || _spawnMenu.SearchFocused);
+        Context.Open = !Menus.Blocking && !_spawnMenu.Open && !InVehicle && Input.GetKey(KeyCode.C);
+        Context.Update(this, Input.GetMouseButtonDown(0), _pointerOverContextUi);
+    }
+
+    private void UpdateHighlight(Prop? p)
+    {
+        if (!ReferenceEquals(p, _lastHighlight) && _lastHighlight is { Alive: true } old) old.SetHighlight(0f);
+        _lastHighlight = p;
+        p?.SetHighlight(Context.Open && ReferenceEquals(p, Context.Selected) ? 0.9f : 0.45f);
     }
 
     public void SelectPhysGun() => Weapons.Select(this, Weapons.Get<PhysGunWeapon>());
@@ -266,8 +286,10 @@ public sealed class SandboxGame : Game
         float dt = Time.UnscaledDeltaTime;
         Ui.Dt = dt;
 
-        bool chrome = !_spawnMenu.Visible && !Menus.Blocking;
+        bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         _hud.Draw(paper, w, h, this, dt, chrome);
+        _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);
+        Context.Draw(paper, w, h, dt, this);
         _spawnMenu.Draw(paper, w, h, dt, this);
         Menus.Draw(paper, w, h, dt, this);
     }

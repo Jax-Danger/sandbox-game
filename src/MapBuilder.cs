@@ -17,17 +17,12 @@ public static class MapBuilder
         lightGo.Transform.LocalEulerAngles = new Float3(-50f, 30f, 0f);
         scene.Add(lightGo);
 
-        var floor = new Color(0.45f, 0.48f, 0.42f, 1f);
+        var floor = new Color(0.78f, 0.80f, 0.82f, 1f);
         var concrete = new Color(0.62f, 0.62f, 0.60f, 1f);
         var accent = new Color(0.80f, 0.55f, 0.25f, 1f);
 
-        // 120 x 120 m floor with a lighter grid of tiles in the middle so motion reads clearly.
+        // 120 x 120 m floor with a procedural dev-texture grid.
         Box(scene, shader, "Floor", new Float3(0f, -0.5f, 0f), new Float3(120f, 1f, 120f), Float3.Zero, floor);
-        for (int x = -2; x <= 2; x++)
-            for (int z = -2; z <= 2; z++)
-                if (((x + z) & 1) == 0)
-                    Box(scene, shader, $"Tile {x},{z}", new Float3(x * 4f, 0.005f, z * 4f), new Float3(4f, 0.01f, 4f), Float3.Zero,
-                        new Color(0.52f, 0.55f, 0.49f, 1f), collide: false);
 
         // Perimeter walls.
         const float half = 60f, h = 4f;
@@ -59,6 +54,13 @@ public static class MapBuilder
         renderer.Mesh = Mesh.CreateCube(size);
         var material = new Material(shader);
         material.SetColor("_MainColor", color);
+        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") == "1")
+        {
+            bool floor = name == "Floor";
+            material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
+            material.SetVector("_Tiling", floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f)));
+            material.SetTexture("_SurfaceTex", ProcTex.Surface(floor ? 0.85f : 0.9f, 0f));
+        }
         renderer.Material = material;
         if (collide)
             go.AddComponent<BoxCollider>().Size = size;

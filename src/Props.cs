@@ -18,29 +18,61 @@ public sealed class Prop
     /// <summary>Distance from center to the bottom face (used when spawning on surfaces).</summary>
     public float HalfHeight { get; init; }
     public bool Frozen { get; private set; }
+    public string Surface { get; private set; } = "Plastic";
+    private float _highlight;
+
+    public void SetSurface(SurfaceMaterial m)
+    {
+        Surface = m.Name;
+        m.ApplyVisual(Material);
+        Body.Friction = m.Friction;
+        Body.Restitution = m.Restitution;
+    }
+
+    private void ApplyTint()
+    {
+        Color c = Frozen ? new Color(0.35f, 0.75f, 1f, 1f) : BaseColor;
+        float k = Math.Clamp(_highlight, 0f, 1f) * 0.5f;
+        Material.SetColor("_MainColor", new Color(c.R + (0.75f - c.R) * k, c.G + (0.88f - c.G) * k, c.B + (1f - c.B) * k, 1f));
+    }
+
+    public void SetMass(float mass)
+    {
+        Body.Mass = Math.Clamp(mass, 0.1f, 500f);
+        Body.SetActive(true);
+    }
+
+    /// <summary>Soft emissive glow used for hover/selection highlight (0 = off).</summary>
+    public void SetHighlight(float amount)
+    {
+        if (MathF.Abs(amount - _highlight) < 0.01f) return;
+        _highlight = amount;
+        ApplyTint();
+    }
     public bool Alive => Go.IsValid() && Go.Scene != null;
 
     public void SetColor(Color c)
     {
         BaseColor = c;
-        if (!Frozen) Material.SetColor("_MainColor", c);
+        ApplyTint();
     }
 
     public void SetFrozen(bool frozen)
     {
         Frozen = frozen;
+        ApplyTint();
         if (frozen)
         {
             Body.LinearVelocity = Float3.Zero;
             Body.AngularVelocity = Float3.Zero;
             Body.MotionType = MotionType.Static;
-            Material.SetColor("_MainColor", new Color(0.35f, 0.75f, 1f, 1f));
+
         }
         else
         {
             Body.MotionType = MotionType.Dynamic;
             Body.SetActive(true);
-            Material.SetColor("_MainColor", BaseColor);
+
         }
     }
 }
@@ -151,11 +183,18 @@ public sealed class PropManager(Scene scene, Shader shader)
         }
 
         Scene.Add(go);
-        var prop = new Prop
+        var prop0 = new Prop
         {
             Go = go, Body = body, Kind = kind, Material = material, BaseColor = color,
             HalfHeight = HalfHeightOf(kind),
         };
+        prop0.SetSurface(SurfaceMaterial.Get(kind switch
+        {
+            PropKind.Plank or PropKind.BigCrate or PropKind.Ramp => "Wood",
+            PropKind.Barrel => "Metal",
+            _ => "Plastic",
+        }));
+        var prop = prop0;
         _props.Add(prop);
         if (recordUndo)
             _undo.Push(new SpawnUndo(this, prop));

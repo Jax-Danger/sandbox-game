@@ -153,6 +153,16 @@ public sealed class SelfTest
                     Check(g.Props.Props.Any(p => MathF.Abs(p.BaseColor.G - 0.9f) < 0.01f), "save/load restores colours");
                 }
 
+                // Context menu edits.
+                {
+                    Prop c = g.Props.Spawn(PropKind.Cube, new Float3(12f, 0.6f, 0f), 0f);
+                    c.SetSurface(SurfaceMaterial.Get("Rubber"));
+                    c.SetMass(25f);
+                    c.SetColor(ContextMenu.Palette[4]);
+                    Check(c.Surface == "Rubber" && MathF.Abs(c.Body.Restitution - 0.75f) < 0.01f && MathF.Abs(c.Body.Mass - 25f) < 0.01f,
+                        "context menu edits material (friction/bounce), mass and colour");
+                }
+
                 // Settings JSON round trip.
                 {
                     string old = Settings.FilePath;
