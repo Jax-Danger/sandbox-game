@@ -14,7 +14,7 @@ public static class Graphics
             {
                 GraphicsQuality.Low => [],
                 GraphicsQuality.Medium => [new FXAAEffect(), new TonemapperEffect()],
-                _ => [new FXAAEffect(), new BloomEffect(), new TonemapperEffect()],
+                _ => [new FXAAEffect(), new GTAOEffect(), new BloomEffect(), new TonemapperEffect()],
             };
         }
         catch (Exception e)

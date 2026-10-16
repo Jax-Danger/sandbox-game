@@ -48,8 +48,19 @@ public sealed class SandboxGame : Game
         World = new Scene();
         Shader = Shader.LoadDefault(DefaultShader.Standard);
         Sun = MapBuilder.Build(World, Shader);
+        // Atmosphere: procedural sky, soft linear distance fog matched to the horizon, hemisphere ambient.
+        World.Skybox.Mode = Scene.SkyboxMode.Procedural;
+        World.Fog.Mode = Scene.FogParams.FogMode.Linear;
+        World.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
+        World.Fog.Start = 45f;
+        World.Fog.End = 220f;
+        World.Ambient.Mode = Scene.AmbientLightParams.AmbientMode.Hemisphere;
+        World.Ambient.SkyColor = new Float4(0.55f, 0.65f, 0.80f, 1f);
+        World.Ambient.GroundColor = new Float4(0.30f, 0.28f, 0.26f, 1f);
+        World.Ambient.Strength = 0.9f;
         Props = new PropManager(World, Shader);
         Player = new Player(World, new Float3(0f, 0.1f, -10f), 0f);
+        if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1") Player.Camera.ClearFlags = CameraClearFlags.Skybox;
         PhysGun = new PhysGun(Props);
         ToolGun = new ToolGun(Props);
         Vehicles = new VehicleSystem(this);
@@ -132,6 +143,10 @@ public sealed class SandboxGame : Game
             case "drive":
                 Menus.Go(Screen.Playing);
                 Vehicles.Enter(Vehicles.SpawnBuggy(Player.FeetPosition + new Float3(0f, 1.2f, 3f), 0f));
+                break;
+            case "physgun":
+                Menus.Go(Screen.Playing);
+                SelectPhysGun();
                 break;
             case "ragdoll":
                 Menus.Go(Screen.Playing);
@@ -220,6 +235,21 @@ public sealed class SandboxGame : Game
 
     private void ShotTick()
     {
+        if (ShotState == "physgun" && Time.UnscaledTotalTime > 5f)
+        {
+            if (PhysGun.Held is null)
+            {
+                Prop target = Props.Props[1];
+                Float3 d = Float3.Normalize(target.Go.Transform.Position - Player.EyePosition);
+                Player.SetLook(MathF.Atan2(d.X, d.Z) * 180f / MathF.PI, -MathF.Asin(d.Y) * 180f / MathF.PI);
+                Weapons.Tick(this, new WeaponInput(true, true, false, false, false, false, 0f), Time.DeltaTime);
+            }
+            else
+            {
+                Player.SetLook(-20f + MathF.Sin(Time.UnscaledTotalTime) * 5f, 15f);
+                Weapons.Tick(this, new WeaponInput(false, true, false, false, false, false, 0f), Time.DeltaTime);
+            }
+        }
         if (ShotState == "drive" && Vehicles.Driving is { } car)
             car.Drive(Time.UnscaledTotalTime > 7f ? 0.6f : 0f, Time.UnscaledTotalTime < 8.5f, false, false);
         if (ShotState == "smg" && Time.UnscaledTotalTime > 6f)
@@ -304,6 +334,7 @@ public sealed class SandboxGame : Game
         else
             pos = Player.EyePosition + Player.Forward * 5f;
         string name = entry.Spawn(this, pos, Player.Yaw);
+        if (entry.Tab != MenuTab.Weapons) Fx.SpawnPuff(pos);
         LastSpawned = entry;
         if (entry.Tab != MenuTab.Weapons)
         {

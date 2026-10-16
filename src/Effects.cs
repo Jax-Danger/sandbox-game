@@ -184,6 +184,45 @@ public sealed class Fx(SandboxGame g)
         Add(go, 2.5f, tick: (t, _) => { if (t.Life <= 0.0001f) Explode(t.Go.Transform.Position + new Float3(0f, 0.2f, 0f)); });
     }
 
+    /// <summary>Blue sparkle + expanding shell where something spawns.</summary>
+    public void SpawnPuff(Float3 at)
+    {
+        GameObject shell = Prim("spawn_fx", Mesh.CreateSphere(0.5f, 12, 16), Mat("spawnfx", new Color(0.35f, 0.65f, 1f, 1f), 3f), at);
+        Add(shell, 0.18f, tick: (t, _) =>
+        {
+            float k = 1f - t.Life / t.Max, s = 0.3f + k * 1.4f * (1f - k * 0.5f);
+            t.Go.Transform.LocalScale = new Float3(s, s * 0.15f, s);
+        });
+        for (int i = 0; i < 8; i++)
+        {
+            float a = i / 8f * MathF.PI * 2f;
+            GameObject sp = Prim("spark", Mesh.CreateCube(new Float3(0.03f, 0.03f, 0.03f)), Mat("spawnfx", new Color(0.35f, 0.65f, 1f, 1f), 3f), at);
+            Add(sp, 0.35f, new Float3(MathF.Cos(a) * 2.5f, 1.5f, MathF.Sin(a) * 2.5f), gravity: true);
+        }
+    }
+
+    private GameObject? _beam, _beamTip;
+    /// <summary>Physgun beam from the muzzle to the grab point, gently pulsing. Pass null to hide.</summary>
+    public void Beam(Float3 from, Float3? to)
+    {
+        if (to is null)
+        {
+            if (_beam is not null) _beam.Enabled = false;
+            if (_beamTip is not null) _beamTip.Enabled = false;
+            return;
+        }
+        Material m = Mat("beam", new Color(0.35f, 0.75f, 1f, 1f), 6f);
+        _beam ??= Prim("physgun_beam", UnitBeam(0.02f), m, from);
+        _beamTip ??= Prim("physgun_tip", Mesh.CreateSphere(0.06f, 10, 12), m, from);
+        _beam.Enabled = _beamTip.Enabled = true;
+        Stretch(_beam, from, to.Value);
+        float pulse = 1f + 0.35f * MathF.Sin(Time.UnscaledTotalTime * 18f);
+        Float3 sc = _beam.Transform.LocalScale;
+        _beam.Transform.LocalScale = new Float3(pulse, pulse, sc.Z);
+        _beamTip.Transform.Position = to.Value;
+        _beamTip.Transform.LocalScale = new Float3(pulse, pulse, pulse);
+    }
+
     public void Tick(float dt)
     {
         for (int i = _live.Count - 1; i >= 0; i--)

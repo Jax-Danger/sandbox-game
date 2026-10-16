@@ -37,9 +37,12 @@ public sealed class PhysGunWeapon : Weapon
     private SandboxGame? _g;
 
     public override void Equip(SandboxGame g) => _g = g;
-    public override void Holster(SandboxGame g) => g.PhysGun.Release(keepVelocity: false);
+    public override void Holster(SandboxGame g) { g.PhysGun.Release(keepVelocity: false); g.Fx.Beam(default, null); }
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
-        => g.Notify(g.PhysGun.Update(g.Player, i.PrimaryDown, i.PrimaryHeld, i.SecondaryDown, i.Wheel));
+    {
+        g.Notify(g.PhysGun.Update(g.Player, i.PrimaryDown, i.PrimaryHeld, i.SecondaryDown, i.Wheel));
+        g.Fx.Beam(Vm?.MuzzlePosition ?? g.Player.EyePosition, g.PhysGun.GrabPoint);
+    }
 }
 
 public sealed class ToolGunWeapon : Weapon

@@ -15,6 +15,8 @@ public sealed class PhysGun(PropManager props)
     private Prop? _held;
     private float _distance;
     private Float3 _localGrabPoint;
+    /// <summary>World-space point on the held prop where the beam attaches.</summary>
+    public Float3? GrabPoint => Held is { } h ? h.Go.Transform.TransformPoint(_localGrabPoint) : null;
     private bool _hadGravity;
 
     public Prop? Held => _held is { Alive: true } ? _held : null;
