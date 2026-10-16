@@ -19,9 +19,10 @@ public static class ProcTex
                 int i = (y * w + x) * 4;
                 data[i] = r; data[i + 1] = g; data[i + 2] = b; data[i + 3] = a;
             }
-        t = new Texture2D((uint)w, (uint)h, false, TextureImageFormat.Color4b);
-        t.SetData<byte>(data);
-        t.SetTextureFilters(TextureMin.Linear, TextureMag.Linear);
+        // Same upload path as Prowl's image importer (Magick → Texture2D.FromImage, 16-bit RGBA, flipped rows).
+        var settings = new ImageMagick.MagickReadSettings { Width = (uint)w, Height = (uint)h, Format = ImageMagick.MagickFormat.Rgba, Depth = 8 };
+        using (var img = new ImageMagick.MagickImage(data, settings))
+            t = Texture2D.FromImage(img, generateMipmaps: true);
         try { t.SetWrapModes(TextureWrap.Repeat, TextureWrap.Repeat); } catch { }
         return Cache[key] = t;
     }
@@ -63,16 +64,16 @@ public static class ProcTex
     /// <summary>Light dev-texture floor: soft concrete noise with a subtle 1m grid (tile 4m per texture).</summary>
     public static Texture2D DevFloor() => Make("devfloor", 256, 256, (x, y) =>
     {
-        float n = 0.86f + 0.1f * Fbm(x / 24f, y / 24f, 3);
+        float n = 0.46f + 0.05f * Fbm(x / 24f, y / 24f, 3);
         bool line = x % 64 < 2 || y % 64 < 2;
         bool major = x < 3 || y < 3;
-        float v = n * (major ? 0.72f : line ? 0.86f : 1f);
+        float v = n * (major ? 0.55f : line ? 0.72f : 1f);
         return (B(v), B(v), B(v * 1.01f), 255);
     });
 
     public static Texture2D Concrete() => Make("concrete", 128, 128, (x, y) =>
     {
-        float v = 0.8f + 0.18f * Fbm(x / 10f, y / 10f, 7) - (Hash(x, y, 9) > 0.985f ? 0.15f : 0f);
+        float v = 0.52f + 0.12f * Fbm(x / 10f, y / 10f, 7) - (Hash(x, y, 9) > 0.985f ? 0.15f : 0f);
         return (B(v), B(v), B(v), 255);
     });
 
@@ -110,8 +111,9 @@ public sealed record SurfaceMaterial(string Name, float Roughness, float Metalli
 
     public void ApplyVisual(Material m)
     {
-        if (Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "1") return; // procedural textures render black on this build; opt-in only
+        if (Application.IsHeadless || Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") == "0") return; // opt out with SANDBOX_PROCTEX=0
         m.SetTexture("_MainTex", Albedo());
+        if (Environment.GetEnvironmentVariable("SANDBOX_PROCTEX_SURF") == "1")
         m.SetTexture("_SurfaceTex", ProcTex.Surface(Roughness, Metallic));
     }
 }

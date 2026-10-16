@@ -54,11 +54,12 @@ public static class MapBuilder
         renderer.Mesh = Mesh.CreateCube(size);
         var material = new Material(shader);
         material.SetColor("_MainColor", color);
-        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") == "1")
+        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {
             bool floor = name == "Floor";
             material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
             material.SetVector("_Tiling", floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f)));
+            if (Environment.GetEnvironmentVariable("SANDBOX_PROCTEX_SURF") == "1")
             material.SetTexture("_SurfaceTex", ProcTex.Surface(floor ? 0.85f : 0.9f, 0f));
         }
         renderer.Material = material;
