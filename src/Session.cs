@@ -171,6 +171,7 @@ public sealed partial class SandboxGame
     public void ApplyModifiers(SessionMeta meta)
     {
         World.Physics.Gravity = new Float3(0f, -meta.Modifiers.Gravity, 0f);
+        Player.Gravity = 20f * meta.Modifiers.Gravity / 9.81f;
         Health.FallDamage = meta.Modifiers.FallDamage;
         DayNight.Enabled = meta.Modifiers.DayNight;
         Roleplay.Reset(meta);
@@ -259,6 +260,7 @@ public sealed partial class SandboxGame
         ClearMap(notify: false);
         MapBuilder.Load(World, Shader, "flatgrass", null);
         World.Physics.Gravity = new Float3(0f, -9.81f, 0f);
+        Player.Gravity = 20f;
         Roleplay.Reset(null);
         DayNight.Enabled = false;
         SpawnMenuBackdrop();

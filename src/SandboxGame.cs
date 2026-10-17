@@ -378,7 +378,7 @@ public sealed partial class SandboxGame : Game
             if (_stepTimer <= 0f)
             {
                 _stepTimer = 0.45f;
-                Sounds.Play("sfx_footstep", 0.25f, null, 0.9f + Random.Shared.NextSingle() * 0.2f);
+                Sounds.Play(FootstepSound(), Player.Crouching ? 0.12f : 0.25f, null, 0.9f + Random.Shared.NextSingle() * 0.2f);
             }
         }
         if (_hum is not null)
@@ -391,6 +391,20 @@ public sealed partial class SandboxGame : Game
             }
             catch { }
         }
+    }
+
+    /// <summary>Footstep by surface: the prop underfoot's material, grass on the hills, concrete otherwise.</summary>
+    private string FootstepSound()
+    {
+        Float3 feet = Player.FeetPosition + new Float3(0f, 0.3f, 0f);
+        if (World.Physics.Raycast(feet, -Float3.UnitY, 0.8f, out RaycastHit hit) && Props.FromBody(hit.Rigidbody) is { } p)
+            return p.Surface switch
+            {
+                "Wood" => "sfx_footstep_wood",
+                "Metal" => "sfx_footstep_metal",
+                _ => "sfx_footstep",
+            };
+        return MapBuilder.Current == "hills" ? "sfx_footstep_grass" : "sfx_footstep";
     }
 
     private void UpdateHighlight(Prop? p)

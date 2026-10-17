@@ -7,7 +7,7 @@ namespace Sandbox;
 public static class SoundGen
 {
     public const int Rate = 22050;
-    private const int Version = 1;
+    private const int Version = 2;
     public static string Dir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", $"sounds-gen-v{Version}");
 
     public static readonly string[] Ids =
@@ -15,6 +15,7 @@ public static class SoundGen
         "sfx_spawn", "sfx_weapon_switch", "sfx_ui_click", "sfx_ui_hover", "sfx_pickup", "sfx_throw", "sfx_impact_soft", "sfx_impact",
         "sfx_explosion", "sfx_pistol", "sfx_smg", "sfx_shotgun", "sfx_rpg", "sfx_dry", "sfx_reload", "sfx_swing", "sfx_door",
         "sfx_engine", "sfx_button", "sfx_physgun_hum", "sfx_footstep", "sfx_tool",
+        "sfx_hurt", "sfx_coin", "sfx_ui_open", "sfx_footstep_grass", "sfx_footstep_wood", "sfx_footstep_metal", "sfx_death",
     ];
 
     /// <summary>Returns the generated file for <paramref name="id"/>, creating it if needed; null if unknown or on failure.</summary>
@@ -166,6 +167,57 @@ public static class SoundGen
             {
                 b = Buf(0.12f);
                 for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; b[i] = MathF.Sin(2f * MathF.PI * (500f + 1500f * t) * t) * MathF.Exp(-t * 25f) * 0.5f; }
+                break;
+            }
+            case "sfx_hurt":
+            {
+                // Short thud + low "oof" formant.
+                b = Buf(0.28f); float lp = 0f;
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; lp += (N() - lp) * 0.08f; float f = 180f - 60f * t / 0.28f; b[i] = (MathF.Sin(2f * MathF.PI * f * t) * 0.7f + MathF.Sin(2f * MathF.PI * f * 2.6f * t) * 0.2f + lp * 0.8f) * MathF.Exp(-t * 11f); }
+                break;
+            }
+            case "sfx_death":
+            {
+                b = Buf(0.9f); float lp = 0f;
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; lp += (N() - lp) * 0.05f; float f = 220f * MathF.Exp(-t * 1.6f); b[i] = (MathF.Sin(2f * MathF.PI * f * t) * 0.6f + lp) * MathF.Exp(-t * 3.5f); }
+                break;
+            }
+            case "sfx_coin":
+            {
+                // Two bright bell partials, second a fourth up (classic pickup "ka-ching").
+                b = Buf(0.45f);
+                for (int i = 0; i < b.Length; i++)
+                {
+                    float t = i / (float)Rate, t2 = MathF.Max(0f, t - 0.07f);
+                    float a = (MathF.Sin(2f * MathF.PI * 1975f * t) + 0.4f * MathF.Sin(2f * MathF.PI * 5925f * t)) * MathF.Exp(-t * 18f) * (t < 0.07f ? 1f : 0.3f);
+                    float c = t > 0.07f ? (MathF.Sin(2f * MathF.PI * 2637f * t2) + 0.35f * MathF.Sin(2f * MathF.PI * 7911f * t2)) * MathF.Exp(-t2 * 7f) : 0f;
+                    b[i] = (a + c) * 0.5f;
+                }
+                break;
+            }
+            case "sfx_ui_open":
+            {
+                b = Buf(0.16f);
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; float f = 600f + 700f * t / 0.16f; b[i] = MathF.Sin(2f * MathF.PI * f * t) * MathF.Sin(MathF.PI * t / 0.16f) * 0.35f; }
+                break;
+            }
+            case "sfx_footstep_grass":
+            {
+                // Soft brushed noise, no click.
+                b = Buf(0.14f); float lp = 0f, hp = 0f;
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; float n = N(); lp += (n - lp) * 0.35f; hp = n - lp; b[i] = (hp * 0.5f + lp * 0.4f) * MathF.Sin(MathF.PI * MathF.Min(1f, t / 0.14f)) * MathF.Exp(-t * 14f); }
+                break;
+            }
+            case "sfx_footstep_wood":
+            {
+                b = Buf(0.16f); float lp = 0f;
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; lp += (N() - lp) * 0.25f; b[i] = (MathF.Sin(2f * MathF.PI * 190f * t) * 0.7f + MathF.Sin(2f * MathF.PI * 410f * t) * 0.3f + lp * 0.5f) * MathF.Exp(-t * 32f); }
+                break;
+            }
+            case "sfx_footstep_metal":
+            {
+                b = Buf(0.3f);
+                for (int i = 0; i < b.Length; i++) { float t = i / (float)Rate; b[i] = (N() * MathF.Exp(-t * 90f) + (MathF.Sin(2f * MathF.PI * 820f * t) * 0.4f + MathF.Sin(2f * MathF.PI * 1340f * t) * 0.25f) * MathF.Exp(-t * 14f)) * 0.6f; }
                 break;
             }
             default: b = Buf(0.05f); break;

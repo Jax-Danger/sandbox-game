@@ -11,7 +11,13 @@ namespace Sandbox;
 public sealed class Player
 {
     public const float EyeHeight = 1.65f;
-    private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6f, Gravity = 20f;
+    private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6f, CrouchSpeed = 2.3f;
+    /// <summary>Player gravity; scaled with the world's gravity modifier (20 at Earth gravity feels right for the controller).</summary>
+    public static float Gravity { get; set; } = 20f;
+    public bool Crouching { get; private set; }
+    private float _crouch;
+    /// <summary>Current eye height above the feet (lowers smoothly while crouching).</summary>
+    public float CurrentEyeHeight => EyeHeight - 0.6f * _crouch;
     private const float FlySpeed = 10f;
     public float LookSensitivity { get; set; } = 0.12f;
 
@@ -89,6 +95,8 @@ public sealed class Player
             if (Input.GetKey(KeyCode.A)) move -= Float2.UnitX;
             run = Input.IsShiftPressed;
         }
+        Crouching = allowInput && !Noclip && Input.IsCtrlPressed;
+        _crouch += ((Crouching ? 1f : 0f) - _crouch) * MathF.Min(1f, dt * 12f);
 
         if (Noclip)
         {
@@ -111,7 +119,7 @@ public sealed class Player
         Float3 wish = flatForward * move.Y + flatRight * move.X;
         float len = Float3.Length(wish);
         if (len > 1e-4f) wish /= len;
-        wish *= run ? RunSpeed : WalkSpeed;
+        wish *= Crouching ? CrouchSpeed : run ? RunSpeed : WalkSpeed;
         Speed = _controller.IsGrounded ? Float3.Length(wish) : 0f;
 
         bool groundedNow = _controller.IsGrounded;
@@ -139,7 +147,7 @@ public sealed class Player
         }
 
         ApplyCamera();
-        CameraObject.Transform.Position = _body.Transform.Position + new Float3(0f, EyeHeight, 0f);
+        CameraObject.Transform.Position = _body.Transform.Position + new Float3(0f, CurrentEyeHeight, 0f);
     }
 
     private static Float3 Flat(Float3 v)
