@@ -22,6 +22,9 @@ internal static class Program
         try
         {
             Settings s = Settings.Load();
+            // SANDBOX_RES=1920x1080 overrides the window size (screenshots / testing).
+            if (Environment.GetEnvironmentVariable("SANDBOX_RES") is { } res && res.Split('x') is [var rw, var rh]
+                && int.TryParse(rw, out int iw) && int.TryParse(rh, out int ih)) { s.ResolutionWidth = iw; s.ResolutionHeight = ih; }
             game.Run("Sandbox", s.ResolutionWidth, s.ResolutionHeight);
             game.SaveOnExit();
             return 0;

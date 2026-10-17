@@ -47,34 +47,45 @@ public sealed class SpawnMenu(IconRenderer icons)
         if (_openness <= 0.01f) { SearchFocused = false; return; }
         Ui.Alpha = Theme.Ease(_openness);
 
-        float pw = MathF.Min(w * 0.9f, Theme.S(1160)), ph = MathF.Min(h * 0.84f, Theme.S(680));
-        float x0 = (w - pw) / 2f, y0 = (h - ph) / 2f + (1f - spring) * Theme.S(30);
-        float pad = Theme.S(Theme.Lg);
+        // GMod-style: nearly full screen with a small margin.
+        float margin = Theme.S(12);
+        float pw = w - 2 * margin, ph = h - 2 * margin;
+        float x0 = margin, y0 = margin + (1f - spring) * Theme.S(24);
+        float pad = Theme.S(Theme.Sm + 2);
 
         Ui.Glass(paper, "sm_panel", x0, y0, pw, ph, strong: true).IsNotInteractable().Scale(0.96f + 0.04f * spring).TransformOrigin(0.5f, 0.5f);
 
         // ---- Tab strip: pill buttons with icons ----
-        float tabH = Theme.S(36), tabY = y0 + pad, tx = x0 + pad;
+        float tabH = Theme.S(28), tabY = y0 + pad, tx = x0 + pad;
         foreach (MenuTab tab in Enum.GetValues<MenuTab>())
         {
             string label = tab.ToString();
-            float tw = Theme.S(48) + (float)paper.MeasureText(label, Theme.S(Theme.Body), Theme.SemiBold, 0f).X;
+            float tw = Theme.S(36) + (float)paper.MeasureText(label, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X;
             MenuTab captured = tab;
             Ui.Button(paper, $"sm_tab_{tab}", tx, tabY, tw, tabH, label, () => { Tab = captured; _scroll = 0f; _category = "All"; },
-                selected: Tab == tab, size: Theme.Body, icon: TabIcon(tab), ghost: Tab != tab, radius: tabH / 2f);
-            tx += tw + Theme.S(Theme.Xs);
+                selected: Tab == tab, size: Theme.Caption, icon: TabIcon(tab), ghost: Tab != tab, radius: tabH / 2f);
+            tx += tw + Theme.S(2);
         }
 
         float bodyY = tabY + tabH + pad, bodyH = y0 + ph - pad - bodyY;
-        float sideW = Theme.S(210);
-        float mainX = x0 + pad + sideW + pad, mainW = x0 + pw - pad - mainX;
+        float sideW = Theme.S(156), gap = Theme.S(Theme.Sm);
+        // Right column (GMod's tool panel): tool list + the selected tool's settings, on every content tab.
+        bool column = Tab is not (MenuTab.Utilities or MenuTab.Dupes);
+        float colW = column ? Theme.S(250) : 0f;
+        float colX = x0 + pw - pad - colW;
+        float mainX = x0 + pad + sideW + gap, mainW = (column ? colX - gap : x0 + pw - pad) - mainX;
+        if (column)
+        {
+            float listH = MathF.Floor(bodyH * 0.44f);
+            DrawToolList(paper, colX, bodyY, colW, listH, game);
+            DrawToolSettings(paper, colX, bodyY + listH + gap, colW, bodyH - listH - gap, game);
+        }
 
         SearchFocused = false;
         switch (Tab)
         {
             case MenuTab.Tools:
-                DrawToolList(paper, x0 + pad, bodyY, sideW, bodyH, game);
-                DrawToolSettings(paper, mainX, bodyY, mainW, bodyH, game);
+                DrawToolGrid(paper, x0 + pad, bodyY, colX - gap - x0 - pad, bodyH, game);
                 break;
             case MenuTab.Dupes:
                 DrawDupes(paper, x0 + pad, bodyY, sideW, mainX, mainW, bodyH, game);
@@ -84,7 +95,7 @@ public sealed class SpawnMenu(IconRenderer icons)
                 break;
             default:
                 if (Tab == MenuTab.Spawnlists)
-                    DrawSearch(paper, x0 + pw - pad - Theme.S(240), tabY, Theme.S(240), tabH);
+                    DrawSearch(paper, x0 + pw - pad - Theme.S(220), tabY, Theme.S(220), tabH);
                 DrawCategoryTree(paper, x0 + pad, bodyY, sideW, bodyH);
                 DrawGrid(paper, mainX, bodyY, mainW, bodyH, game);
                 break;
@@ -111,33 +122,33 @@ public sealed class SpawnMenu(IconRenderer icons)
     private void DrawCategoryTree(Paper paper, float x, float y, float w, float h)
     {
         Ui.Panel(paper, "sm_tree", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
-        float ix = x + Theme.S(Theme.Sm), iy = y + Theme.S(Theme.Sm);
-        Ui.Text(paper, "sm_tree_hdr", ix + Theme.S(6), iy, w, Theme.S(24), Tab == MenuTab.Spawnlists ? "SPAWNLISTS" : Tab.ToString().ToUpperInvariant(),
+        float ix = x + Theme.S(6), iy = y + Theme.S(6);
+        Ui.Text(paper, "sm_tree_hdr", ix + Theme.S(6), iy, w, Theme.S(20), Tab == MenuTab.Spawnlists ? "SPAWNLISTS" : Tab.ToString().ToUpperInvariant(),
             Theme.Micro, Theme.TextFaint, Theme.SemiBold);
-        iy += Theme.S(28);
+        iy += Theme.S(22);
         string[] cats = ["All", .. SpawnCatalog.Categories(Tab)];
         foreach (string cat in cats)
         {
             string captured = cat;
-            Ui.Button(paper, $"sm_cat_{Tab}_{cat}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32), cat,
-                () => { _category = captured; _scroll = 0f; }, selected: _category == cat, size: Theme.Body,
-                align: TextAlignment.MiddleLeft, ghost: _category != cat, icon: cat == "All" ? Icon.Folder : Icon.Folder);
-            iy += Theme.S(36);
+            Ui.Button(paper, $"sm_cat_{Tab}_{cat}", ix, iy, w - 2 * Theme.S(6), Theme.S(26), cat,
+                () => { _category = captured; _scroll = 0f; }, selected: _category == cat, size: Theme.Caption,
+                align: TextAlignment.MiddleLeft, ghost: _category != cat, icon: Icon.Folder);
+            iy += Theme.S(28);
         }
         if (Tab != MenuTab.Spawnlists) return;
-        iy += Theme.S(10);
-        Ui.Text(paper, "sm_tree_user", ix + Theme.S(6), iy, w, Theme.S(24), "MY SPAWNLISTS", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
-        iy += Theme.S(28);
+        iy += Theme.S(8);
+        Ui.Text(paper, "sm_tree_user", ix + Theme.S(6), iy, w, Theme.S(20), "MY SPAWNLISTS", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+        iy += Theme.S(22);
         foreach (string name in User.Lists.Keys)
         {
             string key = UserPrefix + name, captured = name;
-            Ui.Button(paper, $"sm_ucat_{name}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32), name,
-                () => { _category = UserPrefix + captured; _pinTarget = captured; _scroll = 0f; }, selected: _category == key, size: Theme.Body,
+            Ui.Button(paper, $"sm_ucat_{name}", ix, iy, w - 2 * Theme.S(6), Theme.S(26), name,
+                () => { _category = UserPrefix + captured; _pinTarget = captured; _scroll = 0f; }, selected: _category == key, size: Theme.Caption,
                 align: TextAlignment.MiddleLeft, ghost: _category != key, icon: Icon.Pencil);
-            iy += Theme.S(36);
+            iy += Theme.S(28);
         }
-        Ui.Button(paper, "sm_ucat_new", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32), "New spawnlist",
-            () => { string n = User.Create(); _category = UserPrefix + n; _pinTarget = n; }, size: Theme.Body,
+        Ui.Button(paper, "sm_ucat_new", ix, iy, w - 2 * Theme.S(6), Theme.S(26), "New spawnlist",
+            () => { string n = User.Create(); _category = UserPrefix + n; _pinTarget = n; }, size: Theme.Caption,
             align: TextAlignment.MiddleLeft, ghost: true, icon: Icon.Plus);
     }
 
@@ -151,11 +162,11 @@ public sealed class SpawnMenu(IconRenderer icons)
             .Where(e => _search.Length == 0 || e.Name.Contains(_search, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        Ui.Text(paper, "sm_grid_title", x + Theme.S(4), y, w, Theme.S(26), _category == "All" ? $"All {Tab}" : userList ? _category[UserPrefix.Length..] : _category,
-            Theme.Title, Theme.Text, Theme.SemiBold);
-        Ui.Text(paper, "sm_grid_count", x, y, w - Theme.S(4), Theme.S(26), $"{shown.Length} item{(shown.Length == 1 ? "" : "s")}",
+        Ui.Text(paper, "sm_grid_title", x + Theme.S(2), y, w, Theme.S(22), _category == "All" ? $"All {Tab}" : userList ? _category[UserPrefix.Length..] : _category,
+            Theme.Label, Theme.Text, Theme.SemiBold);
+        Ui.Text(paper, "sm_grid_count", x, y, w - Theme.S(4), Theme.S(22), $"{shown.Length} item{(shown.Length == 1 ? "" : "s")}",
             Theme.Caption, Theme.TextFaint, align: TextAlignment.MiddleRight);
-        float gy = y + Theme.S(38), gh = h - Theme.S(38);
+        float gy = y + Theme.S(28), gh = h - Theme.S(28);
 
         if (shown.Length == 0)
         {
@@ -164,7 +175,7 @@ public sealed class SpawnMenu(IconRenderer icons)
             return;
         }
 
-        float tile = Theme.S(118), gap = Theme.S(Theme.Md);
+        float tile = Theme.S(84), gap = Theme.S(6);
         int cols = Math.Max(1, (int)((w + gap) / (tile + gap)));
         int rows = (shown.Length + cols - 1) / cols;
         float contentH = rows * (tile + gap);
@@ -185,10 +196,10 @@ public sealed class SpawnMenu(IconRenderer icons)
                 DrawTile(paper, entry, lx, ly, tile, hover, game);
                 if (hover && entry.Tab != MenuTab.Weapons)
                 {
-                    float bs = Theme.S(24);
+                    float bs = Theme.S(20);
                     SpawnEntry ce = entry;
                     string list = userList ? _category[UserPrefix.Length..] : _pinTarget;
-                    Ui.Button(paper, $"sm_pin_{entry.Id}", lx + tile - bs - Theme.S(6), ly + Theme.S(6), bs, bs, "",
+                    Ui.Button(paper, $"sm_pin_{entry.Id}", lx + tile - bs - Theme.S(4), ly + Theme.S(4), bs, bs, "",
                         () => { if (userList) User.Remove(list, ce.Id); else { User.Add(list, ce.Id); game.Notify($"Added {ce.Name} to {list}"); } },
                         icon: userList ? Icon.Trash : Icon.Plus, radius: bs / 2f, size: Theme.Caption);
                 }
@@ -212,7 +223,7 @@ public sealed class SpawnMenu(IconRenderer icons)
         SpawnEntry captured = entry;
         Icon icon = entry.Icon;
         paper.Box($"sm_tile_{entry.Id}").PositionType(PositionType.SelfDirected).Position(x, y).Size(size, size)
-            .Rounded(Theme.S(Theme.Radius - 2))
+            .Rounded(Theme.S(Theme.RadiusSm))
             .BackgroundLinearGradient(0, 0, 0, 1,
                 Theme.WithAlpha(hover ? Color.FromArgb(70, 255, 255, 255) : Color.FromArgb(36, 255, 255, 255), a),
                 Theme.WithAlpha(Color.FromArgb(14, 255, 255, 255), a))
@@ -240,8 +251,8 @@ public sealed class SpawnMenu(IconRenderer icons)
                         new Color32(Theme.Text.R, Theme.Text.G, Theme.Text.B, (byte)(220 * a)));
                 }
             }));
-        Ui.Text(paper, $"sm_tile_lbl_{entry.Id}", x, y + size * 0.78f, size, size * 0.18f, entry.Name,
-            Theme.Caption, hover ? Color.White : Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
+        Ui.Text(paper, $"sm_tile_lbl_{entry.Id}", x + Theme.S(2), y + size * 0.79f, size - Theme.S(4), size * 0.17f, entry.Name,
+            Theme.Micro, hover ? Color.White : Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
     }
 
     private static void DrawTooltip(Paper paper, SpawnEntry e)
@@ -260,12 +271,12 @@ public sealed class SpawnMenu(IconRenderer icons)
     {
         Ui.Panel(paper, "sm_tools", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
         var groups = ToolGun.AllTools.GroupBy(t => t.Category).ToArray();
-        float contentH = Theme.S(Theme.Sm) * 2 + groups.Sum(gr => Theme.S(26) + gr.Count() * Theme.S(34) + Theme.S(6));
+        float contentH = Theme.S(6) * 2 + groups.Sum(gr => Theme.S(20) + gr.Count() * Theme.S(26) + Theme.S(4));
         float maxScroll = MathF.Max(0f, contentH - h);
         _toolScroll = Math.Clamp(_toolScroll, 0f, maxScroll);
         using var _box = paper.Box("sm_tools_clip").PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).Clip()
             .OnScroll(e => _toolScroll = Math.Clamp(_toolScroll - (float)e.Delta * Theme.S(60), 0f, maxScroll)).Enter();
-        float ix = Theme.S(Theme.Sm), iy = Theme.S(Theme.Sm) - _toolScroll;
+        float ix = Theme.S(6), iy = Theme.S(6) - _toolScroll;
         if (maxScroll > 0f)
         {
             float barH = h * h / contentH, barY = (h - barH) * (_toolScroll / maxScroll);
@@ -273,19 +284,19 @@ public sealed class SpawnMenu(IconRenderer icons)
         }
         foreach (IGrouping<string, ToolInfo> group in groups)
         {
-            Ui.Text(paper, $"sm_tcat_{group.Key}", ix + Theme.S(6), iy, w, Theme.S(24), group.Key.ToUpperInvariant(),
+            Ui.Text(paper, $"sm_tcat_{group.Key}", ix + Theme.S(6), iy, w, Theme.S(20), group.Key.ToUpperInvariant(),
                 Theme.Micro, Theme.TextFaint, Theme.SemiBold);
-            iy += Theme.S(26);
+            iy += Theme.S(20);
             foreach (ToolInfo tool in group)
             {
                 ToolInfo captured = tool;
                 bool active = game.Weapons.IsToolGun && game.ToolGun.Mode == tool.Mode;
-                Ui.Button(paper, $"sm_tool_{tool.Mode}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(30),
+                Ui.Button(paper, $"sm_tool_{tool.Mode}", ix, iy, w - 2 * Theme.S(6) - Theme.S(6), Theme.S(24),
                     tool.Name, () => game.SelectTool(captured.Mode), selected: active, ghost: !active,
-                    size: Theme.Body, align: TextAlignment.MiddleLeft, icon: Icons.For(tool.Mode));
-                iy += Theme.S(34);
+                    size: Theme.Caption, align: TextAlignment.MiddleLeft, icon: Icons.For(tool.Mode));
+                iy += Theme.S(26);
             }
-            iy += Theme.S(6);
+            iy += Theme.S(4);
         }
     }
 
@@ -293,52 +304,80 @@ public sealed class SpawnMenu(IconRenderer icons)
     {
         ToolInfo info = ToolGun.InfoFor(game.ToolGun.Mode);
         bool equipped = game.Weapons.IsToolGun;
-        Ui.Panel(paper, "sm_cp", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
-        float pad = Theme.S(Theme.Xl), cx = x + pad, cw = w - 2 * pad, cy = y + pad;
+        Ui.Panel(paper, "sm_cp", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+        float pad = Theme.S(Theme.Md), cx = x + pad, cw = w - 2 * pad, cy = y + pad;
 
-        float isz = Theme.S(40);
-        Ui.Rect(paper, "sm_cp_icbg", cx, cy, isz + Theme.S(16), isz + Theme.S(16), Theme.AccentSoft, Theme.S(Theme.RadiusSm + 2));
-        Ui.Icon(paper, "sm_cp_ic", cx + Theme.S(8), cy + Theme.S(8), isz, Icons.For(info.Mode), Color.White);
-        float tx = cx + isz + Theme.S(32);
-        Ui.Text(paper, "sm_cp_cat", tx, cy + Theme.S(4), cw, Theme.S(18), info.Category.ToUpperInvariant(), Theme.Micro, Theme.Accent, Theme.SemiBold);
-        Ui.Text(paper, "sm_cp_name", tx, cy + Theme.S(20), cw, Theme.S(34), info.Name, Theme.Heading, Theme.Text, Theme.Bold);
-        cy += isz + Theme.S(32);
-        Ui.Paragraph(paper, "sm_cp_desc", cx, cy, cw, Theme.S(40), info.Description, Theme.Body, Theme.TextMuted);
-        cy += Theme.S(32);
+        float isz = Theme.S(22);
+        Ui.Rect(paper, "sm_cp_icbg", cx, cy, isz + Theme.S(10), isz + Theme.S(10), Theme.AccentSoft, Theme.S(Theme.RadiusXs + 1));
+        Ui.Icon(paper, "sm_cp_ic", cx + Theme.S(5), cy + Theme.S(5), isz, Icons.For(info.Mode), Color.White);
+        float tx = cx + isz + Theme.S(18);
+        Ui.Text(paper, "sm_cp_cat", tx, cy - Theme.S(1), cw, Theme.S(14), info.Category.ToUpperInvariant(), Theme.Micro, Theme.Accent, Theme.SemiBold);
+        Ui.Text(paper, "sm_cp_name", tx, cy + Theme.S(12), cw, Theme.S(22), info.Name, Theme.Label, Theme.Text, Theme.Bold);
+        cy += isz + Theme.S(18);
+        Ui.Paragraph(paper, "sm_cp_desc", cx, cy, cw, Theme.S(32), info.Description, Theme.Caption, Theme.TextMuted);
+        cy += Theme.S(34);
 
         float kx = cx;
-        kx += Ui.KeyCap(paper, "sm_cp_lmb", kx, cy, "LMB") + Theme.S(Theme.Sm);
-        Ui.Text(paper, "sm_cp_lmbt", kx, cy - Theme.S(1), cw, Theme.S(20), info.Left, Theme.Body, Theme.Text);
-        cy += Theme.S(28);
+        kx += Ui.KeyCap(paper, "sm_cp_lmb", kx, cy, "LMB") + Theme.S(6);
+        Ui.Text(paper, "sm_cp_lmbt", kx, cy - Theme.S(1), cw - (kx - cx), Theme.S(20), info.Left, Theme.Caption, Theme.Text);
+        cy += Theme.S(24);
         if (info.Right is { } right)
         {
             kx = cx;
-            kx += Ui.KeyCap(paper, "sm_cp_rmb", kx, cy, "RMB") + Theme.S(Theme.Sm);
-            Ui.Text(paper, "sm_cp_rmbt", kx, cy - Theme.S(1), cw, Theme.S(20), right, Theme.Body, Theme.Text);
-            cy += Theme.S(28);
+            kx += Ui.KeyCap(paper, "sm_cp_rmb", kx, cy, "RMB") + Theme.S(6);
+            Ui.Text(paper, "sm_cp_rmbt", kx, cy - Theme.S(1), cw - (kx - cx), Theme.S(20), right, Theme.Caption, Theme.Text);
+            cy += Theme.S(24);
         }
-
-        cy += Theme.S(Theme.Md);
+        cy += Theme.S(4);
         Ui.Rect(paper, "sm_cp_sep", cx, cy, cw, 1f, Theme.Border);
-        cy += Theme.S(Theme.Lg);
-        float sliderW = MathF.Min(cw, Theme.S(420));
+        cy += Theme.S(Theme.Sm);
         bool any = false;
+        float bh = Theme.S(28), bottom = y + h - pad - bh - Theme.S(6);
         foreach (ToolSetting s in game.ToolGun.SettingsFor(info.Mode))
         {
+            if (cy + Theme.S(40) > bottom) break;
             any = true;
-            Ui.Text(paper, $"sm_s_{s.Name}_l", cx, cy, sliderW, Theme.S(20), s.Name, Theme.Body, Theme.Text);
-            Ui.Text(paper, $"sm_s_{s.Name}_v", cx, cy, sliderW, Theme.S(20), s.Format(s.Get()), Theme.Body, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
-            cy += Theme.S(24);
-            Ui.Slider(paper, $"sm_s_{s.Name}", cx, cy, sliderW, s.Get(), s.Min, s.Max, s.Set);
-            cy += Theme.S(28);
-            Ui.Paragraph(paper, $"sm_s_{s.Name}_h", cx, cy, sliderW, Theme.S(34), s.Help, Theme.Caption, Theme.TextFaint);
-            cy += Theme.S(40);
+            Ui.Text(paper, $"sm_s_{s.Name}_l", cx, cy, cw, Theme.S(18), s.Name, Theme.Caption, Theme.Text);
+            Ui.Text(paper, $"sm_s_{s.Name}_v", cx, cy, cw, Theme.S(18), s.Format(s.Get()), Theme.Caption, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
+            cy += Theme.S(19);
+            Ui.Slider(paper, $"sm_s_{s.Name}", cx, cy, cw, s.Get(), s.Min, s.Max, s.Set);
+            cy += Theme.S(26);
         }
-        if (!any) Ui.Text(paper, "sm_cp_none", cx, cy, cw, Theme.S(20), "This tool has no settings.", Theme.Body, Theme.TextFaint);
+        if (!any) Ui.Text(paper, "sm_cp_none", cx, cy, cw, Theme.S(18), "No settings.", Theme.Caption, Theme.TextFaint);
 
-        float bw = Theme.S(170), bh = Theme.S(38);
-        Ui.Button(paper, "sm_cp_equip", cx, y + h - pad - bh, bw, bh, equipped ? "Equipped" : "Equip",
-            () => game.SelectTool(info.Mode), selected: equipped, icon: equipped ? Icon.Check : Icon.Wrench, radius: bh / 2f);
+        Ui.Button(paper, "sm_cp_equip", cx, y + h - pad - bh, cw, bh, equipped ? "Equipped" : "Equip tool gun",
+            () => game.SelectTool(info.Mode), selected: equipped, icon: equipped ? Icon.Check : Icon.Wrench, radius: bh / 2f, size: Theme.Caption);
+    }
+
+    /// <summary>Tools tab body: every tool as an icon tile, grouped by category (settings live in the right column).</summary>
+    private static void DrawToolGrid(Paper paper, float x, float y, float w, float h, SandboxGame game)
+    {
+        float tile = Theme.S(84), gap = Theme.S(6);
+        int cols = Math.Max(1, (int)((w + gap) / (tile + gap)));
+        float cy = y;
+        foreach (var group in ToolGun.AllTools.GroupBy(t => t.Category))
+        {
+            Ui.Text(paper, $"sm_tg_h_{group.Key}", x + Theme.S(2), cy, w, Theme.S(22), group.Key, Theme.Label, Theme.Text, Theme.SemiBold);
+            cy += Theme.S(26);
+            int i = 0;
+            foreach (ToolInfo t in group)
+            {
+                float tx = x + (i % cols) * (tile + gap), ty = cy + (i / cols) * (tile + gap);
+                bool active = game.Weapons.IsToolGun && game.ToolGun.Mode == t.Mode;
+                bool hover = paper.IsPointerOverRect(tx, ty, tile, tile);
+                ToolInfo ct = t;
+                paper.Box($"sm_tg_{t.Mode}").PositionType(PositionType.SelfDirected).Position(tx, ty).Size(tile, tile)
+                    .Rounded(Theme.S(Theme.RadiusSm))
+                    .BackgroundColor(Theme.WithAlpha(active ? Theme.AccentSoft : hover ? Theme.Hover : Theme.PanelRaised, Ui.Alpha))
+                    .BorderColor(Theme.WithAlpha(active || hover ? Theme.Accent : Theme.Border, Ui.Alpha)).BorderWidth(active ? 1.5f : 1f)
+                    .OnClick(0, (_, _) => game.SelectTool(ct.Mode));
+                float isz = tile * 0.36f;
+                Ui.Icon(paper, $"sm_tg_ic_{t.Mode}", tx + (tile - isz) / 2f, ty + tile * 0.22f, isz, Icons.For(t.Mode), active ? Color.White : Theme.Text);
+                Ui.Text(paper, $"sm_tg_l_{t.Mode}", tx + Theme.S(2), ty + tile * 0.72f, tile - Theme.S(4), tile * 0.2f, t.Name, Theme.Micro, active || hover ? Color.White : Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
+                i++;
+            }
+            cy += ((i + cols - 1) / cols) * (tile + gap) + Theme.S(8);
+        }
     }
 
     // ---------------------------------------------------------------- utilities / empty
