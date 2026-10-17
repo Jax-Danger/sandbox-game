@@ -70,7 +70,7 @@ public sealed record WorldEntry(string Folder, SessionMeta Meta)
 /// </summary>
 public static class Worlds
 {
-    public const string GameVersion = "0.2.0";
+    public const string GameVersion = "0.3.0";
     public static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
     public static string Root { get; set; } = Environment.GetEnvironmentVariable("SANDBOX_SAVES") is { Length: > 0 } env ? env : Path.Combine(

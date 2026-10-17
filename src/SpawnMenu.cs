@@ -347,8 +347,8 @@ public sealed class SpawnMenu(IconRenderer icons)
     {
         Ui.Panel(paper, "sm_util", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
         float pad = Theme.S(Theme.Xl), cx = x + pad, cy = y + pad;
-        Ui.Text(paper, "sm_util_t", cx, cy, w, Theme.S(28), "Map", Theme.Title, Theme.Text, Theme.Bold);
-        cy += Theme.S(30);
+        Section(paper, "sm_util_t", cx, cy, w - 2 * pad, "MAP");
+        cy += Theme.S(28);
         Ui.Text(paper, "sm_util_c", cx, cy, w, Theme.S(20), $"{game.Props.Props.Count} props · {game.Props.UndoCount} undo steps",
             Theme.Body, Theme.TextMuted);
         cy += Theme.S(34);
@@ -361,8 +361,8 @@ public sealed class SpawnMenu(IconRenderer icons)
 
         // World: sky presets, day/night, gravity and time scale.
         float colW = (w - 2 * pad - Theme.S(32)) / 2f, rx = cx + colW + Theme.S(32), ly = cy;
-        Ui.Text(paper, "sm_util_tw", cx, cy, w, Theme.S(28), "World", Theme.Title, Theme.Text, Theme.Bold);
-        cy += Theme.S(34);
+        Section(paper, "sm_util_tw", cx, cy, colW, "WORLD");
+        cy += Theme.S(32);
         Ui.Text(paper, "sm_util_sky", cx, cy, w, Theme.S(18), "Sky", Theme.Caption, Theme.TextMuted, Theme.SemiBold);
         cy += Theme.S(22);
         int cur = Array.FindIndex(DayNightCycle.Presets, p => MathF.Abs(p.Time - game.DayNight.TimeOfDay) < 0.01f);
@@ -372,7 +372,7 @@ public sealed class SpawnMenu(IconRenderer icons)
         float lw = Theme.S(150), sw = colW - lw - Theme.S(60);
         Ui.Text(paper, "sm_util_dn", cx, cy, w, Theme.S(22), "Day/night cycle", Theme.Body, Theme.Text);
         Ui.Toggle(paper, "sm_util_dnt", cx + lw, cy, game.DayNight.Enabled, v => game.DayNight.Enabled = v);
-        cy += Theme.S(36);
+        cy += Theme.S(40);
         float grav = -game.World.Physics.Gravity.Y;
         Ui.Text(paper, "sm_util_g", cx, cy, w, Theme.S(22), "Gravity", Theme.Body, Theme.Text);
         Ui.Slider(paper, "sm_util_gs", cx + lw, cy - Theme.S(1), sw, grav, 0f, 30f, v => game.SetGravity(MathF.Round(v * 10f) / 10f));
@@ -384,8 +384,8 @@ public sealed class SpawnMenu(IconRenderer icons)
 
         // Player column.
         cy = ly;
-        Ui.Text(paper, "sm_util_t2", rx, cy, w, Theme.S(28), "Player", Theme.Title, Theme.Text, Theme.Bold);
-        cy += Theme.S(34);
+        Section(paper, "sm_util_t2", rx, cy, colW, "PLAYER");
+        cy += Theme.S(32);
         Ui.Text(paper, "sm_util_nc", rx, cy, w, Theme.S(22), "Noclip", Theme.Body, Theme.Text);
         Ui.Toggle(paper, "sm_util_nct", rx + lw, cy, game.Player.Noclip, _ => game.Player.ToggleNoclip());
         cy += Theme.S(36);
@@ -465,6 +465,14 @@ public sealed class SpawnMenu(IconRenderer icons)
                 _dupesAge = 99f;
             }, ghost: true, icon: Icon.Trash, radius: Theme.S(13), size: Theme.Caption);
         }
+    }
+
+    /// <summary>s&box-style section header: small caps label with a hairline rule.</summary>
+    private static void Section(Paper paper, string id, float x, float y, float w, string label)
+    {
+        Ui.Text(paper, id, x, y, w, Theme.S(18), label, Theme.Micro, Theme.TextFaint, Theme.Bold);
+        float lw = (float)paper.MeasureText(label, Theme.S(Theme.Micro), Theme.Bold, 0f).X + Theme.S(10);
+        Ui.Rect(paper, id + "_rule", x + lw, y + Theme.S(9), w - lw, 1f, Theme.Border, 0f);
     }
 
     private static void DrawEmpty(Paper paper, float x, float y, float w, float h, string title, string body)

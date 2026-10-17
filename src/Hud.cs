@@ -127,7 +127,7 @@ public sealed class Hud
         if (Project(game, c + new Prowl.Vector.Float3(-1.9f, 1.0f, -0.05f), w, h) is not { } tl || Project(game, c + new Prowl.Vector.Float3(1.9f, -1.0f, -0.05f), w, h) is not { } br) return;
         float bw = br.X - tl.X, bh = br.Y - tl.Y;
         if (bw < 40f || bh < 20f) return;
-        float k = bh / Theme.S(220);   // text scales with the board on screen
+        float k = MathF.Max(bh / Theme.S(220), 0.7f);   // text scales with the board on screen
         float a = Math.Clamp((30f - dist) / 6f, 0f, 1f);
         float old = Ui.Alpha; Ui.Alpha = a;
         RoleplaySystem rp = game.Roleplay;

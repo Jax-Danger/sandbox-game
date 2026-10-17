@@ -6,6 +6,11 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 
 | | |
 |---|---|
+| ![RP town](docs/r7-townair.png) | ![Laws board](docs/r7-town.png) |
+| ![Buy a door](docs/r7-towndoor.png) | ![Jail cell](docs/r7-jail.png) |
+| ![Vehicles](docs/r7-garage.png) | ![Model props](docs/r6-models.png) |
+| ![Dupes](docs/r7-dupes.png) | ![User spawnlist](docs/r7-myspawn.png) |
+| ![Tools](docs/r7-tools-scroll.png) | ![ATM bank](docs/r7-bank.png) |
 | ![Main menu](docs/r5-main.png) | ![Worlds](docs/r5-worlds.png) |
 | ![Create world](docs/r5-create.png) | ![Loading](docs/r5-loading.png) |
 | ![Roleplay HUD](docs/r5-rp.png) | ![F4 jobs menu](docs/r5-jobs.png) |
@@ -94,13 +99,20 @@ The HUD adds a wallet/job chip, a salary countdown, a WANTED or ARRESTED badge w
 - **Jobs:** Citizen, Police Officer (baton arrests, pistol), Mayor (writes the laws), Thief (lockpick), Medic (medkit, cheaper armour), Gun Dealer (weapon shipments), Gangster (pistol, +25 % printer cash) and Hobo (free props). Each job has its own colour, salary, description and player limit.
 - **Shop:** money printer, armour, medkit, ammo and shipments. Shipments can only be bought as Gun Dealer.
 - **Laws:** edited by the Mayor.
-- **Money:** drop cash.
+- **Money:** drop cash; at an ATM, deposit and withdraw from your bank account (bank money is safe when you die).
+
+**RP Town map** (the default for Roleplay worlds): four avenues with sidewalks and crosswalks around a spawn plaza (fountain, benches, the laws board and an ATM), a police station with a jail cell, a general store, three houses, an apartment and a garage.
+- **Doors:** E opens/closes. Doors marked *for sale* can be bought with **F2** (F2 again sells for half price); **L** locks/unlocks doors you own. Police can lock the station doors. Thieves can pick any locked door with the lockpick (police doors always make you wanted).
+- **Arrests:** police NPCs chase you while you're WANTED and arrest you on contact: a $200 fine and 30 s in the locked jail cell. Leaving early counts as a jailbreak (wanted again).
+- **Wanted:** assaulting citizens/police nearby, lockpicking, jailbreaks, and carrying a gun near police while the laws ban weapons (they warn you first).
+- **Laws board:** the mayor's laws show on the board in the plaza as a world panel.
+- **NPCs:** citizens walk the sidewalks between waypoints, stop and look at you up close, and back away from drawn guns or wanted players; police patrol faster.
 
 Press **E** to pick up money, collect from a printer or open a shipment. Printers print $25 every 20 s. Dying drops 10 % of your wallet. Town NPC citizens and police wander the map, and police chase you while you're wanted. With paid spawning on, props cost $20 each.
 
 ## What you see
 
-A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. The props use Prowl's default grid texture.
+A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. Untextured materials get a white albedo, so props show their own colour.
 
 The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a ring when you aim at a prop, a prop-count chip bottom-left, a weapon/ammo chip bottom-right (a speedometer while driving), and small notification pills. The weapon switcher strip shows for about two seconds after you switch, then fades out.
 
@@ -115,13 +127,14 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 | Hold B | Zoom |
 | F4 | Roleplay City menu (jobs, shop, laws, money) |
 | V | Toggle noclip |
-| Hold Q or Tab | Spawn menu: Spawnlists, Entities, Vehicles, Weapons, Tools, Utilities |
+| Hold Q or Tab | Spawn menu: Spawnlists, Entities, Vehicles, Weapons, Tools, Dupes, Utilities |
 | Hold C | Context menu: click a prop to edit freeze, colour, material, mass or delete it. Also has the current tool's settings |
 | 1 … 5, mouse wheel | Weapon slots (press a number again to cycle within the slot): **1** Hands, Crowbar · **2** Physgun, Tool gun, Spawn gun · **3** Pistol, SMG · **4** Shotgun · **5** Rocket launcher, Grenades |
 | Left / right mouse | Primary / secondary fire |
 | R | Reload (in a vehicle: flip the buggy upright) |
 | E | Pick up / drop a light prop (left click throws it) · press a button · enter / exit a vehicle |
-| T G Y H U J | Default keys for thrusters, wheels and buttons |
+| T G Y H U J, numpad 0–9 | Keys for thrusters, wheels, hoverballs, emitters and buttons |
+| F2 / L | RP town: buy or sell the door you look at / lock or unlock it |
 | Z | Undo |
 | F3 | FPS counter |
 | Esc | Pause menu: Resume, Save now, Clear map, Settings, Save & exit to Worlds |
@@ -131,8 +144,8 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 **Physgun:** hold left mouse on a prop (or a single ragdoll limb) to grab it. A pulsing beam connects you to it. The wheel pushes or pulls. Right-click freezes it. Let go to throw.
 
 **Tool gun:** pick a tool in the spawn menu's Tools tab. Its settings appear there and in the C menu.
-- Constraints: **Weld**, **Rope** (two points, slack setting), **Ball socket** (pivot).
-- Construction: **Balloon**, **Remover**, **Thruster** (hold its key), **Wheel** (motorised, forward/back keys), **Duplicator** (right click copies, left click pastes).
+- Constraints: **Weld**, **Rope** (two points, slack setting), **Ball socket** (pivot), **No-collide**, **Elastic** (damped spring), **Slider** (prismatic, ±4 m), **Hinge** (around the surface normal).
+- Construction: **Balloon**, **Remover**, **Thruster** (hold its key), **Wheel** (motorised, forward/back keys), **Duplicator** (right click copies the whole contraption, left click pastes it facing you; one undo removes it), **Hoverball** (holds height; its key raises, the next key lowers), **Emitter** (sparks while its key is held), **Stacker** (copies along an axis, optionally welded).
 - Render: **Colour** (right click picks a colour up from a prop), **Material** (plastic, wood, metal, rubber, ice, concrete; changes friction/bounce), **Light**.
 
 **Spawn gun:** left click spawns whatever you last picked in the spawn menu, where you aim. Right click cycles your recent spawns.
@@ -141,7 +154,11 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 **Entities tab:** Ragdoll; NPC Dummy (stands until you hit it, then goes limp); Explosive Barrel (shoot it, blast it, or slam it); Bouncy Ball; Light; Button (press E or shoot it to toggle its key, which drives thrusters and wheels bound to that key).
 
-**Vehicles tab:** Buggy. Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
+**Spawnlists:** 33 model props with rendered thumbnails (furniture, construction, signs, wheels, vehicle parts) next to the basic shapes. Hover any tile and press **+** to add it to your own spawnlist (*My Spawnlists*, saved as `saves/spawnlists.json`). Chairs, stools, benches and the seat are **seats**: E sits (weld one into a contraption and ride it), E or Space stands.
+
+**Dupes tab:** the Duplicator's clipboard; name and save it as a file (`saves/dupes/*.dupe.json`), then load any saved dupe back onto the Duplicator.
+
+**Vehicles tab:** Buggy, Jeep (four-wheel drive) and Airboat (fan-driven hull on skids). Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
 
 **Health:** health and armor show bottom-left. Falls faster than about 13 m/s hurt (you can turn this off per world or in Utilities). When you die you respawn after 3 s.
 
@@ -224,7 +241,7 @@ The `ease` value is how the pose gets *to* that key: `Linear`, `In`, `Out`, `InO
 dotnet run -- --headless
 ```
 
-This runs the game for about 6 seconds without a window. It scripts spawning, falling, physgun grab/hold/freeze/unfreeze/release, weld, balloon lift, undo, remover, spawn at the crosshair, clear map, and the player standing on the floor, prints PASS or FAIL for each, and exits 0 when everything passes. It doesn't test rendering or real mouse/keyboard input.
+This runs the game for about 25 seconds without a window. It scripts spawning, physgun, tools (including elastic pull and hoverball hold), vehicles (buggy, jeep, airboat), weapons, entities, dupes, spawnlists, worlds save/load, the roleplay economy and the RP town (doors, ATM, arrest/jail/jailbreak), prints PASS or FAIL for each, and exits 0 when everything passes. It doesn't test rendering or real mouse/keyboard input.
 
 ## Code layout
 
@@ -232,7 +249,9 @@ This runs the game for about 6 seconds without a window. It scripts spawning, fa
 | --- | --- |
 | `src/Program.cs` | Entry point (`--headless` runs the self-test) |
 | `src/SandboxGame.cs` | Game loop, input routing, tool selection, menus |
-| `src/MapBuilder.cs` | Maps (Flatgrass, Rolling Hills, custom model import) and the sun |
+| `src/MapBuilder.cs`, `src/Town.cs` | Maps (Flatgrass, Rolling Hills, RP Town, custom model import), doors/ATM/laws board |
+| `src/ModelProps.cs`, `src/IconRenderer.cs` | Placeholder model props (behind the asset manifest) and spawn-menu thumbnails |
+| `src/ToolsMore.cs`, `src/Dupes.cs`, `src/Vehicles.cs` | Extra tools, contraption dupes + user spawnlists, buggy/jeep/airboat |
 | `src/Worlds.cs`, `src/Session.cs`, `src/WorldsMenu.cs` | World folders, atomic saves, async loader, Worlds/Create/Loading/F4 screens |
 | `src/Roleplay.cs` | Jobs, economy, printers, shipments, baton/lockpick/medkit |
 | `src/Health.cs`, `src/DayNight.cs` | Health/armor/fall damage/respawn; sky presets and day/night |
