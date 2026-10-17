@@ -6,6 +6,8 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 
 | | |
 |---|---|
+| ![Console](docs/console.png) | ![First-time hint](docs/hints.png) |
+| ![Rain](docs/weather-rain.png) | ![Fog](docs/weather-fog.png) |
 | ![RP town](docs/r7-townair.png) | ![Laws board](docs/r7-town.png) |
 | ![Buy a door](docs/r7-towndoor.png) | ![Jail cell](docs/r7-jail.png) |
 | ![Vehicles](docs/r7-garage.png) | ![Model props](docs/r6-models.png) |
@@ -122,12 +124,25 @@ A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor w
 
 The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a ring when you aim at a prop, a prop-count chip bottom-left, a weapon/ammo chip bottom-right (a speedometer while driving), and small notification pills. The weapon switcher strip shows for about two seconds after you switch, then fades out.
 
+## New in v0.5.0
+
+- **Console** (`` ` ``): `help`, `noclip`, `give <weapon>`, `time <0-24>`, `gravity <m/s²>`, `timescale`, `cleanup`, `spawn <prop> [n]`, `tp x y z`, `pos`, `heal`, `kill`, `weather <preset>`, `achievements`, `hints reset`, `photo`, `screenshot`. Anything that isn't a command is chat. ↑/↓ for history, mouse wheel or PgUp/PgDn to scroll, Esc to close.
+- **Photo mode** (F1) hides the HUD. **F12** saves a PNG of the world (no HUD) to `<AppData>/ProwlSandbox/screenshots/`.
+- **Weather**: Clear, Overcast, Fog, Rain, Storm (with lightning). Pick it in Spawn menu → Utilities or with the console. It blends smoothly and is saved per world.
+- **Achievements**: 14, two of them Roleplay-only. They unlock with a toast and are saved to `achievements.json` next to `settings.json`.
+- **Recent spawnlist**: the last 12 things you spawned, at the top of the spawn menu's category list.
+- **RP hunger**: hunger drains over about 8 minutes, then you take starvation damage. Buy a Burger or Soda from the F4 shop. A thin bar in the RP chip shows hunger, and it's saved with the world.
+- **First-time hints**: one small hint at a time, each shown once. Turn them off in Settings → Game, or replay them with `hints reset`.
+- **Stability**: a soak/fuzz harness (`--headless --soak <secs> <seed>`) drove fixes for NaN physics crashes, a ragdoll/no-collide memory leak, save/load mismatches, autosave races and unicode or reserved world names.
+
 ## Controls
 
 | Input | Action |
 | --- | --- |
 | Mouse | Look (cursor locked while playing) |
 | W A S D / Shift / Space | Walk / run / jump |
+| ` | Console / chat |
+| F1 / F12 | Photo mode (hide HUD) / save screenshot |
 | Ctrl | Crouch (fly down in noclip) |
 | F | Flashlight (inspects the weapon when you hold the tool gun) |
 | Hold B | Zoom |
@@ -248,6 +263,8 @@ dotnet run -- --headless
 ```
 
 This runs the game for about 25 seconds without a window. It scripts spawning, physgun, tools (including elastic pull and hoverball hold), vehicles (buggy, jeep, airboat), weapons, entities, dupes, spawnlists, worlds save/load, the roleplay economy and the RP town (doors, ATM, arrest/jail/jailbreak), prints PASS or FAIL for each, and exits 0 when everything passes. It doesn't test rendering or real mouse/keyboard input.
+
+Soak/fuzz test: `dotnet run -- --headless --soak 300 6` runs random actions for 300 s with seed 6. It checks for exceptions, NaNs, physics explosions, save/load round-trip mismatches and memory growth, prints a report, and exits non-zero if it finds problems.
 
 ## Code layout
 
