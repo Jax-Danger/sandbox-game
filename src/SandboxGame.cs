@@ -68,6 +68,7 @@ public sealed partial class SandboxGame : Game
         World.Ambient.GroundColor = new Float4(0.30f, 0.28f, 0.26f, 1f);
         World.Ambient.Strength = 0.9f;
         Props = new PropManager(World, Shader);
+        { var wgo = new GameObject("WaterSimulator"); wgo.AddComponent<WaterSimulator>().Game = this; World.Add(wgo); }
         Roleplay = new RoleplaySystem(this);
         DummyBrain.Game = this;
         Player = new Player(World, new Float3(0f, 0.1f, -10f), 0f);
@@ -222,7 +223,7 @@ public sealed partial class SandboxGame : Game
             case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
             case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
             case "rp" or "jobs" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
-            case "hills": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
+            case "hills" or "lake": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
                 Menus.Go(Screen.Playing);
                 Weapons.Select(this, Weapons.Get<SmgWeapon>());

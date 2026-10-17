@@ -172,6 +172,14 @@ public sealed partial class SandboxGame
                 case "townair": if (!Player.Noclip) Player.ToggleNoclip(); Player.Teleport(new Float3(-30f, 34f, -52f)); Player.SetLook(28f, 34f); break;
                 case "jail": Roleplay.Arrest("Arrested for the screenshot"); Player.SetLook(200f, 6f); break;
                 case "bank": Roleplay.AtAtm = true; Menus.OpenBank(); break;
+                case "lake":
+                    Vehicles.SpawnBuggy(new Float3(42f, -1f, 30f), 200f, kind: "airboat");
+                    for (int i = 0; i < 5; i++)
+                    {
+                        Prop p = Props.Spawn(i % 2 == 0 ? PropKind.SmallCrate : PropKind.Plank, new Float3(48f + i * 2.2f, -0.6f, 34f + (i % 3) * 2f), i * 30f, recordUndo: false);
+                        p.SetSurface(SurfaceMaterial.Get("Wood"));
+                    }
+                    Player.Teleport(new Float3(28f, MapBuilder.HillsHeight(28f, 14f) + 0.3f, 14f)); Player.SetLook(45f, 12f); break;
             }
         }
     }

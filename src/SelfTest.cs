@@ -19,7 +19,8 @@ public sealed class SelfTest
     private PistolWeapon? _pistol;
     private Buggy? _buggy, _jeep, _boat;
     private Float3 _jeepStart, _boatStart;
-    private Prop? _ea, _eb, _hb;
+    private Prop? _ea, _eb, _hb, _woodP, _metalP;
+    private Water.Volume? _pool;
     private Prop? _thrust, _xbarrel, _button, _ball;
     private Ragdoll? _dummy;
     private float _ballMaxY;
@@ -330,6 +331,12 @@ public sealed class SelfTest
                     g.ToolGun.Elastic(_ea, Float3.Zero, _eb, Float3.Zero, 3f, rest: 1f, recordUndo: false);
                     _hb = g.Props.Spawn(PropKind.Cube, new Float3(-30f, 3f, -30f), 0f, recordUndo: false);
                     Hoverball.Attach(g.Props, _hb, _hb.Go.Transform.Position, Float3.UnitY, 1f, KeyCode.Keypad8, KeyCode.Keypad2);
+                    // Buoyancy: a test pool (surface y = 2) with a wooden crate and a metal cube dropped in.
+                    _pool = Water.Add(new Float3(0f, -4f, -40f), new Float3(5f, 6f, 5f));
+                    _woodP = g.Props.Spawn(PropKind.SmallCrate, new Float3(-1.5f, 3.5f, -40f), 0f, recordUndo: false);
+                    _woodP.SetSurface(SurfaceMaterial.Get("Wood"));
+                    _metalP = g.Props.Spawn(PropKind.Cube, new Float3(1.5f, 3.5f, -40f), 0f, recordUndo: false);
+                    _metalP.SetSurface(SurfaceMaterial.Get("Metal"));
                     Check(g.Weapons.All.Select(w => w.Id).Distinct().Count() == g.Weapons.All.Count && g.Weapons.All.Count >= 10, $"weapon switcher has {g.Weapons.All.Count} weapons");
                 }
                 break;
@@ -360,6 +367,10 @@ public sealed class SelfTest
                     Check(bm > 2f && _boat.Go.Transform.Up.Y > 0.8f, $"airboat fan pushes the hull forward upright ({bm:0.0} m)");
                     float ed = Float3.Length(_ea!.Go.Transform.Position - _eb!.Go.Transform.Position);
                     Check(ed < 4.5f, $"elastic pulls props together (6.0 → {ed:0.0} m)");
+                    float wy = _woodP!.Go.Transform.Position.Y, my = _metalP!.Go.Transform.Position.Y;
+                    Check(wy > 1.5f && wy < 2.6f && MathF.Abs(_woodP.Body.LinearVelocity.Y) < 1f, $"wood floats at the water surface (y {wy:0.00}, surface 2.00)");
+                    Check(my < 1.0f, $"metal sinks to the bottom (y {my:0.00})");
+                    Water.Volumes.Remove(_pool!);
                     float hy = _hb!.Go.Transform.Position.Y, ht = _hb.Go.GetComponent<Hoverball>()!.Target;
                     Check(MathF.Abs(hy - ht) < 0.6f, $"hoverball holds its height (y {hy:0.00}, target {ht:0.00})");
                     var data = MapSave.Capture(g);

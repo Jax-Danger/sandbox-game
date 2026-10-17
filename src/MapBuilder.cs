@@ -64,6 +64,7 @@ public static partial class MapBuilder
     {
         Clear(scene);
         Town.Reset();
+        Water.Clear();
         Current = map;
         string? error = null;
         switch (map)
@@ -151,7 +152,8 @@ public static partial class MapBuilder
         terrain.AddComponent<MeshCollider>().Mesh = mesh;
         Add(scene, terrain);
 
-        // Lake surface (visual only; the bowl floor is the collider).
+        // Lake: visual surface + a buoyancy volume (props float by material; the airboat skims it).
+        Water.Add(new Float3(45f, -1.575f - 6f, 35f), new Float3(24f, 6f, 24f));
         GameObject water = new("Water");
         water.Transform.Position = new Float3(45f, -1.6f, 35f);
         MeshRenderer wr = water.AddComponent<MeshRenderer>();
