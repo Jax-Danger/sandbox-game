@@ -21,7 +21,7 @@ public sealed partial class ToolGun
     public float LightRange { get; set; } = 8f;
     public float LightHue { get; set; } = 0.1f;
 
-    public static readonly KeyCode[] ThrusterKeys = BindKeys;
+    public static KeyCode[] ThrusterKeys => BindKeys;
     public static readonly (KeyCode Fwd, KeyCode Back)[] WheelKeyPairs = [(KeyCode.T, KeyCode.G), (KeyCode.Y, KeyCode.H), (KeyCode.U, KeyCode.J), (KeyCode.Keypad8, KeyCode.Keypad2), (KeyCode.Keypad4, KeyCode.Keypad6), (KeyCode.Keypad7, KeyCode.Keypad1), (KeyCode.Keypad9, KeyCode.Keypad3)];
 
     private sealed record Copy(PropKind Kind, Color Color, string Surface, float Mass, bool Frozen);
