@@ -110,6 +110,12 @@ public sealed class ContextMenu
             Ui.Slider(paper, "cx_mass_s", cx, cy, cw, MathF.Log10(p.Body.Mass), -1f, 2.7f, v => p.SetMass(MathF.Pow(10f, v)));
             cy += Theme.S(40);
 
+            if (p.Go.GetComponent<SandboxButton>() is { } sbtn)
+            {
+                Ui.Text(paper, "cx_btnkey", cx, cy + Theme.S(3), cw, Theme.S(18), "Button key", Theme.Caption, Theme.TextMuted);
+                Ui.KeyPicker(paper, "cx_btnkey_k", cx + cw - Theme.S(96), cy, Theme.S(96), Theme.S(24), sbtn.Key, k => sbtn.Rebind(k));
+                cy += Theme.S(34);
+            }
             Ui.Button(paper, "cx_del", cx, cy, cw, Theme.S(36), "Delete prop", () => g.Enqueue(() => { g.Props.Remove(p); Selected = null; g.Notify($"Removed {p.Go.Name}"); }),
                 icon: Icon.Trash, radius: Theme.S(18), baseColor: Color.FromArgb(200, 200, 60, 60));
             cy += Theme.S(52);
@@ -131,6 +137,14 @@ public sealed class ContextMenu
         cy += Theme.S(28);
         foreach (ToolSetting s in g.ToolGun.SettingsFor(info.Mode))
         {
+            if (s.IsKey)
+            {
+                Ui.Text(paper, $"cx_ts_{s.Name}", cx, cy + Theme.S(3), cw, Theme.S(18), s.Name, Theme.Caption, Theme.TextMuted);
+                ToolSetting ks = s;
+                Ui.KeyPicker(paper, $"cx_ts_{s.Name}_k", cx + cw - Theme.S(96), cy, Theme.S(96), Theme.S(24), (Prowl.Runtime.KeyCode)(int)s.Get(), k => ks.Set((int)k));
+                cy += Theme.S(34);
+                continue;
+            }
             Ui.Text(paper, $"cx_ts_{s.Name}", cx, cy, cw, Theme.S(18), s.Name, Theme.Caption, Theme.TextMuted);
             Ui.Text(paper, $"cx_ts_{s.Name}_v", cx, cy, cw, Theme.S(18), s.Format(s.Get()), Theme.Caption, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
             cy += Theme.S(20);

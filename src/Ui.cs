@@ -199,4 +199,19 @@ public static class Ui
             .Text(key, Theme.SemiBold).TextColor(A(Theme.Text)).FontSize(Theme.S(size)).Alignment(TextAlignment.MiddleCenter);
         return w;
     }
+
+    /// <summary>Key-picker: shows the bound key as a key cap; click, then press any key to rebind (Esc cancels).</summary>
+    public static void KeyPicker(Paper paper, string id, float x, float y, float w, float h, Prowl.Runtime.KeyCode key, Action<Prowl.Runtime.KeyCode> set)
+    {
+        bool listening = KeyCapture.ActiveId == id;
+        float pulse = listening ? 0.55f + 0.45f * MathF.Abs(MathF.Sin((float)Prowl.Runtime.Time.TimeSinceStartup * 5f)) : 1f;
+        bool hover = paper.IsPointerOverRect(x, y, w, h);
+        paper.Box(id).PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).Rounded(Theme.S(Theme.RadiusXs))
+            .BackgroundColor(A(listening ? Theme.AccentSoft : hover ? Theme.Hover : Theme.PanelRaised))
+            .BorderColor(A(listening ? Theme.WithAlpha(Theme.Accent, pulse) : hover ? Theme.BorderStrong : Theme.Border)).BorderWidth(listening ? 1.5f : 1f)
+            .OnClick(0, (_, _) => { ClickSound?.Invoke(); KeyCapture.Begin(id, set); });
+        string label = listening ? "Press a key\u2026" : Binds.KeyName(key);
+        paper.Box(id + "_t").PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).IsNotInteractable()
+            .Text(label, Theme.SemiBold).TextColor(A(listening ? Color.White : Theme.Text)).FontSize(Theme.S(Theme.Caption)).Alignment(TextAlignment.MiddleCenter);
+    }
 }

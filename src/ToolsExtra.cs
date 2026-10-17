@@ -13,9 +13,10 @@ public sealed partial class ToolGun
 
     public float RopeSlack { get; set; } = 1.1f;
     public float ThrusterForce { get; set; } = 1.5f;
-    public int ThrusterKey { get; set; }
+    public KeyCode ThrusterKey { get; set; } = KeyCode.T;
     public float WheelSpeed { get; set; } = 8f;
-    public int WheelKeys { get; set; }
+    public KeyCode WheelFwd { get; set; } = KeyCode.T;
+    public KeyCode WheelBack { get; set; } = KeyCode.G;
     public float PaintHue { get; set; } = 0.58f;
     public int MaterialIndex { get; set; } = 3;
     public float LightRange { get; set; } = 8f;
@@ -47,12 +48,12 @@ public sealed partial class ToolGun
                 break;
             case ToolMode.Thruster:
                 yield return new ToolSetting("Force", 0.2f, 5f, () => ThrusterForce, v => ThrusterForce = v, v => $"{v:0.0}× weight", "Thrust as a multiple of the prop's weight.");
-                yield return new ToolSetting("Key", 0f, ThrusterKeys.Length - 1, () => ThrusterKey, v => ThrusterKey = (int)MathF.Round(v), v => KeyName(ThrusterKeys[(int)MathF.Round(v)]), "Hold this key to fire the thruster.");
+                yield return KeyPick("Key", () => ThrusterKey, k => ThrusterKey = k, "Hold this key to fire the thruster.");
                 break;
             case ToolMode.Wheel:
                 yield return new ToolSetting("Speed", 1f, 25f, () => WheelSpeed, v => WheelSpeed = v, v => $"{v:0} rad/s", "Motor target speed.");
-                yield return new ToolSetting("Keys", 0f, WheelKeyPairs.Length - 1, () => WheelKeys, v => WheelKeys = (int)MathF.Round(v),
-                    v => $"{WheelKeyPairs[(int)MathF.Round(v)].Fwd} / {WheelKeyPairs[(int)MathF.Round(v)].Back}", "Forward / reverse keys.");
+                yield return KeyPick("Forward key", () => WheelFwd, k => WheelFwd = k, "Hold to spin forward.");
+                yield return KeyPick("Reverse key", () => WheelBack, k => WheelBack = k, "Hold to spin backward.");
                 break;
             case ToolMode.Colour:
                 yield return new ToolSetting("Hue", 0f, 1f, () => PaintHue, v => PaintHue = v, v => $"{v * 360f:0}°", "Paint colour.");
@@ -131,7 +132,7 @@ public sealed partial class ToolGun
 
             case ToolMode.Thruster:
             {
-                Thruster t = Thruster.Attach(props, prop, point, normal, ThrusterForce, ThrusterKeys[Math.Clamp(ThrusterKey, 0, ThrusterKeys.Length - 1)]);
+                Thruster t = Thruster.Attach(props, prop, point, normal, ThrusterForce, ThrusterKey);
                 props.PushUndo(new ActionUndo($"Undone: thruster on {prop.Go.Name}", () => t.Detach()));
                 return $"Thruster on {prop.Go.Name} (hold {t.Key})";
             }
@@ -247,7 +248,7 @@ public sealed partial class ToolGun
         h.MotorTargetVelocity = 0f;
         h.ConnectedBody = prop.Body;
         PhysicsWorld.IgnoreCollisionBetween(body, prop.Body);
-        var (fwd, back) = keys ?? WheelKeyPairs[Math.Clamp(WheelKeys, 0, WheelKeyPairs.Length - 1)];
+        var (fwd, back) = keys ?? (WheelFwd, WheelBack);
         WheelMotor m = go.AddComponent<WheelMotor>();
         m.Joint = h; m.Fwd = fwd; m.Back = back; m.Speed = speed ?? WheelSpeed;
         if (recordUndo) props.PushUndo(new ActionUndo($"Undone: wheel", () => props.Remove(wheel)));

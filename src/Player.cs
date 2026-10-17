@@ -104,10 +104,10 @@ public sealed class Player
         bool run = false;
         if (allowInput)
         {
-            if (Input.GetKey(KeyCode.W)) move += Float2.UnitY;
-            if (Input.GetKey(KeyCode.S)) move -= Float2.UnitY;
-            if (Input.GetKey(KeyCode.D)) move += Float2.UnitX;
-            if (Input.GetKey(KeyCode.A)) move -= Float2.UnitX;
+            if (Binds.Held("forward")) move += Float2.UnitY;
+            if (Binds.Held("back")) move -= Float2.UnitY;
+            if (Binds.Held("right")) move += Float2.UnitX;
+            if (Binds.Held("left")) move -= Float2.UnitX;
             run = Input.IsShiftPressed;
         }
         Crouching = allowInput && !Noclip && Input.IsCtrlPressed;
@@ -121,7 +121,7 @@ public sealed class Player
             Float3 pos = CameraObject.Transform.Position;
             pos += CameraObject.Transform.Forward * move.Y * speed;
             pos += CameraObject.Transform.Right * move.X * speed;
-            if (allowInput && Input.GetKey(KeyCode.Space)) pos += Float3.UnitY * speed;
+            if (allowInput && Binds.Held("jump")) pos += Float3.UnitY * speed;
             if (allowInput && Input.IsCtrlPressed) pos -= Float3.UnitY * speed;
             CameraObject.Transform.Position = pos;
             _body.Transform.Position = pos - new Float3(0f, EyeHeight, 0f);
@@ -143,7 +143,7 @@ public sealed class Player
         if (_controller.IsGrounded)
         {
             _verticalVelocity = -1f; // small stick-to-ground push
-            if (allowInput && Input.GetKeyDown(KeyCode.Space))
+            if (allowInput && Binds.Down("jump"))
                 _verticalVelocity = JumpSpeed;
         }
         else

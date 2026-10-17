@@ -9,7 +9,7 @@ public enum ToolMode { Weld, Remover, Balloon, Rope, BallSocket, Thruster, Wheel
 public sealed record ToolInfo(ToolMode Mode, string Name, string Category, string Description, string Left, string? Right);
 
 /// <summary>A slider shown in the spawn menu's Tools context panel.</summary>
-public sealed record ToolSetting(string Name, float Min, float Max, Func<float> Get, Action<float> Set, Func<float, string> Format, string Help);
+public sealed record ToolSetting(string Name, float Min, float Max, Func<float> Get, Action<float> Set, Func<float, string> Format, string Help, bool IsKey = false);
 
 /// <summary>Toolgun: left click applies the current mode to the prop under the crosshair.</summary>
 public sealed partial class ToolGun(PropManager props)

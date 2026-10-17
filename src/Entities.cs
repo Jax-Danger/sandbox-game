@@ -51,6 +51,12 @@ public sealed class SandboxButton : MonoBehaviour
     }
 
     public override void OnDisable() { if (On) KeyState.Toggled.Remove(Key); }
+
+    public void Rebind(KeyCode k)
+    {
+        if (On) { KeyState.Toggled.Remove(Key); KeyState.Toggled.Add(k); }
+        Key = k;
+    }
 }
 
 /// <summary>
@@ -256,7 +262,7 @@ public static class EntityCatalog
     }
 
     public static Prop SpawnButton(SandboxGame g, Prowl.Vector.Float3 pos, float yaw)
-        => MakeButton(g, g.Props.Spawn(PropKind.SmallCrate, pos, yaw), ToolGun.ThrusterKeys[Math.Clamp(g.ToolGun.ThrusterKey, 0, ToolGun.ThrusterKeys.Length - 1)]);
+        => MakeButton(g, g.Props.Spawn(PropKind.SmallCrate, pos, yaw), g.ToolGun.ButtonKey);
 
     private static Prop MakeButton(SandboxGame g, Prop p, KeyCode key)
     {

@@ -140,6 +140,7 @@ public sealed partial class SandboxGame : Game
 
     public void ApplySettings()
     {
+        Binds.Source = Settings;
         ApplySettingsLive();
         ShadowQuality q = Settings.Graphics == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
         Sun.ShadowQuality = q;
@@ -210,6 +211,8 @@ public sealed partial class SandboxGame : Game
             case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
             case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
+            case "keybinds": Menus.Go(Screen.Settings); Menus.SettingsTab = 3; KeyCapture.Begin("st_kbk_use", _ => { }); break;
+            case "thruster": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Wheel); break;
             case "tools": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Balloon); break;
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
@@ -275,6 +278,7 @@ public sealed partial class SandboxGame : Game
     public override void EndUpdate()
     {
         _frames++;
+        KeyCapture.Poll();
         float dt = Time.UnscaledDeltaTime;
         if (ShotState == "perf")
         {
@@ -326,7 +330,7 @@ public sealed partial class SandboxGame : Game
         {
             Float3 up = seat.Go.Transform.Up;
             Player.UpdateSeated(seat.Go.Transform.Position + up * 0.75f, input);
-            if (input && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space))) { StandUp(); return; }
+            if (input && (Binds.Down("use") || Binds.Down("jump"))) { StandUp(); return; }
         }
         else if (SeatedIn is not null) StandUp();
         else if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
@@ -343,23 +347,23 @@ public sealed partial class SandboxGame : Game
         }
         if (!input) return;
 
-        if (Input.GetKeyDown(KeyCode.F3)) { Settings.ShowFps = !Settings.ShowFps; Settings.Save(); }
-        if (Input.GetKeyDown(KeyCode.E) && Carry.Held is null && Vehicles.TryUse()) return;
+        if (Binds.Down("fps")) { Settings.ShowFps = !Settings.ShowFps; Settings.Save(); }
+        if (Binds.Down("use") && Carry.Held is null && Vehicles.TryUse()) return;
         if (!InVehicle && SeatedIn is null && UseWorld()) return;
         if (InVehicle) { Carry.Drop(); return; }
         if (Health.Dead) return;
-        if (Input.GetKeyDown(KeyCode.F) && Weapons.Current is not ToolGunWeapon) ToggleFlashlight();
-        if (SeatedIn is not null) { Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0), Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), 0f, false), dt); return; }
-        if (Input.GetKeyDown(KeyCode.E) && aimed?.Go.GetComponent<Seat>() is not null && Carry.Held is null
+        if (Binds.Down("flashlight") && Weapons.Current is not ToolGunWeapon) ToggleFlashlight();
+        if (SeatedIn is not null) { Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0), Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Binds.Down("reload"), 0f, false), dt); return; }
+        if (Binds.Down("use") && aimed?.Go.GetComponent<Seat>() is not null && Carry.Held is null
             && Float3.Length(aimed.Go.Transform.Position - Player.EyePosition) < 3.5f) { SitIn(aimed); return; }
-        if (Input.GetKeyDown(KeyCode.E) && IsRoleplay && aimed is not null && aimed.Entity?.StartsWith("rp_") == true
+        if (Binds.Down("use") && IsRoleplay && aimed is not null && aimed.Entity?.StartsWith("rp_") == true
             && Float3.Length(aimed.Go.Transform.Position - Player.EyePosition) < 3.5f) { Notify(Roleplay.Use(aimed)); return; }
-        if (Input.GetKeyDown(KeyCode.E)) Notify(Carry.Use(this));
+        if (Binds.Down("use")) Notify(Carry.Use(this));
         Carry.Update(this);
         bool carrying = Carry.Held is not null;
         if (carrying && Input.GetMouseButtonDown(0)) Carry.Throw(this);
-        if (Input.GetKeyDown(KeyCode.V)) Player.ToggleNoclip();
-        if (Input.GetKeyDown(KeyCode.Z)) Undo();
+        if (Binds.Down("noclip")) Player.ToggleNoclip();
+        if (Binds.Down("undo")) Undo();
         for (int k = 1; k <= 9; k++)
             if (Input.GetKeyDown(KeyCode.Number0 + k)) Weapons.SelectSlot(this, k);
 
@@ -368,7 +372,7 @@ public sealed partial class SandboxGame : Game
 
         if (carrying) return; // hands are busy
         Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0),
-            Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), wheel, Input.GetKeyDown(KeyCode.F)), dt);
+            Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Binds.Down("reload"), wheel, Binds.Down("flashlight")), dt);
     }
 
     private void ShotTick()
@@ -407,16 +411,16 @@ public sealed partial class SandboxGame : Game
 
     private void HandleMenus()
     {
-        if (IsRoleplay && Input.GetKeyDown(KeyCode.F4) && Menus.Screen is Screen.Playing or Screen.Jobs)
+        if (IsRoleplay && Binds.Down("jobs") && Menus.Screen is Screen.Playing or Screen.Jobs)
             Menus.Go(Menus.Screen == Screen.Jobs ? Screen.Playing : Screen.Jobs);
-        if (Input.GetKeyDown(KeyCode.Escape))
+        if ((Input.GetKeyDown(KeyCode.Escape) && !KeyCapture.Active))
         {
             if (_spawnMenu.Open) _spawnMenu.Open = false;
             else if (Menus.Screen != Screen.MainMenu) Menus.Back(this);
         }
-        bool held = Input.GetKey(KeyCode.Q) || Input.GetKey(KeyCode.Tab);
+        bool held = Binds.Held("spawnmenu") || Input.GetKey(KeyCode.Tab);
         _spawnMenu.Open = !Menus.Blocking && !InVehicle && (held || _spawnMenu.SearchFocused);
-        Context.Open = !Menus.Blocking && !_spawnMenu.Open && !InVehicle && Input.GetKey(KeyCode.C);
+        Context.Open = !Menus.Blocking && !_spawnMenu.Open && !InVehicle && Binds.Held("context");
         Context.Update(this, Input.GetMouseButtonDown(0), _pointerOverContextUi);
     }
 
@@ -650,7 +654,7 @@ public sealed partial class SandboxGame
             _flashlight.GameObject.Transform.Position = Player.EyePosition + Player.Forward * 0.75f;
             _flashlight.GameObject.Transform.Rotation = Player.CameraObject.Transform.Rotation;
         }
-        bool zoom = input && Input.GetKey(KeyCode.B);
+        bool zoom = input && Binds.Held("zoom");
         _zoom += ((zoom ? 1f : 0f) - _zoom) * MathF.Min(1f, dt * 12f);
         Player.Camera.FieldOfView = Settings.FieldOfView + (25f - Settings.FieldOfView) * _zoom;
         Player.LookSensitivity = 0.12f * Settings.MouseSensitivity * (1f - 0.6f * _zoom);
@@ -673,7 +677,7 @@ public sealed partial class SandboxGame
     /// <summary>E / F2 / L on town objects. Returns true when the key press was consumed.</summary>
     private bool UseWorld()
     {
-        bool e = Input.GetKeyDown(KeyCode.E), f2 = Input.GetKeyDown(KeyCode.F2), l = Input.GetKeyDown(KeyCode.L);
+        bool e = Binds.Down("use"), f2 = Input.GetKeyDown(KeyCode.F2), l = Input.GetKeyDown(KeyCode.L);
         if (!e && !f2 && !l) return false;
         var (door, atm, _) = WorldAim();
         if (door is not null)

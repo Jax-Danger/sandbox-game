@@ -185,14 +185,17 @@ public sealed partial class Menus
                 break;
             case 3:
                 float colW = cw / 2f - Theme.S(8);
-                for (int i = 0; i < Settings.Keybinds.Length; i++)
+                for (int i = 0; i < Binds.Actions.Length; i++)
                 {
-                    var (action, key) = Settings.Keybinds[i];
-                    float rx = lx + (i % 2) * (colW + Theme.S(16)), ry = cy + (i / 2) * Theme.S(34);
-                    Ui.Text(paper, $"st_kb_{i}", rx, ry, colW, Theme.S(26), action, Theme.Body, Theme.TextMuted);
-                    float kw = (float)paper.MeasureText(key, Theme.S(Theme.Micro), Theme.SemiBold, 0f).X + Theme.S(10);
-                    Ui.KeyCap(paper, $"st_kbk_{i}", rx + colW - kw, ry + Theme.S(4), key);
+                    var (id, label, _) = Binds.Actions[i];
+                    float rx = lx + (i % 2) * (colW + Theme.S(16)), ry = cy + (i / 2) * Theme.S(30);
+                    Ui.Text(paper, $"st_kb_{i}", rx, ry, colW, Theme.S(24), label, Theme.Body, Theme.TextMuted);
+                    string bid = id;
+                    Ui.KeyPicker(paper, $"st_kbk_{id}", rx + colW - Theme.S(92), ry, Theme.S(92), Theme.S(24), Binds.Get(id), k => Binds.Set(bid, k));
                 }
+                float fy = cy + ((Binds.Actions.Length + 1) / 2) * Theme.S(30) + Theme.S(6);
+                Ui.Paragraph(paper, "st_kb_h", lx, fy, cw, Theme.S(32),
+                    "Click a key to rebind it, then press the new key (Esc cancels). Mouse: LMB / RMB fire, wheel or 1\u20139 switch weapons, Shift runs, Ctrl crouches / flies down.", Theme.Caption, Theme.TextFaint);
                 break;
         }
         g.ApplySettingsLive();

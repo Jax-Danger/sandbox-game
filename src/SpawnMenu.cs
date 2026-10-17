@@ -1,3 +1,4 @@
+using Prowl.Runtime;
 using Prowl.PaperUI;
 using Prowl.Vector;
 using Color = System.Drawing.Color;
@@ -337,6 +338,14 @@ public sealed class SpawnMenu(IconRenderer icons)
         {
             if (cy + Theme.S(40) > bottom) break;
             any = true;
+            if (s.IsKey)
+            {
+                Ui.Text(paper, $"sm_s_{s.Name}_l", cx, cy + Theme.S(3), cw, Theme.S(18), s.Name, Theme.Caption, Theme.Text);
+                ToolSetting ks = s;
+                Ui.KeyPicker(paper, $"sm_s_{s.Name}_k", cx + cw - Theme.S(96), cy, Theme.S(96), Theme.S(24), (KeyCode)(int)s.Get(), k => ks.Set((int)k));
+                cy += Theme.S(32);
+                continue;
+            }
             Ui.Text(paper, $"sm_s_{s.Name}_l", cx, cy, cw, Theme.S(18), s.Name, Theme.Caption, Theme.Text);
             Ui.Text(paper, $"sm_s_{s.Name}_v", cx, cy, cw, Theme.S(18), s.Format(s.Get()), Theme.Caption, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
             cy += Theme.S(19);

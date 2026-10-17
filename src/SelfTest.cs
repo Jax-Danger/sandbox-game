@@ -198,6 +198,18 @@ public sealed class SelfTest
                     Settings back = Settings.Load();
                     Check(back.MouseSensitivity == 2.5f && back.FieldOfView == 95f && back.Graphics == GraphicsQuality.Medium && back.ShowFps,
                         "settings save and load from JSON");
+                    // Rebinding persists and Binds reads it; key-picker tool settings write KeyCodes.
+                    var prevSrc = Binds.Source;
+                    Binds.Source = back;
+                    Check(Binds.Get("use") == Prowl.Runtime.KeyCode.E, "default keybind (use = E)");
+                    Binds.Set("use", Prowl.Runtime.KeyCode.G);
+                    Settings rb = Settings.Load();
+                    Check(rb.Binds?["use"] == Prowl.Runtime.KeyCode.G, "rebound key saved to settings JSON");
+                    Binds.Source = prevSrc;
+                    var thr = g.ToolGun.SettingsFor(ToolMode.Thruster).First(t => t.IsKey);
+                    thr.Set((int)Prowl.Runtime.KeyCode.Keypad5);
+                    Check(g.ToolGun.ThrusterKey == Prowl.Runtime.KeyCode.Keypad5 && thr.Format(thr.Get()) == "Num 5", "key-picker setting binds any key (thruster -> Num 5)");
+                    g.ToolGun.ThrusterKey = Prowl.Runtime.KeyCode.T;
                     Settings.FilePath = old;
                 }
 

@@ -13,7 +13,13 @@ public sealed partial class ToolGun
     public float EmitterRate { get; set; } = 8f;
     public int StackCount { get; set; } = 3;
     public bool StackWeld { get; set; } = true;
-    public int GadgetKey { get; set; }
+    public KeyCode GadgetKey { get; set; } = KeyCode.T;
+    public KeyCode GadgetKey2 { get; set; } = KeyCode.G;
+    public KeyCode ButtonKey { get; set; } = KeyCode.T;
+
+    /// <summary>A tool setting edited with the key-picker widget (value = KeyCode).</summary>
+    public static ToolSetting KeyPick(string name, Func<KeyCode> get, Action<KeyCode> set, string help)
+        => new(name, 0f, 0f, () => (float)(int)get(), v => set((KeyCode)(int)v), v => KeyName((KeyCode)(int)v), help, true);
 
     /// <summary>Keys offered by key-bound tools: the letter row plus the numpad, as in GMod.</summary>
     public static readonly KeyCode[] BindKeys =
@@ -23,7 +29,7 @@ public sealed partial class ToolGun
         KeyCode.Keypad5, KeyCode.Keypad6, KeyCode.Keypad7, KeyCode.Keypad8, KeyCode.Keypad9,
     ];
 
-    public static string KeyName(KeyCode k) => k.ToString().Replace("Keypad", "Num ");
+    public static string KeyName(KeyCode k) => Binds.KeyName(k);
 
     public static readonly ToolInfo[] MoreTools =
     [
@@ -40,7 +46,7 @@ public sealed partial class ToolGun
 
     private IEnumerable<ToolSetting> MoreSettings(ToolMode mode)
     {
-        ToolSetting KeySetting(string help) => new("Key", 0f, BindKeys.Length - 1, () => GadgetKey, v => GadgetKey = (int)MathF.Round(v), v => KeyName(BindKeys[(int)MathF.Round(v)]), help);
+        ToolSetting KeySetting(string help) => KeyPick(mode == ToolMode.Hoverball ? "Up key" : "Key", () => GadgetKey, k => GadgetKey = k, help);
         switch (mode)
         {
             case ToolMode.Elastic:
@@ -48,7 +54,8 @@ public sealed partial class ToolGun
                 break;
             case ToolMode.Hoverball:
                 yield return new ToolSetting("Strength", 0.2f, 3f, () => HoverStrength, v => HoverStrength = v, v => $"{v:0.0}×", "How firmly it holds height.");
-                yield return KeySetting("Hold this key to raise; the next key in the list lowers.");
+                yield return KeySetting("Hold this key to raise.");
+                yield return KeyPick("Down key", () => GadgetKey2, k => GadgetKey2 = k, "Hold this key to lower.");
                 break;
             case ToolMode.Emitter:
                 yield return new ToolSetting("Rate", 1f, 30f, () => EmitterRate, v => EmitterRate = v, v => $"{v:0}/s", "Bursts per second.");
@@ -90,14 +97,14 @@ public sealed partial class ToolGun
                 }
             case ToolMode.Hoverball:
             {
-                KeyCode up = BindKeys[Math.Clamp(GadgetKey, 0, BindKeys.Length - 1)], down = BindKeys[(Math.Clamp(GadgetKey, 0, BindKeys.Length - 1) + 1) % BindKeys.Length];
+                KeyCode up = GadgetKey, down = GadgetKey2;
                 Hoverball h = Hoverball.Attach(props, prop, point, normal, HoverStrength, up, down);
                 props.PushUndo(new ActionUndo($"Undone: hoverball on {prop.Go.Name}", () => h.Detach()));
                 return $"Hoverball on {prop.Go.Name} ({KeyName(up)} up / {KeyName(down)} down)";
             }
             case ToolMode.Emitter:
             {
-                KeyCode k = BindKeys[Math.Clamp(GadgetKey, 0, BindKeys.Length - 1)];
+                KeyCode k = GadgetKey;
                 Emitter e = Emitter.Attach(props, prop, point, normal, EmitterRate, k);
                 props.PushUndo(new ActionUndo($"Undone: emitter on {prop.Go.Name}", () => e.Detach()));
                 return $"Emitter on {prop.Go.Name} (hold {KeyName(k)})";

@@ -25,6 +25,8 @@ public sealed class Settings
     /// <summary>0 = unlimited.</summary>
     public int FrameCap { get; set; } = 0;
     public bool FirstRunDone { get; set; }
+    /// <summary>Rebound actions (id -> key); missing ids use <see cref="Binds"/> defaults.</summary>
+    public Dictionary<string, Prowl.Runtime.KeyCode>? Binds { get; set; }
 
     public static readonly (int W, int H)[] Resolutions = [(1280, 720), (1600, 900), (1920, 1080), (2560, 1440), (3840, 2160)];
     public static readonly int[] FrameCaps = [0, 30, 60, 120, 144, 240];
