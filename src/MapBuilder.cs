@@ -219,7 +219,7 @@ public static partial class MapBuilder
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {
             bool floor = name == "Floor";
-            if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Solid(0, 215, 255)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); return go; }
+            if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); return go; }
             material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
             material.SetVector("_Tiling", floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f)));
         }

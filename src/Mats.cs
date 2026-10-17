@@ -11,7 +11,13 @@ public static class Mats
     {
         var m = new Material(shader);
         if (!Application.IsHeadless)
-            try { m.SetTexture("_MainTex", _white ??= Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+            try
+            {
+                m.SetTexture("_MainTex", _white ??= Texture2D.LoadDefault(DefaultTexture.White));
+                // Explicit matte surface (R = occlusion where 0 = lit, G = roughness, B = metallic).
+                m.SetTexture("_SurfaceTex", ProcTex.Surface(0.75f, 0f));
+            }
+            catch { }
         return m;
     }
 }

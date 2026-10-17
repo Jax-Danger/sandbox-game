@@ -32,9 +32,9 @@ public static class ProcTex
 
     public static Texture2D Solid(byte r, byte g, byte b, byte a = 255) => Make($"solid{r},{g},{b},{a}", 2, 2, (_, _) => (r, g, b, a));
 
-    /// <summary>Surface map: R = AO, G = roughness, B = metallic.</summary>
-    public static Texture2D Surface(float roughness, float metallic) =>
-        Solid(255, (byte)(roughness * 255), (byte)(metallic * 255));
+    /// <summary>Surface map: R = occlusion (the Standard shader uses ao = 1 - R, so 0 = fully lit), G = roughness, B = metallic.</summary>
+    public static Texture2D Surface(float roughness, float metallic, float occlusion = 0f) =>
+        Solid((byte)(occlusion * 255), (byte)(roughness * 255), (byte)(metallic * 255));
 
     private static float Hash(int x, int y, int seed = 0)
     {
@@ -123,7 +123,6 @@ public sealed record SurfaceMaterial(string Name, float Roughness, float Metalli
     {
         if (Application.IsHeadless || Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") == "0") return; // opt out with SANDBOX_PROCTEX=0
         m.SetTexture("_MainTex", Albedo());
-        if (Environment.GetEnvironmentVariable("SANDBOX_PROCTEX_SURF") == "1")
         m.SetTexture("_SurfaceTex", ProcTex.Surface(Roughness, Metallic));
     }
 }
