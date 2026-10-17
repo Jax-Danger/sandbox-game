@@ -404,48 +404,129 @@ public sealed partial class Menus
 
     public void OpenBank() { _jobsTab = 3; Go(Screen.Jobs); }
 
+    private string? _jobPick;
+
+    private static Icon WeaponIcon(string id) => id switch
+    {
+        "weapon_baton" => Icon.Gavel, "weapon_lockpick" => Icon.Key, "weapon_medkit" => Icon.Heart,
+        "weapon_smg" => Icon.Smg, "weapon_shotgun" => Icon.Shotgun, _ => Icon.Pistol,
+    };
+
     private void DrawJobs(Paper paper, float w, float h, SandboxGame g)
     {
         if (Screen != Screen.Jobs) g.Roleplay.AtAtm = false;
         RoleplaySystem rp = g.Roleplay;
-        float pw = MathF.Min(w * 0.9f, Theme.S(980)), ph = MathF.Min(h * 0.86f, Theme.S(620));
-        float x = (w - pw) / 2f, y = (h - ph) / 2f + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Xl);
+        // Same frame as the spawn menu: nearly full screen, glass, pill tab strip.
+        float margin = Theme.S(12);
+        float pw = w - 2 * margin, ph = h - 2 * margin;
+        float x = margin, y = margin + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Sm + 2);
         Ui.Glass(paper, "jb_panel", x, y, pw, ph, strong: true).IsNotInteractable();
-        Ui.Text(paper, "jb_kick", x + pad, y + pad - Theme.S(4), pw, Theme.S(16), "ROLEPLAY · F4", Theme.Micro, Theme.Warning, Theme.Bold);
-        Ui.Text(paper, "jb_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "City", Theme.Heading, Theme.Text, Theme.Bold);
-        Ui.Text(paper, "jb_wallet", x + pad, y + pad + Theme.S(12), pw - 2 * pad, Theme.S(34), $"${rp.Money:N0}  ·  {rp.Job.Name}  ·  next pay in {rp.PayTimer:0}s", Theme.Label, Theme.Success, Theme.SemiBold, TextAlignment.MiddleRight);
 
         string[] tabs = ["Jobs", "Shop", "Laws", "Money"];
-        float tx = x + pad, ty = y + pad + Theme.S(58);
+        Icon[] tabIcons = [Icon.Users, Icon.Briefcase, Icon.Gavel, Icon.Money];
+        float tabH = Theme.S(28), tx = x + pad, ty = y + pad;
         for (int i = 0; i < tabs.Length; i++)
         {
             int c = i;
-            Ui.Button(paper, $"jb_tab_{i}", tx, ty, Theme.S(96), Theme.S(32), tabs[i], () => _jobsTab = c, selected: _jobsTab == i, ghost: _jobsTab != i, size: Theme.Body, radius: Theme.S(16));
-            tx += Theme.S(102);
+            float tw = Theme.S(36) + (float)paper.MeasureText(tabs[i], Theme.S(Theme.Caption), Theme.SemiBold, 0f).X;
+            Ui.Button(paper, $"jb_tab_{i}", tx, ty, tw, tabH, tabs[i], () => _jobsTab = c, selected: _jobsTab == i, ghost: _jobsTab != i,
+                size: Theme.Caption, icon: tabIcons[i], radius: tabH / 2f);
+            tx += tw + Theme.S(2);
         }
-        float cy = ty + Theme.S(48), cw = pw - 2 * pad, chH = ph - (cy - y) - pad;
+        // Status chips on the right of the strip: wallet, job, payday.
+        float chx = x + pw - pad;
+        void Chip(string id, string text, Color fg, Color? dot = null)
+        {
+            float cw0 = (float)paper.MeasureText(text, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X + Theme.S(dot is null ? 20 : 30);
+            chx -= cw0;
+            Ui.Panel(paper, id, chx, ty, cw0, tabH, Theme.PanelRaised, tabH / 2f, shadow: false).IsNotInteractable();
+            if (dot is { } d) Ui.Rect(paper, id + "_d", chx + Theme.S(11), ty + tabH / 2f - Theme.S(4), Theme.S(8), Theme.S(8), d, Theme.S(4));
+            Ui.Text(paper, id + "_t", chx + Theme.S(dot is null ? 10 : 24), ty, cw0, tabH, text, Theme.Caption, fg, Theme.SemiBold);
+            chx -= Theme.S(4);
+        }
+        Chip("jb_c_pay", $"payday {rp.PayTimer:0}s", Theme.TextMuted);
+        Chip("jb_c_job", rp.Job.Name, Theme.Text, rp.Job.Color);
+        Chip("jb_c_cash", $"${rp.Money:N0}", Theme.Success);
+
+        float cy = ty + tabH + pad, cw = pw - 2 * pad, chH = y + ph - pad - cy;
         switch (_jobsTab)
         {
             case 0:
             {
-                int cols = 2; float gap = Theme.S(10), cardW = (cw - gap) / cols, cardH = Theme.S(92);
+                Job pick = RoleplaySystem.Jobs.FirstOrDefault(j => j.Id == _jobPick) ?? rp.Job;
+                float colW = Theme.S(260), gap = Theme.S(Theme.Sm);
+                float gw = cw - colW - gap, gx = x + pad;
+                float cardW0 = Theme.S(190), cgap = Theme.S(6);
+                int cols = Math.Max(2, (int)((gw + cgap) / (cardW0 + cgap)));
+                float cardW = (gw - (cols - 1) * cgap) / cols, cardH = Theme.S(124), band = Theme.S(46);
                 for (int i = 0; i < RoleplaySystem.Jobs.Length; i++)
                 {
                     Job j = RoleplaySystem.Jobs[i];
-                    float jx = x + pad + (i % cols) * (cardW + gap), jy = cy + (i / cols) * (cardH + gap);
-                    bool cur = j.Id == rp.Job.Id;
+                    float jx = gx + (i % cols) * (cardW + cgap), jy = cy + (i / cols) * (cardH + cgap);
+                    bool cur = j.Id == rp.Job.Id, sel = j.Id == pick.Id;
                     bool hover = paper.IsPointerOverRect(jx, jy, cardW, cardH);
                     Job cj = j;
                     paper.Box($"jb_card_{i}").PositionType(PositionType.SelfDirected).Position(jx, jy).Size(cardW, cardH).Rounded(Theme.S(Theme.RadiusSm))
-                        .BackgroundColor(Theme.WithAlpha(cur ? Color.FromArgb(46, j.Color.R, j.Color.G, j.Color.B) : hover ? Theme.Hover : Theme.PanelRaised, Ui.Alpha))
-                        .BorderColor(Theme.WithAlpha(cur ? j.Color : Theme.Border, Ui.Alpha)).BorderWidth(1f)
-                        .OnClick(0, (_, _) => { Ui.ClickSound?.Invoke(); g.Enqueue(() => g.Notify(rp.SetJob(cj))); });
-                    Ui.Rect(paper, $"jb_sw_{i}", jx + Theme.S(12), jy + Theme.S(14), Theme.S(6), cardH - Theme.S(28), j.Color, Theme.S(3));
-                    Ui.Text(paper, $"jb_n_{i}", jx + Theme.S(28), jy + Theme.S(10), cardW, Theme.S(24), j.Name, Theme.Label, Theme.Text, Theme.SemiBold);
-                    Ui.Text(paper, $"jb_s_{i}", jx, jy + Theme.S(10), cardW - Theme.S(14), Theme.S(24), $"${j.Salary}/min · {rp.CountInJob(j)}/{(j.Max == 0 ? "∞" : j.Max.ToString())}", Theme.Caption, Theme.Success, Theme.SemiBold, TextAlignment.MiddleRight);
-                    Ui.Paragraph(paper, $"jb_d_{i}", jx + Theme.S(28), jy + Theme.S(36), cardW - Theme.S(40), Theme.S(34), j.Description, Theme.Caption, Theme.TextMuted);
-                    Ui.Text(paper, $"jb_p_{i}", jx + Theme.S(28), jy + cardH - Theme.S(24), cardW, Theme.S(16), j.Perk, Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+                        .BackgroundColor(Theme.WithAlpha(hover ? Theme.Hover : Theme.PanelRaised, Ui.Alpha))
+                        .BorderColor(Theme.WithAlpha(sel ? j.Color : hover ? Theme.BorderStrong : Theme.Border, Ui.Alpha)).BorderWidth(sel ? 1.5f : 1f)
+                        .OnClick(0, (_, _) => { Ui.ClickSound?.Invoke(); _jobPick = cj.Id; });
+                    // Colour band with the job's avatar.
+                    Ui.Rect(paper, $"jb_band_{i}", jx + 1, jy + 1, cardW - 2, band, Color.FromArgb((int)(Ui.Alpha * 70), j.Color.R, j.Color.G, j.Color.B), Theme.S(Theme.RadiusSm) - 1);
+                    Ui.Rect(paper, $"jb_av_{i}", jx + Theme.S(10), jy + Theme.S(9), band - Theme.S(18), band - Theme.S(18), j.Color, (band - Theme.S(18)) / 2f);
+                    Ui.Icon(paper, $"jb_avi_{i}", jx + Theme.S(15), jy + Theme.S(14), band - Theme.S(28), Icon.Users, Color.White);
+                    Ui.Text(paper, $"jb_n_{i}", jx + band + Theme.S(2), jy + Theme.S(6), cardW - band, Theme.S(20), j.Name, Theme.Label, Theme.Text, Theme.Bold);
+                    Ui.Text(paper, $"jb_s_{i}", jx + band + Theme.S(2), jy + Theme.S(23), cardW - band, Theme.S(16), $"${j.Salary} / payday", Theme.Caption, Theme.Success, Theme.SemiBold);
+                    if (cur) Ui.Text(paper, $"jb_cur_{i}", jx, jy + Theme.S(6), cardW - Theme.S(10), Theme.S(16), "CURRENT", Theme.Micro, j.Color, Theme.Bold, TextAlignment.MiddleRight);
+                    Ui.Paragraph(paper, $"jb_d_{i}", jx + Theme.S(10), jy + band + Theme.S(6), cardW - Theme.S(20), Theme.S(30), j.Description, Theme.Micro, Theme.TextMuted);
+                    // Slots: filled bar (∞ for unlimited) + loadout icons.
+                    int taken = rp.CountInJob(j);
+                    float sy = jy + cardH - Theme.S(18);
+                    if (j.Max > 0)
+                        for (int k = 0; k < j.Max; k++)
+                            Ui.Rect(paper, $"jb_sl_{i}_{k}", jx + Theme.S(10) + k * Theme.S(12), sy + Theme.S(4), Theme.S(9), Theme.S(6), k < taken ? j.Color : Theme.Border, Theme.S(2));
+                    else Ui.Text(paper, $"jb_inf_{i}", jx + Theme.S(10), sy, Theme.S(60), Theme.S(14), "unlimited", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+                    for (int k = 0; k < j.Loadout.Length; k++)
+                        Ui.Icon(paper, $"jb_lo_{i}_{k}", jx + cardW - Theme.S(22) - k * Theme.S(18), sy - Theme.S(1), Theme.S(14), WeaponIcon(j.Loadout[k]), Theme.TextMuted);
                 }
+
+                // Detail column.
+                float dx = x + pw - pad - colW, dy = cy, dh = chH;
+                Ui.Panel(paper, "jb_det", dx, dy, colW, dh, Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+                float ip = Theme.S(Theme.Md), ix = dx + ip, iw = colW - 2 * ip, iy = dy + ip;
+                Ui.Rect(paper, "jb_det_band", dx + 1, dy + 1, colW - 2, Theme.S(64), Color.FromArgb((int)(Ui.Alpha * 80), pick.Color.R, pick.Color.G, pick.Color.B), Theme.S(Theme.RadiusSm) - 1);
+                Ui.Rect(paper, "jb_det_av", ix, iy + Theme.S(4), Theme.S(40), Theme.S(40), pick.Color, Theme.S(20));
+                Ui.Icon(paper, "jb_det_avi", ix + Theme.S(9), iy + Theme.S(13), Theme.S(22), Icon.Users, Color.White);
+                Ui.Text(paper, "jb_det_k", ix + Theme.S(50), iy + Theme.S(2), iw, Theme.S(14), pick.Id == rp.Job.Id ? "YOUR JOB" : "JOB", Theme.Micro, Theme.Text, Theme.Bold);
+                Ui.Text(paper, "jb_det_n", ix + Theme.S(50), iy + Theme.S(16), iw, Theme.S(26), pick.Name, Theme.Title, Theme.Text, Theme.Bold);
+                iy += Theme.S(64) + Theme.S(4);
+                (string L, string V)[] stats = [("Salary", $"${pick.Salary}"), ("Slots", pick.Max == 0 ? "∞" : $"{rp.CountInJob(pick)}/{pick.Max}"), ("Perk", pick.Perk)];
+                foreach (var (l, v) in stats)
+                {
+                    Ui.Text(paper, $"jb_det_{l}", ix, iy, iw, Theme.S(20), l, Theme.Caption, Theme.TextMuted);
+                    Ui.Text(paper, $"jb_det_{l}_v", ix, iy, iw, Theme.S(20), v, Theme.Caption, l == "Salary" ? Theme.Success : Theme.Text, Theme.SemiBold, TextAlignment.MiddleRight);
+                    iy += Theme.S(21);
+                }
+                iy += Theme.S(4);
+                Ui.Rect(paper, "jb_det_sep", ix, iy, iw, 1f, Theme.Border); iy += Theme.S(8);
+                Ui.Paragraph(paper, "jb_det_d", ix, iy, iw, Theme.S(48), pick.Description, Theme.Caption, Theme.TextMuted);
+                iy += Theme.S(52);
+                Ui.Text(paper, "jb_det_lo", ix, iy, iw, Theme.S(16), "LOADOUT", Theme.Micro, Theme.TextFaint, Theme.Bold);
+                iy += Theme.S(18);
+                if (pick.Loadout.Length == 0) { Ui.Text(paper, "jb_det_lo0", ix, iy, iw, Theme.S(20), "Hands, physgun and tool gun", Theme.Caption, Theme.TextFaint); iy += Theme.S(24); }
+                for (int k = 0; k < pick.Loadout.Length; k++)
+                {
+                    string wid = pick.Loadout[k];
+                    string wn = g.Weapons.All.FirstOrDefault(wp => wp.Id == wid)?.Name ?? wid.Replace("weapon_", "");
+                    Ui.Panel(paper, $"jb_det_w_{k}", ix, iy, iw, Theme.S(32), Theme.PanelRaised, Theme.S(Theme.RadiusXs), shadow: false).IsNotInteractable();
+                    Ui.Icon(paper, $"jb_det_wi_{k}", ix + Theme.S(9), iy + Theme.S(8), Theme.S(16), WeaponIcon(wid), Theme.Text);
+                    Ui.Text(paper, $"jb_det_wn_{k}", ix + Theme.S(34), iy, iw, Theme.S(32), wn, Theme.Caption, Theme.Text, Theme.SemiBold);
+                    iy += Theme.S(36);
+                }
+                bool isCur = pick.Id == rp.Job.Id;
+                float bh = Theme.S(30);
+                Job pj = pick;
+                Ui.Button(paper, "jb_become", ix, dy + dh - ip - bh, iw, bh, isCur ? "Current job" : $"Become {pick.Name}",
+                    () => g.Enqueue(() => g.Notify(rp.SetJob(pj))), selected: !isCur, enabled: !isCur, icon: isCur ? Icon.Check : Icon.Briefcase, radius: bh / 2f, size: Theme.Caption);
                 break;
             }
             case 1:
@@ -520,6 +601,6 @@ public sealed partial class Menus
                 break;
             }
         }
-        Ui.Text(paper, "jb_hint", x + pad, y + ph - pad - Theme.S(16), pw, Theme.S(16), "F4 or Esc to close", Theme.Caption, Theme.TextFaint);
+        if (_jobsTab != 0) Ui.Text(paper, "jb_hint", x + pad, y + ph - pad - Theme.S(16), pw, Theme.S(16), "F4 or Esc to close", Theme.Caption, Theme.TextFaint);
     }
 }
