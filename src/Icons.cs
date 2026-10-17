@@ -6,7 +6,7 @@ namespace Sandbox;
 public enum Icon
 {
     Cube, Sphere, Plank, Barrel, Crate, Ramp, Grid, Bolt, Wrench, Sliders, Search, Gear, Play, Power, Back,
-    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand, Camera, Smg, Shotgun,
+    Magnet, Link, Balloon, Trash, Undo, Pause, Keyboard, Folder, Check, Pistol, Car, Save, Load, Eye, Hand, Camera, Smg, Shotgun, Heart, Shield, Money, Briefcase, Globe, Plus, Pencil, Copy, Flashlight, Image, Gavel, Key, Users,
 }
 
 /// <summary>Stroke-based vector icons drawn with Quill on a 24x24 grid (1.75px strokes, round caps).</summary>
@@ -158,6 +158,50 @@ public static class Icons
                 break;
             case Icon.Pistol:
                 Closed(3, 7, 21, 7, 21, 11, 11, 11, 10, 19, 6, 19, 7, 11, 3, 11);
+                break;
+            case Icon.Heart:
+                c.BeginPath(); c.MoveTo(X(12), Y(20)); c.LineTo(X(4.5f), Y(12.5f));
+                c.Arc(X(8.25f), Y(8.75f), 3.9f * s, MathF.PI * 0.75f, MathF.PI * 1.85f, false);
+                c.Arc(X(15.75f), Y(8.75f), 3.9f * s, MathF.PI * 1.15f, MathF.PI * 2.25f, false);
+                c.LineTo(X(12), Y(20)); c.Stroke();
+                break;
+            case Icon.Shield:
+                Closed(12, 3, 19.5f, 6, 19, 13, 12, 21, 5, 13, 4.5f, 6);
+                break;
+            case Icon.Money:
+                Box(2.5f, 6.5f, 19, 11, 2); Circle(12, 12, 2.6f); Dot(6, 12, 0.9f); Dot(18, 12, 0.9f);
+                break;
+            case Icon.Briefcase:
+                Box(3, 8, 18, 12, 2); Line(9, 8, 9, 5, 15, 5, 15, 8); Line(3, 13, 21, 13);
+                break;
+            case Icon.Globe:
+                Circle(12, 12, 8.5f); Line(3.5f, 12, 20.5f, 12);
+                c.BeginPath(); c.Ellipse(X(12), Y(12), 3.8f * s, 8.5f * s); c.Stroke();
+                break;
+            case Icon.Plus:
+                Line(12, 5, 12, 19); Line(5, 12, 19, 12);
+                break;
+            case Icon.Pencil:
+                Closed(15.5f, 4.5f, 19.5f, 8.5f, 9, 19, 4.5f, 19.5f, 5, 15); Line(13.5f, 6.5f, 17.5f, 10.5f);
+                break;
+            case Icon.Copy:
+                Box(8, 8, 12, 12, 2); Line(16, 8, 16, 5, 4, 5, 4, 16, 8, 16);
+                break;
+            case Icon.Flashlight:
+                Closed(4, 9, 12, 9, 15, 6, 15, 18, 12, 15, 4, 15); Line(17.5f, 8, 20.5f, 6.5f); Line(17.5f, 12, 21, 12); Line(17.5f, 16, 20.5f, 17.5f);
+                break;
+            case Icon.Image:
+                Box(3, 5, 18, 14, 2); Dot(8.5f, 9.5f, 1.4f); Line(3.5f, 17, 9, 12, 13, 15.5f, 16, 13, 20.5f, 17);
+                break;
+            case Icon.Gavel:
+                Closed(10, 4, 16, 10, 13.5f, 12.5f, 7.5f, 6.5f); Line(11.5f, 10, 4, 17.5f); Line(13, 20, 21, 20);
+                break;
+            case Icon.Key:
+                Circle(8, 12, 4); Line(12, 12, 21, 12, 21, 15); Line(17.5f, 12, 17.5f, 14.5f);
+                break;
+            case Icon.Users:
+                Circle(9, 8, 3.2f); Line(3.5f, 19.5f, 3.5f, 17.5f); c.BeginPath(); c.Arc(X(9), Y(18), 5.5f * s, MathF.PI, MathF.PI * 2f, false); c.Stroke();
+                Circle(16.5f, 9, 2.6f); c.BeginPath(); c.Arc(X(17), Y(18), 4f * s, MathF.PI * 1.15f, MathF.PI * 2f, false); c.Stroke();
                 break;
             case Icon.Smg:
                 // Receiver + barrel, forward magazine, grip, stub stock.

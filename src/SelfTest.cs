@@ -464,6 +464,7 @@ public sealed class SelfTest
                     g.ClearMap();
                 }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
+                WorldsRoundTrip(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0
@@ -471,5 +472,72 @@ public sealed class SelfTest
                     : $"Sandbox self-test FAILED ({_failures.Count}): {string.Join("; ", _failures)}");
                 break;
         }
+    }
+
+    /// <summary>Worlds: create → play → autosave (atomic + .bak) → reload through the async loader; plus the roleplay economy.</summary>
+    private void WorldsRoundTrip(SandboxGame g)
+    {
+        string root = Path.Combine(Path.GetTempPath(), $"sandbox-selftest-{Environment.ProcessId}");
+        Worlds.Root = root;
+        try
+        {
+            var meta = new SessionMeta { Name = "Test/World:1", Mode = "Roleplay" };
+            meta.Modifiers.Gravity = 5f; meta.Modifiers.StartingMoney = 1234; meta.Modifiers.Npcs = false;
+            WorldEntry we = Worlds.Create(meta);
+            Check(Directory.Exists(we.Folder) && File.Exists(Path.Combine(we.Folder, "session.json")) && !Path.GetFileName(we.Folder).Contains('/'),
+                $"world folder created ({Path.GetFileName(we.Folder)})");
+
+            void Load(WorldEntry w)
+            {
+                g.EnterSession(w);
+                var sw = System.Diagnostics.Stopwatch.StartNew();
+                while (g.Loader is not null && sw.Elapsed.TotalSeconds < 15) { g.TickLoader(0.02f); Thread.Sleep(1); }
+            }
+            Load(we);
+            Check(g.Session == we && g.Menus.Screen == Screen.Playing && MathF.Abs(g.World.Physics.Gravity.Y + 5f) < 0.01f && g.Roleplay.Money == 1234,
+                $"new world loads with its modifiers (gravity {g.World.Physics.Gravity.Y:0.0}, money {g.Roleplay.Money})");
+
+            Prop a = g.Props.Spawn(PropKind.Cube, new Float3(4f, 30f, 4f), 20f, recordUndo: false);
+            a.Body.LinearVelocity = new Float3(1f, 2f, 3f);
+            Prop fz = g.Props.Spawn(PropKind.Plank, new Float3(-4f, 3f, 4f), 45f, recordUndo: false);
+            fz.SetFrozen(true);
+            g.Roleplay.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "police"));
+            g.Roleplay.Earn(100, null);
+            g.SaveSession(sync: true);
+            g.SaveSession(sync: true); // second write leaves a .bak behind
+            Check(File.Exists(Path.Combine(we.Folder, "world.json")) && File.Exists(Path.Combine(we.Folder, "world.json.bak"))
+                  && !Directory.EnumerateFiles(we.Folder, "*.tmp").Any(), "autosave writes atomically and keeps one backup");
+
+            // Corrupt the main file: the loader must fall back to the backup.
+            File.WriteAllText(Path.Combine(we.Folder, "world.json"), "{ not json");
+            var reloaded = Worlds.List().First(x => x.Folder == we.Folder);
+            g.ExitSession(Screen.Worlds);
+            Check(g.Session is null && g.World.Physics.Gravity.Y < -9f, "exit restores the menu world");
+            Load(reloaded);
+            Prop? ra = g.Props.Props.FirstOrDefault(p => p.Kind == PropKind.Cube && p.Go.Transform.Position.Y > 20f);
+            Prop? rf = g.Props.Props.FirstOrDefault(p => p.Kind == PropKind.Plank);
+            Check(ra is not null && Float3.Length(ra.Body.LinearVelocity - new Float3(1f, 2f, 3f)) < 0.6f,
+                $"reload restores exact velocity from backup ({(ra is null ? "missing" : $"{ra.Body.LinearVelocity.X:0.0},{ra.Body.LinearVelocity.Y:0.0},{ra.Body.LinearVelocity.Z:0.0}")})");
+            Check(rf is { Frozen: true } && MathF.Abs(rf.Go.Transform.Position.Y - 3f) < 0.05f, "frozen prop stays frozen in place after reload");
+            Check(g.Roleplay.Job.Id == "police" && g.Roleplay.Money == 1334 && g.Weapons.All.Any(w => w is BatonWeapon && w.Available(g)),
+                $"player job, money and job loadout restored ({g.Roleplay.Job.Id}, ${g.Roleplay.Money})");
+            bool spent = g.Roleplay.TrySpend(5000, "test");
+            Check(!spent && g.Roleplay.Money == 1334 && g.Roleplay.TrySpend(334, "test") && g.Roleplay.Money == 1000, "wallet refuses overspending and charges purchases");
+
+            var dup = Worlds.Duplicate(reloaded);
+            var ren = Worlds.Rename(dup, "Renamed copy");
+            Check(Worlds.List().Count == 2 && ren.Meta.Name == "Renamed copy" && File.Exists(Path.Combine(ren.Folder, "world.json")), "duplicate + rename");
+            g.ExitSession(Screen.Worlds);
+            Worlds.Delete(ren);
+            Check(Worlds.List().Count == 1, "delete removes the world");
+            var steps = new SessionLoader(g, reloaded);
+            int frames = 0; string last = "";
+            var clock = System.Diagnostics.Stopwatch.StartNew();
+            while (!steps.Step(0.016f) && clock.Elapsed.TotalSeconds < 15) { Thread.Sleep(1); frames++; if (steps.Stage != last) { last = steps.Stage; Console.WriteLine($"  loader {clock.ElapsedMilliseconds} ms f{frames}: {last} {steps.Progress:0.00}"); } }
+            Check(frames > 5 && steps.Error is null, $"loader spreads work over frames ({frames} frames)");
+            g.ExitSession(Screen.Playing);
+        }
+        catch (Exception e) { Check(false, $"worlds round trip threw {e.GetType().Name}: {e.Message}"); }
+        finally { try { Directory.Delete(root, true); } catch { } }
     }
 }

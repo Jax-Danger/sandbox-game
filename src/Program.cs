@@ -6,18 +6,37 @@ internal static class Program
 {
     private static int Main(string[] args)
     {
+        bool headless = args.Any(static a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase));
+        if (!headless) Log.Init();
         var game = new SandboxGame();
-        if (args.Any(static a => string.Equals(a, "--headless", StringComparison.OrdinalIgnoreCase)))
+        if (headless)
         {
             game.SelfTest = new SelfTest();
-            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = 20, TargetFps = 60 });
+            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = 26, TargetFps = 60 });
             return game.SelfTest.ExitCode;
         }
 
         int shot = Array.IndexOf(args, "--shot");
         if (shot >= 0 && shot + 1 < args.Length) game.ShotState = args[shot + 1];
 
-        game.Run("Sandbox", 1280, 720);
-        return 0;
+        try
+        {
+            Settings s = Settings.Load();
+            game.Run("Sandbox", s.ResolutionWidth, s.ResolutionHeight);
+            game.SaveOnExit();
+            return 0;
+        }
+        catch (Exception e)
+        {
+            string? report = Log.Crash(e, "fatal");
+            if (Log.IsGraphicsInit(e))
+                Log.ErrorDialog("Prowl Sandbox: graphics not supported",
+                    "Could not create an OpenGL 4.1 window. Please update your graphics driver (OpenGL 4.1 or newer is required; " +
+                    "on Linux install Mesa 21+ or your GPU vendor's driver).\n\n" + e.GetBaseException().Message +
+                    (report is null ? "" : $"\n\nDetails: {report}"));
+            else
+                Log.ErrorDialog("Prowl Sandbox crashed", e.GetBaseException().Message + (report is null ? "" : $"\n\nA crash report was written to:\n{report}"));
+            return 1;
+        }
     }
 }

@@ -87,7 +87,11 @@ public sealed class Hud
     {
         // Bottom-left: prop count (+ noclip chip only when active).
         float ch = Theme.S(26);
-        string left = $"{game.Props.Props.Count} props";
+        // Health/armor sits in the bottom-left corner; the prop chip moves up above it.
+        float hpW = game.Health.DrawHud(paper, m, h - m - Theme.S(34), Theme.S(34));
+        h -= Theme.S(34) + Theme.S(8);
+        if (game.IsRoleplay) DrawRoleplay(paper, m, game);
+        string left = game.IsRoleplay ? $"{game.Props.Props.Count}/{game.PropLimit} props" : $"{game.Props.Props.Count} props";
         float lw = (float)paper.MeasureText(left, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X + Theme.S(36);
         Ui.Glass(paper, "hud_props", m, h - m - ch, lw, ch, ch / 2f, shadow: false).IsNotInteractable();
         Ui.Icon(paper, "hud_props_ic", m + Theme.S(9), h - m - ch + Theme.S(6), Theme.S(14), Icon.Cube, Theme.TextMuted);
@@ -100,6 +104,7 @@ public sealed class Hud
         }
 
         // Bottom-right: weapon icon + name (+ ammo), one small chip. Replaced by the speedometer while driving.
+        h += Theme.S(34) + Theme.S(8);
         if (game.InVehicle) return;
         Weapon wpn = game.Weapons.Current;
         string label = game.Weapons.IsToolGun ? ToolGun.InfoFor(game.ToolGun.Mode).Name : wpn.Name;
@@ -122,6 +127,46 @@ public sealed class Hud
                 Theme.Caption, Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
     }
 
+    /// <summary>Roleplay chip (top-left): wallet, job colour/name, salary countdown, wanted badge; laws board under it.</summary>
+    private static void DrawRoleplay(Paper paper, float m, SandboxGame game)
+    {
+        RoleplaySystem rp = game.Roleplay;
+        float y = m, ch = Theme.S(48);
+        string money = $"${rp.Money:N0}";
+        float mw = (float)paper.MeasureText(money, Theme.S(Theme.Title), Theme.Bold, 0f).X;
+        float jw = (float)paper.MeasureText(rp.Job.Name, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X;
+        float w = MathF.Max(mw + Theme.S(44), jw + Theme.S(120)) + Theme.S(16);
+        float pulse = Ui.SpringTo("rp_money_pulse", 0f, 0f);
+        Ui.Glass(paper, "rp_chip", m, y, w, ch, Theme.S(12), shadow: false).IsNotInteractable();
+        Ui.Rect(paper, "rp_jobbar", m + Theme.S(8), y + Theme.S(8), Theme.S(4), ch - Theme.S(16), rp.Job.Color, Theme.S(2));
+        Ui.Icon(paper, "rp_money_ic", m + Theme.S(20), y + Theme.S(6), Theme.S(16), Icon.Money, Theme.Success);
+        Ui.Text(paper, "rp_money", m + Theme.S(42), y + Theme.S(2), w, Theme.S(24), money, Theme.Title + pulse, Theme.Text, Theme.Bold);
+        Ui.Text(paper, "rp_job", m + Theme.S(20), y + Theme.S(26), w, Theme.S(18), rp.Job.Name, Theme.Caption, rp.Job.Color, Theme.SemiBold);
+        Ui.Text(paper, "rp_pay", m, y + Theme.S(26), w - Theme.S(10), Theme.S(18), $"+${rp.Job.Salary} in {rp.PayTimer:0}s", Theme.Micro, Theme.TextFaint, Theme.SemiBold, TextAlignment.MiddleRight);
+        y += ch + Theme.S(6);
+        if (rp.WantedTimer > 0f)
+        {
+            Ui.Glass(paper, "rp_wanted", m, y, w, Theme.S(24), Theme.S(12), shadow: false).IsNotInteractable();
+            Ui.Text(paper, "rp_wanted_t", m, y, w, Theme.S(24), $"WANTED · {rp.WantedTimer:0}s", Theme.Micro, Theme.Danger, Theme.Bold, TextAlignment.MiddleCenter);
+            y += Theme.S(30);
+        }
+        if (rp.JailTimer > 0f)
+        {
+            Ui.Glass(paper, "rp_jail", m, y, w, Theme.S(24), Theme.S(12), shadow: false).IsNotInteractable();
+            Ui.Text(paper, "rp_jail_t", m, y, w, Theme.S(24), $"ARRESTED · {rp.JailTimer:0}s", Theme.Micro, Theme.Warning, Theme.Bold, TextAlignment.MiddleCenter);
+            y += Theme.S(30);
+        }
+        if (rp.Laws.Count > 0)
+        {
+            float lh = Theme.S(18), bw = Theme.S(260), bh = Theme.S(28) + rp.Laws.Count * lh;
+            Ui.Glass(paper, "rp_laws", m, y, bw, bh, Theme.S(10), shadow: false).IsNotInteractable();
+            Ui.Icon(paper, "rp_laws_ic", m + Theme.S(10), y + Theme.S(7), Theme.S(12), Icon.Gavel, Theme.TextMuted);
+            Ui.Text(paper, "rp_laws_t", m + Theme.S(28), y + Theme.S(2), bw, Theme.S(22), "LAWS", Theme.Micro, Theme.TextMuted, Theme.Bold);
+            for (int i = 0; i < rp.Laws.Count; i++)
+                Ui.Text(paper, $"rp_law_{i}", m + Theme.S(12), y + Theme.S(24) + i * lh, bw - Theme.S(20), lh, $"{i + 1}. {rp.Laws[i]}", Theme.Caption, Theme.TextMuted);
+        }
+    }
+
     /// <summary>Weapon slots and tool card, shown briefly after switching, then faded out.</summary>
     private static void DrawSwitcher(Paper paper, float w, float m, SandboxGame game)
     {
@@ -129,7 +174,7 @@ public sealed class Hud
         if (t > SwitchShow + SwitchFade) return;
         float a = MathF.Min(Theme.Ease(t / 0.12f), Theme.Ease((SwitchShow + SwitchFade - t) / SwitchFade));
         Ui.Alpha = a;
-        IReadOnlyList<Weapon> all = game.Weapons.All;
+        IReadOnlyList<Weapon> all = game.Weapons.All.Where(x => x.Available(game) || ReferenceEquals(x, game.Weapons.Current)).ToList();
         int[] slots = all.Select(x => x.Slot).Distinct().OrderBy(x => x).ToArray();
         float sw = Theme.S(46), gap = Theme.S(6), total = slots.Length * sw + (slots.Length - 1) * gap;
         float x0 = (w - total) / 2f, y0 = m;

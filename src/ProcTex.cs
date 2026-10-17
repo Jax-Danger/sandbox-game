@@ -27,6 +27,9 @@ public static class ProcTex
         return Cache[key] = t;
     }
 
+    /// <summary>Texture generators the loading screen runs one per frame batch.</summary>
+    public static List<Action> WarmList() => [() => DevFloor(), () => Grass(), () => Concrete(), () => Wood(), () => Panel()];
+
     public static Texture2D Solid(byte r, byte g, byte b, byte a = 255) => Make($"solid{r},{g},{b},{a}", 2, 2, (_, _) => (r, g, b, a));
 
     /// <summary>Surface map: R = AO, G = roughness, B = metallic.</summary>
@@ -69,6 +72,13 @@ public static class ProcTex
         bool major = x < 3 || y < 3;
         float v = n * (major ? 0.55f : line ? 0.72f : 1f);
         return (B(v), B(v), B(v * 1.01f), 255);
+    });
+
+    public static Texture2D Grass() => Make("grass", 128, 128, (x, y) =>
+    {
+        float v = 0.8f + 0.25f * Fbm(x / 9f, y / 9f, 11) + (Hash(x, y, 4) - 0.5f) * 0.12f;
+        float dry = Math.Clamp(Fbm(x / 23f, y / 23f, 5) * 1.6f - 0.3f, 0f, 1f);
+        return (B(v * (0.30f + 0.12f * dry)), B(v * (0.46f + 0.04f * dry)), B(v * (0.20f + 0.04f * dry)), 255);
     });
 
     public static Texture2D Concrete() => Make("concrete", 128, 128, (x, y) =>

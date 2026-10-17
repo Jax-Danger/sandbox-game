@@ -5,7 +5,7 @@ using Prowl.Vector;
 
 namespace Sandbox;
 
-public sealed class SandboxGame : Game
+public sealed partial class SandboxGame : Game
 {
     public SelfTest? SelfTest { get; set; }
 
@@ -23,6 +23,14 @@ public sealed class SandboxGame : Game
     public VehicleSystem Vehicles { get; private set; } = null!;
     public Settings Settings { get; private set; } = new();
     public Menus Menus { get; } = new();
+    public HealthSystem Health { get; } = new();
+    public DayNightCycle DayNight { get; } = new();
+    public RoleplaySystem Roleplay { get; private set; } = null!;
+    public bool Flashlight { get; private set; }
+    /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
+    public bool MenuBackdrop { get; private set; }
+    private SpotLight? _flashlight;
+    private float _zoom, _frameStart;
     public bool AimingAtProp { get; private set; }
     public bool InVehicle => Vehicles.InVehicle;
     public Shader Shader { get; private set; } = null!;
@@ -60,6 +68,8 @@ public sealed class SandboxGame : Game
         World.Ambient.GroundColor = new Float4(0.30f, 0.28f, 0.26f, 1f);
         World.Ambient.Strength = 0.9f;
         Props = new PropManager(World, Shader);
+        Roleplay = new RoleplaySystem(this);
+        DummyBrain.Game = this;
         Player = new Player(World, new Float3(0f, 0.1f, -10f), 0f);
         if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1") Player.Camera.ClearFlags = CameraClearFlags.Skybox;
         PhysGun = new PhysGun(Props);
@@ -81,6 +91,9 @@ public sealed class SandboxGame : Game
         Weapons.Add(new ShotgunWeapon());
         Weapons.Add(new RocketLauncherWeapon());
         Weapons.Add(new GrenadeWeapon());
+        Weapons.Add(new BatonWeapon());
+        Weapons.Add(new LockpickWeapon());
+        Weapons.Add(new MedkitWeapon());
         foreach (Weapon wpn in Weapons.All)
         {
             Weapon w0 = wpn;
@@ -90,17 +103,37 @@ public sealed class SandboxGame : Game
         Weapons.Add(new ToolGunWeapon());
         Weapons.Select(this, Weapons.Get<PhysGunWeapon>());
 
-        Props.Spawn(PropKind.Cube, new Float3(-1f, 1f, -2f), 10f, recordUndo: false);
-        Props.Spawn(PropKind.Cube, new Float3(0.2f, 2.5f, -2f), 35f, recordUndo: false);
-        Props.Spawn(PropKind.Sphere, new Float3(1.5f, 1f, -2.5f), 0f, recordUndo: false);
-        Props.Spawn(PropKind.Barrel, new Float3(3f, 1f, -1f), 0f, recordUndo: false);
-        Props.Spawn(PropKind.Plank, new Float3(-3f, 0.5f, 0f), 30f, recordUndo: false);
+        SpawnMenuBackdrop();
+        if (!Application.IsHeadless)
+            Window.Closing += () => SaveOnExit();
 
         ApplySettings();
         if (Application.IsHeadless || SelfTest is not null) Menus.Go(Screen.Playing);
         Console.WriteLine($"Sandbox ready: map built, {Props.Props.Count} starter props.");
         SelfTest?.Begin(this);
         ApplyShotState();
+    }
+
+    /// <summary>The live scene behind the main menu (and the starter props for shot/self-test states).</summary>
+    public void SpawnMenuBackdrop()
+    {
+        Props.Spawn(PropKind.Cube, new Float3(-1f, 1f, -2f), 10f, recordUndo: false);
+        Props.Spawn(PropKind.Cube, new Float3(0.2f, 2.5f, -2f), 35f, recordUndo: false);
+        Props.Spawn(PropKind.Sphere, new Float3(1.5f, 1f, -2.5f), 0f, recordUndo: false);
+        Props.Spawn(PropKind.Barrel, new Float3(3f, 1f, -1f), 0f, recordUndo: false);
+        Props.Spawn(PropKind.Plank, new Float3(-3f, 0.5f, 0f), 30f, recordUndo: false);
+        Player.Teleport(new Float3(0f, 0.1f, -10f));
+    }
+
+    /// <summary>Slow orbit around the starter props while no session is running.</summary>
+    private void OrbitMenuCamera()
+    {
+        float t = (float)Time.UnscaledTotalTime * 0.06f;
+        Float3 c = new(0f, 1.2f, -1.5f);
+        Float3 eye = c + new Float3(MathF.Sin(t) * 9f, 2.6f + MathF.Sin(t * 0.7f) * 0.5f, -MathF.Cos(t) * 9f);
+        Player.Teleport(eye - new Float3(0f, Player.EyeHeight, 0f));
+        Float3 d = Float3.Normalize(c - eye);
+        Player.SetLook(MathF.Atan2(d.X, d.Z) * 180f / MathF.PI, -MathF.Asin(d.Y) * 180f / MathF.PI);
     }
 
     public void ApplySettings()
@@ -138,6 +171,11 @@ public sealed class SandboxGame : Game
             case "vehicles": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Vehicles; break;
             case "weapons": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Weapons; break;
             case "pause": Menus.Go(Screen.Paused); break;
+            case "worlds": SeedDemoWorlds(); Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); break;
+            case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
+            case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
+            case "rp" or "jobs": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
+            case "hills": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
                 Menus.Go(Screen.Playing);
                 Weapons.Select(this, Weapons.Get<SmgWeapon>());
@@ -206,7 +244,17 @@ public sealed class SandboxGame : Game
         _hud.Tick(dt);
         CameraFeeds.Tick(this);
         while (_pending.Count > 0) _pending.Dequeue()();
-        Time.TimeScale = Menus.Screen is Screen.Paused or Screen.Settings && Menus.Blocking && ShotState is null ? 0f : 1f;
+        MenuBackdrop = Session is null && SelfTest is null && !Application.IsHeadless && Menus.Screen != Screen.Playing;
+        bool menuWorld = Session is null && Menus.Screen is Screen.MainMenu or Screen.Worlds or Screen.CreateWorld or Screen.Settings && SelfTest is null && !Application.IsHeadless;
+        Time.TimeScale = Menus.Screen == Screen.Loading ? 0f
+            : (Menus.Screen is Screen.Paused || (Menus.Screen == Screen.Settings && Session is not null)) && ShotState is null ? 0f
+            : Settings.TimeScale;
+        if (Menus.Screen == Screen.Loading) { TickLoader(dt); FrameCap(); return; }
+        if (Session is not null && SelfTest is null) TickAutosave(dt);
+        if (menuWorld) OrbitMenuCamera();
+        Health.Tick(this, Time.DeltaTime);
+        if (DayNight.Enabled) DayNight.Tick(this, Time.DeltaTime);
+        if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 
         if (SelfTest is not null)
         {
@@ -219,6 +267,7 @@ public sealed class SandboxGame : Game
             return;
         }
 
+        FrameCap();
         if (ShotState is null) HandleMenus();
         else if (ShotState == "context") { Context.Open = true; UpdateHighlight(Context.Selected); }
         else ShotTick();
@@ -229,7 +278,8 @@ public sealed class SandboxGame : Game
         else if (Input.CursorLocked) Input.UnlockCursor();
 
         Vehicles.Tick(Time.DeltaTime, input);
-        if (!InVehicle) Player.Update(Time.DeltaTime, input);
+        if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
+        UpdateFlashlightZoom(dt, input);
         Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
         Fx.Tick(Time.DeltaTime);
         Prop? aimed = !InVehicle && Player.Trace(80f, out RaycastHit aim) ? Props.FromBody(aim.Rigidbody) : null;
@@ -245,6 +295,10 @@ public sealed class SandboxGame : Game
         if (Input.GetKeyDown(KeyCode.F3)) { Settings.ShowFps = !Settings.ShowFps; Settings.Save(); }
         if (Input.GetKeyDown(KeyCode.E) && Carry.Held is null && Vehicles.TryUse()) return;
         if (InVehicle) { Carry.Drop(); return; }
+        if (Health.Dead) return;
+        if (Input.GetKeyDown(KeyCode.F) && Weapons.Current is not ToolGunWeapon) ToggleFlashlight();
+        if (Input.GetKeyDown(KeyCode.E) && IsRoleplay && aimed is not null && aimed.Entity?.StartsWith("rp_") == true
+            && Float3.Length(aimed.Go.Transform.Position - Player.EyePosition) < 3.5f) { Notify(Roleplay.Use(aimed)); return; }
         if (Input.GetKeyDown(KeyCode.E)) Notify(Carry.Use(this));
         Carry.Update(this);
         bool carrying = Carry.Held is not null;
@@ -298,6 +352,8 @@ public sealed class SandboxGame : Game
 
     private void HandleMenus()
     {
+        if (IsRoleplay && Input.GetKeyDown(KeyCode.F4) && Menus.Screen is Screen.Playing or Screen.Jobs)
+            Menus.Go(Menus.Screen == Screen.Jobs ? Screen.Playing : Screen.Jobs);
         if (Input.GetKeyDown(KeyCode.Escape))
         {
             if (_spawnMenu.Open) _spawnMenu.Open = false;
@@ -360,7 +416,8 @@ public sealed class SandboxGame : Game
 
     public string Spawn(SpawnEntry entry)
     {
-        if (Props.Props.Count >= MaxProps) return $"Prop limit reached ({MaxProps}). Clean up with Undo or Clear map.";
+        if (entry.Tab != MenuTab.Weapons && Props.Props.Count >= PropLimit) return $"Prop limit reached ({PropLimit}). Clean up with Undo or Clear map.";
+        if (entry.Tab != MenuTab.Weapons && IsRoleplay && !Roleplay.ChargeForProp()) return $"You need ${RoleplaySystem.PropCost} to spawn that";
         Float3 pos;
         if (Player.Trace(40f, out RaycastHit hit))
             pos = hit.Point + hit.Normal * (entry.HalfHeight + 0.1f) + new Float3(0f, 0.1f, 0f);
@@ -428,6 +485,7 @@ public sealed class SandboxGame : Game
 
     public void QuitGame()
     {
+        SaveOnExit();
         Settings.Save();
         Quit();
     }
@@ -443,10 +501,80 @@ public sealed class SandboxGame : Game
 
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         _hud.Draw(paper, w, h, this, dt, chrome);
+        if (chrome || Health.Dead) Health.DrawOverlay(paper, w, h);
         if (chrome) CameraFeeds.Draw(paper, w, h);
         _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);
         Context.Draw(paper, w, h, dt, this);
         _spawnMenu.Draw(paper, w, h, dt, this);
         Menus.Draw(paper, w, h, dt, this);
+    }
+}
+
+public sealed partial class SandboxGame
+{
+    private readonly System.Diagnostics.Stopwatch _frameClock = System.Diagnostics.Stopwatch.StartNew();
+
+    /// <summary>Optional frame-rate cap (Settings → Video). Sleeps the remainder of the frame budget.</summary>
+    private void FrameCap()
+    {
+        if (Application.IsHeadless || Settings.FrameCap <= 0) { _frameClock.Restart(); return; }
+        double budget = 1000.0 / Settings.FrameCap;
+        double left = budget - _frameClock.Elapsed.TotalMilliseconds;
+        if (left > 1.5) Thread.Sleep((int)(left - 1));
+        while (_frameClock.Elapsed.TotalMilliseconds < budget) Thread.SpinWait(50);
+        _frameClock.Restart();
+    }
+
+    public void ToggleFlashlight()
+    {
+        Flashlight = !Flashlight;
+        if (_flashlight is null)
+        {
+            var go = new GameObject("Flashlight");
+            _flashlight = go.AddComponent<SpotLight>();
+            _flashlight.Color = new Color(1f, 0.95f, 0.85f, 1f);
+            _flashlight.Intensity = 6f;
+            _flashlight.Range = 30f;
+            _flashlight.SpotAngle = 50f;
+            _flashlight.CastShadows = false;
+            World.Add(go);
+        }
+        _flashlight.Enabled = Flashlight;
+        Sounds.Play("sfx_ui_click", 0.5f, null, Flashlight ? 1.2f : 0.9f);
+    }
+
+    /// <summary>Flashlight follows the eye; hold Zoom (B) to narrow the FOV smoothly.</summary>
+    private void UpdateFlashlightZoom(float dt, bool input)
+    {
+        if (_flashlight is not null && Flashlight)
+        {
+            _flashlight.GameObject.Transform.Position = Player.EyePosition + Player.Forward * 0.2f;
+            _flashlight.GameObject.Transform.Rotation = Player.CameraObject.Transform.Rotation;
+        }
+        bool zoom = input && Input.GetKey(KeyCode.B);
+        _zoom += ((zoom ? 1f : 0f) - _zoom) * MathF.Min(1f, dt * 12f);
+        Player.Camera.FieldOfView = Settings.FieldOfView + (25f - Settings.FieldOfView) * _zoom;
+        Player.LookSensitivity = 0.12f * Settings.MouseSensitivity * (1f - 0.6f * _zoom);
+    }
+}
+
+public sealed partial class SandboxGame
+{
+    /// <summary>Screenshot mode: freeze the loading screen once progress reaches this value.</summary>
+    public float HoldLoaderAt { get; set; } = 2f;
+
+    /// <summary>Screenshot mode: a few example worlds so the Worlds screen isn't empty.</summary>
+    private List<WorldEntry> SeedDemoWorlds()
+    {
+        var list = Worlds.List();
+        if (list.Count > 0) return list;
+        (string Name, string Mode, string Map)[] demos = [("Flatgrass build", "Sandbox", "flatgrass"), ("Rolling Hills", "Sandbox", "hills"), ("Downtown RP", "Roleplay", "flatgrass")];
+        foreach (var (name, mode, map) in demos)
+        {
+            var meta = new SessionMeta { Name = name, Mode = mode, Map = map, PlaySeconds = name.Length * 300, PropCount = name.Length * 3, LastPlayed = DateTime.Now.AddHours(-name.Length) };
+            meta.Modifiers.Npcs = mode == "Roleplay";
+            Worlds.Create(meta);
+        }
+        return Worlds.List();
     }
 }

@@ -22,6 +22,8 @@ public sealed class Prop
     public string Surface { get; private set; } = "Plastic";
     /// <summary>Entity type id for special props (ent_barrel, ent_ball, ent_light, ent_button); null for plain props.</summary>
     public string? Entity { get; set; }
+    /// <summary>Free-form entity state saved with the map (e.g. money amount, printer cash).</summary>
+    public string? EntityData { get; set; }
     private float _highlight;
 
     public void SetSurface(SurfaceMaterial m)
@@ -99,6 +101,26 @@ public sealed class PropManager(Scene scene, Shader shader)
     public IReadOnlyList<Prop> Props => _props;
     public int UndoCount => _undo.Count;
 
+    /// <summary>Smoothed placeholder meshes (bevelled boxes, rounded cylinders, high-res spheres), cached per kind.
+    /// The asset manifest can still replace a kind's mesh with a real model.</summary>
+    public static Mesh MeshFor(PropKind kind, Float3? size = null)
+    {
+        Float3 sz = size ?? Float3.One;
+        float minDim = MathF.Min(sz.X, MathF.Min(sz.Y, sz.Z));
+        return kind switch
+        {
+            PropKind.Cube => Meshes.RoundedBox(Float3.One, 0.06f),
+            PropKind.Sphere => Meshes.Sphere(0.5f),
+            PropKind.BigBall => Meshes.Sphere(1f),
+            PropKind.Barrel => Meshes.Barrel(0.4f, 1.1f),
+            PropKind.Pole => Meshes.RoundedCylinder(0.08f, 3f, 0.02f, 16),
+            _ => Meshes.RoundedBox(sz, MathF.Min(0.05f, minDim * 0.3f)),
+        };
+    }
+
+    /// <summary>Builds a kind's mesh ahead of time so the first spawn doesn't hitch (used by the loading screen).</summary>
+    public static void WarmMesh(PropKind kind) { try { _ = kind is PropKind.Cube or PropKind.Sphere or PropKind.BigBall or PropKind.Barrel or PropKind.Pole ? MeshFor(kind) : null; } catch { } }
+
     public static readonly PropKind[] AllKinds = Enum.GetValues<PropKind>().Where(k => k != PropKind.Limb).ToArray();
 
     public static string DisplayName(PropKind k) => k switch
@@ -151,26 +173,26 @@ public sealed class PropManager(Scene scene, Shader shader)
         switch (kind)
         {
             case PropKind.Cube:
-                renderer.Mesh = Mesh.CreateCube(Float3.One);
+                renderer.Mesh = MeshFor(PropKind.Cube);
                 go.AddComponent<BoxCollider>().Size = Float3.One;
                 body.Mass = 1f;
                 break;
             case PropKind.Sphere:
-                renderer.Mesh = Mesh.CreateSphere(0.5f, 16, 24);
+                renderer.Mesh = MeshFor(PropKind.Sphere);
                 go.AddComponent<SphereCollider>().Radius = 0.5f;
                 body.Mass = 1f;
                 break;
             case PropKind.Plank:
             {
                 var size = new Float3(3f, 0.15f, 0.6f);
-                renderer.Mesh = Mesh.CreateCube(size);
+                renderer.Mesh = MeshFor(kind, size);
                 go.AddComponent<BoxCollider>().Size = size;
                 body.Mass = 1.5f;
                 break;
             }
             case PropKind.Barrel:
             {
-                renderer.Mesh = Mesh.CreateCylinder(0.4f, 1.1f, 20);
+                renderer.Mesh = MeshFor(PropKind.Barrel);
                 CylinderCollider c = go.AddComponent<CylinderCollider>();
                 c.Radius = 0.4f;
                 c.Height = 1.1f;
@@ -180,7 +202,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             case PropKind.BigCrate:
             {
                 var size = new Float3(2f, 2f, 2f);
-                renderer.Mesh = Mesh.CreateCube(size);
+                renderer.Mesh = MeshFor(kind, size);
                 go.AddComponent<BoxCollider>().Size = size;
                 body.Mass = 6f;
                 break;
@@ -188,14 +210,14 @@ public sealed class PropManager(Scene scene, Shader shader)
             case PropKind.SmallCrate:
             {
                 var size = new Float3(0.6f, 0.6f, 0.6f);
-                renderer.Mesh = Mesh.CreateCube(size);
+                renderer.Mesh = MeshFor(kind, size);
                 go.AddComponent<BoxCollider>().Size = size;
                 body.Mass = 1.2f;
                 break;
             }
             case PropKind.Pole:
             {
-                renderer.Mesh = Mesh.CreateCylinder(0.08f, 3f, 12);
+                renderer.Mesh = MeshFor(PropKind.Pole);
                 CylinderCollider c = go.AddComponent<CylinderCollider>();
                 c.Radius = 0.08f;
                 c.Height = 3f;
@@ -205,13 +227,13 @@ public sealed class PropManager(Scene scene, Shader shader)
             case PropKind.Panel:
             {
                 var size = new Float3(2f, 2f, 0.1f);
-                renderer.Mesh = Mesh.CreateCube(size);
+                renderer.Mesh = MeshFor(kind, size);
                 go.AddComponent<BoxCollider>().Size = size;
                 body.Mass = 3f;
                 break;
             }
             case PropKind.BigBall:
-                renderer.Mesh = Mesh.CreateSphere(1f, 20, 28);
+                renderer.Mesh = MeshFor(PropKind.BigBall);
                 go.AddComponent<SphereCollider>().Radius = 1f;
                 body.Mass = 5f;
                 break;
@@ -219,7 +241,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             {
                 // No wedge primitive in Prowl; a ramp is a wide, tilted slab.
                 var size = new Float3(2f, 0.2f, 3.5f);
-                renderer.Mesh = Mesh.CreateCube(size);
+                renderer.Mesh = MeshFor(kind, size);
                 go.AddComponent<BoxCollider>().Size = size;
                 body.Mass = 4f;
                 break;

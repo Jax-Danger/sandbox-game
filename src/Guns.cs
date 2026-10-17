@@ -22,6 +22,7 @@ public abstract class Firearm : Weapon
 
     protected Firearm() { }
     public void Init() { Mag = MagSize; Reserve = MagSize * 4; }
+    public void Refill() { Mag = MagSize; Reserve = MagSize * 6; }
     public override string? AmmoText => Reloading ? "Reloading" : $"{Mag} / {Reserve}";
     public override void Holster(SandboxGame g) => _reload = 0f;
 

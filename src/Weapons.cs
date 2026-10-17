@@ -21,6 +21,8 @@ public abstract class Weapon
     public virtual string? ViewModelId => null;
     /// <summary>The live view model for this weapon (created by WeaponSystem on first equip).</summary>
     public ViewModel? Vm { get; set; }
+    /// <summary>False hides the weapon from the switcher (e.g. job-only roleplay tools).</summary>
+    public virtual bool Available(SandboxGame g) => true;
     public virtual void Equip(SandboxGame g) { }
     public virtual void Holster(SandboxGame g) { }
     public abstract void Tick(SandboxGame g, WeaponInput input, float dt);
@@ -113,9 +115,15 @@ public sealed class WeaponSystem
         g.Sounds.Play("sfx_weapon_switch", 0.5f);
     }
 
+    /// <summary>Drops back to the physgun if the current weapon stopped being available (job change).</summary>
+    public void RefreshAvailability(SandboxGame g)
+    {
+        if (Current is not null && !Current.Available(g)) Select(g, _all.OfType<PhysGunWeapon>().First());
+    }
+
     public void SelectSlot(SandboxGame g, int slot)
     {
-        Weapon[] inSlot = _all.Where(w => w.Slot == slot).ToArray();
+        Weapon[] inSlot = _all.Where(w => w.Slot == slot && w.Available(g)).ToArray();
         if (inSlot.Length == 0) return;
         int idx = Array.IndexOf(inSlot, Current);
         Select(g, inSlot[(idx + 1) % inSlot.Length]);
@@ -123,8 +131,9 @@ public sealed class WeaponSystem
 
     public void Cycle(SandboxGame g, int dir)
     {
-        int i = _all.IndexOf(Current);
-        Select(g, _all[((i + dir) % _all.Count + _all.Count) % _all.Count]);
+        var usable = _all.Where(w => w.Available(g) || ReferenceEquals(w, Current)).ToList();
+        int i = usable.IndexOf(Current);
+        Select(g, usable[((i + dir) % usable.Count + usable.Count) % usable.Count]);
     }
 
     public void Tick(SandboxGame g, WeaponInput input, float dt)
@@ -147,7 +156,7 @@ public sealed class WeaponSystem
             Current?.Vm?.Play("draw");
         }
         if (Current?.Vm is not { } vm) return;
-        vm.SetVisible(!g.InVehicle);
+        vm.SetVisible(!g.InVehicle && !g.MenuBackdrop);
         vm.Update(dt, mouse, g.Player.Speed);
         if (Environment.GetEnvironmentVariable("VMDBG") == "1" && Time.FrameCount % 60 == 0) Console.WriteLine($"vm {vm.Def.Id} en={vm.Root.EnabledInHierarchy} scene={vm.Root.Scene != null} muzzle={vm.MuzzlePosition} eye={g.Player.EyePosition} fwd={g.Player.Forward} kids={vm.Root.GetChildrenDeep().Count()}");
     }

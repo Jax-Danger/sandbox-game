@@ -13,7 +13,7 @@ public static class Graphics
             camera.Effects = q switch
             {
                 GraphicsQuality.Low => [],
-                GraphicsQuality.Medium => [new FXAAEffect(), new TonemapperEffect()],
+                GraphicsQuality.Medium => [new FXAAEffect(), new BloomEffect(), new TonemapperEffect()],
                 _ => [new FXAAEffect(), new GTAOEffect(), new BloomEffect(), new TonemapperEffect()],
             };
         }

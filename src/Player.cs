@@ -29,6 +29,10 @@ public sealed class Player
     public Float3 EyePosition => CameraObject.Transform.Position;
     public Float3 Forward => CameraObject.Transform.Forward;
     public float Yaw => _yaw;
+    public float Pitch => _pitch;
+    /// <summary>Downward speed (m/s) of the last landing; consumed (reset to 0) by the health system.</summary>
+    public float LandingImpact { get; set; }
+    private bool _wasGrounded = true;
 
     public Player(Scene scene, Float3 spawnFeet, float yaw)
     {
@@ -110,6 +114,9 @@ public sealed class Player
         wish *= run ? RunSpeed : WalkSpeed;
         Speed = _controller.IsGrounded ? Float3.Length(wish) : 0f;
 
+        bool groundedNow = _controller.IsGrounded;
+        if (groundedNow && !_wasGrounded && _verticalVelocity < -2f) LandingImpact = -_verticalVelocity;
+        _wasGrounded = groundedNow;
         if (_controller.IsGrounded)
         {
             _verticalVelocity = -1f; // small stick-to-ground push
@@ -126,8 +133,9 @@ public sealed class Player
         // Fell out of the map: respawn at the center.
         if (_body.Transform.Position.Y < -30f)
         {
-            _body.Transform.Position = new Float3(0f, 2f, -8f);
+            _body.Transform.Position = MapBuilder.SpawnPoint + new Float3(0f, 1f, 0f);
             _verticalVelocity = 0f;
+            _wasGrounded = false;
         }
 
         ApplyCamera();

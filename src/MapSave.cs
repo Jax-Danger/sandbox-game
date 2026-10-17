@@ -23,18 +23,20 @@ public static class MapSave
         public float Mass { get; set; }
         public string? Entity { get; set; }
         public string? Key { get; set; }
+        public float[] Velocity { get; set; } = [];
+        public float[] AngularVelocity { get; set; } = [];
     }
 
     public sealed class RopeData { public int A { get; set; } public int B { get; set; } public float[] LocalA { get; set; } = []; public float[] LocalB { get; set; } = []; public float Length { get; set; } }
     public sealed class ThrusterData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Force { get; set; } public string Key { get; set; } = "T"; }
     public sealed class WheelData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Speed { get; set; } public string Fwd { get; set; } = "T"; public string Back { get; set; } = "G"; }
     public sealed class LightData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float Range { get; set; } public float[] Color { get; set; } = []; }
-    public sealed class RagdollData { public float[] Feet { get; set; } = []; public float Yaw { get; set; } public bool Dummy { get; set; } }
-    public sealed class BuggyData { public float[] Position { get; set; } = []; public float Yaw { get; set; } }
+    public sealed class RagdollData { public float[] Feet { get; set; } = []; public float Yaw { get; set; } public bool Dummy { get; set; } public string Team { get; set; } = "Dummy"; }
+    public sealed class BuggyData { public float[] Position { get; set; } = []; public float Yaw { get; set; } public float[] Rotation { get; set; } = []; public float[] Velocity { get; set; } = []; }
 
     public sealed class SaveData
     {
-        public int Version { get; set; } = 2;
+        public int Version { get; set; } = 3;
         public List<PropData> Props { get; set; } = [];
         public List<int[]> Welds { get; set; } = [];
         public List<RopeData> Ropes { get; set; } = [];
@@ -68,7 +70,8 @@ public static class MapSave
                 Kind = p.Kind.ToString(), Position = F(p.Go.Transform.Position), Rotation = [rot.X, rot.Y, rot.Z, rot.W],
                 Color = [c.R, c.G, c.B, c.A], Frozen = p.Frozen, Balloons = balloons.Length,
                 BalloonForce = balloons.Length > 0 ? balloons[0].Lift : 1.45f, Surface = p.Surface, Mass = p.Body.Mass,
-                Entity = p.Entity, Key = p.Go.GetComponent<SandboxButton>()?.Key.ToString(),
+                Entity = p.Entity, Key = p.Go.GetComponent<SandboxButton>()?.Key.ToString() ?? p.EntityData,
+                Velocity = p.Frozen ? [] : F(p.Body.LinearVelocity), AngularVelocity = p.Frozen ? [] : F(p.Body.AngularVelocity),
             });
         }
         for (int i = 0; i < list.Count; i++)
@@ -110,10 +113,13 @@ public static class MapSave
         foreach (Ragdoll rd in Ragdoll.All.Where(r => r.Alive))
         {
             Float3 pp = rd.Pelvis.Go.Transform.Position;
-            data.Ragdolls.Add(new RagdollData { Feet = [pp.X, pp.Y - 1f, pp.Z], Yaw = rd.Pelvis.Go.Transform.LocalEulerAngles.Y, Dummy = rd.IsDummy });
+            data.Ragdolls.Add(new RagdollData { Feet = [pp.X, pp.Y - 1f, pp.Z], Yaw = rd.Pelvis.Go.Transform.LocalEulerAngles.Y, Dummy = rd.IsDummy, Team = rd.Team.ToString() });
         }
         foreach (Buggy b in g.Vehicles.All)
-            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = b.Go.Transform.LocalEulerAngles.Y });
+        {
+            Quaternion q = b.Go.Transform.Rotation;
+            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = b.Go.Transform.LocalEulerAngles.Y, Rotation = [q.X, q.Y, q.Z, q.W], Velocity = F(b.Body.LinearVelocity) });
+        }
         return data;
     }
 
@@ -129,10 +135,25 @@ public static class MapSave
     {
         SaveData data = JsonSerializer.Deserialize<SaveData>(File.ReadAllText(path)) ?? new SaveData();
         g.ClearMap(notify: false);
-        var spawned = new List<Prop>();
+        foreach (int _ in LoadSteps(g, data)) { }
+        return _lastSpawned;
+    }
+
+    private static int _lastSpawned;
+
+    /// <summary>Number of work items <see cref="LoadSteps"/> yields (for progress bars).</summary>
+    public static int StepCount(SaveData d) => d.Props.Count + d.Welds.Count + d.BallSockets.Count + d.Ropes.Count + d.Thrusters.Count
+        + d.Wheels.Count + d.Lights.Count + d.Ragdolls.Count + d.Buggies.Count;
+
+    /// <summary>Rebuilds the world one item at a time (the loading screen runs these in time-budgeted batches).</summary>
+    public static IEnumerable<int> LoadSteps(SandboxGame g, SaveData data)
+    {
+        var spawned = new List<Prop?>();
+        int step = 0;
+        var velocities = new List<(Prop P, Float3 V, Float3 W)>();
         foreach (PropData d in data.Props)
         {
-            if (!Enum.TryParse(d.Kind, out PropKind kind) || kind == PropKind.Limb) { spawned.Add(null!); continue; }
+            if (!Enum.TryParse(d.Kind, out PropKind kind) || kind == PropKind.Limb) { spawned.Add(null); yield return ++step; continue; }
             Prop p = g.Props.Spawn(kind, V(d.Position), 0f, recordUndo: false);
             p.Go.Transform.Rotation = new Quaternion(d.Rotation[0], d.Rotation[1], d.Rotation[2], d.Rotation[3]);
             if (d.Entity is not null) EntityCatalog.Decorate(g, p, d.Entity, d.Key);
@@ -141,39 +162,69 @@ public static class MapSave
             if (d.Mass > 0f) p.SetMass(d.Mass);
             if (d.Entity == "ent_ball") { p.Body.Restitution = 0.95f; p.Body.Friction = 0.3f; }
             if (d.Frozen) p.SetFrozen(true);
+            else if (d.Velocity.Length == 3) velocities.Add((p, V(d.Velocity), V(d.AngularVelocity)));
             for (int b = 0; b < d.Balloons; b++) Balloon.Attach(g.Props, p, d.BalloonForce);
             spawned.Add(p);
+            yield return ++step;
         }
         Prop? At(int i) => i >= 0 && i < spawned.Count ? spawned[i] : null;
         foreach (int[] w in data.Welds)
+        {
             if (w.Length == 2 && At(w[0]) is { } a && At(w[1]) is { } b) g.ToolGun.Weld(a, b, recordUndo: false);
+            yield return ++step;
+        }
         foreach (int[] w in data.BallSockets)
+        {
             if (w.Length == 2 && At(w[0]) is { } a && At(w[1]) is { } b)
             {
                 BallSocketConstraint s = a.Go.AddComponent<BallSocketConstraint>();
                 s.ConnectedBody = b.Body;
                 PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
             }
+            yield return ++step;
+        }
         foreach (RopeData r in data.Ropes)
+        {
             if (At(r.A) is { } a && At(r.B) is { } b) g.ToolGun.Rope(a, V(r.LocalA), b, V(r.LocalB), r.Length, recordUndo: false);
+            yield return ++step;
+        }
         foreach (ThrusterData t in data.Thrusters)
+        {
             if (At(t.Prop) is { } p)
                 Thruster.Attach(g.Props, p, p.Go.Transform.TransformPoint(V(t.Point)), p.Go.Transform.TransformDirection(V(t.Normal)), t.Force,
                     Enum.TryParse(t.Key, out KeyCode k) ? k : KeyCode.T);
+            yield return ++step;
+        }
         foreach (WheelData w in data.Wheels)
+        {
             if (At(w.Prop) is { } p)
                 g.ToolGun.AttachWheel(p, p.Go.Transform.TransformPoint(V(w.Point)), Float3.Normalize(p.Go.Transform.TransformDirection(V(w.Normal))), w.Speed,
                     (Enum.TryParse(w.Fwd, out KeyCode f) ? f : KeyCode.T, Enum.TryParse(w.Back, out KeyCode bk) ? bk : KeyCode.G), recordUndo: false);
+            yield return ++step;
+        }
         foreach (LightData l in data.Lights)
+        {
             if (At(l.Prop) is { } p)
                 g.ToolGun.AttachLight(p, p.Go.Transform.TransformPoint(V(l.Point)), l.Range, l.Color.Length >= 3 ? new Color(l.Color[0], l.Color[1], l.Color[2], 1f) : new Color(1f, 1f, 1f, 1f));
+            yield return ++step;
+        }
         foreach (RagdollData r in data.Ragdolls)
         {
             Float3 feet = V(r.Feet);
-            feet = new Float3(feet.X, MathF.Max(feet.Y, 0.05f), feet.Z);
-            if (r.Dummy) EntityCatalog.SpawnDummy(g, feet, r.Yaw, recordUndo: false); else Ragdoll.Spawn(g, feet, r.Yaw, recordUndo: false);
+            feet = new Float3(feet.X, MathF.Max(feet.Y, MapBuilder.Current == "flatgrass" ? 0.05f : feet.Y), feet.Z);
+            if (r.Dummy) EntityCatalog.SpawnDummy(g, feet, r.Yaw, recordUndo: false, team: Enum.TryParse(r.Team, out NpcTeam tm) ? tm : NpcTeam.Dummy); else Ragdoll.Spawn(g, feet, r.Yaw, recordUndo: false);
+            yield return ++step;
         }
-        foreach (BuggyData b in data.Buggies) g.Vehicles.SpawnBuggy(V(b.Position) + new Float3(0f, 0.3f, 0f), b.Yaw, recordUndo: false);
-        return spawned.Count(p => p is not null);
+        foreach (BuggyData b in data.Buggies)
+        {
+            Buggy car = g.Vehicles.SpawnBuggy(V(b.Position) + new Float3(0f, b.Rotation.Length == 4 ? 0f : 0.3f, 0f), b.Yaw, recordUndo: false);
+            if (b.Rotation.Length == 4) car.Go.Transform.Rotation = new Quaternion(b.Rotation[0], b.Rotation[1], b.Rotation[2], b.Rotation[3]);
+            if (b.Velocity.Length == 3) car.Body.LinearVelocity = V(b.Velocity);
+            yield return ++step;
+        }
+        // Velocities last, once every constraint exists, so contraptions keep moving exactly as they were.
+        foreach (var (p, v, w) in velocities)
+            if (p.Alive && !p.Frozen) { p.Body.LinearVelocity = v; p.Body.AngularVelocity = w; }
+        _lastSpawned = spawned.Count(p => p is not null);
     }
 }

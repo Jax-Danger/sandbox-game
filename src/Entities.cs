@@ -57,31 +57,94 @@ public sealed class SandboxButton : MonoBehaviour
 /// Keeps an NPC dummy ragdoll standing (springs pelvis height and keeps torso/pelvis upright) until it is hit
 /// hard enough, then it goes limp like GMod's ragdoll-on-death.
 /// </summary>
+public enum NpcTeam { Dummy, Friendly, Hostile, Citizen, Police }
+
+/// <summary>
+/// Keeps an NPC ragdoll upright and, for walkers, steers it: friendly/citizen NPCs wander, hostiles chase and hit the
+/// player, police chase a wanted player. Any hard hit (bullet, blast, physgun) knocks it limp.
+/// </summary>
 public sealed class DummyBrain : MonoBehaviour
 {
     public Ragdoll? Doll;
     public float StandHeight;
+    public NpcTeam Team = NpcTeam.Dummy;
     public bool Limp { get; private set; }
+    public static SandboxGame? Game;
+    private Prowl.Vector.Float3 _wander;
+    private float _wanderTimer, _attackCd, _heading;
 
     public void GoLimp() => Limp = true;
 
     public override void FixedUpdate()
     {
         if (Limp || Doll is null || !Doll.Alive) return;
-        // Any limb moving fast (shot, blasted, physgunned) knocks it over.
         foreach (Prop l in Doll.Limbs)
-            if (Prowl.Vector.Float3.Length(l.Body.LinearVelocity) > 3.5f) { Limp = true; return; }
+            if (Prowl.Vector.Float3.Length(l.Body.LinearVelocity) > (Team == NpcTeam.Dummy ? 3.5f : 5.5f)) { Limp = true; Game?.Roleplay.OnNpcDown(this); return; }
         Rigidbody3D pelvis = Doll.Limbs[0].Body, torso = Doll.Limbs[1].Body;
+        Prowl.Vector.Float3 p = pelvis.GameObject.Transform.Position;
+        Prowl.Vector.Float3 move = Steer(p, Time.FixedDeltaTime);
+        float speed = Prowl.Vector.Float3.Length(move);
+        if (speed > 0.05f) _heading = MathF.Atan2(move.X, move.Z);
         foreach (Rigidbody3D b in new[] { pelvis, torso })
         {
             Prowl.Vector.Float3 up = b.GameObject.Transform.Up;
             Prowl.Vector.Float3 axis = Prowl.Vector.Float3.Cross(up, Prowl.Vector.Float3.UnitY);
-            b.AngularVelocity = axis * 12f + b.AngularVelocity * 0.2f;
+            Prowl.Vector.Float3 fwd = b.GameObject.Transform.Forward;
+            float yawErr = speed > 0.05f ? Wrap(_heading - MathF.Atan2(fwd.X, fwd.Z)) : 0f;
+            b.AngularVelocity = axis * 12f + new Prowl.Vector.Float3(0f, yawErr * 4f, 0f) + b.AngularVelocity * 0.2f;
         }
-        Prowl.Vector.Float3 p = pelvis.GameObject.Transform.Position;
+        float ground = Team == NpcTeam.Dummy ? StandHeight - 1f : MapBuilder.GroundHeight(p.X, p.Z, StandHeight - 1f);
         Prowl.Vector.Float3 v = pelvis.LinearVelocity;
-        pelvis.LinearVelocity = new Prowl.Vector.Float3(v.X * 0.8f, (StandHeight - p.Y) * 10f, v.Z * 0.8f);
+        float bob = speed > 0.05f ? MathF.Sin((float)Time.UnscaledTotalTime * 9f) * 0.03f : 0f;
+        pelvis.LinearVelocity = new Prowl.Vector.Float3(v.X * 0.8f + move.X * 0.2f, (ground + 1f + bob - p.Y) * 10f, v.Z * 0.8f + move.Z * 0.2f);
+        // Legs swing while walking (cheap procedural gait).
+        if (speed > 0.05f && Doll.Limbs.Count > 9)
+        {
+            float ph = (float)Time.UnscaledTotalTime * 9f;
+            Prowl.Vector.Float3 side = pelvis.GameObject.Transform.Right;
+            Doll.Limbs[7].Body.AngularVelocity = side * MathF.Sin(ph) * 6f;
+            Doll.Limbs[9].Body.AngularVelocity = side * -MathF.Sin(ph) * 6f;
+        }
         foreach (Prop l in Doll.Limbs) l.Body.SetActive(true);
+    }
+
+    private static float Wrap(float a) { while (a > MathF.PI) a -= MathF.Tau; while (a < -MathF.PI) a += MathF.Tau; return a; }
+
+    /// <summary>Desired horizontal velocity (m/s).</summary>
+    private Prowl.Vector.Float3 Steer(Prowl.Vector.Float3 p, float dt)
+    {
+        if (Team == NpcTeam.Dummy || Game is null) return Prowl.Vector.Float3.Zero;
+        Prowl.Vector.Float3 player = Game.Player.FeetPosition;
+        Prowl.Vector.Float3 toPlayer = new(player.X - p.X, 0f, player.Z - p.Z);
+        float dist = Prowl.Vector.Float3.Length(toPlayer);
+        bool chase = Team == NpcTeam.Hostile || (Team == NpcTeam.Police && Game.Roleplay.Wanted);
+        _attackCd -= dt;
+        if (chase && !Game.Health.Dead && dist < 40f)
+        {
+            if (dist < 1.3f)
+            {
+                if (_attackCd <= 0f)
+                {
+                    _attackCd = 1f;
+                    if (Team == NpcTeam.Police) Game.Roleplay.Arrest("You were arrested by the police");
+                    else Game.Health.Damage(Game, 12f, "NPC attack");
+                }
+                return Prowl.Vector.Float3.Zero;
+            }
+            return toPlayer / dist * (Team == NpcTeam.Police ? 3.2f : 2.6f);
+        }
+        _wanderTimer -= dt;
+        Prowl.Vector.Float3 flat = new(p.X, 0f, p.Z);
+        if (_wanderTimer <= 0f || Prowl.Vector.Float3.Length(_wander - flat) < 1f)
+        {
+            _wanderTimer = 4f + Random.Shared.NextSingle() * 6f;
+            float a = Random.Shared.NextSingle() * MathF.Tau, r = 3f + Random.Shared.NextSingle() * 10f;
+            _wander = new Prowl.Vector.Float3(Math.Clamp(p.X + MathF.Cos(a) * r, -50f, 50f), 0f, Math.Clamp(p.Z + MathF.Sin(a) * r, -50f, 50f));
+            if (Random.Shared.NextSingle() < 0.3f) _wander = flat; // stand around sometimes
+        }
+        Prowl.Vector.Float3 d = _wander - flat;
+        float l = Prowl.Vector.Float3.Length(d);
+        return l < 0.5f ? Prowl.Vector.Float3.Zero : d / l * 1.3f;
     }
 }
 
@@ -90,6 +153,8 @@ public static class EntityCatalog
     public static void Register()
     {
         SpawnCatalog.Register(new SpawnEntry("npc_dummy", "NPC Dummy", MenuTab.Entities, "NPCs", Icon.Eye, null, (g, pos, yaw) => SpawnDummy(g, pos, yaw).Name, 0f));
+        SpawnCatalog.Register(new SpawnEntry("npc_friendly", "Friendly Walker", MenuTab.Entities, "NPCs", Icon.Users, null, (g, pos, yaw) => SpawnDummy(g, pos, yaw, team: NpcTeam.Friendly).Name, 0f));
+        SpawnCatalog.Register(new SpawnEntry("npc_hostile", "Hostile Walker", MenuTab.Entities, "NPCs", Icon.Bolt, null, (g, pos, yaw) => SpawnDummy(g, pos, yaw, team: NpcTeam.Hostile).Name, 0f));
         SpawnCatalog.Register(new SpawnEntry("ent_barrel", "Explosive Barrel", MenuTab.Entities, "Fun", Icon.Barrel, null, (g, pos, yaw) => SpawnBarrel(g, pos).Go.Name, 0.55f));
         SpawnCatalog.Register(new SpawnEntry("ent_ball", "Bouncy Ball", MenuTab.Entities, "Fun", Icon.Sphere, null, (g, pos, yaw) => SpawnBall(g, pos).Go.Name, 0.5f));
         SpawnCatalog.Register(new SpawnEntry("ent_camera", "Camera", MenuTab.Entities, "Utility", Icon.Camera, null, (g, pos, yaw) => CameraFeeds.Spawn(g, pos, yaw).Go.Name, 0.3f));
@@ -97,13 +162,16 @@ public static class EntityCatalog
         SpawnCatalog.Register(new SpawnEntry("ent_button", "Button", MenuTab.Entities, "Interactive", Icon.Play, null, (g, pos, yaw) => SpawnButton(g, pos, yaw).Go.Name, 0.3f));
     }
 
-    public static Ragdoll SpawnDummy(SandboxGame g, Prowl.Vector.Float3 feet, float yaw, bool recordUndo = true)
+    public static Ragdoll SpawnDummy(SandboxGame g, Prowl.Vector.Float3 feet, float yaw, bool recordUndo = true, NpcTeam team = NpcTeam.Dummy)
     {
-        Ragdoll rd = Ragdoll.Spawn(g, feet + new Prowl.Vector.Float3(0f, 0.05f, 0f), yaw, recordUndo);
+        DummyBrain.Game = g;
+        Ragdoll rd = Ragdoll.Spawn(g, feet + new Prowl.Vector.Float3(0f, 0.05f, 0f), yaw, recordUndo, team);
         rd.IsDummy = true;
         DummyBrain brain = rd.Pelvis.Go.AddComponent<DummyBrain>();
         brain.Doll = rd;
+        brain.Team = team;
         brain.StandHeight = feet.Y + 1.0f;
+        rd.Team = team;
         return rd;
     }
 
@@ -116,6 +184,7 @@ public static class EntityCatalog
             case "ent_ball": MakeBall(p, keepColor: true); break;
             case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); break;
             case "ent_camera": CameraFeeds.Make(g, p); break;
+            case "rp_money" or "rp_printer" or "rp_shipment": g.Roleplay.Decorate(p, entity, key); break;
             case "ent_button": MakeButton(g, p, Enum.TryParse(key, out KeyCode k) ? k : KeyCode.T); break;
         }
     }

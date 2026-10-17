@@ -3,10 +3,10 @@ using Color = System.Drawing.Color;
 
 namespace Sandbox;
 
-public enum Screen { MainMenu, Playing, Paused, Settings }
+public enum Screen { MainMenu, Playing, Paused, Settings, Worlds, CreateWorld, Loading, Jobs }
 
 /// <summary>Main menu, pause menu and settings screen: full-screen frosted overlays with springy buttons.</summary>
-public sealed class Menus
+public sealed partial class Menus
 {
     private readonly Spring _fade = new(0f);
     private Screen _settingsReturn = Screen.MainMenu;
@@ -28,6 +28,10 @@ public sealed class Menus
             case Screen.Settings: g.Settings.Save(); Screen = _settingsReturn; break;
             case Screen.Paused: Screen = Screen.Playing; break;
             case Screen.Playing: Screen = Screen.Paused; break;
+            case Screen.Jobs: Screen = Screen.Playing; break;
+            case Screen.Worlds when _modal is not null: _modal = null; break;
+            case Screen.Worlds: Screen = Screen.MainMenu; break;
+            case Screen.CreateWorld: Screen = Screen.Worlds; break;
         }
     }
 
@@ -37,11 +41,14 @@ public sealed class Menus
         if (t <= 0.01f && !Blocking) return;
         Ui.Alpha = Math.Clamp(t, 0f, 1f);
 
-        bool main = Screen == Screen.MainMenu || (Screen == Screen.Settings && _settingsReturn == Screen.MainMenu);
+        if (Screen == Screen.Loading) { DrawLoading(paper, w, h, g); Ui.Alpha = 1f; return; }
+        bool main = Screen is Screen.MainMenu or Screen.Worlds or Screen.CreateWorld || (Screen == Screen.Settings && _settingsReturn == Screen.MainMenu);
+        // The main menu keeps the live, slowly orbiting scene visible on the right; sub-screens blur it more.
+        bool live = Screen == Screen.MainMenu;
         paper.Box("mn_backdrop").PositionType(PositionType.SelfDirected).Position(0, 0).Size(w, h)
-            .BackdropBlur(Theme.S(main ? 14 : 10) * Ui.Alpha)
-            .BackgroundLinearGradient(0, 0, 1, 0.3f, Theme.WithAlpha(Color.FromArgb(main ? 225 : 210, 8, 10, 15), Ui.Alpha),
-                Theme.WithAlpha(Color.FromArgb(main ? 90 : 120, 8, 10, 15), Ui.Alpha))
+            .BackdropBlur(Theme.S(live ? 0 : main ? 14 : 10) * Ui.Alpha)
+            .BackgroundLinearGradient(0, 0, 1, 0.3f, Theme.WithAlpha(Color.FromArgb(live ? 215 : main ? 225 : 210, 8, 10, 15), Ui.Alpha),
+                Theme.WithAlpha(Color.FromArgb(live ? 10 : main ? 90 : 120, 8, 10, 15), Ui.Alpha))
             .OnClick(0, (_, _) => { }).StopEventPropagation();
 
         switch (Screen)
@@ -49,6 +56,9 @@ public sealed class Menus
             case Screen.MainMenu: DrawMain(paper, w, h, g, false); break;
             case Screen.Paused: DrawMain(paper, w, h, g, true); break;
             case Screen.Settings: DrawSettings(paper, w, h, g); break;
+            case Screen.Worlds: DrawWorlds(paper, w, h, g); break;
+            case Screen.CreateWorld: DrawCreate(paper, w, h, g); break;
+            case Screen.Jobs: DrawJobs(paper, w, h, g); break;
         }
         Ui.Alpha = 1f;
     }
@@ -59,9 +69,11 @@ public sealed class Menus
         float x = Theme.S(96) - slide, y = h * 0.26f;
         Ui.Text(paper, "mn_kicker", x, y - Theme.S(26), w, Theme.S(18), paused ? "PAUSED" : "PROWL ENGINE · PHYSICS SANDBOX",
             Theme.Micro, Theme.Accent, Theme.Bold);
-        Ui.Text(paper, "mn_title", x - Theme.S(3), y, w, Theme.S(76), "Sandbox", Theme.Display, Theme.Text, Theme.Bold);
+        float logo = Theme.S(64);
+        DrawLogo(paper, x, y + Theme.S(6), logo, "mn_logo", (float)Prowl.Runtime.Time.UnscaledTotalTime);
+        Ui.Text(paper, "mn_title", x + logo + Theme.S(16), y, w, Theme.S(76), "Sandbox", Theme.Display, Theme.Text, Theme.Bold);
         Ui.Text(paper, "mn_sub", x, y + Theme.S(76), w, Theme.S(22),
-            paused ? $"{g.Props.Props.Count} props on the map · physics paused" : "Build, break and mess around.",
+            paused ? $"{g.Session?.Meta.Name ?? "World"} · {g.Props.Props.Count} props · physics paused" : "Build, break and mess around.",
             Theme.Label, Theme.TextMuted);
 
         float by = y + Theme.S(132), bw = Theme.S(280), bh = Theme.S(46), gap = Theme.S(10);
@@ -69,16 +81,14 @@ public sealed class Menus
             ?
             [
                 ("Resume", Icon.Play, () => g.Enqueue(() => Go(Screen.Playing))),
-                ("Save map", Icon.Save, () => g.Enqueue(g.SaveMap)),
-                ("Load map", Icon.Load, () => g.Enqueue(() => { g.LoadMap(); Go(Screen.Playing); })),
+                ("Save now", Icon.Save, () => g.Enqueue(() => { g.SaveSession(true, true); g.Notify("World saved"); })),
                 ("Clear map", Icon.Trash, () => g.Enqueue(() => { g.ClearMap(); Go(Screen.Playing); })),
                 ("Settings", Icon.Gear, () => Go(Screen.Settings)),
-                ("Main menu", Icon.Back, () => Go(Screen.MainMenu)),
+                ("Save & exit to Worlds", Icon.Back, () => g.Enqueue(() => { g.ExitSession(Screen.Worlds); RefreshWorlds(); })),
             ]
             :
             [
-                ("Play", Icon.Play, () => g.Enqueue(() => Go(Screen.Playing))),
-                ("Load last save", Icon.Load, () => g.Enqueue(() => { g.LoadMap(); Go(Screen.Playing); })),
+                ("Singleplayer", Icon.Play, () => { RefreshWorlds(); Go(Screen.Worlds); }),
                 ("Settings", Icon.Gear, () => Go(Screen.Settings)),
                 ("Quit", Icon.Power, () => g.Enqueue(g.QuitGame)),
             ];

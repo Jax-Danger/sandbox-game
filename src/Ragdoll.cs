@@ -14,6 +14,7 @@ public sealed class Ragdoll
     public List<Prop> Limbs { get; } = [];
     public string Name { get; private set; } = "Ragdoll";
     public bool IsDummy { get; set; }
+    public NpcTeam Team { get; set; } = NpcTeam.Dummy;
     public Prop Pelvis => Limbs[0];
     private static int _counter;
 
@@ -35,16 +36,25 @@ public sealed class Ragdoll
         new("Lower leg R", new(0.10f, 0.24f, 0f),  new(0.13f, 0.44f, 0.13f), false, 9, new(0.10f, 0.46f, 0f), 75f, 4f),
     ];
 
-    public static Ragdoll Spawn(SandboxGame g, Float3 feet, float yawDegrees, bool recordUndo = true)
+    public static Ragdoll Spawn(SandboxGame g, Float3 feet, float yawDegrees, bool recordUndo = true, NpcTeam team = NpcTeam.Dummy)
     {
         var rd = new Ragdoll { Name = $"Ragdoll #{++_counter}" };
         float yaw = yawDegrees * MathF.PI / 180f;
         float c = MathF.Cos(yaw), s = MathF.Sin(yaw);
         Float3 Rot(Float3 v) => new(v.X * c + v.Z * s, v.Y, -v.X * s + v.Z * c);
 
-        var skin = new Color(0.85f, 0.68f, 0.55f, 1f);
-        var shirt = new Color(0.30f, 0.45f, 0.70f, 1f);
-        var pants = new Color(0.22f, 0.24f, 0.28f, 1f);
+        Color[] skins = [new(0.85f, 0.68f, 0.55f, 1f), new(0.62f, 0.45f, 0.34f, 1f), new(0.95f, 0.80f, 0.68f, 1f), new(0.42f, 0.30f, 0.22f, 1f)];
+        var skin = skins[_counter % skins.Length];
+        Color[] citizenShirts = [new(0.30f, 0.45f, 0.70f, 1f), new(0.75f, 0.35f, 0.30f, 1f), new(0.35f, 0.60f, 0.40f, 1f), new(0.85f, 0.75f, 0.40f, 1f), new(0.55f, 0.40f, 0.65f, 1f)];
+        var shirt = team switch
+        {
+            NpcTeam.Police => new Color(0.12f, 0.20f, 0.42f, 1f),
+            NpcTeam.Hostile => new Color(0.62f, 0.12f, 0.12f, 1f),
+            NpcTeam.Friendly => new Color(0.25f, 0.62f, 0.45f, 1f),
+            NpcTeam.Citizen => citizenShirts[_counter % citizenShirts.Length],
+            _ => new Color(0.30f, 0.45f, 0.70f, 1f),
+        };
+        var pants = team == NpcTeam.Police ? new Color(0.08f, 0.10f, 0.16f, 1f) : new Color(0.22f, 0.24f, 0.28f, 1f);
 
         for (int i = 0; i < Defs.Length; i++)
         {
@@ -60,12 +70,15 @@ public sealed class Ragdoll
             Rigidbody3D body = go.AddComponent<Rigidbody3D>();
             if (d.Sphere)
             {
-                r.Mesh = Mesh.CreateSphere(d.Size.X / 2f, 12, 16);
+                r.Mesh = Meshes.Sphere(d.Size.X / 2f);
                 go.AddComponent<SphereCollider>().Radius = d.Size.X / 2f;
             }
             else
             {
-                r.Mesh = Mesh.CreateCube(d.Size);
+                // Organic look: capsule limbs, softly rounded torso/pelvis. Colliders stay boxes (stable stacking).
+                bool limb = d.Name.Contains("arm") || d.Name.Contains("leg");
+                r.Mesh = limb ? Meshes.Capsule(MathF.Min(d.Size.X, d.Size.Z) / 2f, d.Size.Y + 0.04f)
+                              : Meshes.RoundedBox(d.Size, MathF.Min(d.Size.X, d.Size.Z) * 0.35f);
                 go.AddComponent<BoxCollider>().Size = d.Size;
             }
             body.Mass = d.Mass;
