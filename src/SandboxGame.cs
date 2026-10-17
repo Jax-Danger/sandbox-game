@@ -165,6 +165,7 @@ public sealed partial class SandboxGame : Game
         {
             case "main": Menus.Go(Screen.MainMenu); break;
             case "settings": Menus.Go(Screen.Settings); break;
+            case "video": Menus.Go(Screen.Settings); Menus.SettingsTab = 1; break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
             case "tools": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Balloon); break;
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
@@ -576,5 +577,49 @@ public sealed partial class SandboxGame
             Worlds.Create(meta);
         }
         return Worlds.List();
+    }
+}
+
+public sealed partial class SandboxGame
+{
+    /// <summary>Window mode, resolution and VSync from Settings (VSync is only honoured at start-up by the engine).</summary>
+    public override void InitializeWindow(string title, int width, int height)
+    {
+        Settings boot = Settings.Load();
+        var state = boot.WindowMode == WindowMode.Fullscreen ? Silk.NET.Windowing.WindowState.Fullscreen : Silk.NET.Windowing.WindowState.Normal;
+        Window.InitWindow(title, width, height, state, boot.VSync);
+        if (boot.WindowMode == WindowMode.Borderless)
+        {
+            try { Window.InternalWindow.WindowBorder = Silk.NET.Windowing.WindowBorder.Hidden; Window.InternalWindow.WindowState = Silk.NET.Windowing.WindowState.Maximized; }
+            catch (Exception e) { Log.Warn($"Borderless window unavailable: {e.Message}"); }
+        }
+    }
+
+    /// <summary>Applies window mode + resolution while running (Settings → Video).</summary>
+    public void ApplyWindowMode()
+    {
+        if (Application.IsHeadless) return;
+        try
+        {
+            var w = Window.InternalWindow;
+            switch (Settings.WindowMode)
+            {
+                case WindowMode.Fullscreen:
+                    w.WindowBorder = Silk.NET.Windowing.WindowBorder.Resizable;
+                    w.WindowState = Silk.NET.Windowing.WindowState.Fullscreen;
+                    break;
+                case WindowMode.Borderless:
+                    w.WindowState = Silk.NET.Windowing.WindowState.Normal;
+                    w.WindowBorder = Silk.NET.Windowing.WindowBorder.Hidden;
+                    w.WindowState = Silk.NET.Windowing.WindowState.Maximized;
+                    break;
+                default:
+                    w.WindowState = Silk.NET.Windowing.WindowState.Normal;
+                    w.WindowBorder = Silk.NET.Windowing.WindowBorder.Resizable;
+                    w.Size = new Silk.NET.Maths.Vector2D<int>(Settings.ResolutionWidth, Settings.ResolutionHeight);
+                    break;
+            }
+        }
+        catch (Exception e) { Log.Warn($"Window mode change failed: {e.Message}"); Notify("Couldn't change the window mode on this system", ToastKind.Danger); }
     }
 }

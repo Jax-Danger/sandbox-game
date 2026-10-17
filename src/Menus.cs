@@ -11,6 +11,7 @@ public sealed partial class Menus
     private readonly Spring _fade = new(0f);
     private Screen _settingsReturn = Screen.MainMenu;
     private int _settingsTab;
+    public int SettingsTab { get => _settingsTab; set => _settingsTab = value; }
 
     public Screen Screen { get; private set; } = Screen.MainMenu;
     public bool Blocking => Screen != Screen.Playing;
@@ -146,15 +147,35 @@ public sealed partial class Menus
                 Ui.Slider(paper, "st_fov", vx, cy + Theme.S(2), sw, s.FieldOfView, 60f, 110f, v => s.FieldOfView = MathF.Round(v)); cy += Theme.S(44);
                 Row("UI scale", $"{s.UiScale * 100:0}%");
                 Ui.Slider(paper, "st_ui", vx, cy + Theme.S(2), sw, s.UiScale, 0.75f, 1.5f, v => s.UiScale = MathF.Round(v * 20f) / 20f); cy += Theme.S(44);
+                Row("Time scale", $"{s.TimeScale:0.00}×");
+                Ui.Slider(paper, "st_ts", vx, cy + Theme.S(2), sw, s.TimeScale, 0.1f, 2f, v => s.TimeScale = MathF.Round(v * 20f) / 20f); cy += Theme.S(44);
                 break;
             case 1:
                 Row("Graphics quality");
                 Ui.Segmented(paper, "st_gfx", vx, cy, MathF.Min(vw, Theme.S(330)), ["Low", "Medium", "High"], (int)s.Graphics,
                     v => { s.Graphics = (GraphicsQuality)v; g.ApplySettings(); }); cy += Theme.S(48);
+                Row("Window mode");
+                Ui.Segmented(paper, "st_wm", vx, cy, MathF.Min(vw, Theme.S(330)), ["Windowed", "Borderless", "Fullscreen"], (int)s.WindowMode,
+                    v => { s.WindowMode = (WindowMode)v; g.Enqueue(g.ApplyWindowMode); }); cy += Theme.S(48);
+                Row("Resolution");
+                {
+                    int ri = Math.Max(0, Array.FindIndex(Settings.Resolutions, r => r.W == s.ResolutionWidth && r.H == s.ResolutionHeight));
+                    Ui.Segmented(paper, "st_res", vx, cy, vw, Settings.Resolutions.Select(r => r.H >= 2160 ? "4K" : $"{r.H}p").ToArray(), ri,
+                        v => { (s.ResolutionWidth, s.ResolutionHeight) = Settings.Resolutions[v]; g.Enqueue(g.ApplyWindowMode); });
+                }
+                cy += Theme.S(48);
+                Row("Frame rate cap");
+                {
+                    int fi = Math.Max(0, Array.IndexOf(Settings.FrameCaps, s.FrameCap));
+                    Ui.Segmented(paper, "st_cap", vx, cy, vw, Settings.FrameCaps.Select(f => f == 0 ? "Off" : f.ToString()).ToArray(), fi, v => s.FrameCap = Settings.FrameCaps[v]);
+                }
+                cy += Theme.S(48);
+                Row("VSync", "applies after restart  ");
+                Ui.Toggle(paper, "st_vsync", vx, cy + Theme.S(3), s.VSync, v => s.VSync = v); cy += Theme.S(44);
                 Row("Show FPS counter");
                 Ui.Toggle(paper, "st_fps", vx, cy + Theme.S(3), s.ShowFps, v => s.ShowFps = v); cy += Theme.S(44);
                 Ui.Paragraph(paper, "st_gfx_h", lx, cy, cw, Theme.S(40),
-                    "Low: hard shadows, no post-processing. Medium: soft shadows, FXAA + tonemapping. High: adds bloom.", Theme.Caption, Theme.TextFaint);
+                    "Low: hard shadows, no post-processing. Medium: soft shadows, FXAA, bloom + tonemapping. High: adds ambient occlusion. Logs and crash reports: " + Log.Dir, Theme.Caption, Theme.TextFaint);
                 break;
             case 2:
                 Row("Master volume", $"{s.MasterVolume * 100:0}%");
