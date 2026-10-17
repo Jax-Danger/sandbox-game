@@ -796,6 +796,14 @@ public sealed class SelfTest
         fb.Body.MotionType = Jitter2.Dynamics.MotionType.Static;
         bool flipOk = true; try { fb.Flip(); } catch { flipOk = false; }
         Check(flipOk, "flipping a frozen vehicle does nothing instead of throwing");
+        // 5b. A NaN player position (pushed by a degenerate contact) respawns instead of crashing the ground cast.
+        Float3 savedFeet = g.Player.FeetPosition;
+        g.Player.Teleport(new Float3(float.NaN, 1f, 0f));
+        bool tpOk = Player.IsFinite(g.Player.FeetPosition);
+        g.Player.RecoverFromNaN();
+        bool nanOk = true; try { g.Player.Update(1f / 60f, false); } catch { nanOk = false; }
+        Check(tpOk && nanOk && Player.IsFinite(g.Player.FeetPosition), "NaN teleport/position recovers to spawn without throwing");
+        g.Player.Teleport(savedFeet);
         g.Vehicles.ClearAll();
         g.ClearMap(notify: false);
 

@@ -151,7 +151,17 @@ public sealed class Player
             _verticalVelocity -= Gravity * dt;
         }
 
-        _controller.Move(new Float3(wish.X, _verticalVelocity, wish.Z) * dt);
+        if (!float.IsFinite(_verticalVelocity) || !float.IsFinite(Gravity)) _verticalVelocity = 0f;
+        var motion = new Float3(wish.X, _verticalVelocity, wish.Z) * dt;
+        if (!IsFinite(_body.Transform.Position)) RecoverFromNaN();
+        else if (IsFinite(motion))
+        {
+            // Jitter's MPR/EPA can return a NaN contact normal for degenerate overlaps (seen in the 300 s soak
+            // after welding two limbs of one ragdoll); the engine's Math.Sign then throws. Skip that frame's move.
+            try { _controller.Move(motion); }
+            catch (ArithmeticException) { MoveFaults++; }
+            if (!IsFinite(_body.Transform.Position)) RecoverFromNaN();
+        }
 
         // Fell out of the map: respawn at the center.
         if (_body.Transform.Position.Y < -30f)
@@ -164,6 +174,19 @@ public sealed class Player
         ApplyCamera();
         CameraObject.Transform.Position = _body.Transform.Position + new Float3(0f, CurrentEyeHeight, 0f);
     }
+
+    public static bool IsFinite(Float3 v) => float.IsFinite(v.X) && float.IsFinite(v.Y) && float.IsFinite(v.Z);
+
+    /// <summary>Non-finite position (e.g. pushed by a NaN body): respawn instead of crashing the shape cast.</summary>
+    public void RecoverFromNaN()
+    {
+        _body.Transform.Position = MapBuilder.SpawnPoint + new Float3(0f, 1f, 0f);
+        _verticalVelocity = 0f;
+        _wasGrounded = false;
+        NaNRecoveries++;
+    }
+    public int NaNRecoveries { get; private set; }
+    public int MoveFaults { get; private set; }
 
     private static Float3 Flat(Float3 v)
     {
@@ -190,6 +213,7 @@ public sealed class Player
     /// <summary>Moves the player (feet) without collision, e.g. when leaving a vehicle.</summary>
     public void Teleport(Float3 feet, bool moveCamera = true)
     {
+        if (!IsFinite(feet)) feet = MapBuilder.SpawnPoint + new Float3(0f, 1f, 0f);
         _body.Transform.Position = feet;
         _verticalVelocity = 0f;
         if (moveCamera) CameraObject.Transform.Position = feet + new Float3(0f, EyeHeight, 0f);
