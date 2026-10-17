@@ -42,7 +42,10 @@ public sealed class PhysGunWeapon : Weapon
     public override void Holster(SandboxGame g) { g.PhysGun.Release(keepVelocity: false); g.Fx.Beam(default, null); }
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {
+        bool had = g.PhysGun.Held is not null;
         g.Notify(g.PhysGun.Update(g.Player, i.PrimaryDown, i.PrimaryHeld, i.SecondaryDown, i.Wheel));
+        bool has = g.PhysGun.Held is not null;
+        if (has != had) { Vm?.Play(has ? "grab" : "release"); Vm?.Kick(has ? 0.4f : 0.8f); }
         g.Fx.Beam(Vm?.MuzzlePosition ?? g.Player.EyePosition, g.PhysGun.GrabPoint);
     }
 }
@@ -144,12 +147,27 @@ public sealed class WeaponSystem
     }
 
     /// <summary>Animates the current view model; hidden while driving.</summary>
+    /// <summary>True while the right mouse button aims the current firearm (set by the game each frame).</summary>
+    public bool Aiming { get; set; }
+
+    private static VmInput VmIn(SandboxGame g, Float2 mouse, bool aim)
+    {
+        Player p = g.Player;
+        float land = p.LandingKick; p.LandingKick = 0f;
+        bool shot = g.ShotPose is not null;
+        return new VmInput(mouse, shot ? (g.ShotPose == "sprint" ? 9f : 0f) : p.Speed, shot ? (g.ShotPose == "sprint" ? Float2.UnitY : Float2.Zero) : p.MoveInput,
+            shot || p.IsGrounded, p.VerticalVelocity, land, shot ? g.ShotPose == "sprint" : p.Running,
+            g.ShotPose == "crouch" ? 1f : p.CrouchBlend, shot ? g.ShotPose == "aim" : aim, shot ? (g.ShotPose == "sprint" ? Time.UnscaledTotalTime * 2.6f : -1f) : g.StepCycle);
+    }
+
     public void Animate(SandboxGame g, float dt, Float2 mouse)
     {
+        float camFov = g.Player.Camera.FieldOfView;
         if (_holsterVm is not null)
         {
             _holsterLeft -= MathF.Max(dt, 1f / 120f);
-            _holsterVm.Update(dt, mouse, g.Player.Speed);
+            _holsterVm.SetFov(camFov, g.Settings.ViewModelFov);
+            _holsterVm.Update(dt, VmIn(g, mouse, false));
             if (_holsterLeft > 0f && !g.InVehicle) return;
             _holsterVm.SetVisible(false);
             _holsterVm = null;
@@ -157,7 +175,8 @@ public sealed class WeaponSystem
         }
         if (Current?.Vm is not { } vm) return;
         vm.SetVisible(!g.InVehicle && !g.MenuBackdrop);
-        vm.Update(dt, mouse, g.Player.Speed);
+        vm.SetFov(camFov, g.Settings.ViewModelFov);
+        vm.Update(dt, VmIn(g, mouse, Aiming && Current is Firearm));
         if (Environment.GetEnvironmentVariable("VMDBG") == "1" && Time.FrameCount % 60 == 0) Console.WriteLine($"vm {vm.Def.Id} en={vm.Root.EnabledInHierarchy} scene={vm.Root.Scene != null} muzzle={vm.MuzzlePosition} eye={g.Player.EyePosition} fwd={g.Player.Forward} kids={vm.Root.GetChildrenDeep().Count()}");
     }
 }

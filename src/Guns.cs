@@ -14,6 +14,10 @@ public abstract class Firearm : Weapon
     public virtual bool Automatic => false;
     public virtual float ReloadTime => 1.4f;
     public virtual float Punch => 1.2f;
+    /// <summary>Loads one round at a time (shotgun): start → shell × n → end; firing interrupts after the current shell.</summary>
+    public virtual bool ShellByShell => false;
+    public const float ShellStart = 0.35f, ShellTime = 0.42f, ShellEnd = 0.5f;
+    private bool _shellMode, _interrupt;
     public virtual string FireSound => $"sfx_{Id.Replace("weapon_", "")}";
     public int Mag { get; set; }
     public int Reserve { get; set; }
@@ -24,7 +28,7 @@ public abstract class Firearm : Weapon
     public void Init() { Mag = MagSize; Reserve = MagSize * 4; }
     public void Refill() { Mag = MagSize; Reserve = MagSize * 6; }
     public override string? AmmoText => Reloading ? "Reloading" : $"{Mag} / {Reserve}";
-    public override void Holster(SandboxGame g) => _reload = 0f;
+    public override void Holster(SandboxGame g) { _reload = 0f; _shellMode = false; _interrupt = false; }
 
     public Float3 MuzzleOf(SandboxGame g) => Vm?.MuzzlePosition ?? g.Player.EyePosition + g.Player.Forward * 0.5f;
 
@@ -33,9 +37,28 @@ public abstract class Firearm : Weapon
         _cooldown -= dt;
         if (_reload > 0f)
         {
+            if (_shellMode && i.PrimaryDown && Mag > 0) _interrupt = true;
             _reload -= dt;
             if (_reload <= 0f)
             {
+                if (_shellMode)
+                {
+                    if (Mag < MagSize && Reserve > 0 && !_interrupt)
+                    {
+                        Mag++; Reserve--;
+                        Vm?.Play("reload_shell");
+                        g.Sounds.Play("sfx_reload", 0.35f, null, 1.3f);
+                        _reload = ShellTime;
+                    }
+                    else
+                    {
+                        _shellMode = false; _interrupt = false;
+                        Vm?.Play("reload_end");
+                        g.Sounds.Play("sfx_reload", 0.5f, null, 0.8f);
+                        _cooldown = ShellEnd;
+                    }
+                    return;
+                }
                 int take = Math.Min(MagSize - Mag, Reserve);
                 Mag += take;
                 Reserve -= take;
@@ -62,6 +85,13 @@ public abstract class Firearm : Weapon
 
     public void StartReload(SandboxGame g)
     {
+        if (ShellByShell)
+        {
+            _shellMode = true; _interrupt = false;
+            _reload = ShellStart;
+            Vm?.Play("reload_start");
+            return;
+        }
         _reload = ReloadTime;
         Vm?.Play("reload");
         g.Sounds.Play("sfx_reload", 0.6f);
@@ -118,6 +148,7 @@ public sealed class ShotgunWeapon : Firearm
     public override int MagSize => 6;
     public override float FireInterval => 0.85f;
     public override float ReloadTime => 1.8f;
+    public override bool ShellByShell => true;
     public override float Punch => 4f;
     protected override void Shoot(SandboxGame g, Float3 muzzle)
     {

@@ -146,6 +146,8 @@ public sealed partial class Menus
                 Ui.Slider(paper, "st_sens", vx, cy + Theme.S(2), sw, s.MouseSensitivity, 0.1f, 4f, v => s.MouseSensitivity = v); cy += Theme.S(44);
                 Row("Field of view", $"{s.FieldOfView:0}°");
                 Ui.Slider(paper, "st_fov", vx, cy + Theme.S(2), sw, s.FieldOfView, 60f, 110f, v => s.FieldOfView = MathF.Round(v)); cy += Theme.S(44);
+                Row("View model FOV", $"{s.ViewModelFov:0}°");
+                Ui.Slider(paper, "st_vmfov", vx, cy + Theme.S(2), sw, s.ViewModelFov, 50f, 90f, v => s.ViewModelFov = MathF.Round(v)); cy += Theme.S(44);
                 Row("UI scale", $"{s.UiScale * 100:0}%");
                 Ui.Slider(paper, "st_ui", vx, cy + Theme.S(2), sw, s.UiScale, 0.75f, 1.5f, v => s.UiScale = MathF.Round(v * 20f) / 20f); cy += Theme.S(44);
                 Row("Time scale", $"{s.TimeScale:0.00}×");

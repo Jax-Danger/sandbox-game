@@ -11,6 +11,9 @@ public sealed partial class SandboxGame : Game
 
     /// <summary>Optional forced UI state for screenshots (see README "Screenshot mode").</summary>
     public string? ShotState { get; set; }
+    /// <summary>Screenshot-mode view-model pose override (aim, sprint, crouch, reload, fire).</summary>
+    public string? ShotPose { get; private set; }
+    private bool _vmShotDone;
     private float _perfSum, _perfMax; private int _perfN;
 
     public Scene World { get; private set; } = null!;
@@ -353,6 +356,7 @@ public sealed partial class SandboxGame : Game
         else if (SeatedIn is not null) StandUp();
         else if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
         UpdateFlashlightZoom(dt, input);
+        Weapons.Aiming = input && !Health.Dead && Weapons.Current is Firearm && Input.GetMouseButton(1);
         Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
         Fx.Tick(Time.DeltaTime);
         Prop? aimed = !InVehicle && Player.Trace(80f, out RaycastHit aim) ? Props.FromBody(aim.Rigidbody) : null;
@@ -435,6 +439,22 @@ public sealed partial class SandboxGame : Game
                 Weapons.Tick(this, new WeaponInput(false, true, false, false, false, false, 0f), Time.DeltaTime);
             }
         }
+        // Screenshot mode "vm_<weapon>[_aim|_sprint|_reload|_fire]": holds one weapon still for view-model shots.
+        if (ShotState is { } vs && vs.StartsWith("vm_") && Time.UnscaledTotalTime > 2f)
+        {
+            string[] sp = vs[3..].Split('_');
+            if (Weapons.All.FirstOrDefault(w => w.Id == "weapon_" + sp[0]) is { } vw && !ReferenceEquals(Weapons.Current, vw)) Weapons.Select(this, vw);
+            ShotPose = sp.Length > 1 ? sp[1] : null;
+            // Motion checks: the clip fires once at 6 s (frame sequences are recorded from there).
+            if (ShotPose is "reload" or "inspect" or "fire" or "grab" or "release" && !_vmShotDone && Time.UnscaledTotalTime > 6f && Weapons.Current.Vm is { } sv)
+            {
+                _vmShotDone = true;
+                if (ShotPose == "reload" && Weapons.Current is Firearm rf) { rf.Mag = Math.Min(rf.Mag, 2); rf.StartReload(this); }
+                else if (ShotPose == "fire" && Weapons.Current is Firearm ff) { ff.Mag = Math.Max(ff.Mag, 3); Weapons.Tick(this, new WeaponInput(true, true, false, false, false, false, 0f), Time.DeltaTime); }
+                else { sv.Play(ShotPose == "fire" ? "fire" : ShotPose); if (ShotPose == "fire") sv.Kick(1f); }
+            }
+            if (ShotPose == "reload" && Weapons.Current is Firearm { Reloading: true } rr) rr.Tick(this, new WeaponInput(false, false, false, false, false, false, 0f), Time.DeltaTime);
+        }
         if (ShotState == "drive" && Vehicles.Driving is { } car)
             car.Drive(Time.UnscaledTotalTime > 7f ? 0.6f : 0f, Time.UnscaledTotalTime < 8.5f, false, false);
         if (ShotState == "smg" && Time.UnscaledTotalTime > 6f)
@@ -475,6 +495,9 @@ public sealed partial class SandboxGame : Game
 
     private AudioSource? _hum;
     private float _stepTimer;
+    private int _steps;
+    /// <summary>Continuous footstep counter (integer = a footfall); the view model's walk bob locks to it.</summary>
+    public float StepCycle => _steps + Math.Clamp(1f - _stepTimer / 0.45f, 0f, 1f);
 
     /// <summary>Footsteps while walking and the physgun hum while holding something.</summary>
     private void AmbientAudio(float dt)
@@ -484,7 +507,7 @@ public sealed partial class SandboxGame : Game
             _stepTimer -= dt * Player.Speed / 4.5f;
             if (_stepTimer <= 0f)
             {
-                _stepTimer = 0.45f;
+                _stepTimer = 0.45f; _steps++;
                 Sounds.Play(FootstepSound(), Player.Crouching ? 0.12f : 0.25f, null, 0.9f + Random.Shared.NextSingle() * 0.2f);
             }
         }
@@ -709,8 +732,11 @@ public sealed partial class SandboxGame
         }
         bool zoom = input && Binds.Held("zoom");
         _zoom += ((zoom ? 1f : 0f) - _zoom) * MathF.Min(1f, dt * 12f);
-        Player.Camera.FieldOfView = Settings.FieldOfView + (25f - Settings.FieldOfView) * _zoom;
-        Player.LookSensitivity = 0.12f * Settings.MouseSensitivity * (1f - 0.6f * _zoom);
+        // Aim-down-sights narrows the FOV by the weapon's zoom and slows the mouse a touch.
+        float ads = Weapons.Current?.Vm is { } avm ? avm.AimBlend : 0f;
+        float adsZoom = 1f + ((Weapons.Current?.Vm?.Def.AimZoom ?? 1f) - 1f) * ads;
+        Player.Camera.FieldOfView = (Settings.FieldOfView + (25f - Settings.FieldOfView) * _zoom) / adsZoom;
+        Player.LookSensitivity = 0.12f * Settings.MouseSensitivity * (1f - 0.6f * _zoom) * (1f - 0.3f * ads);
     }
 }
 

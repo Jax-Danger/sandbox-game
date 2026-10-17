@@ -229,8 +229,9 @@ vm_root            (camera-space root; walk bob, mouse sway and recoil are appli
 │   └── hand_r     right hand
 │       └── weapon the gun itself (fire/reload/inspect move this)
 │           └── muzzle  muzzle point (flash and tracers start here)
-└── arm_l          left forearm
-    └── hand_l     left hand (reload grabs the mag with this)
+└── arm_l          left forearm (free left hand: hands, toolgun, grenade, crowbar)
+    └── hand_l     left hand; on two-handed guns it is parented to weapon (or pump) instead
+optional under weapon: sight (ADS lines this up with the screen centre), mag, slide, pump, charge, rocket, pin
 ```
 
 For your own model, name the nodes exactly like this (any extra nodes are fine). When `vm_<weapon>` loads, those nodes become the animated bones and the primitive placeholder meshes are skipped. Bones you leave out are created as empty nodes. If you don't have arms, a model containing only `weapon` and `muzzle` works too.
@@ -254,7 +255,27 @@ Clips are keyframed offsets from each bone's rest pose (`pos` in metres, `rot` i
 }
 ```
 
+Extra clips the game plays when they exist: `fire2`, `fire3`... (alternating variants, e.g. the crowbar's backhand), `reload_start` / `reload_shell` / `reload_end` (shell-by-shell; set `"hold": true` so a clip keeps its last pose until the next one), and `grab` / `release` on the physgun.
+
 The `ease` value is how the pose gets *to* that key: `Linear`, `In`, `Out`, `InOut` or `Back` (overshoot). A bone missing from a key is at rest for that key. One-shot clips crossfade in and out over 0.08 s, on top of the looping `idle`. Procedural bob, sway and recoil are added on top of that. The game plays `fire` on each shot, `reload` on R, `inspect` on F, and `draw`/`holster` when you switch weapons.
+
+### View models: rigged glb/fbx models and what Prowl supports
+
+Prowl's importer (glTF/GLB, FBX, OBJ) brings in skinned meshes (`SkinnedMeshRenderer`, bones are ordinary transforms), blend shapes and baked animation clips (`AnimationClip`, per-bone position/rotation/scale curves). It has a simple one-clip `Animation` player, but no animation blending, state machine or IK. The sandbox works within that:
+
+- Any node of your model named like a rig bone above is driven by our pose and clip system, and so is any node named in a `clips.json` key (e.g. `finger_index_02`). The skinned mesh deforms with those bones.
+- Embedded clips play by name: a model clip called `reload` (or `Armature|reload` from Blender) replaces the built-in `reload` and drives the skeleton directly; `idle` loops when nothing else plays. The procedural layers (sway, bob, recoil, ADS, sprint) still move `vm_root` on top, so imported clips get the same feel.
+- Embedded clips don't blend with each other (Prowl samples one pose at a time); our own JSON clips do.
+
+### View models: feel
+
+All procedural layers are sub-stepped springs, so they behave the same at any frame rate: weight-based mouse sway with lag (heavier guns swing slower and further), strafe tilt, walk bob locked to the footstep sounds, jump lift and a landing dip, a lowered/angled sprint pose, a crouch tuck, aim-down-sights on the right mouse button (pistol, SMG, shotgun, RPG; slight zoom, crosshair hides), recoil with a little random yaw/roll, and an idle fidget after standing still. Interrupted clips crossfade instead of snapping. **View model FOV** (Settings → Video) draws the arms at their own FOV, independent of the world FOV.
+
+| Before | After | Aiming |
+|---|---|---|
+| ![](docs/vm-before.png) | ![](docs/vm-after.png) | ![](docs/vm-aim.png) |
+
+Frame sequences (10 fps) of the pistol and shotgun reloads: [pistol](docs/vm-seq-pistol-reload.png), [shotgun](docs/vm-seq-shotgun-reload.png).
 
 ## Headless self-test
 

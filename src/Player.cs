@@ -38,6 +38,12 @@ public sealed class Player
     public float Pitch => _pitch;
     /// <summary>Downward speed (m/s) of the last landing; consumed (reset to 0) by the health system.</summary>
     public float LandingImpact { get; set; }
+    /// <summary>Landing speed for the view model's dip (separate from <see cref="LandingImpact"/>, which Health consumes).</summary>
+    public float LandingKick { get; set; }
+    public Float2 MoveInput { get; private set; }
+    public bool Running { get; private set; }
+    public float CrouchBlend => _crouch;
+    public float VerticalVelocity => _verticalVelocity;
     private bool _wasGrounded = true;
 
     public Player(Scene scene, Float3 spawnFeet, float yaw)
@@ -110,6 +116,7 @@ public sealed class Player
             if (Binds.Held("left")) move -= Float2.UnitX;
             run = Input.IsShiftPressed;
         }
+        MoveInput = move; Running = run && move.Y > 0.1f;
         Crouching = allowInput && !Noclip && Input.IsCtrlPressed;
         _crouch += ((Crouching ? 1f : 0f) - _crouch) * MathF.Min(1f, dt * 12f);
 
@@ -138,7 +145,7 @@ public sealed class Player
         Speed = _controller.IsGrounded ? Float3.Length(wish) : 0f;
 
         bool groundedNow = _controller.IsGrounded;
-        if (groundedNow && !_wasGrounded && _verticalVelocity < -2f) LandingImpact = -_verticalVelocity;
+        if (groundedNow && !_wasGrounded && _verticalVelocity < -2f) { LandingImpact = -_verticalVelocity; LandingKick = -_verticalVelocity; }
         _wasGrounded = groundedNow;
         if (_controller.IsGrounded)
         {

@@ -73,9 +73,9 @@ public static class Meshes
     }
 
     /// <summary>Revolves a (radius, height) profile around +Y. Normals come from the profile, so curves are smooth.</summary>
-    public static Mesh Lathe(string key, (float R, float Y)[] profile, int slices = 32)
+    public static Mesh Lathe(string key, (float R, float Y)[] profile, int slices = 32, bool alongZ = false)
     {
-        key = "lathe:" + key + slices;
+        key = "lathe:" + key + slices + (alongZ ? "z" : "");
         if (_cache.TryGetValue(key, out Mesh? cached)) return cached;
         var verts = new List<Float3>(); var norms = new List<Float3>(); var uvs = new List<Float2>(); var idx = new List<uint>();
         int pn = profile.Length;
@@ -94,8 +94,8 @@ public static class Meshes
             float a = s * MathF.Tau / slices, ca = MathF.Cos(a), sa = MathF.Sin(a);
             for (int i = 0; i < pn; i++)
             {
-                verts.Add(new Float3(profile[i].R * ca, profile[i].Y, profile[i].R * sa));
-                norms.Add(Float3.Normalize(new Float3(pnorm[i].X * ca, pnorm[i].Y, pnorm[i].X * sa)));
+                verts.Add(alongZ ? new Float3(profile[i].R * ca, profile[i].R * sa, profile[i].Y) : new Float3(profile[i].R * ca, profile[i].Y, profile[i].R * sa));
+                norms.Add(Float3.Normalize(alongZ ? new Float3(pnorm[i].X * ca, pnorm[i].X * sa, pnorm[i].Y) : new Float3(pnorm[i].X * ca, pnorm[i].Y, pnorm[i].X * sa)));
                 uvs.Add(new Float2((float)s / slices * 3f, vlen > 0 ? vacc[i] / vlen : 0));
             }
         }
@@ -113,6 +113,20 @@ public static class Meshes
             if (Float3.Dot(cr, n) >= 0f) { idx.Add(a); idx.Add(b); idx.Add(c); } else { idx.Add(a); idx.Add(c); idx.Add(b); }
         }
         return _cache[key] = Build(verts, norms, uvs, idx);
+    }
+
+    /// <summary>
+    /// Smooth tapered capsule along +Z from z=0 (radius r0) to z=length (radius r1) with domed ends: forearms,
+    /// finger segments, grips. Domes stay inside [0, length] so chained segments meet cleanly.
+    /// </summary>
+    public static Mesh Taper(float r0, float r1, float length, int slices = 20)
+    {
+        r0 = MathF.Max(r0, 0.0005f); r1 = MathF.Max(r1, 0.0005f); length = MathF.Max(length, 0.001f);
+        float d0 = MathF.Min(r0, length * 0.45f), d1 = MathF.Min(r1, length * 0.45f);
+        var prof = new List<(float, float)>();
+        for (int k = 0; k <= 5; k++) { float a = MathF.PI / 2f * k / 5f; prof.Add((MathF.Sin(a) * r0, d0 - MathF.Cos(a) * d0)); }
+        for (int k = 0; k <= 5; k++) { float a = MathF.PI / 2f * k / 5f; prof.Add((MathF.Cos(a) * r1, length - d1 + MathF.Sin(a) * d1)); }
+        return Lathe($"tp{r0:0.####},{r1:0.####},{length:0.####}", prof.ToArray(), slices, alongZ: true);
     }
 
     /// <summary>Cylinder along Y with rounded rims (bevel b) and closed caps; smooth.</summary>

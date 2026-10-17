@@ -268,7 +268,7 @@ public sealed class SelfTest
                         Check(drift < 0.05f, $"view-model recoil stays stable at low FPS (drift {drift:0.000})");
                     }
                     VmClip reload = ViewModels.Create("smg").Clips["reload"];
-                    BonePose mid = reload.Sample("weapon", 0.5f), end = reload.Sample("weapon", reload.Length);
+                    BonePose mid = reload.Sample("hand_r", 0.5f), end = reload.Sample("hand_r", reload.Length);
                     Check(MathF.Abs(mid.Rot.Z) > 20f && MathF.Abs(end.Rot.Z) < 0.01f, $"reload clip tilts the weapon and returns to rest ({mid.Rot.Z:0})");
                     Check(vm!.Play("inspect") && vm.ClipPlaying, "inspect clip plays");
                     _vmRestY = vm.Bones["arm_r"].Transform.LocalPosition.Y;
@@ -570,6 +570,46 @@ public sealed class SelfTest
                     var meta = new SessionMeta(); meta.Modifiers.Weather = "Fog";
                     bool parse = WeatherSystem.Parse(meta.Modifiers.Weather) == WeatherKind.Fog && WeatherSystem.Parse("garbage") == WeatherKind.Clear && WeatherSystem.Parse(null) == WeatherKind.Clear;
                     Check(ok && stormy && cleared && bad && parse, $"weather: storm darkens/fogs/rains/lightning, clear restores, bad input rejected (fogEnd {fogEnd0:0}->{g.World.Fog.End:0})");
+                }
+                {
+                    // View models: every rig builds with finite parts, firearms aim their sight onto the screen centre,
+                    // springs survive a hitch, and clips/variants exist.
+                    bool finite = true, aimOk = true, stable = true; string worst = "";
+                    foreach (string id in new[] { "hands", "physgun", "toolgun", "pistol", "smg", "shotgun", "rpg", "grenade", "crowbar" })
+                    {
+                        ViewModelDef def = ViewModels.Create(id);
+                        finite &= def.Parts.All(pt => float.IsFinite(pt.Size.X + pt.Size.Y + pt.Size.Z + pt.Offset.X + pt.Offset.Y + pt.Offset.Z)) && def.Parts.Count > 20;
+                        var vm = new ViewModel(def, g.Player.CameraObject, g.Shader);
+                        vm.SetVisible(true); vm.SetFov(75f, 75f);
+                        for (int f = 0; f < 90; f++) vm.Update(1f / 60f, new VmInput(Float2.Zero, 0f, Aim: true));
+                        if (def.CanAim)
+                        {
+                            Float3 sp = g.Player.CameraObject.Transform.InverseTransformPoint(vm.Bones["sight"].Transform.Position);
+                            if (MathF.Abs(sp.X) > 0.006f || MathF.Abs(sp.Y) > 0.006f || sp.Z < 0.05f) { aimOk = false; worst = $"{id} sight {sp.X:0.000},{sp.Y:0.000},{sp.Z:0.000}"; }
+                        }
+                        vm.Kick(5f); vm.Update(0.5f, new VmInput(new Float2(4000f, -4000f), 9f, Float2.UnitX, false, -30f, 20f, true, 1f));
+                        for (int f = 0; f < 120; f++) vm.Update(1f / 60f, new VmInput(Float2.Zero, 0f));
+                        Float3 rp0 = vm.Root.Transform.LocalPosition;
+                        stable &= float.IsFinite(rp0.X + rp0.Y + rp0.Z) && Float3.Length(rp0) < 0.03f;
+                        g.World.Remove(vm.Root);
+                    }
+                    var crow = ViewModels.Create("crowbar");
+                    bool clipsOk = crow.Clips.ContainsKey("fire2") && ViewModels.Create("shotgun").Clips["reload_shell"].Hold && ViewModels.Create("grenade").Bones.Any(b => b.Bone == "pin");
+                    Check(finite && aimOk && stable && clipsOk, $"view models: rigs build, ADS centres sights, springs settle, clip variants ({(worst == "" ? "ok" : worst)})");
+                }
+                {
+                    var sg = g.Weapons.Get<ShotgunWeapon>();
+                    g.Weapons.Select(g, sg);
+                    sg.Mag = 2; sg.Reserve = 10;
+                    sg.StartReload(g);
+                    var none = new WeaponInput(false, false, false, false, false, false, 0f);
+                    for (int f = 0; f < 70; f++) sg.Tick(g, none, 1f / 60f); // start + ~2 shells
+                    int mid = sg.Mag;
+                    sg.Tick(g, new WeaponInput(true, true, false, false, false, false, 0f), 1f / 60f); // fire interrupts
+                    for (int f = 0; f < 120; f++) sg.Tick(g, none, 1f / 60f);
+                    bool interrupted = !sg.Reloading && sg.Mag >= 3 && sg.Mag < 6 && sg.Mag + sg.Reserve == 12;
+                    Check(mid >= 3 && interrupted, $"shotgun reloads shell by shell and firing interrupts it (mid {mid}, end {sg.Mag}/{sg.Reserve})");
+                    g.Weapons.Select(g, g.Weapons.Get<PhysGunWeapon>());
                 }
                 {
                     var rp = g.Roleplay;
