@@ -870,6 +870,12 @@ public sealed class SelfTest
         fb.Body.MotionType = Jitter2.Dynamics.MotionType.Static;
         bool flipOk = true; try { fb.Flip(); } catch { flipOk = false; }
         Check(flipOk, "flipping a frozen vehicle does nothing instead of throwing");
+        // 5a. A prop whose pose went NaN is removed before Jitter's next broadphase (threw on a worker thread in the 300 s soak).
+        Prop nanProp = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 5f, 60f), 0f, recordUndo: false);
+        int removed0 = PhysicsGuard.Removed;
+        nanProp.Body.MovePosition(new Float3(float.NaN, 0f, 0f));
+        PhysicsGuard.Clamp(g);
+        Check(PhysicsGuard.Removed == removed0 + 1 && !g.Props.Props.Contains(nanProp), "physics guard removes NaN-pose props");
         // 5b. A NaN player position (pushed by a degenerate contact) respawns instead of crashing the ground cast.
         Float3 savedFeet = g.Player.FeetPosition;
         g.Player.Teleport(new Float3(float.NaN, 1f, 0f));

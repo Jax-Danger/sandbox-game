@@ -98,9 +98,46 @@ public static class PhysicsGuard
         return hit;
     }
 
+    public static int Removed { get; private set; }
+
+    private static readonly System.Reflection.FieldInfo? BodyField =
+        typeof(Rigidbody3D).GetField("_body", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance);
+
+    /// <summary>
+    /// True when the solver left the body's pose NaN/huge. The Transform setter silently rejects NaN, so the
+    /// Jitter body itself is checked (internal engine field; read-only).
+    /// </summary>
+    public static bool Corrupt(Rigidbody3D? rb)
+    {
+        if (rb is null || BodyField?.GetValue(rb) is not Jitter2.Dynamics.RigidBody jb) return false;
+        var p = jb.Position; var q = jb.Orientation;
+        return !float.IsFinite(p.X + p.Y + p.Z) || !float.IsFinite(q.X + q.Y + q.Z + q.W) || MathF.Abs(p.X) + MathF.Abs(p.Y) + MathF.Abs(p.Z) > 1e6f;
+    }
+
+    /// <summary>
+    /// Runs after each physics step. Caps runaway speeds and removes any body whose pose went NaN/huge
+    /// (degenerate constraint stacks can do this), because Jitter's next broadphase pass throws on NaN
+    /// (Math.Sign in SupportMap) on a worker thread and kills the process.
+    /// </summary>
     public static void Clamp(SandboxGame g)
     {
-        foreach (Prop p in g.Props.Props) if (p.Alive) Fix(p.Body);
-        foreach (Buggy b in g.Vehicles.All) if (b.Go.IsValid()) Fix(b.Body);
+        List<Prop>? bad = null;
+        foreach (Prop p in g.Props.Props)
+        {
+            if (!p.Alive) continue;
+            if (Corrupt(p.Body)) (bad ??= []).Add(p);
+            else Fix(p.Body);
+        }
+        if (bad is not null)
+        {
+            foreach (Prop p in bad) { try { g.Props.Remove(p); } catch { g.World.Remove(p.Go); } Removed++; }
+            g.Notify($"Removed {bad.Count} unstable prop{(bad.Count == 1 ? "" : "s")}", ToastKind.Danger);
+        }
+        foreach (Buggy b in g.Vehicles.All.ToList())
+        {
+            if (!b.Go.IsValid()) continue;
+            if (Corrupt(b.Body)) { try { g.Vehicles.Remove(b); } catch { g.World.Remove(b.Go); } Removed++; }
+            else Fix(b.Body);
+        }
     }
 }
