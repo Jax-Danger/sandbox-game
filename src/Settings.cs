@@ -17,6 +17,8 @@ public sealed class Settings
     /// <summary>First-run default tuned for mid-range GPUs: soft shadows, FXAA, bloom, no GTAO.</summary>
     public GraphicsQuality Graphics { get; set; } = GraphicsQuality.Medium;
     public bool ShowFps { get; set; }
+    public bool ShowHints { get; set; } = true;
+    public List<string> SeenHints { get; set; } = [];
     public WindowMode WindowMode { get; set; } = WindowMode.Windowed;
     public int ResolutionWidth { get; set; } = 1280;
     public int ResolutionHeight { get; set; } = 720;
@@ -74,6 +76,7 @@ public sealed class Settings
 
     public Settings Clamped()
     {
+        SeenHints = (SeenHints ?? []).Where(x => x is not null).Distinct().Take(100).ToList();
         MouseSensitivity = Math.Clamp(MouseSensitivity, 0.1f, 4f);
         FieldOfView = Math.Clamp(FieldOfView, 60f, 110f);
         MasterVolume = Math.Clamp(MasterVolume, 0f, 1f);

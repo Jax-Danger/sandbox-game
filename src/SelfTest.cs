@@ -519,6 +519,21 @@ public sealed class SelfTest
                 ConsoleTest(g);
                 AchievementsTest(g);
                 {
+                    g.ClearMap(notify: false);
+                    g.Hints.Reset(g); g.Settings.ShowHints = true;
+                    for (int i = 0; i < 120; i++) g.Hints.Tick(g, 1f / 30f);
+                    string? first = g.Hints.Current;
+                    for (int i = 0; i < 60 * 8; i++) g.Hints.Tick(g, 1f / 30f); // hint expires, gap, next
+                    bool once = g.Settings.SeenHints.Count(x => x == "spawnmenu") == 1;
+                    g.Settings.ShowHints = false; g.Hints.Dismiss();
+                    for (int i = 0; i < 60 * 20; i++) g.Hints.Tick(g, 1f / 30f);
+                    bool off = g.Hints.Current is null;
+                    var js = System.Text.Json.JsonSerializer.Deserialize<Settings>("{\"SeenHints\":null}")!.Clamped();
+                    Check(first is not null && first.Contains("spawn menu") && !first.Contains('{') && once && off && js.SeenHints is not null,
+                        $"first-time hints: show once with live keybind names, can be disabled ('{first}')");
+                    g.Hints.Reset(g); g.Settings.ShowHints = true;
+                }
+                {
                     float fogEnd0 = g.World.Fog.End, sun0 = g.Sun.Intensity;
                     bool ok = g.DevConsole.Execute(g, "weather storm") && g.Weather.Kind == WeatherKind.Storm;
                     for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);

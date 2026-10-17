@@ -26,6 +26,7 @@ public sealed partial class SandboxGame : Game
     public HealthSystem Health { get; } = new();
     public DayNightCycle DayNight { get; } = new();
     public WeatherSystem Weather { get; } = new();
+    public Hints Hints { get; } = new();
     public RoleplaySystem Roleplay { get; private set; } = null!;
     public bool Flashlight { get; private set; }
     /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
@@ -315,6 +316,7 @@ public sealed partial class SandboxGame : Game
         Achievements.Tick(this, dt);
         if (DayNight.Enabled) DayNight.Tick(this, Time.DeltaTime);
         Weather.Tick(this, dt);
+        if (Menus.Screen == Screen.Playing && (ShotState is null or "hints")) Hints.Tick(this, dt);
         if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 
         if (SelfTest is not null)
@@ -391,6 +393,7 @@ public sealed partial class SandboxGame : Game
     private void ShotTick()
     {
         if (ShotState is "rain" or "storm" or "fog" && Weather.Kind == WeatherKind.Clear) Weather.Set(WeatherSystem.Parse(ShotState), this, instant: true);
+        if (ShotState == "hints" && _frames < 5) Hints.Reset(this);
         if (ShotState == "console" && !DevConsole.Open && Time.UnscaledTotalTime > 4f)
         {
             DevConsole.Toggle(true);
@@ -603,6 +606,7 @@ public sealed partial class SandboxGame : Game
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         if (PhotoMode && Menus.Screen == Screen.Playing) { _hud.Draw(paper, w, h, this, dt, chrome: false); return; }
         _hud.Draw(paper, w, h, this, dt, chrome);
+        if (chrome) Hints.Draw(paper, w, h);
         if (chrome || Health.Dead) Health.DrawOverlay(paper, w, h);
         if (chrome) CameraFeeds.Draw(paper, w, h);
         _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);

@@ -79,6 +79,7 @@ public sealed class GameConsole
             if (!Enum.TryParse(a[0], true, out WeatherKind k) || !Enum.IsDefined(k)) throw new ArgumentException($"Unknown weather '{a[0]}'");
             g.Weather.Set(k, g); return $"Weather → {k}";
         });
+        Add("hints", "hints reset", "Replay the first-time hints", (g, a) => { g.Hints.Reset(g); g.Settings.ShowHints = true; return "Hints will show again"; });
         Add("echo", "echo <text>", "Print text", (g, a) => string.Join(' ', a));
     }
 
