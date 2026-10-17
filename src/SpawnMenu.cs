@@ -223,7 +223,7 @@ public sealed class SpawnMenu(IconRenderer icons)
     {
         Ui.Panel(paper, "sm_tools", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
         float ix = x + Theme.S(Theme.Sm), iy = y + Theme.S(Theme.Sm);
-        foreach (IGrouping<string, ToolInfo> group in ToolGun.Tools.GroupBy(t => t.Category))
+        foreach (IGrouping<string, ToolInfo> group in ToolGun.AllTools.GroupBy(t => t.Category))
         {
             Ui.Text(paper, $"sm_tcat_{group.Key}", ix + Theme.S(6), iy, w, Theme.S(24), group.Key.ToUpperInvariant(),
                 Theme.Micro, Theme.TextFaint, Theme.SemiBold);

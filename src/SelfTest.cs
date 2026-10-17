@@ -504,6 +504,15 @@ public sealed class SelfTest
             Prop chair = ModelProps.Spawn(g, ModelProps.All.First(d => d.Id == "chair"), new Float3(-8f, 1f, 8f), 0f, recordUndo: false);
             Check(chair.Go.GetComponentsInChildren<MeshRenderer>(false).Count() >= 6 && chair.Go.GetComponent<Seat>() is not null && MathF.Abs(chair.Body.Mass - 6f) < 0.01f,
                 $"model prop builds its parts ({chair.Go.GetComponentsInChildren<MeshRenderer>(false).Count()} parts) and seat");
+            Prop ta = g.Props.Spawn(PropKind.Cube, new Float3(10f, 0.6f, 10f), 0f, recordUndo: false), tb = g.Props.Spawn(PropKind.Cube, new Float3(12f, 0.6f, 10f), 0f, recordUndo: false);
+            g.ToolGun.NoCollide(ta, tb);
+            g.ToolGun.Elastic(ta, Float3.Zero, tb, Float3.Zero, 50f);
+            g.ToolGun.Hinge(ta, new Float3(0.5f, 0f, 0f), Float3.UnitY, tb);
+            Hoverball.Attach(g.Props, ta, ta.Go.Transform.Position, Float3.UnitY, 1f, KeyCode.Keypad8, KeyCode.Keypad2);
+            Emitter.Attach(g.Props, tb, tb.Go.Transform.Position, Float3.UnitY, 5f, KeyCode.Keypad5);
+            int before = g.Props.Props.Count;
+            string st = g.ToolGun.Stack(chair, Float3.UnitY, 3, true);
+            Check(g.Props.Props.Count == before + 3 && g.Props.Props.Skip(before).All(p => p.Entity == "mdl_chair"), $"stacker stacks 3 copies ({st})");
             g.SitIn(chair);
             Check(ReferenceEquals(g.SeatedIn, chair), "E on a seat sits the player in it");
             g.StandUp();
@@ -526,6 +535,10 @@ public sealed class SelfTest
             Check(ra is not null && Float3.Length(ra.Body.LinearVelocity - new Float3(1f, 2f, 3f)) < 0.6f,
                 $"reload restores exact velocity from backup ({(ra is null ? "missing" : $"{ra.Body.LinearVelocity.X:0.0},{ra.Body.LinearVelocity.Y:0.0},{ra.Body.LinearVelocity.Z:0.0}")})");
             Prop? rc = g.Props.Props.FirstOrDefault(p => p.Entity == "mdl_chair");
+            int links = g.Props.Props.Sum(p => p.Go.GetComponents<NoCollideLink>().Count() + p.Go.GetComponents<ElasticBand>().Count() + p.Go.GetComponents<HingeJoint>().Count());
+            int gadgets = g.Props.Props.Sum(p => p.Go.GetComponents<Hoverball>().Count() + p.Go.GetComponents<Emitter>().Count());
+            Check(links >= 3 && gadgets == 2 && g.Props.Props.Any(p => p.Go.GetComponent<Hoverball>() is { Up: KeyCode.Keypad8 }),
+                $"no-collide, elastic, hinge, hoverball (numpad keys) and emitter survive save/load ({links} links, {gadgets} gadgets)");
             Check(rc is not null && rc.Go.GetComponentsInChildren<MeshRenderer>(false).Count() >= 6 && rc.Go.GetComponent<Seat>() is not null, "model prop survives save/load with its parts");
             Check(rf is { Frozen: true } && MathF.Abs(rf.Go.Transform.Position.Y - 3f) < 0.05f, "frozen prop stays frozen in place after reload");
             Check(g.Roleplay.Job.Id == "police" && g.Roleplay.Money == 1334 && g.Weapons.All.Any(w => w is BatonWeapon && w.Available(g)),

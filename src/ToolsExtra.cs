@@ -21,8 +21,8 @@ public sealed partial class ToolGun
     public float LightRange { get; set; } = 8f;
     public float LightHue { get; set; } = 0.1f;
 
-    public static readonly KeyCode[] ThrusterKeys = [KeyCode.T, KeyCode.G, KeyCode.Y, KeyCode.H, KeyCode.U, KeyCode.J];
-    public static readonly (KeyCode Fwd, KeyCode Back)[] WheelKeyPairs = [(KeyCode.T, KeyCode.G), (KeyCode.Y, KeyCode.H), (KeyCode.U, KeyCode.J)];
+    public static readonly KeyCode[] ThrusterKeys = BindKeys;
+    public static readonly (KeyCode Fwd, KeyCode Back)[] WheelKeyPairs = [(KeyCode.T, KeyCode.G), (KeyCode.Y, KeyCode.H), (KeyCode.U, KeyCode.J), (KeyCode.Keypad8, KeyCode.Keypad2), (KeyCode.Keypad4, KeyCode.Keypad6), (KeyCode.Keypad7, KeyCode.Keypad1), (KeyCode.Keypad9, KeyCode.Keypad3)];
 
     private sealed record Copy(PropKind Kind, Color Color, string Surface, float Mass, bool Frozen);
     private Copy? _copy;
@@ -46,7 +46,7 @@ public sealed partial class ToolGun
                 break;
             case ToolMode.Thruster:
                 yield return new ToolSetting("Force", 0.2f, 5f, () => ThrusterForce, v => ThrusterForce = v, v => $"{v:0.0}× weight", "Thrust as a multiple of the prop's weight.");
-                yield return new ToolSetting("Key", 0f, ThrusterKeys.Length - 1, () => ThrusterKey, v => ThrusterKey = (int)MathF.Round(v), v => ThrusterKeys[(int)MathF.Round(v)].ToString(), "Hold this key to fire the thruster.");
+                yield return new ToolSetting("Key", 0f, ThrusterKeys.Length - 1, () => ThrusterKey, v => ThrusterKey = (int)MathF.Round(v), v => KeyName(ThrusterKeys[(int)MathF.Round(v)]), "Hold this key to fire the thruster.");
                 break;
             case ToolMode.Wheel:
                 yield return new ToolSetting("Speed", 1f, 25f, () => WheelSpeed, v => WheelSpeed = v, v => $"{v:0} rad/s", "Motor target speed.");
@@ -71,7 +71,7 @@ public sealed partial class ToolGun
     {
         switch (Mode)
         {
-            case ToolMode.Rope or ToolMode.BallSocket when PendingLink is not null:
+            case ToolMode.Rope or ToolMode.BallSocket or ToolMode.NoCollide or ToolMode.Elastic or ToolMode.Slider or ToolMode.Hinge when PendingLink is not null:
                 _linkFirst = null;
                 return "Selection cleared";
             case ToolMode.Duplicator:

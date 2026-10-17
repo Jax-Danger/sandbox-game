@@ -3,7 +3,7 @@ using Prowl.Vector;
 
 namespace Sandbox;
 
-public enum ToolMode { Weld, Remover, Balloon, Rope, BallSocket, Thruster, Wheel, Colour, Material, Light, Duplicator }
+public enum ToolMode { Weld, Remover, Balloon, Rope, BallSocket, Thruster, Wheel, Colour, Material, Light, Duplicator, NoCollide, Elastic, Slider, Hinge, Hoverball, Emitter, Stacker }
 
 /// <summary>Display info for a tool, shown in the spawn menu and the HUD tool info box.</summary>
 public sealed record ToolInfo(ToolMode Mode, string Name, string Category, string Description, string Left, string? Right);
@@ -47,7 +47,8 @@ public sealed partial class ToolGun(PropManager props)
             "Paste the copied prop where you aim", "Copy the prop you're looking at"),
     ];
 
-    public static ToolInfo InfoFor(ToolMode m) => Tools.First(t => t.Mode == m);
+    public static ToolInfo InfoFor(ToolMode m) => AllTools.First(t => t.Mode == m);
+    public static IEnumerable<ToolInfo> AllTools => Tools.Concat(MoreTools);
     public Prop? PendingWeld => _weldFirst is { Alive: true } ? _weldFirst : null;
 
     public static string Describe(ToolMode m) => m switch
@@ -70,6 +71,7 @@ public sealed partial class ToolGun(PropManager props)
                 break;
             default:
                 foreach (ToolSetting t in ExtraSettings(mode)) yield return t;
+                foreach (ToolSetting t in MoreSettings(mode)) yield return t;
                 break;
             case ToolMode.Balloon:
                 yield return new ToolSetting("Balloon force", 0.5f, 3f, () => BalloonForce, v => BalloonForce = v,
@@ -99,6 +101,7 @@ public sealed partial class ToolGun(PropManager props)
 
     public string? Apply(Prop prop)
     {
+        if (ApplyMore(prop) is { } more) return more;
         switch (Mode)
         {
             case ToolMode.Remover:

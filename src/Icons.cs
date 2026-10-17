@@ -274,7 +274,14 @@ public static class Icons
         ToolMode.Colour => Icon.Eye,
         ToolMode.Material => Icon.Grid,
         ToolMode.Light => Icon.Power,
-        ToolMode.Duplicator => Icon.Folder,
+        ToolMode.Duplicator => Icon.Copy,
+        ToolMode.NoCollide => Icon.Shield,
+        ToolMode.Elastic => Icon.Link,
+        ToolMode.Slider => Icon.Sliders,
+        ToolMode.Hinge => Icon.Undo,
+        ToolMode.Hoverball => Icon.Globe,
+        ToolMode.Emitter => Icon.Flashlight,
+        ToolMode.Stacker => Icon.Plus,
         _ => Icon.Wrench,
     };
 }

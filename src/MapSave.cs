@@ -27,6 +27,8 @@ public static class MapSave
         public float[] AngularVelocity { get; set; } = [];
     }
 
+    public sealed class LinkData { public string Type { get; set; } = ""; public int A { get; set; } public int B { get; set; } public float[] LocalA { get; set; } = []; public float[] LocalB { get; set; } = []; public float[] Axis { get; set; } = []; public float Value { get; set; } public float Value2 { get; set; } }
+    public sealed class GadgetData { public string Type { get; set; } = ""; public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Value { get; set; } public float Target { get; set; } public string Key { get; set; } = "T"; public string Key2 { get; set; } = "G"; }
     public sealed class RopeData { public int A { get; set; } public int B { get; set; } public float[] LocalA { get; set; } = []; public float[] LocalB { get; set; } = []; public float Length { get; set; } }
     public sealed class ThrusterData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Force { get; set; } public string Key { get; set; } = "T"; }
     public sealed class WheelData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Speed { get; set; } public string Fwd { get; set; } = "T"; public string Back { get; set; } = "G"; }
@@ -40,6 +42,8 @@ public static class MapSave
         public List<PropData> Props { get; set; } = [];
         public List<int[]> Welds { get; set; } = [];
         public List<RopeData> Ropes { get; set; } = [];
+        public List<LinkData> Links { get; set; } = [];
+        public List<GadgetData> Gadgets { get; set; } = [];
         public List<int[]> BallSockets { get; set; } = [];
         public List<ThrusterData> Thrusters { get; set; } = [];
         public List<WheelData> Wheels { get; set; } = [];
@@ -95,6 +99,18 @@ public static class MapSave
                 Float3 pt = t.Visual is not null && t.Visual.IsValid() ? t.Visual.Transform.Position - n * 0.1f : p.Go.Transform.Position;
                 data.Thrusters.Add(new ThrusterData { Prop = i, Point = F(p.Go.Transform.InverseTransformPoint(pt)), Normal = F(t.LocalDir * -1f), Force = t.Multiple, Key = t.Key.ToString() });
             }
+            foreach (NoCollideLink nc in p.Go.GetComponents<NoCollideLink>())
+                if (nc.Other is not null && list.IndexOf(nc.Other) is >= 0 and var j) data.Links.Add(new LinkData { Type = "nocollide", A = i, B = j });
+            foreach (ElasticBand eb in p.Go.GetComponents<ElasticBand>())
+                if (eb.Other is not null && list.IndexOf(eb.Other) is >= 0 and var j) data.Links.Add(new LinkData { Type = "elastic", A = i, B = j, LocalA = F(eb.LocalA), LocalB = F(eb.LocalB), Value = eb.Strength, Value2 = eb.Rest });
+            foreach (PrismaticJoint pj in p.Go.GetComponents<PrismaticJoint>())
+                if (Idx(pj.ConnectedBody) is >= 0 and var j) data.Links.Add(new LinkData { Type = "slider", A = i, B = j, Axis = F(p.Go.Transform.TransformDirection(pj.Axis)) });
+            foreach (HingeJoint hj in p.Go.GetComponents<HingeJoint>())
+                if (Idx(hj.ConnectedBody) is >= 0 and var j) data.Links.Add(new LinkData { Type = "hinge", A = i, B = j, LocalA = F(hj.Anchor), Axis = F(hj.Axis) });
+            foreach (Hoverball hb in p.Go.GetComponents<Hoverball>())
+                data.Gadgets.Add(new GadgetData { Type = "hoverball", Prop = i, Point = F(hb.LocalPoint), Normal = [0, 1, 0], Value = hb.Strength, Target = hb.Target, Key = hb.Up.ToString(), Key2 = hb.Down.ToString() });
+            foreach (Emitter em in p.Go.GetComponents<Emitter>())
+                data.Gadgets.Add(new GadgetData { Type = "emitter", Prop = i, Point = F(em.LocalPoint), Normal = F(em.LocalNormal), Value = em.Rate, Key = em.Key.ToString() });
             foreach (PointLight l in p.Go.GetComponentsInChildren<PointLight>())
                 data.Lights.Add(new LightData { Prop = i, Point = F(p.Go.Transform.InverseTransformPoint(l.Transform.Position)), Range = l.Range, Color = [l.Color.R, l.Color.G, l.Color.B, 1f] });
         }
@@ -142,7 +158,7 @@ public static class MapSave
     private static int _lastSpawned;
 
     /// <summary>Number of work items <see cref="LoadSteps"/> yields (for progress bars).</summary>
-    public static int StepCount(SaveData d) => d.Props.Count + d.Welds.Count + d.BallSockets.Count + d.Ropes.Count + d.Thrusters.Count
+    public static int StepCount(SaveData d) => d.Props.Count + d.Welds.Count + d.BallSockets.Count + d.Ropes.Count + d.Links.Count + d.Gadgets.Count + d.Thrusters.Count
         + d.Wheels.Count + d.Lights.Count + d.Ragdolls.Count + d.Buggies.Count;
 
     /// <summary>Rebuilds the world one item at a time (the loading screen runs these in time-budgeted batches).</summary>
@@ -186,6 +202,29 @@ public static class MapSave
         foreach (RopeData r in data.Ropes)
         {
             if (At(r.A) is { } a && At(r.B) is { } b) g.ToolGun.Rope(a, V(r.LocalA), b, V(r.LocalB), r.Length, recordUndo: false);
+            yield return ++step;
+        }
+        foreach (LinkData l in data.Links)
+        {
+            if (At(l.A) is { } a && At(l.B) is { } b)
+                switch (l.Type)
+                {
+                    case "nocollide": g.ToolGun.NoCollide(a, b, recordUndo: false); break;
+                    case "elastic": g.ToolGun.Elastic(a, V(l.LocalA), b, V(l.LocalB), l.Value, l.Value2, recordUndo: false); break;
+                    case "slider": g.ToolGun.Slider(a, b, V(l.Axis), recordUndo: false); break;
+                    case "hinge": g.ToolGun.Hinge(a, V(l.LocalA), V(l.Axis), b, recordUndo: false); break;
+                }
+            yield return ++step;
+        }
+        foreach (GadgetData gd in data.Gadgets)
+        {
+            if (At(gd.Prop) is { } p)
+            {
+                Float3 pt = p.Go.Transform.TransformPoint(V(gd.Point)), n = p.Go.Transform.TransformDirection(V(gd.Normal));
+                KeyCode k1 = Enum.TryParse(gd.Key, out KeyCode a1) ? a1 : KeyCode.T, k2 = Enum.TryParse(gd.Key2, out KeyCode a2) ? a2 : KeyCode.G;
+                if (gd.Type == "hoverball") Hoverball.Attach(g.Props, p, pt, n, gd.Value, k1, k2).Target = gd.Target;
+                else if (gd.Type == "emitter") Emitter.Attach(g.Props, p, pt, n, gd.Value, k1);
+            }
             yield return ++step;
         }
         foreach (ThrusterData t in data.Thrusters)

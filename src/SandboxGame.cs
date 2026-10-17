@@ -82,6 +82,8 @@ public sealed partial class SandboxGame : Game
         _hum = Sounds.Loop("sfx_physgun_hum", Player.CameraObject, 0f);
 
         Fx = new Fx(this);
+        Emitter.Fx = Fx;
+        ToolGun.Game = this;
         Weapons.Add(new HandsWeapon());
         Weapons.Add(new CrowbarWeapon());
         Weapons.Add(new PhysGunWeapon());
@@ -182,6 +184,7 @@ public sealed partial class SandboxGame : Game
                     Player.SetLook(0f, 12f);
                 }
                 break;
+            case "tools2": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Hoverball); break;
             case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
             case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
