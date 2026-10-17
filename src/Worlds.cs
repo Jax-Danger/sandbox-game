@@ -17,6 +17,7 @@ public sealed class WorldModifiers
     public bool Npcs { get; set; } = true;
     /// <summary>Roleplay: sandbox props cost money (false = free, true = $ per prop).</summary>
     public bool PaidSpawning { get; set; } = true;
+    public string Weather { get; set; } = "Clear";
 }
 
 /// <summary>session.json: metadata shown in the Worlds list.</summary>

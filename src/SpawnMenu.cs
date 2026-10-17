@@ -451,6 +451,11 @@ public sealed class SpawnMenu(IconRenderer icons)
         Ui.Text(paper, "sm_util_ts", cx, cy, w, Theme.S(22), "Time scale", Theme.Body, Theme.Text);
         Ui.Slider(paper, "sm_util_tss", cx + lw, cy - Theme.S(1), sw, game.Settings.TimeScale, 0.1f, 2f, v => game.Settings.TimeScale = MathF.Round(v * 20f) / 20f);
         Ui.Text(paper, "sm_util_tsv", cx + lw + sw + Theme.S(8), cy, Theme.S(60), Theme.S(22), $"{game.Settings.TimeScale:0.00}×", Theme.Body, Theme.Accent, Theme.SemiBold);
+        cy += Theme.S(36);
+        Ui.Text(paper, "sm_util_wx", cx, cy, w, Theme.S(18), "Weather", Theme.Caption, Theme.TextMuted, Theme.SemiBold);
+        cy += Theme.S(22);
+        Ui.Segmented(paper, "sm_util_wxseg", cx, cy, colW, WeatherSystem.Names, (int)game.Weather.Kind,
+            v => game.Enqueue(() => game.Weather.Set((WeatherKind)v, game)));
 
         // Player column.
         cy = ly;

@@ -73,6 +73,12 @@ public sealed class GameConsole
         Add("screenshot", "screenshot", "Save a screenshot (F12)", (g, a) => { g.RequestScreenshot(); return "Screenshot queued"; });
         Add("achievements", "achievements", "List achievements", (g, a) =>
             $"{g.Achievements.Unlocked.Count}/{Achievements.All.Length} unlocked\n" + string.Join("\n", Achievements.All.Select(x => $"{(g.Achievements.Has(x.Id) ? "✓ " : "· ")}{x.Name}\t{x.Description}{(x.Roleplay ? " (RP)" : "")}")));
+        Add("weather", "weather <preset>", "Clear, Overcast, Fog, Rain, Storm", (g, a) =>
+        {
+            if (a.Length == 0) return $"Weather: {g.Weather.Kind}. Presets: {string.Join(", ", WeatherSystem.Names)}";
+            if (!Enum.TryParse(a[0], true, out WeatherKind k) || !Enum.IsDefined(k)) throw new ArgumentException($"Unknown weather '{a[0]}'");
+            g.Weather.Set(k, g); return $"Weather → {k}";
+        });
         Add("echo", "echo <text>", "Print text", (g, a) => string.Join(' ', a));
     }
 

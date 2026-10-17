@@ -519,6 +519,19 @@ public sealed class SelfTest
                 ConsoleTest(g);
                 AchievementsTest(g);
                 {
+                    float fogEnd0 = g.World.Fog.End, sun0 = g.Sun.Intensity;
+                    bool ok = g.DevConsole.Execute(g, "weather storm") && g.Weather.Kind == WeatherKind.Storm;
+                    for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);
+                    bool stormy = g.World.Fog.End < 100f && g.Weather.Bolts >= 1 && g.Weather.RainAmount > 0.9f && float.IsFinite(g.Sun.Intensity);
+                    g.Weather.Set(WeatherKind.Clear, g);
+                    for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);
+                    bool cleared = MathF.Abs(g.World.Fog.End - 220f) < 1f && g.Weather.RainAmount < 0.01f;
+                    bool bad = !g.DevConsole.Execute(g, "weather tornado") && !g.DevConsole.Execute(g, "weather 99");
+                    var meta = new SessionMeta(); meta.Modifiers.Weather = "Fog";
+                    bool parse = WeatherSystem.Parse(meta.Modifiers.Weather) == WeatherKind.Fog && WeatherSystem.Parse("garbage") == WeatherKind.Clear && WeatherSystem.Parse(null) == WeatherKind.Clear;
+                    Check(ok && stormy && cleared && bad && parse, $"weather: storm darkens/fogs/rains/lightning, clear restores, bad input rejected (fogEnd {fogEnd0:0}->{g.World.Fog.End:0})");
+                }
+                {
                     var rp = g.Roleplay;
                     rp.Reset(new SessionMeta { Mode = "Roleplay", Modifiers = { StartingMoney = 500 } });
                     g.Health.Set(100f, 0f);

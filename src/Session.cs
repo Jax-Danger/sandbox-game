@@ -188,6 +188,7 @@ public sealed partial class SandboxGame
     {
         World.Physics.Gravity = new Float3(0f, -meta.Modifiers.Gravity, 0f);
         Player.Gravity = 20f * meta.Modifiers.Gravity / 9.81f;
+        Weather.Set(WeatherSystem.Parse(meta.Modifiers.Weather), this, instant: true);
         Health.FallDamage = meta.Modifiers.FallDamage;
         DayNight.Enabled = meta.Modifiers.DayNight;
         Roleplay.Reset(meta);
@@ -281,6 +282,7 @@ public sealed partial class SandboxGame
         MapBuilder.Load(World, Shader, "flatgrass", null);
         World.Physics.Gravity = new Float3(0f, -9.81f, 0f);
         Player.Gravity = 20f;
+        Weather.Set(WeatherKind.Clear, this, instant: true);
         Roleplay.Reset(null);
         DayNight.Enabled = false;
         SpawnMenuBackdrop();

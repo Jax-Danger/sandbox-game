@@ -25,6 +25,7 @@ public sealed partial class SandboxGame : Game
     public Menus Menus { get; } = new();
     public HealthSystem Health { get; } = new();
     public DayNightCycle DayNight { get; } = new();
+    public WeatherSystem Weather { get; } = new();
     public RoleplaySystem Roleplay { get; private set; } = null!;
     public bool Flashlight { get; private set; }
     /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
@@ -61,7 +62,7 @@ public sealed partial class SandboxGame : Game
     {
         Settings = Application.IsHeadless ? new Settings() : Settings.Load();
         Achievements.Load();
-        Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_click", 0.7f); };
+        Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_ui_click", 0.7f); };
         World = new Scene();
         Shader = Shader.LoadDefault(DefaultShader.Standard);
         Sun = MapBuilder.Build(World, Shader);
@@ -313,6 +314,7 @@ public sealed partial class SandboxGame : Game
         Health.Tick(this, Time.DeltaTime);
         Achievements.Tick(this, dt);
         if (DayNight.Enabled) DayNight.Tick(this, Time.DeltaTime);
+        Weather.Tick(this, dt);
         if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 
         if (SelfTest is not null)
@@ -388,6 +390,7 @@ public sealed partial class SandboxGame : Game
 
     private void ShotTick()
     {
+        if (ShotState is "rain" or "storm" or "fog" && Weather.Kind == WeatherKind.Clear) Weather.Set(WeatherSystem.Parse(ShotState), this, instant: true);
         if (ShotState == "console" && !DevConsole.Open && Time.UnscaledTotalTime > 4f)
         {
             DevConsole.Toggle(true);
@@ -834,7 +837,7 @@ public sealed partial class SandboxGame
             string path = NextScreenshotPath(DateTime.Now);
             System.Threading.Tasks.Task.Run(() =>
             {
-                try { WritePng(path, px, w, h); LastScreenshot = path; Enqueue(() => { Notify($"Saved screenshot {Path.GetFileName(path)}", ToastKind.Success); Sounds.Play("sfx_click", 0.5f); }); }
+                try { WritePng(path, px, w, h); LastScreenshot = path; Enqueue(() => { Notify($"Saved screenshot {Path.GetFileName(path)}", ToastKind.Success); Sounds.Play("sfx_ui_click", 0.5f); }); }
                 catch (Exception e) { Enqueue(() => Notify($"Screenshot failed: {e.Message}", ToastKind.Danger)); }
             });
         }
