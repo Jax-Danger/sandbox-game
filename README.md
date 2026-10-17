@@ -133,6 +133,8 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 - **NPC health and combat**: NPCs take bullet (headshots ×2), crowbar and explosion damage; kill feed (top right) and optional damage numbers (Settings → Game).
 - **RP lottery**: the Mayor starts a 90 s lottery from the shop; anyone buys $50 tickets, townsfolk join in, the Mayor keeps 10%.
 - **Car Dealer** job and buyable **Buggy** / **Jeep** in the shop (dealers pay 60%).
+- **Getting started**: a five-step tutorial chip for new players in Sandbox worlds (spawn, grab, freeze, weld, drive). Steps complete from what you do; `tutorial reset|skip` in the console. ![](docs/tutorial.png)
+- **Save fix**: a rope and an elastic band on the same two props no longer turn into an extra rope on every save/load (found by the soak, seed 7).
 - **Kill plane**: anything that falls through the world is removed (whole ragdoll), fixing the soak's "Limb fell out of the world".
 
 ## New in v0.5.0

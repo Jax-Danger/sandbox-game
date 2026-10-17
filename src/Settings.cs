@@ -14,6 +14,8 @@ public sealed class Settings
     public float ViewModelFov { get; set; } = 68f;
     /// <summary>Players allowed to touch your props under prop protection.</summary>
     public List<string> Buddies { get; set; } = [];
+    /// <summary>Getting-started tutorial progress (steps completed).</summary>
+    public int TutorialStep { get; set; }
     /// <summary>Prop protection: off, rp (Roleplay only) or always.</summary>
     public string PropProtection { get; set; } = "rp";
     /// <summary>World time scale (Utilities slider); 1 = real time.</summary>

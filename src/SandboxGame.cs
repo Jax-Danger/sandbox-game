@@ -30,6 +30,7 @@ public sealed partial class SandboxGame : Game
     public DayNightCycle DayNight { get; } = new();
     public WeatherSystem Weather { get; } = new();
     public Hints Hints { get; } = new();
+    public Tutorial Tutorial { get; } = new();
     public Combat Combat => _combat ??= new Combat(this);
     private Combat? _combat;
     public RoleplaySystem Roleplay { get; private set; } = null!;
@@ -240,6 +241,7 @@ public sealed partial class SandboxGame : Game
             case "worlds": SeedDemoWorlds(); Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); break;
             case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
             case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
+            case "tutorial": Settings.TutorialStep = 1; EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode != "Roleplay")); break;
             case "rp" or "jobs" or "shop" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
             case "hills" or "lake": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
@@ -326,6 +328,7 @@ public sealed partial class SandboxGame : Game
         Weather.Tick(this, dt);
         Combat.Tick(Time.DeltaTime);
         if (Menus.Screen == Screen.Playing && (ShotState is null or "hints")) Hints.Tick(this, dt);
+        if (ShotState is null or "tutorial") Tutorial.Tick(this, dt);
         if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 
         if (SelfTest is not null)
@@ -652,7 +655,7 @@ public sealed partial class SandboxGame : Game
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         if (PhotoMode && Menus.Screen == Screen.Playing) { _hud.Draw(paper, w, h, this, dt, chrome: false); return; }
         _hud.Draw(paper, w, h, this, dt, chrome);
-        if (chrome) { Hints.Draw(paper, w, h); Combat.Draw(paper, w, h); }
+        if (chrome) { Hints.Draw(paper, w, h); Combat.Draw(paper, w, h); Tutorial.Draw(this, paper, w, h); }
         if (chrome || Health.Dead) Health.DrawOverlay(paper, w, h);
         if (chrome) CameraFeeds.Draw(paper, w, h);
         _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);

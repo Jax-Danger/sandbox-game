@@ -664,6 +664,29 @@ public sealed class SelfTest
                     rp.Reset(null);
                 }
                 {
+                    // Regression (soak seed 7): rope + elastic on the same pair must round-trip as 1 rope + 1 link.
+                    g.ClearMap(notify: false);
+                    Prop ra = g.Props.Spawn(PropKind.Cube, new Float3(10f, 1f, 10f), 0f, recordUndo: false), rb = g.Props.Spawn(PropKind.Cube, new Float3(12f, 1f, 10f), 0f, recordUndo: false);
+                    g.ToolGun.Rope(ra, Float3.Zero, rb, Float3.Zero, 3f, recordUndo: false);
+                    g.ToolGun.Elastic(ra, Float3.Zero, rb, Float3.Zero, 20f, recordUndo: false);
+                    var d1 = MapSave.Capture(g);
+                    Check(d1.Ropes.Count == 1 && d1.Links.Count(l => l.Type == "elastic") == 1, $"rope + elastic on one pair save as 1 rope + 1 elastic ({d1.Ropes.Count}, {d1.Links.Count})");
+                    g.ClearMap(notify: false);
+                }
+                {
+                    // Tutorial: steps complete from real actions, in order, and stop at the end.
+                    g.ClearMap(notify: false);
+                    var tut = g.Tutorial; tut.Reset(g);
+                    tut.Tick(g, 0.1f); int s0 = tut.Index(g);
+                    Prop tp = g.Props.Spawn(PropKind.Cube, new Float3(20f, 1f, 20f), 0f, recordUndo: false);
+                    tut.Tick(g, 0.1f); int s1 = tut.Index(g);
+                    tut.Tick(g, 0.1f); bool waits = tut.Index(g) == 1; // grabbing hasn't happened
+                    g.Settings.TutorialStep = 2; tp.SetFrozen(true); tut.Tick(g, 0.1f); int s3 = tut.Index(g);
+                    tut.Skip(g); tut.Tick(g, 0.1f);
+                    Check((s0 == 0 || g.Achievements.Has("first_spawn")) && s1 >= 1 && waits && s3 == 3 && tut.Finished(g), $"tutorial steps advance from actions ({s0},{s1},{s3})");
+                    g.ClearMap(notify: false);
+                }
+                {
                     // Kill plane: a ragdoll limb that tunnels out of the world takes its whole ragdoll with it.
                     g.ClearMap(notify: false);
                     var rd = Ragdoll.Spawn(g, new Float3(-40f, 1.2f, -40f), 0f, recordUndo: false);

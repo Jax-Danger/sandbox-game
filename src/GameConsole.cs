@@ -110,6 +110,11 @@ public sealed class GameConsole
             p.Owner = string.Join(' ', a)[..Math.Min(32, string.Join(' ', a).Length)];
             return $"{p.Go.Name} now belongs to {p.Owner}";
         });
+        Add("tutorial", "tutorial reset|skip", "Restart or skip the getting-started steps", (g, a) =>
+        {
+            if (a.Length > 0 && a[0] == "skip") { g.Tutorial.Skip(g); g.Settings.Save(); return "Tutorial skipped"; }
+            g.Tutorial.Reset(g); g.Settings.ShowHints = true; g.Settings.Save(); return "Tutorial restarted";
+        });
         Add("hints", "hints reset", "Replay the first-time hints", (g, a) => { g.Hints.Reset(g); g.Settings.ShowHints = true; return "Hints will show again"; });
         Add("echo", "echo <text>", "Print text", (g, a) => string.Join(' ', a));
     }

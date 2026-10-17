@@ -91,10 +91,16 @@ public static class MapSave
             if (!welded)
                 foreach (BallSocketConstraint bs in p.Go.GetComponents<BallSocketConstraint>())
                     if (Idx(bs.ConnectedBody) is >= 0 and var j) data.BallSockets.Add([i, j]);
+            // Elastic bands draw with a RopeVisual too; they are saved as links, never as ropes (soak seed 7 found
+            // a rope + elastic on the same pair turning into an extra rope on every save/load).
+            var elasticVisuals = p.Go.GetComponents<ElasticBand>().Select(e => e.Visual).ToHashSet();
+            var usedLimits = new HashSet<DistanceLimitConstraint>();
             foreach (RopeVisual rv in p.Go.GetComponents<RopeVisual>())
             {
+                if (elasticVisuals.Contains(rv)) continue;
                 int j = rv.Other is null ? -1 : list.IndexOf(rv.Other);
-                DistanceLimitConstraint? dl = p.Go.GetComponents<DistanceLimitConstraint>().FirstOrDefault(d => ReferenceEquals(d.ConnectedBody, rv.Other?.Body));
+                DistanceLimitConstraint? dl = p.Go.GetComponents<DistanceLimitConstraint>().FirstOrDefault(d => ReferenceEquals(d.ConnectedBody, rv.Other?.Body) && !usedLimits.Contains(d));
+                if (dl is not null) usedLimits.Add(dl);
                 if (j >= 0 && dl is not null) data.Ropes.Add(new RopeData { A = i, B = j, LocalA = F(rv.LocalA), LocalB = F(rv.LocalB), Length = dl.MaxDistance });
             }
             foreach (Thruster t in p.Go.GetComponents<Thruster>())

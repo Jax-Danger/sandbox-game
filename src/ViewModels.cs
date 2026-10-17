@@ -161,8 +161,8 @@ public static class ViewModels
                 leftParent = "weapon"; leftPos = V(-0.02f, -0.025f, 0.22f);
                 left = SupportGrip with { O = V(0.15f, 1f, 0f) };
                 // Rear housing, ribbed body, glowing spine, emitter ring, three claw prongs around a glowing core.
-                W('b', V(0.085f, 0.095f, 0.11f), V(0f, 0.05f, 0.0f), Gun);
-                W('b', V(0.09f, 0.03f, 0.08f), V(0f, 0.105f, -0.01f), Frame, Finish.Polymer);
+                W('b', V(0.07f, 0.08f, 0.09f), V(0f, 0.05f, 0.03f), Gun);
+                W('b', V(0.072f, 0.022f, 0.07f), V(0f, 0.096f, 0.03f), Frame, Finish.Polymer);
                 Tube(0.040f, 0.26f, V(0f, 0.05f, 0.04f), Frame, Finish.Polymer, r1: 0.034f);
                 for (int i = 0; i < 4; i++) Tube(0.043f, 0.012f, V(0f, 0.05f, 0.08f + i * 0.04f), Gun);
                 W('b', V(0.016f, 0.012f, 0.20f), V(0f, 0.093f, 0.15f), Accent, Finish.Polymer, glow: true);
