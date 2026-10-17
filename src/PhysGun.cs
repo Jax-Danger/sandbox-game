@@ -55,6 +55,7 @@ public sealed class PhysGun(PropManager props)
         if (!player.Trace(MaxReach, out RaycastHit hit)) return null;
         Prop? prop = props.FromBody(hit.Rigidbody);
         if (prop is null) return null;
+        if (!props.Protection.CanTouch(prop, out string? deny)) return deny;
 
         string? msg = null;
         if (prop.Frozen)

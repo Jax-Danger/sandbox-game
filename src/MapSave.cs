@@ -23,6 +23,7 @@ public static class MapSave
         public float Mass { get; set; }
         public string? Entity { get; set; }
         public string? Key { get; set; }
+        public string? Owner { get; set; }
         public float[] Velocity { get; set; } = [];
         public float[] AngularVelocity { get; set; } = [];
     }
@@ -77,7 +78,7 @@ public static class MapSave
                 Kind = p.Kind.ToString(), Position = F(p.Go.Transform.Position), Rotation = [rot.X, rot.Y, rot.Z, rot.W],
                 Color = [c.R, c.G, c.B, c.A], Frozen = p.Frozen, Balloons = balloons.Length,
                 BalloonForce = balloons.Length > 0 ? balloons[0].Lift : 1.45f, Surface = p.Surface, Mass = p.Body.Mass,
-                Entity = p.Entity, Key = p.Go.GetComponent<SandboxButton>()?.Key.ToString() ?? p.EntityData,
+                Entity = p.Entity, Owner = p.Owner == PropProtection.LocalPlayer ? null : p.Owner, Key = p.Go.GetComponent<SandboxButton>()?.Key.ToString() ?? p.EntityData,
                 Velocity = p.Frozen ? [] : F(p.Body.LinearVelocity), AngularVelocity = p.Frozen ? [] : F(p.Body.AngularVelocity),
             });
         }
@@ -180,6 +181,7 @@ public static class MapSave
             if (d.Color.Length == 4) p.SetColor(new Color(d.Color[0], d.Color[1], d.Color[2], d.Color[3]));
             if (d.Surface is not null) p.SetSurface(SurfaceMaterial.Get(d.Surface));
             if (d.Mass > 0f) p.SetMass(d.Mass);
+            if (d.Owner is { Length: > 0 and <= 32 } own) p.Owner = own;
             if (d.Entity == "ent_ball") { p.Body.Restitution = 0.95f; p.Body.Friction = 0.3f; }
             p.SetFrozen(d.Frozen); // entities like buttons freeze themselves on spawn; the save wins
             if (!d.Frozen && d.Velocity.Length == 3) velocities.Add((p, V(d.Velocity), V(d.AngularVelocity)));

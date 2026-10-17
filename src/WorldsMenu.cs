@@ -409,6 +409,7 @@ public sealed partial class Menus
     // ---------------------------------------------------------------- Roleplay F4 menu
 
     public void OpenBank() { _jobsTab = 3; Go(Screen.Jobs); }
+    public void OpenShop() { _jobsTab = 1; Go(Screen.Jobs); }
 
     private string? _jobPick;
 
@@ -548,8 +549,8 @@ public sealed partial class Menus
                     Ui.Text(paper, $"sh_n_{i}", bx + Theme.S(46), by + Theme.S(12), cardW, Theme.S(24), b.Name, Theme.Label, locked ? Theme.TextFaint : Theme.Text, Theme.SemiBold);
                     Ui.Paragraph(paper, $"sh_d_{i}", bx + Theme.S(14), by + Theme.S(42), cardW - Theme.S(28), Theme.S(30), locked ? $"{RoleplaySystem.Jobs.First(j => j.Id == b.RequiresJob).Name} only. {b.Description}" : b.Description, Theme.Caption, Theme.TextMuted);
                     Buyable cb = b;
-                    Ui.Button(paper, $"sh_buy_{i}", bx + cardW - Theme.S(104), by + cardH - Theme.S(36), Theme.S(92), Theme.S(28), $"${b.Price:N0}",
-                        () => g.Enqueue(() => { string r = rp.Buy(cb); if (r.Length > 0) g.Notify(r); }), enabled: !locked, selected: !locked && rp.Money >= b.Price, size: Theme.Body, radius: Theme.S(14));
+                    Ui.Button(paper, $"sh_buy_{i}", bx + cardW - Theme.S(104), by + cardH - Theme.S(36), Theme.S(92), Theme.S(28), $"${rp.PriceOf(b):N0}",
+                        () => g.Enqueue(() => { string r = rp.Buy(cb); if (r.Length > 0) g.Notify(r); }), enabled: !locked, selected: !locked && rp.Money >= rp.PriceOf(b), size: Theme.Body, radius: Theme.S(14));
                 }
                 break;
             }

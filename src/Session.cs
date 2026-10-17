@@ -165,6 +165,7 @@ public sealed partial class SandboxGame
             Menus.Go(Screen.Playing);
             Notify($"Welcome to {Session.Meta.Name}");
             if (ShotState == "jobs") Menus.Go(Screen.Jobs);
+            if (ShotState == "shop") { Roleplay.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "cardealer")); Roleplay.StartLottery(); Menus.OpenShop(); }
             switch (ShotState)
             {
                 case "town": Player.Teleport(new Float3(-3f, 0.2f, 2.5f)); Player.SetLook(8f, 2f); break;

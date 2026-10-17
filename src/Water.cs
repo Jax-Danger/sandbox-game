@@ -85,6 +85,9 @@ public sealed class WaterSimulator : MonoBehaviour
 public static class PhysicsGuard
 {
     public const float MaxSpeed = 120f, MaxSpin = 60f;
+    /// <summary>Kill plane: anything that tunnels through the ground and falls this far is removed (whole ragdoll).</summary>
+    public const float KillY = -200f;
+    public static int FellOut { get; private set; }
     public static int Clamped { get; private set; }
 
     public static bool Fix(Rigidbody3D b)
@@ -139,13 +142,21 @@ public static class PhysicsGuard
         foreach (Prop p in g.Props.Props)
         {
             if (!p.Alive) continue;
-            if (Corrupt(p.Body)) (bad ??= []).Add(p);
+            if (Corrupt(p.Body) || p.Go.Transform.Position.Y < KillY) (bad ??= []).Add(p);
             else Fix(p.Body);
         }
         if (bad is not null)
         {
-            foreach (Prop p in bad) { try { g.Props.Remove(p); } catch { g.World.Remove(p.Go); } Removed++; }
-            g.Notify($"Removed {bad.Count} unstable prop{(bad.Count == 1 ? "" : "s")}", ToastKind.Danger);
+            int fell = bad.Count(p => p.Go.Transform.Position.Y < KillY);
+            FellOut += fell;
+            foreach (Prop p in bad)
+            {
+                if (!p.Alive) continue;
+                if (Ragdoll.All.FirstOrDefault(r => r.Limbs.Contains(p)) is { } rd) { rd.Remove(g.Props); Removed++; continue; }
+                try { g.Props.Remove(p); } catch { g.World.Remove(p.Go); }
+                Removed++;
+            }
+            if (bad.Count > fell) g.Notify($"Removed {bad.Count - fell} unstable prop{(bad.Count - fell == 1 ? "" : "s")}", ToastKind.Danger);
         }
         foreach (Buggy b in g.Vehicles.All.ToList())
         {

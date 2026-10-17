@@ -195,7 +195,7 @@ public sealed class Player
     public int NaNRecoveries { get; private set; }
     public int MoveFaults { get; private set; }
 
-    private static Float3 Flat(Float3 v)
+    public static Float3 Flat(Float3 v)
     {
         var flat = new Float3(v.X, 0f, v.Z);
         float l = Float3.Length(flat);

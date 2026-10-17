@@ -79,6 +79,7 @@ public sealed partial class ToolGun
             case ToolMode.Duplicator:
                 if (player.Trace(120f, out RaycastHit hit) && props.FromBody(hit.Rigidbody) is { Kind: not PropKind.Limb } p)
                 {
+                    if (!props.Protection.CanTouch(p, out string? deny)) return deny;
                     Dupe = Dupes.Copy(Game!, p);
                     DupeName = Dupe.Props.Count > 1 ? $"{p.Go.Name} contraption" : p.Go.Name;
                     return Dupe.Props.Count > 1 ? $"Copied {Dupe.Props.Count} props" : $"Copied {p.Go.Name}";
@@ -87,6 +88,7 @@ public sealed partial class ToolGun
             case ToolMode.Colour:
                 if (player.Trace(120f, out RaycastHit h2) && props.FromBody(h2.Rigidbody) is { } cp)
                 {
+                    if (!props.Protection.CanTouch(cp, out string? deny2)) return deny2;
                     PaintHue = HueOf(cp.BaseColor);
                     return $"Picked colour from {cp.Go.Name}";
                 }

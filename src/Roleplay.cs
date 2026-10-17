@@ -23,6 +23,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         new("medic", "Medic", System.Drawing.Color.FromArgb(255, 240, 120, 170), 60, 2, "Heal people. Carries a medkit and can buy armour cheaper.", ["weapon_medkit"], "Medkit, cheap armour"),
         new("gundealer", "Gun Dealer", System.Drawing.Color.FromArgb(255, 250, 160, 60), 50, 2, "Order weapon shipments and sell them on.", [], "Buys shipments"),
         new("gangster", "Gangster", System.Drawing.Color.FromArgb(255, 120, 120, 120), 40, 4, "Run with the gang. Starts with a pistol; printers pay you more.", ["weapon_pistol"], "Pistol, +25% printer cash"),
+        new("cardealer", "Car Dealer", System.Drawing.Color.FromArgb(255, 70, 190, 200), 55, 2, "Sell cars. Buys buggies and jeeps at trade price and earns commission when citizens buy.", [], "Cars 40% off"),
         new("hobo", "Hobo", System.Drawing.Color.FromArgb(255, 140, 100, 60), 10, 5, "Live on the street. Small salary, but you never pay for props.", [], "Free props"),
     ];
 
@@ -34,12 +35,68 @@ public sealed class RoleplaySystem(SandboxGame g)
         new("rp_ammo", "Ammo box", Icon.Crate, 60, "Refills reserve ammo for every gun."),
         new("rp_burger", "Burger", Icon.Heart, 30, "+45 hunger. Hunger drains over ~8 minutes."),
         new("rp_soda", "Soda", Icon.Heart, 10, "+15 hunger."),
+        new("car_buggy", "Buggy", Icon.Car, 900, "A light dune buggy, delivered in front of you."),
+        new("car_jeep", "Jeep", Icon.Car, 1600, "Four-wheel drive. Sturdier and faster off-road."),
+        new("rp_ticket", "Lottery ticket", Icon.Money, LotteryTicket, "One ticket in the mayor's lottery (only while one runs)."),
+        new("rp_lottery", "Start a lottery", Icon.Gavel, 200, "Seeds the pot with $200. Runs 90 s; you keep 10% of the pot.", "mayor"),
         new("ship_pistol", "Pistol shipment", Icon.Pistol, 600, "Crate with a pistol (press E to equip).", "gundealer"),
         new("ship_smg", "SMG shipment", Icon.Smg, 1500, "Crate with an SMG.", "gundealer"),
         new("ship_shotgun", "Shotgun shipment", Icon.Shotgun, 1800, "Crate with a shotgun.", "gundealer"),
     ];
 
     public const float PayInterval = 60f;
+
+    // ---------------------------------------------------------------- lottery (mayor)
+    public const int LotteryTicket = 50;
+    public const float LotteryLength = 90f;
+    /// <summary>Seconds left in the running lottery (0 = none).</summary>
+    public float LotteryTimer { get; private set; }
+    public int LotteryPot { get; private set; }
+    public int MyTickets { get; private set; }
+    public int TownTickets { get; private set; }
+    public bool LotteryRunning => LotteryTimer > 0f;
+    private float _townBuy;
+    /// <summary>Picks the winning ticket (index into all tickets); swap in a fixed sequence for tests.</summary>
+    public Func<int, int> LotteryDraw { get; set; } = n => Random.Shared.Next(n);
+    public string? LastLottery { get; private set; }
+
+    public string StartLottery()
+    {
+        if (!Active) return "Only in Roleplay";
+        if (Job.Id != "mayor") return "Only the Mayor can start a lottery";
+        if (LotteryRunning) return "A lottery is already running";
+        LotteryTimer = LotteryLength; LotteryPot = 200; MyTickets = 0; TownTickets = 0; _townBuy = 4f;
+        return $"Lottery started: tickets ${LotteryTicket}, draw in {LotteryLength:0} s";
+    }
+
+    private void TickLottery(float dt)
+    {
+        if (!LotteryRunning) return;
+        // Townsfolk buy tickets now and then (stand-ins for other players).
+        _townBuy -= dt;
+        if (_townBuy <= 0f) { _townBuy = 6f + Random.Shared.NextSingle() * 8f; TownTickets++; LotteryPot += LotteryTicket; }
+        LotteryTimer -= dt;
+        if (LotteryTimer <= 0f) DrawLottery();
+    }
+
+    public string DrawLottery()
+    {
+        LotteryTimer = 0f;
+        int total = MyTickets + TownTickets;
+        int cut = LotteryPot / 10, prize = LotteryPot - cut;
+        bool mayor = Job.Id == "mayor";
+        string msg;
+        if (total == 0) { msg = "Lottery: nobody bought a ticket"; if (mayor) Earn(LotteryPot, "lottery refund"); }
+        else if (LotteryDraw(total) < MyTickets) { Earn(prize + (mayor ? cut : 0), "lottery win"); msg = $"You won the lottery: ${prize:N0}!"; }
+        else { if (mayor) Earn(cut, "lottery cut"); msg = $"Lottery: a townsperson won ${prize:N0}"; }
+        LastLottery = msg;
+        g.Notify(msg, ToastKind.Success);
+        MyTickets = 0; TownTickets = 0; LotteryPot = 0;
+        return msg;
+    }
+
+    /// <summary>Car Dealer pays trade price.</summary>
+    public int PriceOf(Buyable b) => b.Id == "rp_armor" && Job.Id == "medic" ? b.Price / 2 : b.Id.StartsWith("car_") && Job.Id == "cardealer" ? b.Price * 6 / 10 : b.Price;
     /// <summary>Hunger 0-100 (100 = full). Drains fully in <see cref="HungerSeconds"/>; at 0 you starve (2 hp / 4 s).</summary>
     public float Hunger { get; private set; } = 100f;
     public const float HungerSeconds = 480f, StarveInterval = 4f, StarveDamage = 2f;
@@ -83,6 +140,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         if (Active) Laws.AddRange(["Do not steal.", "No weapons in public.", "Printers are illegal."]);
         WantedTimer = 0f; JailTimer = 0f; PayTimer = PayInterval; Bank = 0; Arrests = 0; AtAtm = false;
         Hunger = 100f; _starve = StarveInterval;
+        LotteryTimer = 0f; LotteryPot = 0; MyTickets = 0; TownTickets = 0; LastLottery = null;
     }
 
     public void Restore(PlayerSave p)
@@ -221,7 +279,9 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return "Only in Roleplay";
         if (b.RequiresJob is { } rj && Job.Id != rj) return $"Only a {Jobs.First(j => j.Id == rj).Name} can buy that";
-        int price = b.Id == "rp_armor" && Job.Id == "medic" ? b.Price / 2 : b.Price;
+        int price = PriceOf(b);
+        if (b.Id == "rp_ticket" && !LotteryRunning) return "No lottery is running";
+        if (b.Id == "rp_lottery") { if (Job.Id != "mayor" || LotteryRunning) return StartLottery(); }
         if (!TrySpend(price, b.Name)) return "";
         Float3 pos = g.Player.Trace(4f, out RaycastHit hit) ? hit.Point + hit.Normal * 0.4f : g.Player.EyePosition + g.Player.Forward * 2f;
         switch (b.Id)
@@ -232,6 +292,14 @@ public sealed class RoleplaySystem(SandboxGame g)
             case "rp_ammo": foreach (Firearm f in g.Weapons.All.OfType<Firearm>()) f.Refill(); break;
             case "rp_burger": Eat(45f); break;
             case "rp_soda": Eat(15f); break;
+            case "rp_ticket": MyTickets++; LotteryPot += price; return $"Lottery ticket bought ({MyTickets} held, pot ${LotteryPot:N0})";
+            case "rp_lottery": return StartLottery();
+            case "car_buggy" or "car_jeep":
+            {
+                Float3 at = g.Player.FeetPosition + Player.Flat(g.Player.Forward) * 4.5f + new Float3(0f, 1.2f, 0f);
+                g.Vehicles.SpawnBuggy(at, g.Player.Yaw + 90f, recordUndo: false, kind: b.Id[4..]);
+                break;
+            }
             default:
                 if (b.Id.StartsWith("ship_")) SpawnShipment(pos, "weapon_" + b.Id[5..]);
                 break;
@@ -368,6 +436,7 @@ public sealed class RoleplaySystem(SandboxGame g)
 
     public void SpawnTownNpcs()
     {
+        using var _ = g.Props.OwnedBy(PropProtection.World);
         if (Town.Active && Town.Waypoints.Count > 0)
         {
             for (int i = 0; i < 10; i++)
@@ -389,6 +458,7 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         TickHunger(dt);
+        TickLottery(dt);
         if (WantedTimer > 0f) WantedTimer -= dt;
         if (JailTimer > 0f)
         {

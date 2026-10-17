@@ -22,6 +22,8 @@ public sealed class Prop
     public string Surface { get; private set; } = "Plastic";
     /// <summary>Entity type id for special props (ent_barrel, ent_ball, ent_light, ent_button); null for plain props.</summary>
     public string? Entity { get; set; }
+    /// <summary>Who owns this prop for prop protection ("you", "world", or a player name).</summary>
+    public string? Owner { get; set; } = PropProtection.LocalPlayer;
     /// <summary>Free-form entity state saved with the map (e.g. money amount, printer cash).</summary>
     public string? EntityData { get; set; }
     private float _highlight;
@@ -92,6 +94,13 @@ public interface IUndoable
 /// <summary>Owns every spawned prop, the welds/balloons attached to them, and the undo stack.</summary>
 public sealed class PropManager(Scene scene, Shader shader)
 {
+    public PropProtection Protection { get; } = new();
+    /// <summary>Owner stamped on newly spawned/adopted props (see <see cref="OwnedBy"/>).</summary>
+    public string SpawnOwner { get; private set; } = PropProtection.LocalPlayer;
+    /// <summary>Spawns inside the scope are owned by <paramref name="owner"/> (town NPCs, map entities).</summary>
+    public IDisposable OwnedBy(string owner) { string old = SpawnOwner; SpawnOwner = owner; return new Scope(() => SpawnOwner = old); }
+    private sealed class Scope(Action done) : IDisposable { public void Dispose() => done(); }
+
     private readonly List<Prop> _props = [];
     private readonly Stack<IUndoable> _undo = new();
     private int _counter;
@@ -262,7 +271,7 @@ public sealed class PropManager(Scene scene, Shader shader)
         var prop0 = new Prop
         {
             Go = go, Body = body, Kind = kind, Material = material, BaseColor = color,
-            HalfHeight = HalfHeightOf(kind),
+            HalfHeight = HalfHeightOf(kind), Owner = SpawnOwner,
         };
         prop0.SetSurface(SurfaceMaterial.Get(DefaultSurface(kind)));
         var prop = prop0;
@@ -316,7 +325,7 @@ public sealed class PropManager(Scene scene, Shader shader)
     /// <summary>Registers an externally built body (e.g. a ragdoll limb) as a prop so tools and the physgun work on it.</summary>
     public Prop Adopt(GameObject go, Rigidbody3D body, Material material, Color color, PropKind kind, float halfHeight)
     {
-        var p = new Prop { Go = go, Body = body, Kind = kind, Material = material, BaseColor = color, HalfHeight = halfHeight };
+        var p = new Prop { Go = go, Body = body, Kind = kind, Material = material, BaseColor = color, HalfHeight = halfHeight, Owner = SpawnOwner };
         _props.Add(p);
         return p;
     }

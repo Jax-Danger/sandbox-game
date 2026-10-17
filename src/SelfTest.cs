@@ -612,6 +612,68 @@ public sealed class SelfTest
                     g.Weapons.Select(g, g.Weapons.Get<PhysGunWeapon>());
                 }
                 {
+                    // Prop protection: owners, world props, buddies, modes; owner survives a save round trip.
+                    g.ClearMap(notify: false);
+                    var pp = g.Props.Protection; string mode0 = pp.Mode;
+                    var rp = g.Roleplay;
+                    rp.Reset(new SessionMeta { Mode = "Roleplay" });
+                    Prop mine = g.Props.Spawn(PropKind.Cube, new Float3(30f, 1f, 30f), 0f, recordUndo: false);
+                    Prop world; using (g.Props.OwnedBy(PropProtection.World)) world = g.Props.Spawn(PropKind.Cube, new Float3(32f, 1f, 30f), 0f, recordUndo: false);
+                    Prop theirs = g.Props.Spawn(PropKind.Cube, new Float3(34f, 1f, 30f), 0f, recordUndo: false); theirs.Owner = "alice";
+                    pp.Mode = "rp";
+                    bool rules = pp.CanTouch(mine, out _) && !pp.CanTouch(world, out string? w1) && w1!.Contains("map") && !pp.CanTouch(theirs, out _);
+                    pp.AddBuddy("alice", PropProtection.LocalPlayer);
+                    bool buddy = pp.CanTouch(theirs, out _) && !pp.CanTouch(mine, "alice", out _); // buddy lists are one-way
+                    pp.RemoveBuddy("alice", PropProtection.LocalPlayer);
+                    bool bob = !pp.CanTouch(mine, "bob", out _) && pp.AddBuddy(PropProtection.LocalPlayer, "bob") && pp.CanTouch(mine, "bob", out _) && !pp.AddBuddy(PropProtection.LocalPlayer, "bob");
+                    pp.RemoveBuddy(PropProtection.LocalPlayer, "bob");
+                    rp.Reset(null);
+                    bool sandboxFree = pp.CanTouch(world, out _);
+                    pp.Mode = "always"; bool always = !pp.CanTouch(world, out _); pp.Mode = "off"; bool off = pp.CanTouch(theirs, out _);
+                    pp.Mode = mode0;
+                    var data = MapSave.Capture(g);
+                    bool saved = data.Props.Any(d => d.Owner == "alice") && data.Props.Any(d => d.Owner == "world") && data.Props.Count(d => d.Owner is null) >= 1;
+                    Check(rules && buddy && bob && sandboxFree && always && off && saved, $"prop protection: owners, world props, buddies, modes, saved owners ({rules} {buddy} {bob} {sandboxFree} {always} {off} {saved})");
+                    g.ClearMap(notify: false);
+                }
+                {
+                    // Lottery (mayor) and car dealer.
+                    var rp = g.Roleplay;
+                    rp.Reset(new SessionMeta { Mode = "Roleplay", Modifiers = { StartingMoney = 5000 } });
+                    string notMayor = rp.StartLottery();
+                    rp.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "mayor"));
+                    var start = RoleplaySystem.Shop.First(b => b.Id == "rp_lottery"); var ticket = RoleplaySystem.Shop.First(b => b.Id == "rp_ticket");
+                    string noLot = rp.Buy(ticket);
+                    rp.Buy(start); rp.Buy(ticket); rp.Buy(ticket);
+                    bool running = rp.LotteryRunning && rp.MyTickets == 2 && rp.LotteryPot == 300 && rp.Money == 5000 - 200 - 100;
+                    rp.Tick(10f); int town = rp.TownTickets;
+                    rp.LotteryDraw = n => 0; // first ticket = ours
+                    int lotBefore = rp.Money, pot = rp.LotteryPot;
+                    for (int k = 0; k < 10 && rp.LotteryRunning; k++) rp.Tick(RoleplaySystem.LotteryLength / 8f);
+                    bool won = !rp.LotteryRunning && rp.Money >= lotBefore + pot && rp.LastLottery!.Contains("won");
+                    rp.LotteryDraw = n => Random.Shared.Next(n);
+                    var buggy = RoleplaySystem.Shop.First(b => b.Id == "car_buggy");
+                    int full = rp.PriceOf(buggy);
+                    rp.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "cardealer"));
+                    int cars0 = g.Vehicles.All.Count, m0 = rp.Money;
+                    rp.Buy(buggy);
+                    bool car = g.Vehicles.All.Count == cars0 + 1 && m0 - rp.Money == full * 6 / 10 && full == buggy.Price;
+                    Check(notMayor.Contains("Mayor") && noLot.Contains("No lottery") && running && town >= 1 && won && car,
+                        $"RP lottery (mayor) and car dealer (running {running}, town {town}, won {won}, car {car})");
+                    foreach (var b in g.Vehicles.All.ToList()) g.Vehicles.Remove(b);
+                    rp.Reset(null);
+                }
+                {
+                    // Kill plane: a ragdoll limb that tunnels out of the world takes its whole ragdoll with it.
+                    g.ClearMap(notify: false);
+                    var rd = Ragdoll.Spawn(g, new Float3(-40f, 1.2f, -40f), 0f, recordUndo: false);
+                    rd.Limbs[3].Body.Transform.Position = new Float3(-40f, PhysicsGuard.KillY - 50f, -40f);
+                    int fell0 = PhysicsGuard.FellOut;
+                    PhysicsGuard.Clamp(g);
+                    Check(PhysicsGuard.FellOut == fell0 + 1 && !Ragdoll.All.Contains(rd) && rd.Limbs.All(l => !l.Alive), "kill plane removes props that fall out of the world (whole ragdoll)");
+                    g.ClearMap(notify: false);
+                }
+                {
                     var rp = g.Roleplay;
                     rp.Reset(new SessionMeta { Mode = "Roleplay", Modifiers = { StartingMoney = 500 } });
                     g.Health.Set(100f, 0f);

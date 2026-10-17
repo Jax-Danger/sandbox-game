@@ -83,6 +83,7 @@ public sealed partial class SandboxGame : Game
         World.Ambient.GroundColor = new Float4(0.30f, 0.28f, 0.26f, 1f);
         World.Ambient.Strength = 0.9f;
         Props = new PropManager(World, Shader);
+        Props.Protection.RoleplayActive = () => Roleplay?.Active == true;
         { var wgo = new GameObject("WaterSimulator"); wgo.AddComponent<WaterSimulator>().Game = this; World.Add(wgo); }
         Roleplay = new RoleplaySystem(this);
         DummyBrain.Game = this;
@@ -157,6 +158,8 @@ public sealed partial class SandboxGame : Game
     public void ApplySettings()
     {
         Binds.Source = Settings;
+        Props.Protection.Mode = Settings.PropProtection;
+        Props.Protection.Load(Settings.Buddies);
         ApplySettingsLive();
         ShadowQuality q = Settings.Graphics == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
         Sun.ShadowQuality = q;
@@ -237,7 +240,7 @@ public sealed partial class SandboxGame : Game
             case "worlds": SeedDemoWorlds(); Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); break;
             case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
             case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
-            case "rp" or "jobs" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
+            case "rp" or "jobs" or "shop" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
             case "hills" or "lake": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
                 Menus.Go(Screen.Playing);

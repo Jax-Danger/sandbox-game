@@ -116,7 +116,7 @@ public sealed class ContextMenu
                 Ui.KeyPicker(paper, "cx_btnkey_k", cx + cw - Theme.S(96), cy, Theme.S(96), Theme.S(24), sbtn.Key, k => sbtn.Rebind(k));
                 cy += Theme.S(34);
             }
-            Ui.Button(paper, "cx_del", cx, cy, cw, Theme.S(36), "Delete prop", () => g.Enqueue(() => { g.Props.Remove(p); Selected = null; g.Notify($"Removed {p.Go.Name}"); }),
+            Ui.Button(paper, "cx_del", cx, cy, cw, Theme.S(36), "Delete prop", () => g.Enqueue(() => { if (!g.Props.Protection.CanTouch(p, out string? deny)) { g.Notify(deny, ToastKind.Danger); return; } g.Props.Remove(p); Selected = null; g.Notify($"Removed {p.Go.Name}"); }),
                 icon: Icon.Trash, radius: Theme.S(18), baseColor: Color.FromArgb(200, 200, 60, 60));
             cy += Theme.S(52);
         }

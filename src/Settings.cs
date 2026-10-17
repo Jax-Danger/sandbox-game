@@ -12,6 +12,10 @@ public sealed class Settings
     public float FieldOfView { get; set; } = 75f;
     /// <summary>Field of view the first-person view model is drawn at, independent of the world FOV.</summary>
     public float ViewModelFov { get; set; } = 68f;
+    /// <summary>Players allowed to touch your props under prop protection.</summary>
+    public List<string> Buddies { get; set; } = [];
+    /// <summary>Prop protection: off, rp (Roleplay only) or always.</summary>
+    public string PropProtection { get; set; } = "rp";
     /// <summary>World time scale (Utilities slider); 1 = real time.</summary>
     public float TimeScale { get; set; } = 1f;
     public float MasterVolume { get; set; } = 0.8f;
@@ -79,6 +83,8 @@ public sealed class Settings
 
     public Settings Clamped()
     {
+        Buddies = (Buddies ?? []).Where(b => b is { Length: > 0 and <= 32 }).Distinct(StringComparer.OrdinalIgnoreCase).Take(64).ToList();
+        PropProtection = PropProtection is "off" or "rp" or "always" ? PropProtection : "rp";
         SeenHints = (SeenHints ?? []).Where(x => x is not null).Distinct().Take(100).ToList();
         MouseSensitivity = Math.Clamp(MouseSensitivity, 0.1f, 4f);
         FieldOfView = Math.Clamp(FieldOfView, 60f, 110f);

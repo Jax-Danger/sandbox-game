@@ -79,6 +79,37 @@ public sealed class GameConsole
             if (!Enum.TryParse(a[0], true, out WeatherKind k) || !Enum.IsDefined(k)) throw new ArgumentException($"Unknown weather '{a[0]}'");
             g.Weather.Set(k, g); return $"Weather → {k}";
         });
+        Add("buddy", "buddy add|remove|list <name>", "Who may touch your props under prop protection", (g, a) =>
+        {
+            var pp = g.Props.Protection; string me = PropProtection.LocalPlayer;
+            string sub = a.Length > 0 ? a[0].ToLowerInvariant() : "list";
+            string name = a.Length > 1 ? string.Join(' ', a[1..]) : "";
+            string r = sub switch
+            {
+                "add" when name.Length > 0 => pp.AddBuddy(me, name) ? $"{name} can now touch your props" : $"Couldn't add {name}",
+                "remove" when name.Length > 0 => pp.RemoveBuddy(me, name) ? $"{name} removed" : $"{name} isn't a buddy",
+                "list" => pp.BuddiesOf(me).Count == 0 ? "No buddies yet (buddy add <name>)" : "Buddies: " + string.Join(", ", pp.BuddiesOf(me)),
+                _ => "Usage: buddy add|remove|list <name>",
+            };
+            g.Settings.Buddies = pp.BuddiesOf(me).ToList(); g.Settings.Save();
+            return r;
+        });
+        Add("pp", "pp off|rp|always", "Prop protection mode (rp = Roleplay only)", (g, a) =>
+        {
+            if (a.Length == 0) return $"Prop protection: {g.Props.Protection.Mode}{(g.Props.Protection.Enforced ? " (active)" : "")}";
+            string m = a[0].ToLowerInvariant();
+            if (m is not ("off" or "rp" or "always")) return "Usage: pp off|rp|always";
+            g.Props.Protection.Mode = g.Settings.PropProtection = m; g.Settings.Save();
+            return $"Prop protection: {m}";
+        });
+        Add("pp_owner", "pp_owner [name]", "Show or set the owner of the prop you're looking at", (g, a) =>
+        {
+            if (!g.Player.Trace(80f, out var hit) || g.Props.FromBody(hit.Rigidbody) is not { } p) return "Look at a prop";
+            if (a.Length == 0) return $"{p.Go.Name} is owned by {p.Owner ?? "nobody"}";
+            if (!g.Props.Protection.CanTouch(p, out string? deny)) return deny ?? "Not yours";
+            p.Owner = string.Join(' ', a)[..Math.Min(32, string.Join(' ', a).Length)];
+            return $"{p.Go.Name} now belongs to {p.Owner}";
+        });
         Add("hints", "hints reset", "Replay the first-time hints", (g, a) => { g.Hints.Reset(g); g.Settings.ShowHints = true; return "Hints will show again"; });
         Add("echo", "echo <text>", "Print text", (g, a) => string.Join(' ', a));
     }

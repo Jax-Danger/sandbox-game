@@ -96,6 +96,7 @@ public sealed partial class ToolGun(PropManager props)
         if (Mode == ToolMode.Duplicator) return Paste(hit);
         Prop? prop = props.FromBody(hit.Rigidbody);
         if (prop is null) return "That's the map, not a prop";
+        if (!props.Protection.CanTouch(prop, out string? deny)) return deny;
         return Apply(prop);
     }
 

@@ -8,6 +8,8 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 |---|---|
 | ![Console](docs/console.png) | ![First-time hint](docs/hints.png) |
 | ![Rain](docs/weather-rain.png) | ![Fog](docs/weather-fog.png) |
+| ![Kill feed and damage numbers](docs/combat.png) | ![RP shop: cars and lottery](docs/rp-shop.png) |
+| ![View models](docs/vm-after.png) | ![Aiming down sights](docs/vm-aim.png) |
 | ![RP town](docs/r7-townair.png) | ![Laws board](docs/r7-town.png) |
 | ![Buy a door](docs/r7-towndoor.png) | ![Jail cell](docs/r7-jail.png) |
 | ![Vehicles](docs/r7-garage.png) | ![Model props](docs/r6-models.png) |
@@ -123,6 +125,15 @@ reference, see **[docs/MAPS.md](docs/MAPS.md)**.
 A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. Untextured materials get a white albedo, so props show their own colour.
 
 The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a ring when you aim at a prop, a prop-count chip bottom-left, a weapon/ammo chip bottom-right (a speedometer while driving), and small notification pills. The weapon switcher strip shows for about two seconds after you switch, then fades out.
+
+## New in v0.6.0
+
+- **View models**: gloved hands with posed fingers, sleeved forearms, detailed guns; spring sway, footstep-synced bob, landing dip, sprint/crouch poses, aim-down-sights (right mouse), view-model FOV, per-weapon reloads (shotgun shell by shell, interruptible), inspects (F), melee swing variants, grenade pin pull. See "View models" below.
+- **Prop protection**: every prop has an owner. In Roleplay (or always, with `pp always`) you can only physgun, tool or remove your own props, or those of players who added you as a buddy. Map/town entities belong to `world`. Console: `buddy add|remove|list <name>`, `pp off|rp|always`, `pp_owner [name]`. Owners are saved with the map.
+- **NPC health and combat**: NPCs take bullet (headshots ×2), crowbar and explosion damage; kill feed (top right) and optional damage numbers (Settings → Game).
+- **RP lottery**: the Mayor starts a 90 s lottery from the shop; anyone buys $50 tickets, townsfolk join in, the Mayor keeps 10%.
+- **Car Dealer** job and buyable **Buggy** / **Jeep** in the shop (dealers pay 60%).
+- **Kill plane**: anything that falls through the world is removed (whole ragdoll), fixing the soak's "Limb fell out of the world".
 
 ## New in v0.5.0
 
