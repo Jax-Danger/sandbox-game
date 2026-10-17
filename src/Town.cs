@@ -17,9 +17,12 @@ public static class Town
     public static Float3 CellCenter { get; set; }
     public static Float3 CellHalf { get; set; }
     public static Float3 ReleasePoint { get; set; }
-    public static bool Active => MapBuilder.Current == "town";
+    /// <summary>True when a custom map supplied RP markers (jail, ATM, doors, board or NPC paths).</summary>
+    public static bool Markers { get; set; }
+    public static bool Active => MapBuilder.Current == "town" || Markers;
+    public static bool HasJail => CellHalf.X > 0f;
 
-    public static void Reset() { Interactive.Clear(); Doors.Clear(); Waypoints.Clear(); Atm = null; Board = null; }
+    public static void Reset() { Interactive.Clear(); Doors.Clear(); Waypoints.Clear(); Atm = null; Board = null; Markers = false; CellHalf = Float3.Zero; }
 
     public static bool InCell(Float3 p) => MathF.Abs(p.X - CellCenter.X) < CellHalf.X && MathF.Abs(p.Z - CellCenter.Z) < CellHalf.Z && p.Y < CellCenter.Y + 3f;
 

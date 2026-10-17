@@ -77,7 +77,7 @@ public sealed class RoleplaySystem(SandboxGame g)
             if (p.OwnedDoors.Contains(d.Id)) d.Owner = "you";
             d.Locked = p.LockedDoors.Contains(d.Id) || (d.Locked && d.Owner is "police");
         }
-        if (Jailed && Town.Active) g.Player.Teleport(Town.CellCenter + new Float3(0f, 0.2f, 0f));
+        if (Jailed && Town.HasJail) g.Player.Teleport(Town.CellCenter + new Float3(0f, 0.2f, 0f));
     }
 
     public void Capture(PlayerSave p)
@@ -306,11 +306,11 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         WantedTimer = 0f;
-        JailTimer = Town.Active ? 30f : 10f;
+        JailTimer = Town.HasJail ? 30f : 10f;
         Arrests++;
         int fine = Math.Min(Money, 200);
         Money -= fine;
-        g.Player.Teleport(Town.Active ? Town.CellCenter + new Float3(0f, 0.2f, 0f) : MapBuilder.SpawnPoint + new Float3(0f, 0f, -3f));
+        g.Player.Teleport(Town.HasJail ? Town.CellCenter + new Float3(0f, 0.2f, 0f) : MapBuilder.SpawnPoint + new Float3(0f, 0f, -3f));
         if (Town.Find("door_cell") is { } cell) { cell.SetOpen(false); cell.Locked = true; }
         g.Notify($"{why}. Fined ${fine:N0}; jailed for {JailTimer:0} s.", ToastKind.Danger);
     }
@@ -368,11 +368,11 @@ public sealed class RoleplaySystem(SandboxGame g)
         if (JailTimer > 0f)
         {
             JailTimer -= dt;
-            if (Town.Active && !Town.InCell(g.Player.FeetPosition) && JailTimer > 0.5f) { JailTimer = 0f; MakeWanted("jailbreak"); }
+            if (Town.HasJail && !Town.InCell(g.Player.FeetPosition) && JailTimer > 0.5f) { JailTimer = 0f; MakeWanted("jailbreak"); }
             else if (JailTimer <= 0f)
             {
                 JailTimer = 0f;
-                if (Town.Active) g.Player.Teleport(Town.ReleasePoint);
+                if (Town.HasJail) g.Player.Teleport(Town.ReleasePoint);
                 g.Notify("Released from jail. Behave.", ToastKind.Success);
             }
         }

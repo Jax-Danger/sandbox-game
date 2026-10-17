@@ -52,7 +52,7 @@ public sealed class HealthSystem
             _deadTimer -= dt;
             if (_deadTimer <= 0f)
             {
-                g.Player.Teleport(MapBuilder.SpawnPoint);
+                g.Player.Teleport(MapBuilder.NextSpawn());
                 Hp = MaxHp; Armor = 0f; _flash = 0f;
                 g.Notify("Respawned");
             }

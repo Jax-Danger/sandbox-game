@@ -110,6 +110,12 @@ The HUD adds a wallet/job chip, a salary countdown, a WANTED or ARRESTED badge w
 
 Press **E** to pick up money, collect from a printer or open a shipment. Printers print $25 every 20 s. Dying drops 10 % of your wallet. Town NPC citizens and police wander the map, and police chase you while you're wanted. With paid spawning on, props cost $20 each.
 
+### Custom maps for Roleplay
+
+Build the map in Blender and mark spawns, the jail, ATMs, doors, NPC paths and water with named empties
+(`spawn_*`, `jail_cell`, `jail_release`, `atm`, `laws_board`, `door_*`, `npc_path_*`, `water_*`). For the full naming
+reference, see **[docs/MAPS.md](docs/MAPS.md)**.
+
 ## What you see
 
 A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. Untextured materials get a white albedo, so props show their own colour.

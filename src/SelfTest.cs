@@ -511,6 +511,7 @@ public sealed class SelfTest
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 WorldsRoundTrip(g);
                 TownTest(g);
+                MarkersTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0
@@ -676,5 +677,57 @@ public sealed class SelfTest
         }
         catch (Exception e) { Check(false, $"worlds round trip threw {e.GetType().Name}: {e.Message}"); }
         finally { try { Directory.Delete(root, true); } catch { } }
+    }
+
+    /// <summary>Writes a Blender-style glTF (a ground mesh + named empties), imports it as a custom map and checks every marker.</summary>
+    private void MarkersTest(SandboxGame g)
+    {
+        string path = Path.Combine(Path.GetTempPath(), $"sandbox-markers-{Environment.ProcessId}.gltf");
+        File.WriteAllText(path, MarkerGltf());
+        string? err = MapBuilder.Load(g.World, g.Shader, "custom", path);
+        Check(err is null, $"marker test map imports ({err ?? "ok"})");
+        Check(MapBuilder.SpawnPoints.Count == 2 && Float3.Length(MapBuilder.SpawnPoint - new Float3(0f, 0.1f, 0f)) < 0.05f, $"spawn_* markers become spawn points ({MapBuilder.SpawnPoints.Count})");
+        Check(Town.HasJail && Float3.Length(Town.CellCenter - new Float3(10f, 0f, -10f)) < 0.05f && MathF.Abs(Town.CellHalf.X - 3f) < 0.05f && MathF.Abs(Town.CellHalf.Z - 2f) < 0.05f,
+            $"jail_cell marker sets the cell (centre {Town.CellCenter}, half {Town.CellHalf})");
+        Check(Float3.Length(Town.ReleasePoint - new Float3(10f, 0.2f, -4f)) < 0.05f, "jail_release marker sets the release point");
+        Check(Town.Atm is not null && Town.Board is not null && Town.Active, "atm and laws_board markers place working RP props");
+        Door? shop = Town.Find("door_shop"), hq = Town.Find("door_police_hq"), cell = Town.Find("door_cell");
+        Check(Town.Doors.Count == 3 && shop is { Price: 500, Owner: "" } && MathF.Abs(shop.Width - 1.5f) < 0.05f && hq is { Owner: "police" } && cell is { Locked: true, Owner: "police" },
+            $"door_* markers make buyable / police / cell doors ({Town.Doors.Count})");
+        Check(Town.Waypoints.Count == 2, "npc_path markers become NPC waypoints");
+        Check(Water.Volumes.Count == 1 && MathF.Abs(Water.Volumes[0].Surface - 0.5f) < 0.05f, "water_* marker adds a buoyancy volume (surface = top of the box)");
+        Check(MapBuilder.MarkerName("Spawn_B.001") == "spawn_b" && !MapBuilder.IsMarker("House"), "marker names ignore case and Blender .001 suffixes");
+        MapBuilder.Load(g.World, g.Shader, "flatgrass", null);
+        Check(!Town.Active && Water.Volumes.Count == 0 && MapBuilder.SpawnPoints.Count == 0, "loading another map clears marker data");
+        try { File.Delete(path); } catch { }
+    }
+
+    private static string MarkerGltf()
+    {
+        // Ground quad, 40 x 40 m at y = 0. (The importer converts glTF's right-handed axes, so glTF +Z lands on Prowl -Z.)
+        float[] pos = [-20f, 0f, -20f, 20f, 0f, -20f, 20f, 0f, 20f, -20f, 0f, 20f];
+        ushort[] idx = [0, 2, 1, 0, 3, 2];
+        var bytes = new List<byte>();
+        foreach (float f in pos) bytes.AddRange(BitConverter.GetBytes(f));
+        foreach (ushort u in idx) bytes.AddRange(BitConverter.GetBytes(u));
+        string b64 = Convert.ToBase64String(bytes.ToArray());
+        float s45 = MathF.Sin(MathF.PI / 4f), c45 = MathF.Cos(MathF.PI / 4f);
+        string N(string name, float x, float y, float z, string extra = "") => $"{{\"name\":\"{name}\",\"translation\":[{x},{y},{z}]{extra}}}";
+        string[] nodes =
+        [
+            "{\"name\":\"Ground\",\"mesh\":0}",
+            N("spawn_a", 0, 0, 0), N("Spawn_B.001", 5, 0, 0),
+            N("jail_cell", 10, 0, 10, ",\"scale\":[3,1,2]"), N("jail_release", 10, 0, 4),
+            N("atm", -5, 0, 5, $",\"rotation\":[0,{s45},0,{c45}]"), N("laws_board", 0, 0, 12),
+            N("door_shop_p500", -8, 0, -8, ",\"scale\":[1.5,2.6,1]"), N("door_police_hq", 8, 0, -8), N("door_cell", 10, 0, 7.5f),
+            N("npc_path_1", -10, 0, 0), N("npc_path_2", 10, 0, 0),
+            N("water_pond", 15, -1f, -15, ",\"scale\":[4,1.5,4]"),
+        ];
+        string list = string.Join(",", Enumerable.Range(0, nodes.Length));
+        return "{\"asset\":{\"version\":\"2.0\"},\"scene\":0,\"scenes\":[{\"nodes\":[" + list + "]}],\"nodes\":[" + string.Join(",", nodes) + "]," +
+            "\"meshes\":[{\"name\":\"Ground\",\"primitives\":[{\"attributes\":{\"POSITION\":0},\"indices\":1}]}]," +
+            "\"accessors\":[{\"bufferView\":0,\"componentType\":5126,\"count\":4,\"type\":\"VEC3\",\"min\":[-20,0,-20],\"max\":[20,0,20]},{\"bufferView\":1,\"componentType\":5123,\"count\":6,\"type\":\"SCALAR\"}]," +
+            "\"bufferViews\":[{\"buffer\":0,\"byteOffset\":0,\"byteLength\":48},{\"buffer\":0,\"byteOffset\":48,\"byteLength\":12}]," +
+            $"\"buffers\":[{{\"byteLength\":60,\"uri\":\"data:application/octet-stream;base64,{b64}\"}}]}}";
     }
 }

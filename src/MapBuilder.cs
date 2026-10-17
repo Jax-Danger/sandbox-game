@@ -65,6 +65,7 @@ public static partial class MapBuilder
         Clear(scene);
         Town.Reset();
         Water.Clear();
+        SpawnPoints.Clear();
         Current = map;
         string? error = null;
         switch (map)
@@ -186,8 +187,9 @@ public static partial class MapBuilder
             if (result.RootGO is not { } root) return "The model has no scene.";
             int colliders = 0;
             Float3 min = new(float.MaxValue), max = new(float.MinValue);
-            foreach (GameObject go in root.GetChildrenDeep().Prepend(root).ToList())
-                if (go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh.Res is { } mesh)
+            var all = root.GetChildrenDeep().Prepend(root).ToList();
+            foreach (GameObject go in all)
+                if (!IsMarker(go.Name) && go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh.Res is { } mesh)
                 {
                     go.AddComponent<MeshCollider>().Mesh = mesh;
                     colliders++;
@@ -198,10 +200,10 @@ public static partial class MapBuilder
                     }
                 }
             Add(scene, root);
-            if (colliders == 0) return null;
-            // Spawn above the middle of the model's bounds.
-            SpawnPoint = new Float3((min.X + max.X) / 2f, max.Y + 1f, (min.Z + max.Z) / 2f);
-            Console.WriteLine($"Custom map: {Path.GetFileName(file)} with {colliders} mesh colliders.");
+            // Spawn above the middle of the model's bounds unless the map has spawn markers.
+            if (colliders > 0) SpawnPoint = new Float3((min.X + max.X) / 2f, max.Y + 1f, (min.Z + max.Z) / 2f);
+            MarkerReport markers = ApplyMarkers(scene, shader, all);
+            Console.WriteLine($"Custom map: {Path.GetFileName(file)} with {colliders} mesh colliders; markers: {markers}.");
             return null;
         }
         catch (Exception e) { return $"Import failed: {e.Message}"; }
