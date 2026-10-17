@@ -94,14 +94,26 @@ public static class Worlds
         return list.OrderByDescending(w => w.Meta.LastPlayed).ToList();
     }
 
-    public static string SafeFolderName(string name)
+    private static readonly HashSet<string> Reserved = new(StringComparer.OrdinalIgnoreCase)
+        { "CON", "PRN", "AUX", "NUL", "COM1", "COM2", "COM3", "COM4", "COM5", "COM6", "COM7", "COM8", "COM9", "LPT1", "LPT2", "LPT3", "LPT4", "LPT5", "LPT6", "LPT7", "LPT8", "LPT9" };
+
+    /// <summary>File-system-safe base name (no uniqueness suffix): letters/digits/space/-/_ only, no Windows device names.</summary>
+    public static string BaseFolderName(string name)
     {
         var chars = name.Trim().Select(c => char.IsLetterOrDigit(c) || c is ' ' or '-' or '_' ? c : '_').ToArray();
         string s = new string(chars).Trim();
-        if (s.Length == 0) s = "World";
-        if (s.Length > 48) s = s[..48];
+        if (s.Length == 0 || s.All(c => c == '_')) s = "World";
+        if (s.Length > 48) s = s[..48].TrimEnd();
+        if (Reserved.Contains(s)) s = "World " + s;
+        return s;
+    }
+
+    /// <summary>A free folder name for a world; <paramref name="current"/> (the world's own folder) counts as free.</summary>
+    public static string SafeFolderName(string name, string? current = null)
+    {
+        string s = BaseFolderName(name);
         string candidate = s; int n = 2;
-        while (Directory.Exists(Path.Combine(Root, candidate))) candidate = $"{s} ({n++})";
+        while (Directory.Exists(Path.Combine(Root, candidate)) && !string.Equals(candidate, current, StringComparison.Ordinal)) candidate = $"{s} ({n++})";
         return candidate;
     }
 
@@ -134,8 +146,10 @@ public static class Worlds
         newName = newName.Trim();
         if (newName.Length == 0) return w;
         w.Meta.Name = newName;
-        string target = Path.Combine(Root, SafeFolderName(newName));
         string folder = w.Folder;
+        string current = Path.GetFileName(folder);
+        // Keep the folder if the new name maps to it already (e.g. same name, or "World (2)" renamed to "World").
+        string target = BaseFolderName(newName) == current || current.StartsWith(BaseFolderName(newName) + " (") ? folder : Path.Combine(Root, SafeFolderName(newName, current));
         try { if (!Path.GetFileName(folder).Equals(Path.GetFileName(target))) { Directory.Move(folder, target); folder = target; } }
         catch (Exception e) { Log.Warn($"Rename folder failed, keeping folder name: {e.Message}"); }
         WriteMeta(folder, w.Meta);
@@ -146,7 +160,8 @@ public static class Worlds
     {
         // Only ever delete folders inside our own saves root.
         string full = Path.GetFullPath(w.Folder);
-        if (!full.StartsWith(Path.GetFullPath(Root), StringComparison.Ordinal)) throw new InvalidOperationException("Refusing to delete outside the saves folder.");
+        string root = Path.GetFullPath(Root).TrimEnd(Path.DirectorySeparatorChar) + Path.DirectorySeparatorChar;
+        if (!full.StartsWith(root, StringComparison.Ordinal) || full.Length <= root.Length) throw new InvalidOperationException("Refusing to delete outside the saves folder.");
         Directory.Delete(full, recursive: true);
     }
 
@@ -173,13 +188,25 @@ public static class Worlds
         catch (Exception e) { Log.Warn($"Could not open folder: {e.Message}"); }
     }
 
-    /// <summary>Write via temp file + rename; keeps the previous file as .bak.</summary>
+    private static readonly object _writeLock = new();
+
+    /// <summary>
+    /// Write via a unique temp file + rename; keeps the previous file as .bak. Serialised so an autosave task and a
+    /// sync save (exit, manual save) can never interleave on the same file.
+    /// </summary>
     public static void WriteAtomic(string path, string text)
     {
-        string tmp = path + ".tmp";
-        File.WriteAllText(tmp, text);
-        if (File.Exists(path)) File.Copy(path, path + ".bak", overwrite: true);
-        File.Move(tmp, path, overwrite: true);
+        lock (_writeLock)
+        {
+            string tmp = $"{path}.{Environment.ProcessId}.{Guid.NewGuid():N}.tmp";
+            try
+            {
+                File.WriteAllText(tmp, text);
+                if (File.Exists(path)) File.Copy(path, path + ".bak", overwrite: true);
+                File.Move(tmp, path, overwrite: true);
+            }
+            finally { try { if (File.Exists(tmp)) File.Delete(tmp); } catch { } }
+        }
     }
 
     /// <summary>Reads a JSON file, falling back to its .bak if the main copy is missing or corrupt.</summary>

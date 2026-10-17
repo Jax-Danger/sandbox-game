@@ -42,7 +42,8 @@ public sealed partial class SandboxGame : Game
     public ContextMenu Context { get; } = new();
     private bool _pointerOverContextUi;
     private Prop? _lastHighlight;
-    private readonly Queue<Action> _pending = new();
+    /// <summary>Main-thread work queue; thread-safe so background tasks (autosave, loading) can post to it.</summary>
+    private readonly System.Collections.Concurrent.ConcurrentQueue<Action> _pending = new();
     private int _frames, _shotToasts;
 
     /// <summary>True when a menu (spawn menu, main/pause/settings) owns the mouse.</summary>
@@ -292,7 +293,7 @@ public sealed partial class SandboxGame : Game
         }
         _hud.Tick(dt);
         CameraFeeds.Tick(this);
-        while (_pending.Count > 0) _pending.Dequeue()();
+        while (_pending.TryDequeue(out Action? act)) act();
         MenuBackdrop = Session is null && SelfTest is null && !Application.IsHeadless && Menus.Screen != Screen.Playing;
         bool menuWorld = Session is null && Menus.Screen is Screen.MainMenu or Screen.Worlds or Screen.CreateWorld or Screen.Settings && SelfTest is null && !Application.IsHeadless;
         Time.TimeScale = Menus.Screen == Screen.Loading ? 0f

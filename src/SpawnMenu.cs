@@ -483,7 +483,8 @@ public sealed class SpawnMenu(IconRenderer icons)
         {
             if (t.Dupe is not { } d) { game.Notify("Copy something with the Duplicator first"); return; }
             string n = _dupeName.Trim().Length > 0 ? _dupeName.Trim() : t.DupeName;
-            Dupes.Save(n, d); _dupeName = ""; _dupesAge = 99f; game.Notify($"Saved dupe \"{n}\"");
+            try { Dupes.Save(n, d); _dupeName = ""; _dupesAge = 99f; game.Notify($"Saved dupe \"{n}\""); }
+            catch (Exception e) { game.Notify($"Couldn't save the dupe: {e.Message}", ToastKind.Danger); }
         }, enabled: t.HasCopy, icon: Icon.Save, radius: bh / 2f);
         iy += bh + Theme.S(Theme.Sm);
         Ui.Button(paper, "sm_dc_tool", ix, iy, iw, bh, "Equip Duplicator", () => game.SelectTool(ToolMode.Duplicator), ghost: true, icon: Icon.Wrench, radius: bh / 2f);

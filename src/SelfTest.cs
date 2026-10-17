@@ -32,10 +32,13 @@ public sealed class SelfTest
     private float _restBarrelY, _frozenY;
     private bool _done;
 
-    public int ExitCode { get; private set; } = 1;
+    public int ExitCode { get => Soak?.ExitCode ?? _exit; private set => _exit = value; }
+    private int _exit = 1;
+    public Soak? Soak { get; init; }
 
     public void Begin(SandboxGame g)
     {
+        if (Soak is not null) { Soak.Begin(g); return; }
         g.Props.ClearAll();
         float x = -5f;
         foreach (PropKind k in PropManager.AllKinds)
@@ -66,6 +69,7 @@ public sealed class SelfTest
 
     public void Step(SandboxGame g)
     {
+        if (Soak is not null) { Soak.Step(g); return; }
         _frame++;
         if (_done) return;
         Prop cube = _p["Cube"], sphere = _p["Sphere"], barrel = _p["Barrel"], plank = _p["Plank"];
@@ -511,6 +515,7 @@ public sealed class SelfTest
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 WorldsRoundTrip(g);
                 TownTest(g);
+                RegressionTests(g);
                 MarkersTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
@@ -702,7 +707,7 @@ public sealed class SelfTest
         try { File.Delete(path); } catch { }
     }
 
-    private static string MarkerGltf()
+    public static string MarkerGltf()
     {
         // Ground quad, 40 x 40 m at y = 0. (The importer converts glTF's right-handed axes, so glTF +Z lands on Prowl -Z.)
         float[] pos = [-20f, 0f, -20f, 20f, 0f, -20f, 20f, 0f, 20f, -20f, 0f, 20f];
@@ -729,5 +734,100 @@ public sealed class SelfTest
             "\"accessors\":[{\"bufferView\":0,\"componentType\":5126,\"count\":4,\"type\":\"VEC3\",\"min\":[-20,0,-20],\"max\":[20,0,20]},{\"bufferView\":1,\"componentType\":5123,\"count\":6,\"type\":\"SCALAR\"}]," +
             "\"bufferViews\":[{\"buffer\":0,\"byteOffset\":0,\"byteLength\":48},{\"buffer\":0,\"byteOffset\":48,\"byteLength\":12}]," +
             $"\"buffers\":[{{\"byteLength\":60,\"uri\":\"data:application/octet-stream;base64,{b64}\"}}]}}";
+    }
+
+    /// <summary>One check per bug the soak test (src/Soak.cs) found, so none of them can come back.</summary>
+    private void RegressionTests(SandboxGame g)
+    {
+        g.ClearMap(notify: false);
+        // 1. Round model props: the collider is configured detached, so the engine throws nothing.
+        int thrown = 0;
+        void Count(object? _, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e) { if (e.Exception is ArgumentException) thrown++; }
+        AppDomain.CurrentDomain.FirstChanceException += Count;
+        ModelDef round = ModelProps.All.First(d => d.Round);
+        Prop rp = ModelProps.Spawn(g, round, new Float3(-40f, 1f, 40f), 0f, recordUndo: false);
+        ModelDef box = ModelProps.All.First(d => !d.Round);
+        ModelProps.Spawn(g, box, new Float3(-42f, 1f, 40f), 0f, recordUndo: false);
+        AppDomain.CurrentDomain.FirstChanceException -= Count;
+        Check(thrown == 0 && rp.Go.GetComponent<CylinderCollider>() is { Enabled: true } && rp.Go.GetComponent<BoxCollider>() is null,
+            $"model props build colliders without engine exceptions ({thrown} thrown)");
+
+        // 2. NPC brain survives a removed or frozen limb (went NRE / static-body exception every physics step).
+        Ragdoll npc = EntityCatalog.SpawnDummy(g, new Float3(-40f, 0f, 44f), 0f, recordUndo: false, team: NpcTeam.Friendly);
+        g.Props.Remove(npc.Limbs[3]);
+        DummyBrain brain = npc.Pelvis.Go.GetComponent<DummyBrain>();
+        thrown = 0;
+        AppDomain.CurrentDomain.FirstChanceException += Count;
+        void Any(object? _, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e) => thrown++;
+        AppDomain.CurrentDomain.FirstChanceException += Any;
+        brain.FixedUpdate();
+        Ragdoll npc2 = EntityCatalog.SpawnDummy(g, new Float3(-36f, 0f, 44f), 0f, recordUndo: false, team: NpcTeam.Friendly);
+        npc2.Limbs[0].SetFrozen(true);
+        DummyBrain b2 = npc2.Pelvis.Go.GetComponent<DummyBrain>();
+        b2.FixedUpdate();
+        AppDomain.CurrentDomain.FirstChanceException -= Any;
+        AppDomain.CurrentDomain.FirstChanceException -= Count;
+        Check(thrown == 0 && brain.Limp && b2.Limp, $"NPC brain goes limp instead of throwing when a limb is removed or frozen ({thrown} thrown)");
+
+        // 3. Rope line objects leave with their props (leaked one GameObject per rope per clear).
+        g.ClearMap(notify: false);
+        Prop r1 = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 1f, 48f), 0f, recordUndo: false), r2 = g.Props.Spawn(PropKind.Cube, new Float3(-37f, 1f, 48f), 0f, recordUndo: false);
+        g.ToolGun.Rope(r1, Float3.Zero, r2, Float3.Zero);
+        int ropes() => g.World.AllObjects.Count(o => o.Name == "Rope");
+        int during = ropes();
+        g.ClearMap(notify: false);
+        Check(during >= 1 && ropes() == 0, $"rope visuals are removed with their props ({during} -> {ropes()})");
+
+        // 4. An unfrozen button stays unfrozen through save/load (buttons froze themselves on load).
+        Prop btn = EntityCatalog.SpawnButton(g, new Float3(-40f, 0.3f, 52f), 0f);
+        btn.SetFrozen(false);
+        string bp = Path.Combine(Path.GetTempPath(), $"sandbox-btn-{Environment.ProcessId}.json");
+        MapSave.Save(g, bp); MapSave.Load(g, bp);
+        Check(g.Props.Props.Single(p => p.Entity == "ent_button") is { Frozen: false }, "unfrozen button stays unfrozen after save/load");
+        try { File.Delete(bp); } catch { }
+
+        // 5. Physics guard caps runaway speeds; frozen vehicles can't be flipped (threw on a static body).
+        g.ClearMap(notify: false);
+        Prop fast = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 5f, 56f), 0f, recordUndo: false);
+        fast.Body.LinearVelocity = new Float3(5000f, 0f, 0f); fast.Body.AngularVelocity = new Float3(0f, 900f, 0f);
+        PhysicsGuard.Clamp(g);
+        Check(Float3.Length(fast.Body.LinearVelocity) <= PhysicsGuard.MaxSpeed + 0.01f && Float3.Length(fast.Body.AngularVelocity) <= PhysicsGuard.MaxSpin + 0.01f, "physics guard caps runaway speed and spin");
+        Buggy fb = g.Vehicles.SpawnBuggy(new Float3(-44f, 1f, 56f), 0f, recordUndo: false);
+        fb.Body.MotionType = Jitter2.Dynamics.MotionType.Static;
+        bool flipOk = true; try { fb.Flip(); } catch { flipOk = false; }
+        Check(flipOk, "flipping a frozen vehicle does nothing instead of throwing");
+        g.Vehicles.ClearAll();
+        g.ClearMap(notify: false);
+
+        // 6. World folders: same-name rename keeps the folder, Windows device names are avoided, unicode/spaces work,
+        //    delete refuses sibling folders that merely share the prefix, concurrent saves never collide.
+        string oldRoot = Worlds.Root;
+        string root = Path.Combine(Path.GetTempPath(), $"sandbox wörlds 🚀 {Environment.ProcessId}");
+        Worlds.Root = root;
+        try
+        {
+            WorldEntry w = Worlds.Create(new SessionMeta { Name = "Mÿ Wörld" });
+            WorldEntry same = Worlds.Rename(w, "Mÿ Wörld");
+            Check(same.Folder == w.Folder && Directory.Exists(w.Folder), "renaming a world to its own name keeps its folder");
+            WorldEntry con = Worlds.Create(new SessionMeta { Name = "con" });
+            Check(!Path.GetFileName(con.Folder).Equals("con", StringComparison.OrdinalIgnoreCase), $"Windows device names are not used as folders ({Path.GetFileName(con.Folder)})");
+            WorldEntry odd = Worlds.Create(new SessionMeta { Name = "a/b\\c:*?" + new string('x', 80) });
+            Check(Directory.Exists(odd.Folder) && Path.GetFileName(odd.Folder).Length <= 48 && Worlds.List().Count == 3, "odd and over-long names make valid folders");
+            string sibling = root + "2";
+            Directory.CreateDirectory(sibling);
+            bool refused = false;
+            try { Worlds.Delete(new WorldEntry(sibling, new SessionMeta())); } catch (InvalidOperationException) { refused = true; }
+            Check(refused && Directory.Exists(sibling), "delete refuses a sibling folder outside the saves root");
+            try { Directory.Delete(sibling, true); } catch { }
+            string target = Path.Combine(w.Folder, "world.json");
+            var tasks = Enumerable.Range(0, 16).Select(i => Task.Run(() => Worlds.WriteAtomic(target, $"{{\"n\":{i}}}"))).ToArray();
+            bool allOk = true; try { Task.WaitAll(tasks); } catch { allOk = false; }
+            bool valid = Worlds.ReadJson<Dictionary<string, int>>(target) is { Count: 1 };
+            Check(allOk && valid && !Directory.GetFiles(w.Folder, "*.tmp").Any(), "16 concurrent atomic saves never collide or leave temp files");
+        }
+        finally { Worlds.Root = oldRoot; try { Directory.Delete(root, true); } catch { } }
+
+        // 7. The soak diff helper itself.
+        Check(Soak.Diff(new MapSave.SaveData(), new MapSave.SaveData()) is null, "save diff of identical worlds is empty");
     }
 }

@@ -86,6 +86,8 @@ public sealed class DummyBrain : MonoBehaviour
     public override void FixedUpdate()
     {
         if (Limp || Doll is null || !Doll.Alive) return;
+        // A limb removed (remover / undo) or frozen (physgun) ends the brain: it can't steer a broken or static body.
+        if (Doll.Limbs.Count < 2 || Doll.Limbs.Any(l => !l.Alive || l.Frozen)) { Limp = true; return; }
         foreach (Prop l in Doll.Limbs)
             if (Prowl.Vector.Float3.Length(l.Body.LinearVelocity) > (Team == NpcTeam.Dummy ? 3.5f : 5.5f)) { Limp = true; Game?.Roleplay.OnNpcDown(this); return; }
         Rigidbody3D pelvis = Doll.Limbs[0].Body, torso = Doll.Limbs[1].Body;

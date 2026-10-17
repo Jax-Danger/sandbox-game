@@ -62,7 +62,9 @@ public sealed class WaterSimulator : MonoBehaviour
 
     public override void FixedUpdate()
     {
-        if (Game is null || Water.Volumes.Count == 0) return;
+        if (Game is null) return;
+        PhysicsGuard.Clamp(Game);
+        if (Water.Volumes.Count == 0) return;
         foreach (Prop p in Game.Props.Props)
         {
             if (p.Frozen) continue;
@@ -71,5 +73,34 @@ public sealed class WaterSimulator : MonoBehaviour
         foreach (Buggy b in Game.Vehicles.All)
             // Hulls float; the airboat rides high and glides (low drag so the fan can push it).
             Water.Apply(b.Body, b.Go.Transform.Position, 0.45f, b.IsAirboat ? 3.2f : 1.3f, b.IsAirboat ? 0.35f : 1.5f);
+    }
+}
+
+/// <summary>
+/// Safety net against physics explosions (extreme mass ratios, stacked constraints): caps linear speed at
+/// <see cref="MaxSpeed"/> and spin at <see cref="MaxSpin"/>, and zeroes any NaN velocity before it spreads.
+/// </summary>
+public static class PhysicsGuard
+{
+    public const float MaxSpeed = 120f, MaxSpin = 60f;
+    public static int Clamped { get; private set; }
+
+    public static bool Fix(Rigidbody3D b)
+    {
+        if (b is null || b.GameObject is not { } go || go.Scene is null || !b.Enabled || b.MotionType != Jitter2.Dynamics.MotionType.Dynamic) return false;
+        Float3 v = b.LinearVelocity, w = b.AngularVelocity;
+        bool hit = false;
+        if (float.IsNaN(v.X + v.Y + v.Z) || float.IsInfinity(v.X + v.Y + v.Z)) { b.LinearVelocity = Float3.Zero; hit = true; }
+        else if (Float3.Length(v) > MaxSpeed) { b.LinearVelocity = v * (MaxSpeed / Float3.Length(v)); hit = true; }
+        if (float.IsNaN(w.X + w.Y + w.Z) || float.IsInfinity(w.X + w.Y + w.Z)) { b.AngularVelocity = Float3.Zero; hit = true; }
+        else if (Float3.Length(w) > MaxSpin) { b.AngularVelocity = w * (MaxSpin / Float3.Length(w)); hit = true; }
+        if (hit) Clamped++;
+        return hit;
+    }
+
+    public static void Clamp(SandboxGame g)
+    {
+        foreach (Prop p in g.Props.Props) if (p.Alive) Fix(p.Body);
+        foreach (Buggy b in g.Vehicles.All) if (b.Go.IsValid()) Fix(b.Body);
     }
 }

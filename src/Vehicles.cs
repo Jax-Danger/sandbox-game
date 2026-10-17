@@ -253,6 +253,7 @@ public sealed class Buggy
     /// <summary>Gently rights a flipped buggy (R while driving).</summary>
     public void Flip()
     {
+        if (Body.MotionType != Jitter2.Dynamics.MotionType.Dynamic) return; // frozen with the physgun
         Go.Transform.Position += new Float3(0f, 1.2f, 0f);
         Go.Transform.LocalEulerAngles = new Float3(0f, Go.Transform.LocalEulerAngles.Y, 0f);
         Body.AngularVelocity = Float3.Zero;

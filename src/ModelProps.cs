@@ -164,12 +164,15 @@ public static class ModelProps
                 box.Enabled = false;
                 p.Go.RemoveComponent(box);
                 var cyl = p.Go.AddComponent<CylinderCollider>();
+                // Configure while detached: changing an attached collider's shape throws inside the engine.
+                cyl.Enabled = false;
                 bool side = def.Collider.Y < def.Collider.X * 0.6f && def.Category == "Wheels";
                 cyl.Radius = (side ? def.Collider.X : MathF.Max(def.Collider.X, def.Collider.Z)) / 2f;
                 cyl.Height = def.Collider.Y;
                 if (side) cyl.Rotation = new Float3(0f, 0f, 90f);
+                cyl.Enabled = true;
             }
-            else box.Size = def.Collider;
+            else { box.Enabled = false; box.Size = def.Collider; box.Enabled = true; }
         }
         p.Body.Mass = def.Mass;
         p.SetSurface(SurfaceMaterial.Get(def.Surface));

@@ -299,9 +299,18 @@ public sealed class RopeVisual : MonoBehaviour
 
     public void Destroy()
     {
-        if (_lineGo is not null && _lineGo.IsValid()) _lineGo.Scene?.Remove(_lineGo);
+        RemoveLine();
         if (GameObject.IsValid()) GameObject.RemoveComponent(this);
     }
+
+    private void RemoveLine()
+    {
+        if (_lineGo is not null && _lineGo.IsValid()) _lineGo.Scene?.Remove(_lineGo);
+        _lineGo = null;
+    }
+
+    /// <summary>The owner prop left the scene (removed, cleared, map change): take the separate line object with it.</summary>
+    public override void OnDisable() => RemoveLine();
 
     public override void Update()
     {

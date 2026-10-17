@@ -88,7 +88,11 @@ public sealed partial class Menus
         float sw = Theme.S(78);
         Ui.Button(paper, "wl_edit", fx, fy, sw, bh, "Edit", () => { _renameText = sel!.Meta.Name; _modal = "rename"; }, icon: Icon.Pencil, radius: bh / 2f, enabled: has, ghost: true);
         fx += sw + Theme.S(4);
-        Ui.Button(paper, "wl_dup", fx, fy, sw + Theme.S(16), bh, "Duplicate", () => g.Enqueue(() => { var d = Worlds.Duplicate(sel!); RefreshWorlds(); _selected = _worlds!.FindIndex(x => x.Folder == d.Folder); g.Notify($"Duplicated as {d.Meta.Name}"); }),
+        Ui.Button(paper, "wl_dup", fx, fy, sw + Theme.S(16), bh, "Duplicate", () => g.Enqueue(() =>
+        {
+            try { var d = Worlds.Duplicate(sel!); RefreshWorlds(); _selected = _worlds!.FindIndex(x => x.Folder == d.Folder); g.Notify($"Duplicated as {d.Meta.Name}"); }
+            catch (Exception e) { g.Notify($"Couldn't duplicate: {e.Message}", ToastKind.Danger); }
+        }),
             icon: Icon.Copy, radius: bh / 2f, enabled: has, ghost: true);
         fx += sw + Theme.S(20);
         Ui.Button(paper, "wl_del", fx, fy, sw, bh, "Delete", () => _modal = "delete", icon: Icon.Trash, radius: bh / 2f, enabled: has, ghost: true);
@@ -157,7 +161,9 @@ public sealed partial class Menus
             TextInput(paper, "wm_name", mx + pad, my + pad + Theme.S(40), mw - 2 * pad, Theme.S(40), _renameText, v => _renameText = v, "World name");
             Ui.Button(paper, "wm_ok", mx + mw - pad - Theme.S(110), my + mh - pad - bh, Theme.S(110), bh, "Save", () => g.Enqueue(() =>
             {
-                var r = Worlds.Rename(sel, _renameText); RefreshWorlds(); _selected = Math.Max(0, _worlds!.FindIndex(x => x.Folder == r.Folder)); _modal = null;
+                try { var r = Worlds.Rename(sel, _renameText); RefreshWorlds(); _selected = Math.Max(0, _worlds!.FindIndex(x => x.Folder == r.Folder)); }
+                catch (Exception e) { g.Notify($"Couldn't rename: {e.Message}", ToastKind.Danger); }
+                _modal = null;
             }), selected: true, radius: bh / 2f, enabled: _renameText.Trim().Length > 0);
         }
         else

@@ -226,6 +226,9 @@ public sealed partial class SandboxGame
     }
 
     /// <summary>Captures on the main thread, then serialises + writes atomically on a background task (unless sync).</summary>
+    /// <summary>Last save failure (read-only folder, disk full); null after a good save.</summary>
+    public string? LastSaveError { get; private set; }
+
     public void SaveSession(bool sync = false, bool icon = false)
     {
         if (Session is not { } s || Loader is not null) return;
@@ -238,16 +241,17 @@ public sealed partial class SandboxGame
         s.Meta.PlaySeconds += _playClock.Elapsed.TotalSeconds;
         _playClock.Restart();
         string folder = s.Folder;
-        SessionMeta meta = s.Meta;
+        // Snapshot the metadata on the main thread: the live object keeps changing while a background save runs.
+        string metaJson = JsonSerializer.Serialize(s.Meta, Worlds.Json);
         if (icon) Worlds.CaptureIcon(Player.Camera, folder);
         void Write()
         {
             Worlds.WriteAtomic(Path.Combine(folder, "world.json"), JsonSerializer.Serialize(world, Worlds.Json));
             Worlds.WriteAtomic(Path.Combine(folder, "player.json"), JsonSerializer.Serialize(player, Worlds.Json));
-            Worlds.WriteMeta(folder, meta);
+            Worlds.WriteAtomic(Path.Combine(folder, "session.json"), metaJson);
         }
-        if (sync) { try { Write(); } catch (Exception e) { Log.Warn($"Save failed: {e.Message}"); } }
-        else _saveTask = Task.Run(() => { try { Write(); } catch (Exception e) { Log.Warn($"Autosave failed: {e.Message}"); } });
+        if (sync) { try { Write(); LastSaveError = null; } catch (Exception e) { LastSaveError = e.Message; Log.Warn($"Save failed: {e.Message}"); Notify($"Couldn't save the world: {e.Message}", ToastKind.Danger); } }
+        else _saveTask = Task.Run(() => { try { Write(); LastSaveError = null; } catch (Exception e) { LastSaveError = e.Message; Log.Warn($"Autosave failed: {e.Message}"); Enqueue(() => Notify($"Autosave failed: {e.Message}", ToastKind.Danger)); } });
     }
 
     private void TickAutosave(float dt)

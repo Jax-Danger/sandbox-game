@@ -93,7 +93,8 @@ public static class Dupes
     {
         Directory.CreateDirectory(Dir);
         string safe = string.Concat(name.Select(ch => char.IsLetterOrDigit(ch) || ch is '-' or '_' ? ch : '_'));
-        if (safe.Length == 0) safe = "dupe";
+        if (safe.Length == 0 || safe.All(c => c == '_')) safe = "dupe";
+        if (safe.Length > 64) safe = safe[..64]; // keep well under file-name limits
         string path = Path.Combine(Dir, safe + ".dupe.json");
         for (int i = 2; File.Exists(path); i++) path = Path.Combine(Dir, $"{safe}_{i}.dupe.json");
         File.WriteAllText(path, JsonSerializer.Serialize(new DupeFile { Name = name, Props = d.Props.Count, Data = d }));

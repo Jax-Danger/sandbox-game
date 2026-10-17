@@ -55,6 +55,9 @@ public static class MapSave
     public static string DefaultPath { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "saves", "quicksave.json");
 
+    /// <summary>Normalises an angle to [0, 360) so 360 and 0 save identically.</summary>
+    private static float Deg(float a) { a %= 360f; if (a < 0f) a += 360f; return a > 359.995f ? 0f : a; }
+
     private static float[] F(Float3 v) => [v.X, v.Y, v.Z];
     private static Float3 V(float[] a) => a.Length >= 3 ? new Float3(a[0], a[1], a[2]) : Float3.Zero;
 
@@ -130,12 +133,12 @@ public static class MapSave
         foreach (Ragdoll rd in Ragdoll.All.Where(r => r.Alive))
         {
             Float3 pp = rd.Pelvis.Go.Transform.Position;
-            data.Ragdolls.Add(new RagdollData { Feet = [pp.X, pp.Y - 1f, pp.Z], Yaw = rd.Pelvis.Go.Transform.LocalEulerAngles.Y, Dummy = rd.IsDummy, Team = rd.Team.ToString() });
+            data.Ragdolls.Add(new RagdollData { Feet = [pp.X, pp.Y - 1f, pp.Z], Yaw = Deg(rd.Pelvis.Go.Transform.LocalEulerAngles.Y), Dummy = rd.IsDummy, Team = rd.Team.ToString() });
         }
         foreach (Buggy b in g.Vehicles.All)
         {
             Quaternion q = b.Go.Transform.Rotation;
-            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = b.Go.Transform.LocalEulerAngles.Y, Rotation = [q.X, q.Y, q.Z, q.W], Velocity = F(b.Body.LinearVelocity), Kind = b.Kind });
+            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = Deg(b.Go.Transform.LocalEulerAngles.Y), Rotation = [q.X, q.Y, q.Z, q.W], Velocity = F(b.Body.LinearVelocity), Kind = b.Kind });
         }
         return data;
     }
@@ -178,8 +181,8 @@ public static class MapSave
             if (d.Surface is not null) p.SetSurface(SurfaceMaterial.Get(d.Surface));
             if (d.Mass > 0f) p.SetMass(d.Mass);
             if (d.Entity == "ent_ball") { p.Body.Restitution = 0.95f; p.Body.Friction = 0.3f; }
-            if (d.Frozen) p.SetFrozen(true);
-            else if (d.Velocity.Length == 3) velocities.Add((p, V(d.Velocity), V(d.AngularVelocity)));
+            p.SetFrozen(d.Frozen); // entities like buttons freeze themselves on spawn; the save wins
+            if (!d.Frozen && d.Velocity.Length == 3) velocities.Add((p, V(d.Velocity), V(d.AngularVelocity)));
             for (int b = 0; b < d.Balloons; b++) Balloon.Attach(g.Props, p, d.BalloonForce);
             spawned.Add(p);
             yield return ++step;
