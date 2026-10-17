@@ -75,6 +75,21 @@ public sealed class Player
         }
     }
 
+    /// <summary>Riding a seat: only mouse look; the controller is parked out of the way so it can't shove the contraption.</summary>
+    public void UpdateSeated(Float3 eye, bool allowInput)
+    {
+        if (allowInput)
+        {
+            Float2 delta = Input.MouseDelta;
+            _yaw += delta.X * LookSensitivity;
+            _pitch = Math.Clamp(_pitch + delta.Y * LookSensitivity, -89f, 89f);
+        }
+        Speed = 0f;
+        _verticalVelocity = 0f;
+        ApplyCamera();
+        CameraObject.Transform.Position = eye;
+    }
+
     /// <param name="allowInput">False while a menu is open: the player stands still but gravity still applies.</param>
     public void Update(float dt, bool allowInput)
     {

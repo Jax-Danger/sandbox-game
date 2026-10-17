@@ -501,6 +501,13 @@ public sealed class SelfTest
             a.Body.LinearVelocity = new Float3(1f, 2f, 3f);
             Prop fz = g.Props.Spawn(PropKind.Plank, new Float3(-4f, 3f, 4f), 45f, recordUndo: false);
             fz.SetFrozen(true);
+            Prop chair = ModelProps.Spawn(g, ModelProps.All.First(d => d.Id == "chair"), new Float3(-8f, 1f, 8f), 0f, recordUndo: false);
+            Check(chair.Go.GetComponentsInChildren<MeshRenderer>(false).Count() >= 6 && chair.Go.GetComponent<Seat>() is not null && MathF.Abs(chair.Body.Mass - 6f) < 0.01f,
+                $"model prop builds its parts ({chair.Go.GetComponentsInChildren<MeshRenderer>(false).Count()} parts) and seat");
+            g.SitIn(chair);
+            Check(ReferenceEquals(g.SeatedIn, chair), "E on a seat sits the player in it");
+            g.StandUp();
+            Check(g.SeatedIn is null && g.Player.FeetPosition.Y > -5f, "standing up puts the player back on the ground");
             g.Roleplay.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "police"));
             g.Roleplay.Earn(100, null);
             g.SaveSession(sync: true);
@@ -518,6 +525,8 @@ public sealed class SelfTest
             Prop? rf = g.Props.Props.FirstOrDefault(p => p.Kind == PropKind.Plank);
             Check(ra is not null && Float3.Length(ra.Body.LinearVelocity - new Float3(1f, 2f, 3f)) < 0.6f,
                 $"reload restores exact velocity from backup ({(ra is null ? "missing" : $"{ra.Body.LinearVelocity.X:0.0},{ra.Body.LinearVelocity.Y:0.0},{ra.Body.LinearVelocity.Z:0.0}")})");
+            Prop? rc = g.Props.Props.FirstOrDefault(p => p.Entity == "mdl_chair");
+            Check(rc is not null && rc.Go.GetComponentsInChildren<MeshRenderer>(false).Count() >= 6 && rc.Go.GetComponent<Seat>() is not null, "model prop survives save/load with its parts");
             Check(rf is { Frozen: true } && MathF.Abs(rf.Go.Transform.Position.Y - 3f) < 0.05f, "frozen prop stays frozen in place after reload");
             Check(g.Roleplay.Job.Id == "police" && g.Roleplay.Money == 1334 && g.Weapons.All.Any(w => w is BatonWeapon && w.Available(g)),
                 $"player job, money and job loadout restored ({g.Roleplay.Job.Id}, ${g.Roleplay.Money})");

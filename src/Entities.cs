@@ -181,6 +181,7 @@ public static class EntityCatalog
         switch (entity)
         {
             case "ent_barrel": MakeBarrel(g, p); break;
+            case { } m when m.StartsWith("mdl_"): if (ModelProps.Find(m) is { } def) ModelProps.Apply(g, p, def); break;
             case "ent_ball": MakeBall(p, keepColor: true); break;
             case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); break;
             case "ent_camera": CameraFeeds.Make(g, p); break;

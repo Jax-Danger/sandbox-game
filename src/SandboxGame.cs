@@ -167,6 +167,21 @@ public sealed partial class SandboxGame : Game
             case "settings": Menus.Go(Screen.Settings); break;
             case "video": Menus.Go(Screen.Settings); Menus.SettingsTab = 1; break;
             case "night": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.95f; DayNight.Apply(this); ToggleFlashlight(); break;
+            case "models":
+                Menus.Go(Screen.Playing);
+                ClearMap(false);
+                {
+                    string[] ids = ["sofa", "coffee_table", "tv", "lamp", "bookshelf", "plant", "chair", "table", "barrier", "cone", "stop_sign", "street_lamp", "wheel_tractor", "metal_crate", "fence", "bench"];
+                    for (int i = 0; i < ids.Length; i++)
+                    {
+                        ModelDef d = ModelProps.All.First(x => x.Id == ids[i]);
+                        float row = i / 8, col = i % 8;
+                        ModelProps.Spawn(this, d, new Float3(-7f + col * 2f, d.HalfHeight + 0.05f, -2f + row * 3f), 180f, recordUndo: false);
+                    }
+                    Player.Teleport(new Float3(0f, 0.1f, -9f));
+                    Player.SetLook(0f, 12f);
+                }
+                break;
             case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
             case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
@@ -282,7 +297,14 @@ public sealed partial class SandboxGame : Game
         else if (Input.CursorLocked) Input.UnlockCursor();
 
         Vehicles.Tick(Time.DeltaTime, input);
-        if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
+        if (SeatedIn is { Alive: true } seat)
+        {
+            Float3 up = seat.Go.Transform.Up;
+            Player.UpdateSeated(seat.Go.Transform.Position + up * 0.75f, input);
+            if (input && (Input.GetKeyDown(KeyCode.E) || Input.GetKeyDown(KeyCode.Space))) { StandUp(); return; }
+        }
+        else if (SeatedIn is not null) StandUp();
+        else if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
         UpdateFlashlightZoom(dt, input);
         Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
         Fx.Tick(Time.DeltaTime);
@@ -301,6 +323,9 @@ public sealed partial class SandboxGame : Game
         if (InVehicle) { Carry.Drop(); return; }
         if (Health.Dead) return;
         if (Input.GetKeyDown(KeyCode.F) && Weapons.Current is not ToolGunWeapon) ToggleFlashlight();
+        if (SeatedIn is not null) { Weapons.Tick(this, new WeaponInput(Input.GetMouseButtonDown(0), Input.GetMouseButton(0), Input.GetMouseButtonUp(0), Input.GetMouseButtonDown(1), Input.GetMouseButton(1), Input.GetKeyDown(KeyCode.R), 0f, false), dt); return; }
+        if (Input.GetKeyDown(KeyCode.E) && aimed?.Go.GetComponent<Seat>() is not null && Carry.Held is null
+            && Float3.Length(aimed.Go.Transform.Position - Player.EyePosition) < 3.5f) { SitIn(aimed); return; }
         if (Input.GetKeyDown(KeyCode.E) && IsRoleplay && aimed is not null && aimed.Entity?.StartsWith("rp_") == true
             && Float3.Length(aimed.Go.Transform.Position - Player.EyePosition) < 3.5f) { Notify(Roleplay.Use(aimed)); return; }
         if (Input.GetKeyDown(KeyCode.E)) Notify(Carry.Use(this));
@@ -478,6 +503,7 @@ public sealed partial class SandboxGame : Game
 
     public void ClearMap(bool notify = true)
     {
+        StandUp();
         PhysGun.Release(keepVelocity: false);
         ToolGun.CancelPending();
         Vehicles.ClearAll();
@@ -550,6 +576,26 @@ public sealed partial class SandboxGame
         Player.Gravity = 20f * g / 9.81f;
         if (Meta is { } m) m.Modifiers.Gravity = g;
         foreach (Prop p in Props.Props) if (!p.Frozen) p.Body.SetActive(true); // wake sleepers so they feel the change
+    }
+
+    /// <summary>The seat prop the player is riding, if any.</summary>
+    public Prop? SeatedIn { get; private set; }
+
+    public void SitIn(Prop seat)
+    {
+        PhysGun.Release(keepVelocity: false);
+        SeatedIn = seat;
+        Player.Teleport(seat.Go.Transform.Position - new Float3(0f, 200f, 0f), moveCamera: false);
+        Notify($"Sitting in {seat.Go.Name.Split(" #")[0]} · E to stand up");
+        Sounds.Play("sfx_door", 0.4f, seat.Go.Transform.Position);
+    }
+
+    public void StandUp()
+    {
+        if (SeatedIn is not { } s) return;
+        SeatedIn = null;
+        Float3 at = s.Alive ? s.Go.Transform.Position + new Float3(0f, 0.2f, 0f) - Float3.Normalize(new Float3(Player.Forward.X, 0f, Player.Forward.Z) + new Float3(0.0001f, 0f, 0f)) * 0.9f : Player.EyePosition;
+        Player.Teleport(new Float3(at.X, MathF.Max(at.Y, (s.Alive ? s.Go.Transform.Position.Y : at.Y) - 0.3f), at.Z));
     }
 
     public void ToggleFlashlight()

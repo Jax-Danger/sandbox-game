@@ -170,7 +170,7 @@ public sealed class SpawnMenu(IconRenderer icons)
     {
         bool press = hover && paper.IsPointerDown(PaperMouseBtn.Left);
         float k = Ui.SpringTo($"tile_{entry.Id}", press ? 0.94f : hover ? 1.05f : 1f, 1f);
-        var rt = entry.Kind is { } kind ? icons.Get(kind) : null;
+        var rt = entry.Kind is { } kind ? icons.Get(kind) : icons.Get(entry.Id);
         float a = Ui.Alpha;
         SpawnEntry captured = entry;
         Icon icon = entry.Icon;

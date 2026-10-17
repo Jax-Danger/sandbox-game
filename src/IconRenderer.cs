@@ -20,6 +20,8 @@ public sealed class IconRenderer
     public string? Error { get; private set; }
 
     public RenderTexture? Get(PropKind kind) => _icons.GetValueOrDefault(kind);
+    private readonly Dictionary<string, RenderTexture> _models = [];
+    public RenderTexture? Get(string spawnId) => _models.GetValueOrDefault(spawnId);
 
     public void RenderAll(Shader shader)
     {
@@ -29,6 +31,8 @@ public sealed class IconRenderer
         {
             foreach (PropKind kind in PropManager.AllKinds)
                 _icons[kind] = RenderOne(kind, shader);
+            foreach (ModelDef def in ModelProps.All)
+                _models["prop_" + def.Id] = RenderOne(PropKind.Cube, shader, def);
             Ready = true;
             Console.WriteLine($"Rendered {_icons.Count} prop thumbnails.");
         }
@@ -39,7 +43,7 @@ public sealed class IconRenderer
         }
     }
 
-    private static RenderTexture RenderOne(PropKind kind, Shader shader)
+    private static RenderTexture RenderOne(PropKind kind, Shader shader, ModelDef? model = null)
     {
         var scene = new Scene { Name = $"Icon {kind}" };
 
@@ -60,13 +64,23 @@ public sealed class IconRenderer
         scene.Add(lightGo);
 
         var subject = new GameObject("IconSubject");
-        MeshRenderer r = subject.AddComponent<MeshRenderer>();
         (Mesh mesh, float extent) = MeshFor(kind);
-        r.Mesh = mesh;
         var mat = Mats.New(shader);
         mat.SetColor("_MainColor", PropManager.IconColor(kind));
         SurfaceMaterial.Get(PropManager.DefaultSurface(kind)).ApplyVisual(mat);
-        r.Material = mat;
+        if (model is null)
+        {
+            MeshRenderer r = subject.AddComponent<MeshRenderer>();
+            r.Mesh = mesh;
+            r.Material = mat;
+        }
+        else
+        {
+            if (model.Parts.FirstOrDefault(p => p.Paint) is { } paint) mat.SetColor("_MainColor", paint.Color);
+            ModelProps.BuildParts(subject, model, shader, mat);
+            Float3 c = model.Collider;
+            extent = MathF.Sqrt(c.X * c.X + c.Y * c.Y + c.Z * c.Z) * 0.5f;
+        }
         subject.Transform.LocalEulerAngles = new Float3(kind == PropKind.Ramp ? -20f : 0f, 25f, 0f);
         scene.Add(subject);
 
