@@ -514,6 +514,7 @@ public sealed partial class SandboxGame : Game
     {
         if (entry.Tab != MenuTab.Weapons && Props.Props.Count >= PropLimit) return $"Prop limit reached ({PropLimit}). Clean up with Undo or Clear map.";
         if (entry.Tab != MenuTab.Weapons && IsRoleplay && !Roleplay.ChargeForProp()) return $"You need ${RoleplaySystem.PropCost} to spawn that";
+        if (entry.Tab != MenuTab.Weapons) SpawnMenu.PushRecent(entry.Id);
         Float3 pos;
         if (Player.Trace(40f, out RaycastHit hit))
             pos = hit.Point + hit.Normal * (entry.HalfHeight + 0.1f) + new Float3(0f, 0.1f, 0f);

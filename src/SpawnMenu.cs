@@ -15,6 +15,17 @@ public sealed class SpawnMenu(IconRenderer icons)
 {
     private float _openness;
     private string _category = "All";
+    public const string RecentCategory = "Recent";
+    public const int RecentMax = 12;
+    private static readonly List<string> _recent = [];
+    /// <summary>Most-recently spawned entries (this session, newest first), shown as the "Recent" spawnlist.</summary>
+    public static IReadOnlyList<string> Recent => _recent;
+    public static void PushRecent(string id)
+    {
+        _recent.Remove(id);
+        _recent.Insert(0, id);
+        if (_recent.Count > RecentMax) _recent.RemoveRange(RecentMax, _recent.Count - RecentMax);
+    }
     private float _scroll;
     private string _search = "";
     private static float _toolScroll;
@@ -127,13 +138,15 @@ public sealed class SpawnMenu(IconRenderer icons)
         Ui.Text(paper, "sm_tree_hdr", ix + Theme.S(6), iy, w, Theme.S(20), Tab == MenuTab.Spawnlists ? "SPAWNLISTS" : Tab.ToString().ToUpperInvariant(),
             Theme.Micro, Theme.TextFaint, Theme.SemiBold);
         iy += Theme.S(22);
-        string[] cats = ["All", .. SpawnCatalog.Categories(Tab)];
+        string[] cats = Tab == MenuTab.Spawnlists && _recent.Count > 0
+            ? ["All", RecentCategory, .. SpawnCatalog.Categories(Tab)]
+            : ["All", .. SpawnCatalog.Categories(Tab)];
         foreach (string cat in cats)
         {
             string captured = cat;
             Ui.Button(paper, $"sm_cat_{Tab}_{cat}", ix, iy, w - 2 * Theme.S(6), Theme.S(26), cat,
                 () => { _category = captured; _scroll = 0f; }, selected: _category == cat, size: Theme.Caption,
-                align: TextAlignment.MiddleLeft, ghost: _category != cat, icon: Icon.Folder);
+                align: TextAlignment.MiddleLeft, ghost: _category != cat, icon: cat == RecentCategory ? Icon.Undo : Icon.Folder);
             iy += Theme.S(28);
         }
         if (Tab != MenuTab.Spawnlists) return;
@@ -156,7 +169,8 @@ public sealed class SpawnMenu(IconRenderer icons)
     private void DrawGrid(Paper paper, float x, float y, float w, float h, SandboxGame game)
     {
         bool userList = _category.StartsWith(UserPrefix);
-        List<string>? ids = userList && User.Lists.TryGetValue(_category[UserPrefix.Length..], out var l) ? l : null;
+        List<string>? ids = userList && User.Lists.TryGetValue(_category[UserPrefix.Length..], out var l) ? l
+            : _category == RecentCategory && Tab == MenuTab.Spawnlists ? [.. _recent] : null;
         SpawnEntry[] shown = (ids is not null
                 ? ids.Select(id => SpawnCatalog.Entries.FirstOrDefault(e => e.Id == id)).OfType<SpawnEntry>()
                 : SpawnCatalog.Entries.Where(e => e.Tab == Tab && (_category == "All" || e.Category == _category)))

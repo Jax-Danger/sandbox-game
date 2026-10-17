@@ -518,6 +518,18 @@ public sealed class SelfTest
                 RegressionTests(g);
                 ConsoleTest(g);
                 AchievementsTest(g);
+                {
+                    g.ClearMap(notify: false);
+                    var ents = SpawnCatalog.Entries.Where(e => e.Tab == MenuTab.Spawnlists).Take(15).ToArray();
+                    foreach (var e in ents) g.Spawn(e);
+                    g.Spawn(ents[3]);
+                    var w = SpawnCatalog.Entries.FirstOrDefault(e => e.Tab == MenuTab.Weapons);
+                    if (w is not null) g.Spawn(w);
+                    Check(SpawnMenu.Recent.Count == SpawnMenu.RecentMax && SpawnMenu.Recent[0] == ents[3].Id && SpawnMenu.Recent.Distinct().Count() == SpawnMenu.Recent.Count
+                        && (w is null || !SpawnMenu.Recent.Contains(w.Id)), "Recent spawnlist: newest first, deduped, capped, no weapons");
+                    g.ClearMap(notify: false);
+                    g.Weapons.Select(g, g.Weapons.All[0]);
+                }
                 MarkersTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
