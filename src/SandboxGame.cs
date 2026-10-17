@@ -37,6 +37,7 @@ public sealed partial class SandboxGame : Game
     public DirectionalLight Sun { get; private set; } = null!;
 
     private readonly Hud _hud = new();
+    public Hud Hud => _hud;
     private readonly IconRenderer _icons = new();
     private SpawnMenu _spawnMenu = null!;
     public ContextMenu Context { get; } = new();
@@ -53,11 +54,14 @@ public sealed partial class SandboxGame : Game
     public bool PhotoMode { get; set; }
 
     public void Enqueue(Action a) => _pending.Enqueue(a);
-    public void Notify(string? message, ToastKind? kind = null) => _hud.Notify(message, kind);
+    public void Notify(string? message, ToastKind? kind = null) { _hud.Notify(message, kind); if (message is not null) Achievements.Observe(message); }
+    public Achievements Achievements { get; } = new();
 
     public override void Initialize()
     {
         Settings = Application.IsHeadless ? new Settings() : Settings.Load();
+        Achievements.Load();
+        Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_click", 0.7f); };
         World = new Scene();
         Shader = Shader.LoadDefault(DefaultShader.Standard);
         Sun = MapBuilder.Build(World, Shader);
@@ -307,6 +311,7 @@ public sealed partial class SandboxGame : Game
         if (Session is not null && SelfTest is null) TickAutosave(dt);
         if (menuWorld) OrbitMenuCamera();
         Health.Tick(this, Time.DeltaTime);
+        Achievements.Tick(this, dt);
         if (DayNight.Enabled) DayNight.Tick(this, Time.DeltaTime);
         if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 

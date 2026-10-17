@@ -517,6 +517,7 @@ public sealed class SelfTest
                 TownTest(g);
                 RegressionTests(g);
                 ConsoleTest(g);
+                AchievementsTest(g);
                 MarkersTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
@@ -773,6 +774,41 @@ public sealed class SelfTest
         string next = SandboxGame.NextScreenshotPath(new DateTime(2026, 1, 2, 3, 4, 5));
         Check(next.EndsWith("sandbox_2026-01-02_03-04-05.png"), "screenshot names are timestamped");
         try { Directory.Delete(dir, true); } catch { }
+    }
+
+    /// <summary>Achievements unlock once from events and polled state, persist, reload, and survive a corrupt file.</summary>
+    private void AchievementsTest(SandboxGame g)
+    {
+        string old = Achievements.FilePath;
+        string dir = Path.Combine(Path.GetTempPath(), $"sandbox ach ü {Environment.ProcessId}");
+        Achievements.FilePath = Path.Combine(dir, "achievements.json");
+        try
+        {
+            var a = g.Achievements;
+            a.Load();
+            int fired = 0; void On(Achievement _) => fired++;
+            a.OnUnlock += On;
+            g.ClearMap(notify: false);
+            g.Notify("Welded Cube #1 to Cube #2");
+            g.DevConsole.Execute(g, "gravity 2");
+            for (int i = 0; i < 26; i++) g.Props.Spawn(PropKind.Cube, new Float3(-30f + i % 6 * 1.2f, 0.6f + i / 6 * 1.2f, 70f), 0f, recordUndo: false);
+            a.Tick(g, 1f);
+            g.DevConsole.Execute(g, "gravity 9.81");
+            bool got = a.Has("welder") && a.Has("hacker") && a.Has("mad_scientist") && a.Has("builder") && !a.Has("architect");
+            Check(got && g.Hud.ActiveToasts.Any(t => t.StartsWith("Achievement unlocked")), $"achievements unlock from events + state ({string.Join(",", a.Unlocked)})");
+            int before = fired;
+            g.Notify("Welded again"); a.Tick(g, 1f);
+            Check(fired == before, "achievements fire only once");
+            a.OnUnlock -= On;
+            int n = a.Unlocked.Count;
+            a.Load();
+            Check(a.Unlocked.Count == n && a.Has("welder"), "achievements persist and reload");
+            File.WriteAllText(Achievements.FilePath, "{not json");
+            bool ok = true; try { a.Load(); } catch { ok = false; }
+            Check(ok && a.Unlocked.Count == 0, "corrupt achievements file loads as empty");
+            g.ClearMap(notify: false);
+        }
+        finally { Achievements.FilePath = old; g.Achievements.Load(); try { Directory.Delete(dir, true); } catch { } }
     }
 
     private void RegressionTests(SandboxGame g)

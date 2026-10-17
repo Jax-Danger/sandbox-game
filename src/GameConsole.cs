@@ -18,9 +18,9 @@ public sealed class GameConsole
     private string _input = "";
     private readonly List<(string text, Color color)> _log = [];
     private readonly List<string> _history = [];
-    private int _histIdx = -1, _focusFrames;
+    private int _histIdx = -1, _focusFrames, _scroll;
     public IReadOnlyList<(string text, Color color)> Log => _log;
-    public const int MaxLog = 200;
+    public const int MaxLog = 200, Rows = 14;
 
     private sealed record Cmd(string Name, string Usage, string Help, Func<SandboxGame, string[], string?> Run);
     private readonly Dictionary<string, Cmd> _cmds = new(StringComparer.OrdinalIgnoreCase);
@@ -71,6 +71,8 @@ public sealed class GameConsole
         Add("kill", "kill", "Respawn yourself", (g, a) => { if (g.Player.Noclip) g.Player.ToggleNoclip(); g.Health.Damage(g, 10000f, "console"); return null; });
         Add("photo", "photo", "Toggle photo mode (hides the HUD, F1)", (g, a) => { g.PhotoMode = !g.PhotoMode; return g.PhotoMode ? "Photo mode on (F1 to exit)" : "Photo mode off"; });
         Add("screenshot", "screenshot", "Save a screenshot (F12)", (g, a) => { g.RequestScreenshot(); return "Screenshot queued"; });
+        Add("achievements", "achievements", "List achievements", (g, a) =>
+            $"{g.Achievements.Unlocked.Count}/{Achievements.All.Length} unlocked\n" + string.Join("\n", Achievements.All.Select(x => $"{(g.Achievements.Has(x.Id) ? "✓ " : "· ")}{x.Name}\t{x.Description}{(x.Roleplay ? " (RP)" : "")}")));
         Add("echo", "echo <text>", "Print text", (g, a) => string.Join(' ', a));
     }
 
@@ -92,6 +94,7 @@ public sealed class GameConsole
     {
         foreach (string line in text.Replace("\r", "").Split('\n')) _log.Add((line, color ?? Theme.TextMuted));
         if (_log.Count > MaxLog) _log.RemoveRange(0, _log.Count - MaxLog);
+        _scroll = 0;
     }
 
     /// <summary>Runs one line. Returns false if it was an error. Unknown words without '/' are chat.</summary>
@@ -112,6 +115,7 @@ public sealed class GameConsole
             return true;
         }
         Print("> " + line, Theme.TextFaint);
+        if (cmd.Name is not ("help" or "echo" or "clear" or "achievements")) g.Achievements.Event("hacker");
         try
         {
             string? r = cmd.Run(g, parts[1..]);
@@ -149,6 +153,10 @@ public sealed class GameConsole
             if (line.Length == 0) Toggle(false);
             _focusFrames = 2;
         }
+        float wheel = Input.MouseWheelDelta;
+        if (wheel != 0f) _scroll = Math.Clamp(_scroll + (wheel > 0 ? 3 : -3), 0, Math.Max(0, _log.Count - Rows));
+        if (Input.GetKeyDown(KeyCode.PageUp)) _scroll = Math.Clamp(_scroll + Rows - 1, 0, Math.Max(0, _log.Count - Rows));
+        if (Input.GetKeyDown(KeyCode.PageDown)) _scroll = Math.Max(0, _scroll - (Rows - 1));
         if (_history.Count > 0 && Input.GetKeyDown(KeyCode.Up))
         {
             _histIdx = _histIdx < 0 ? _history.Count - 1 : Math.Max(0, _histIdx - 1);
@@ -167,13 +175,14 @@ public sealed class GameConsole
     {
         if (!Open) return;
         float pad = Theme.S(12), pw = MathF.Min(w - Theme.S(32), Theme.S(620)), lineH = Theme.S(Theme.Body) * 1.45f;
-        int rows = 12;
+        int rows = Rows;
         float ih = Theme.S(30), ph = pad * 3f + rows * lineH + ih;
         float x = Theme.S(20), y = h - ph - Theme.S(104);
         Ui.Glass(paper, "con_bg", x, y, pw, ph, Theme.S(Theme.Radius));
-        Ui.Text(paper, "con_title", x + pad, y + Theme.S(6), pw, Theme.S(16), "CONSOLE  ·  help for commands  ·  Esc closes", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
-        int start = Math.Max(0, _log.Count - rows);
-        for (int i = start; i < _log.Count; i++)
+        Ui.Text(paper, "con_title", x + pad, y + Theme.S(6), pw, Theme.S(16), "CONSOLE  ·  help for commands  ·  wheel/PgUp scrolls  ·  Esc closes", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+        int end = Math.Max(0, _log.Count - _scroll), start = Math.Max(0, end - rows);
+        if (_scroll > 0) Ui.Text(paper, "con_more", x + pad, y + Theme.S(6), pw - pad * 2f, Theme.S(16), $"↓ {_scroll} newer · PgDn", Theme.Micro, Theme.Accent, Theme.SemiBold, TextAlignment.MiddleRight);
+        for (int i = start; i < end; i++)
         {
             (string text, Color color) = _log[i];
             float ly = y + pad + Theme.S(8) + (i - start) * lineH;
