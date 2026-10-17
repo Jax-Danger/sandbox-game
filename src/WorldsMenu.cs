@@ -172,7 +172,7 @@ public sealed partial class Menus
         Ui.Button(paper, "wm_cancel", mx + mw - pad - Theme.S(232), my + mh - pad - bh, Theme.S(104), bh, "Cancel", () => _modal = null, ghost: true, radius: bh / 2f);
     }
 
-    private static void TextInput(Paper paper, string id, float x, float y, float w, float h, string value, Action<string> set, string placeholder)
+    public static void TextInput(Paper paper, string id, float x, float y, float w, float h, string value, Action<string> set, string placeholder)
     {
         Ui.Panel(paper, id + "_bg", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
         float lh = Theme.S(Theme.Body) * 1.3f;

@@ -58,10 +58,10 @@ public static class MapSave
     private static float[] F(Float3 v) => [v.X, v.Y, v.Z];
     private static Float3 V(float[] a) => a.Length >= 3 ? new Float3(a[0], a[1], a[2]) : Float3.Zero;
 
-    public static SaveData Capture(SandboxGame g)
+    public static SaveData Capture(SandboxGame g, ICollection<Prop>? only = null)
     {
         var data = new SaveData();
-        List<Prop> list = g.Props.Props.Where(p => p.Kind != PropKind.Limb).ToList();
+        List<Prop> list = g.Props.Props.Where(p => p.Kind != PropKind.Limb && (only is null || only.Contains(p))).ToList();
         int Idx(Rigidbody3D? b) => b is null ? -1 : list.FindIndex(p => ReferenceEquals(p.Body, b));
 
         foreach (Prop p in list)
@@ -126,6 +126,7 @@ public static class MapSave
                     Speed = m.Speed, Fwd = m.Fwd.ToString(), Back = m.Back.ToString(),
                 });
             }
+        if (only is not null) return data;
         foreach (Ragdoll rd in Ragdoll.All.Where(r => r.Alive))
         {
             Float3 pp = rd.Pelvis.Go.Transform.Position;

@@ -535,6 +535,26 @@ public sealed class SelfTest
             int before = g.Props.Props.Count;
             string st = g.ToolGun.Stack(chair, Float3.UnitY, 3, true);
             Check(g.Props.Props.Count == before + 3 && g.Props.Props.Skip(before).All(p => p.Entity == "mdl_chair"), $"stacker stacks 3 copies ({st})");
+            {
+                // Dupes: copy a welded 3-prop contraption, paste it, save it as a file, list it.
+                Prop d1 = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 0.6f, 40f), 0f, recordUndo: false), d2 = g.Props.Spawn(PropKind.Cube, new Float3(-39f, 0.6f, 40f), 0f, recordUndo: false), d3 = g.Props.Spawn(PropKind.Sphere, new Float3(-38f, 0.6f, 40f), 0f, recordUndo: false);
+                g.ToolGun.Weld(d1, d2, recordUndo: false); g.ToolGun.Weld(d2, d3, recordUndo: false);
+                MapSave.SaveData dupe = Dupes.Copy(g, d1);
+                Check(dupe.Props.Count == 3 && dupe.Welds.Count >= 2, $"duplicator copies the whole contraption ({dupe.Props.Count} props, {dupe.Welds.Count} welds)");
+                int n0 = g.Props.Props.Count;
+                List<Prop> made = Dupes.Paste(g, dupe, new Float3(-40f, 0f, 30f), 90f);
+                Check(made.Count == 3 && made.All(p => MathF.Abs(p.Go.Transform.Position.Z - 30f) < 1.6f) && made.Count(p => p.Go.GetComponent<FixedAngleConstraint>().IsValid()) >= 2,
+                    "pasted dupe lands at the aim point, rotated, still welded");
+                g.Props.Undo();
+                Check(g.Props.Props.Count == n0, "one undo removes the whole pasted dupe");
+                string path = Dupes.Save("Test Rig", dupe);
+                Check(File.Exists(path) && Dupes.List().Any(x => x.File.Name == "Test Rig" && x.File.Props == 3) && !Worlds.List().Any(w => w.Folder.Contains("dupes")),
+                    "dupe saved to file and listed in the dupes browser");
+                var lists = new UserSpawnlists(Path.Combine(Worlds.Root, "spawnlists.json"));
+                lists.Add("Builds", "prop_chair"); lists.Add("Builds", "prop_table"); lists.Add("Builds", "prop_chair");
+                var re = new UserSpawnlists(lists.Path);
+                Check(re.Lists.TryGetValue("Builds", out var ids) && ids.Count == 2, "user spawnlist persists without duplicates");
+            }
             g.SitIn(chair);
             Check(ReferenceEquals(g.SeatedIn, chair), "E on a seat sits the player in it");
             g.StandUp();

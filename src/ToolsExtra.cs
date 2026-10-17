@@ -24,9 +24,10 @@ public sealed partial class ToolGun
     public static KeyCode[] ThrusterKeys => BindKeys;
     public static readonly (KeyCode Fwd, KeyCode Back)[] WheelKeyPairs = [(KeyCode.T, KeyCode.G), (KeyCode.Y, KeyCode.H), (KeyCode.U, KeyCode.J), (KeyCode.Keypad8, KeyCode.Keypad2), (KeyCode.Keypad4, KeyCode.Keypad6), (KeyCode.Keypad7, KeyCode.Keypad1), (KeyCode.Keypad9, KeyCode.Keypad3)];
 
-    private sealed record Copy(PropKind Kind, Color Color, string Surface, float Mass, bool Frozen);
-    private Copy? _copy;
-    public bool HasCopy => _copy is not null;
+    /// <summary>The Duplicator's clipboard: a whole contraption, stored relative to its bottom-centre.</summary>
+    public MapSave.SaveData? Dupe { get; set; }
+    public string DupeName { get; set; } = "";
+    public bool HasCopy => Dupe is not null;
     public Prop? PendingLink => _linkFirst is { Alive: true } ? _linkFirst : null;
 
     public static Color HueColor(float h, float s = 0.7f, float v = 0.95f)
@@ -77,8 +78,9 @@ public sealed partial class ToolGun
             case ToolMode.Duplicator:
                 if (player.Trace(120f, out RaycastHit hit) && props.FromBody(hit.Rigidbody) is { Kind: not PropKind.Limb } p)
                 {
-                    _copy = new Copy(p.Kind, p.BaseColor, p.Surface, p.Body.Mass, p.Frozen);
-                    return $"Copied {p.Go.Name}";
+                    Dupe = Dupes.Copy(Game!, p);
+                    DupeName = Dupe.Props.Count > 1 ? $"{p.Go.Name} contraption" : p.Go.Name;
+                    return Dupe.Props.Count > 1 ? $"Copied {Dupe.Props.Count} props" : $"Copied {p.Go.Name}";
                 }
                 return "Look at a prop to copy it";
             case ToolMode.Colour:
@@ -254,13 +256,9 @@ public sealed partial class ToolGun
 
     private string Paste(RaycastHit hit)
     {
-        if (_copy is not { } c) return "Right click a prop to copy it first";
-        Prop p = props.Spawn(c.Kind, hit.Point + hit.Normal * (PropManager.HalfHeightOf(c.Kind) + 0.05f), 0f);
-        p.SetColor(c.Color);
-        p.SetSurface(SurfaceMaterial.Get(c.Surface));
-        p.SetMass(c.Mass);
-        if (c.Frozen) p.SetFrozen(true);
-        return $"Pasted {p.Go.Name}";
+        if (Dupe is not { } d) return "Right click a prop to copy it first";
+        List<Prop> made = Dupes.Paste(Game!, d, hit.Point, Game!.Player.Yaw);
+        return made.Count == 1 ? $"Pasted {made[0].Go.Name}" : $"Pasted {made.Count} props";
     }
 }
 

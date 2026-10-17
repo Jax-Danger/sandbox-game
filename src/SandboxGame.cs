@@ -194,6 +194,19 @@ public sealed partial class SandboxGame : Game
                 }
                 break;
             case "tools2": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Hoverball); break;
+            case "dupes":
+                Menus.Go(Screen.Playing); ClearMap(false);
+                {
+                    Prop a = Props.Spawn(PropKind.Cube, new Float3(0f, 0.6f, 4f), 0f, recordUndo: false), b = Props.Spawn(PropKind.Plank, new Float3(0f, 1.3f, 4f), 0f, recordUndo: false);
+                    ToolGun.Weld(a, b, recordUndo: false);
+                    ToolGun.Dupe = Dupes.Copy(this, a); ToolGun.DupeName = "Cube tower";
+                    Dupes.Save("Hover platform", ToolGun.Dupe); Dupes.Save("Catapult", ToolGun.Dupe); Dupes.Save("Cube tower", ToolGun.Dupe);
+                }
+                _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Dupes; break;
+            case "myspawn":
+                Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists;
+                _spawnMenu.User.Add("Living room", "prop_sofa"); _spawnMenu.User.Add("Living room", "prop_tv"); _spawnMenu.User.Add("Living room", "prop_lamp"); _spawnMenu.User.Add("Living room", "prop_plant");
+                _spawnMenu.ShowUserList("Living room"); break;
             case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
             case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;

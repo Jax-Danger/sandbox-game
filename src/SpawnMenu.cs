@@ -4,7 +4,7 @@ using Color = System.Drawing.Color;
 
 namespace Sandbox;
 
-public enum MenuTab { Spawnlists, Entities, Vehicles, Weapons, Tools, Utilities }
+public enum MenuTab { Spawnlists, Entities, Vehicles, Weapons, Tools, Dupes, Utilities }
 
 /// <summary>
 /// Spawn menu: Garry's Mod structure (tabs, category tree, icon grid, tools + context panel)
@@ -16,6 +16,12 @@ public sealed class SpawnMenu(IconRenderer icons)
     private string _category = "All";
     private float _scroll;
     private string _search = "";
+    private static float _toolScroll;
+    private UserSpawnlists? _user;
+    public UserSpawnlists User => _user ??= new UserSpawnlists(System.IO.Path.Combine(Worlds.Root, "spawnlists.json"));
+    private string _pinTarget = "My Spawnlist";
+    private const string UserPrefix = "user:";
+    public void ShowUserList(string name) { _category = UserPrefix + name; _pinTarget = name; }
     private readonly Spring _open = new(0f);
 
     public bool Open { get; set; }
@@ -26,6 +32,7 @@ public sealed class SpawnMenu(IconRenderer icons)
     private static Icon TabIcon(MenuTab t) => t switch
     {
         MenuTab.Spawnlists => Icon.Grid,
+        MenuTab.Dupes => Icon.Copy,
         MenuTab.Entities => Icon.Bolt,
         MenuTab.Vehicles => Icon.Car,
         MenuTab.Weapons => Icon.Pistol,
@@ -68,6 +75,9 @@ public sealed class SpawnMenu(IconRenderer icons)
             case MenuTab.Tools:
                 DrawToolList(paper, x0 + pad, bodyY, sideW, bodyH, game);
                 DrawToolSettings(paper, mainX, bodyY, mainW, bodyH, game);
+                break;
+            case MenuTab.Dupes:
+                DrawDupes(paper, x0 + pad, bodyY, sideW, mainX, mainW, bodyH, game);
                 break;
             case MenuTab.Utilities:
                 DrawUtilities(paper, x0 + pad, bodyY, pw - 2 * pad, bodyH, game);
@@ -114,16 +124,34 @@ public sealed class SpawnMenu(IconRenderer icons)
                 align: TextAlignment.MiddleLeft, ghost: _category != cat, icon: cat == "All" ? Icon.Folder : Icon.Folder);
             iy += Theme.S(36);
         }
+        if (Tab != MenuTab.Spawnlists) return;
+        iy += Theme.S(10);
+        Ui.Text(paper, "sm_tree_user", ix + Theme.S(6), iy, w, Theme.S(24), "MY SPAWNLISTS", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+        iy += Theme.S(28);
+        foreach (string name in User.Lists.Keys)
+        {
+            string key = UserPrefix + name, captured = name;
+            Ui.Button(paper, $"sm_ucat_{name}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32), name,
+                () => { _category = UserPrefix + captured; _pinTarget = captured; _scroll = 0f; }, selected: _category == key, size: Theme.Body,
+                align: TextAlignment.MiddleLeft, ghost: _category != key, icon: Icon.Pencil);
+            iy += Theme.S(36);
+        }
+        Ui.Button(paper, "sm_ucat_new", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32), "New spawnlist",
+            () => { string n = User.Create(); _category = UserPrefix + n; _pinTarget = n; }, size: Theme.Body,
+            align: TextAlignment.MiddleLeft, ghost: true, icon: Icon.Plus);
     }
 
     private void DrawGrid(Paper paper, float x, float y, float w, float h, SandboxGame game)
     {
-        SpawnEntry[] shown = SpawnCatalog.Entries
-            .Where(e => e.Tab == Tab && (_category == "All" || e.Category == _category))
+        bool userList = _category.StartsWith(UserPrefix);
+        List<string>? ids = userList && User.Lists.TryGetValue(_category[UserPrefix.Length..], out var l) ? l : null;
+        SpawnEntry[] shown = (ids is not null
+                ? ids.Select(id => SpawnCatalog.Entries.FirstOrDefault(e => e.Id == id)).OfType<SpawnEntry>()
+                : SpawnCatalog.Entries.Where(e => e.Tab == Tab && (_category == "All" || e.Category == _category)))
             .Where(e => _search.Length == 0 || e.Name.Contains(_search, StringComparison.OrdinalIgnoreCase))
             .ToArray();
 
-        Ui.Text(paper, "sm_grid_title", x + Theme.S(4), y, w, Theme.S(26), _category == "All" ? $"All {Tab}" : _category,
+        Ui.Text(paper, "sm_grid_title", x + Theme.S(4), y, w, Theme.S(26), _category == "All" ? $"All {Tab}" : userList ? _category[UserPrefix.Length..] : _category,
             Theme.Title, Theme.Text, Theme.SemiBold);
         Ui.Text(paper, "sm_grid_count", x, y, w - Theme.S(4), Theme.S(26), $"{shown.Length} item{(shown.Length == 1 ? "" : "s")}",
             Theme.Caption, Theme.TextFaint, align: TextAlignment.MiddleRight);
@@ -131,8 +159,8 @@ public sealed class SpawnMenu(IconRenderer icons)
 
         if (shown.Length == 0)
         {
-            DrawEmpty(paper, x, gy, w, gh, _search.Length > 0 ? "No matches" : "Nothing here yet",
-                _search.Length > 0 ? $"Nothing called \"{_search}\"." : "More content is coming in a future update.");
+            DrawEmpty(paper, x, gy, w, gh, _search.Length > 0 ? "No matches" : userList ? "Empty spawnlist" : "Nothing here yet",
+                _search.Length > 0 ? $"Nothing called \"{_search}\"." : userList ? "Hover any item and press + to add it here." : "More content is coming in a future update.");
             return;
         }
 
@@ -155,6 +183,15 @@ public sealed class SpawnMenu(IconRenderer icons)
                 bool hover = paper.IsPointerOverRect(x + lx, gy + ly, tile, tile) && paper.IsPointerOverRect(x, gy, w, gh);
                 if (hover) hovered = entry;
                 DrawTile(paper, entry, lx, ly, tile, hover, game);
+                if (hover && entry.Tab != MenuTab.Weapons)
+                {
+                    float bs = Theme.S(24);
+                    SpawnEntry ce = entry;
+                    string list = userList ? _category[UserPrefix.Length..] : _pinTarget;
+                    Ui.Button(paper, $"sm_pin_{entry.Id}", lx + tile - bs - Theme.S(6), ly + Theme.S(6), bs, bs, "",
+                        () => { if (userList) User.Remove(list, ce.Id); else { User.Add(list, ce.Id); game.Notify($"Added {ce.Name} to {list}"); } },
+                        icon: userList ? Icon.Trash : Icon.Plus, radius: bs / 2f, size: Theme.Caption);
+                }
             }
         }
 
@@ -222,8 +259,19 @@ public sealed class SpawnMenu(IconRenderer icons)
     private static void DrawToolList(Paper paper, float x, float y, float w, float h, SandboxGame game)
     {
         Ui.Panel(paper, "sm_tools", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
-        float ix = x + Theme.S(Theme.Sm), iy = y + Theme.S(Theme.Sm);
-        foreach (IGrouping<string, ToolInfo> group in ToolGun.AllTools.GroupBy(t => t.Category))
+        var groups = ToolGun.AllTools.GroupBy(t => t.Category).ToArray();
+        float contentH = Theme.S(Theme.Sm) * 2 + groups.Sum(gr => Theme.S(26) + gr.Count() * Theme.S(34) + Theme.S(6));
+        float maxScroll = MathF.Max(0f, contentH - h);
+        _toolScroll = Math.Clamp(_toolScroll, 0f, maxScroll);
+        using var _box = paper.Box("sm_tools_clip").PositionType(PositionType.SelfDirected).Position(x, y).Size(w, h).Clip()
+            .OnScroll(e => _toolScroll = Math.Clamp(_toolScroll - (float)e.Delta * Theme.S(60), 0f, maxScroll)).Enter();
+        float ix = Theme.S(Theme.Sm), iy = Theme.S(Theme.Sm) - _toolScroll;
+        if (maxScroll > 0f)
+        {
+            float barH = h * h / contentH, barY = (h - barH) * (_toolScroll / maxScroll);
+            Ui.Rect(paper, "sm_tools_bar", w - Theme.S(5), barY + Theme.S(4), Theme.S(3), barH - Theme.S(8), Theme.BorderStrong, Theme.S(2));
+        }
+        foreach (IGrouping<string, ToolInfo> group in groups)
         {
             Ui.Text(paper, $"sm_tcat_{group.Key}", ix + Theme.S(6), iy, w, Theme.S(24), group.Key.ToUpperInvariant(),
                 Theme.Micro, Theme.TextFaint, Theme.SemiBold);
@@ -232,10 +280,10 @@ public sealed class SpawnMenu(IconRenderer icons)
             {
                 ToolInfo captured = tool;
                 bool active = game.Weapons.IsToolGun && game.ToolGun.Mode == tool.Mode;
-                Ui.Button(paper, $"sm_tool_{tool.Mode}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(32),
+                Ui.Button(paper, $"sm_tool_{tool.Mode}", ix, iy, w - 2 * Theme.S(Theme.Sm), Theme.S(30),
                     tool.Name, () => game.SelectTool(captured.Mode), selected: active, ghost: !active,
                     size: Theme.Body, align: TextAlignment.MiddleLeft, icon: Icons.For(tool.Mode));
-                iy += Theme.S(36);
+                iy += Theme.S(34);
             }
             iy += Theme.S(6);
         }
@@ -348,6 +396,75 @@ public sealed class SpawnMenu(IconRenderer icons)
         Ui.Toggle(paper, "sm_util_fpst", rx + lw, cy, game.Settings.ShowFps, v => { game.Settings.ShowFps = v; game.Settings.Save(); });
         cy += Theme.S(36);
         Ui.Button(paper, "sm_util_heal", rx, cy, Theme.S(150), bh, "Heal", () => game.Enqueue(() => game.Health.Set(100f, game.Health.Armor)), icon: Icon.Heart, radius: bh / 2f);
+    }
+
+    // ---------------------------------------------------------------- dupes
+
+    private string _dupeName = "";
+    private List<(string Path, Dupes.DupeFile File)>? _dupes;
+    private float _dupesAge = 99f;
+
+    private void DrawDupes(Paper paper, float x, float y, float sideW, float mainX, float mainW, float h, SandboxGame game)
+    {
+        _dupesAge += 1f / 60f;
+        if (_dupes is null || _dupesAge > 2f) { _dupes = Dupes.List(); _dupesAge = 0f; }
+        ToolGun t = game.ToolGun;
+
+        // Left: clipboard card.
+        Ui.Panel(paper, "sm_dc", x, y, sideW, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
+        float ix = x + Theme.S(Theme.Md), iy = y + Theme.S(Theme.Md), iw = sideW - 2 * Theme.S(Theme.Md);
+        Ui.Text(paper, "sm_dc_h", ix, iy, iw, Theme.S(18), "CLIPBOARD", Theme.Micro, Theme.TextFaint, Theme.SemiBold);
+        iy += Theme.S(24);
+        Ui.Icon(paper, "sm_dc_ic", ix, iy + Theme.S(2), Theme.S(18), Icon.Copy, t.HasCopy ? Theme.Accent : Theme.TextFaint);
+        Ui.Text(paper, "sm_dc_n", ix + Theme.S(26), iy, iw - Theme.S(26), Theme.S(22), t.HasCopy ? t.DupeName : "Nothing copied", Theme.Body, Theme.Text, Theme.SemiBold);
+        iy += Theme.S(22);
+        Ui.Text(paper, "sm_dc_c", ix + Theme.S(26), iy, iw, Theme.S(18), t.HasCopy ? $"{t.Dupe!.Props.Count} props" : "Duplicator: right click a contraption", Theme.Caption, Theme.TextMuted);
+        iy += Theme.S(34);
+        float bh = Theme.S(34);
+        Menus.TextInput(paper, "sm_dc_name", ix, iy, iw, bh, _dupeName, v => _dupeName = v, "Name this dupe…");
+        iy += bh + Theme.S(Theme.Sm);
+        Ui.Button(paper, "sm_dc_save", ix, iy, iw, bh, "Save dupe", () =>
+        {
+            if (t.Dupe is not { } d) { game.Notify("Copy something with the Duplicator first"); return; }
+            string n = _dupeName.Trim().Length > 0 ? _dupeName.Trim() : t.DupeName;
+            Dupes.Save(n, d); _dupeName = ""; _dupesAge = 99f; game.Notify($"Saved dupe \"{n}\"");
+        }, enabled: t.HasCopy, icon: Icon.Save, radius: bh / 2f);
+        iy += bh + Theme.S(Theme.Sm);
+        Ui.Button(paper, "sm_dc_tool", ix, iy, iw, bh, "Equip Duplicator", () => game.SelectTool(ToolMode.Duplicator), ghost: true, icon: Icon.Wrench, radius: bh / 2f);
+
+        // Right: saved dupes.
+        Ui.Text(paper, "sm_dl_t", mainX + Theme.S(4), y, mainW, Theme.S(26), "Saved Dupes", Theme.Title, Theme.Text, Theme.SemiBold);
+        Ui.Text(paper, "sm_dl_c", mainX, y, mainW - Theme.S(4), Theme.S(26), $"{_dupes.Count} saved", Theme.Caption, Theme.TextFaint, align: TextAlignment.MiddleRight);
+        float gy = y + Theme.S(38), gh = h - Theme.S(38);
+        if (_dupes.Count == 0)
+        {
+            DrawEmpty(paper, mainX, gy, mainW, gh, "No dupes yet", "Copy a contraption with the Duplicator, then save it here.");
+            return;
+        }
+        float cardW = Theme.S(250), cardH = Theme.S(92), gap = Theme.S(Theme.Md);
+        int cols = Math.Max(1, (int)((mainW + gap) / (cardW + gap)));
+        cardW = (mainW - gap * (cols - 1)) / cols;
+        for (int i = 0; i < _dupes.Count; i++)
+        {
+            var (path, f) = _dupes[i];
+            float cx = mainX + (i % cols) * (cardW + gap), cy = gy + (i / cols) * (cardH + gap);
+            if (cy + cardH > y + h) break;
+            Ui.Panel(paper, $"sm_dd_{i}", cx, cy, cardW, cardH, Theme.WithAlpha(Color.FromArgb(30, 255, 255, 255), 1f), Theme.S(Theme.Radius - 2), shadow: false).IsNotInteractable();
+            Ui.Icon(paper, $"sm_dd_ic_{i}", cx + Theme.S(14), cy + Theme.S(16), Theme.S(20), Icon.Cube, Theme.Accent);
+            Ui.Text(paper, $"sm_dd_n_{i}", cx + Theme.S(44), cy + Theme.S(10), cardW - Theme.S(54), Theme.S(22), f.Name, Theme.Body, Theme.Text, Theme.SemiBold);
+            Ui.Text(paper, $"sm_dd_m_{i}", cx + Theme.S(44), cy + Theme.S(30), cardW - Theme.S(54), Theme.S(18), $"{f.Props} props · {f.Created:MMM d, HH:mm}", Theme.Caption, Theme.TextMuted);
+            float by = cy + cardH - Theme.S(36), bw = Theme.S(96);
+            var cf = f; string cp = path;
+            Ui.Button(paper, $"sm_dd_l_{i}", cx + Theme.S(14), by, bw, Theme.S(26), "Load", () =>
+            {
+                t.Dupe = cf.Data; t.DupeName = cf.Name; game.SelectTool(ToolMode.Duplicator); game.Notify($"\"{cf.Name}\" on the Duplicator · left click to paste");
+            }, icon: Icon.Load, radius: Theme.S(13), size: Theme.Caption);
+            Ui.Button(paper, $"sm_dd_d_{i}", cx + Theme.S(14) + bw + Theme.S(6), by, Theme.S(32), Theme.S(26), "", () =>
+            {
+                try { File.Delete(cp); } catch { }
+                _dupesAge = 99f;
+            }, ghost: true, icon: Icon.Trash, radius: Theme.S(13), size: Theme.Caption);
+        }
     }
 
     private static void DrawEmpty(Paper paper, float x, float y, float w, float h, string title, string body)
