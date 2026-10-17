@@ -307,16 +307,47 @@ public sealed class SpawnMenu(IconRenderer icons)
         float bw = Theme.S(190), bh = Theme.S(38), gap = Theme.S(Theme.Md);
         Ui.Button(paper, "sm_util_undo", cx, cy, bw, bh, "Undo", () => game.Enqueue(game.Undo), icon: Icon.Undo, radius: bh / 2f);
         Ui.Button(paper, "sm_util_clear", cx + bw + gap, cy, bw, bh, "Clear props", () => game.Enqueue(() => game.ClearMap()), icon: Icon.Trash, radius: bh / 2f);
-        Ui.Button(paper, "sm_util_save", cx + 2 * (bw + gap), cy, bw, bh, "Save map", () => game.Enqueue(game.SaveMap), icon: Icon.Save, radius: bh / 2f);
-        Ui.Button(paper, "sm_util_load", cx + 3 * (bw + gap), cy, bw, bh, "Load map", () => game.Enqueue(game.LoadMap), icon: Icon.Load, radius: bh / 2f);
+        Ui.Button(paper, "sm_util_save", cx + 2 * (bw + gap), cy, bw, bh, game.Session is null ? "Save map" : "Save world",
+            () => game.Enqueue(() => { if (game.Session is null) game.SaveMap(); else { game.SaveSession(true, true); game.Notify("World saved"); } }), icon: Icon.Save, radius: bh / 2f);
         cy += bh + Theme.S(Theme.Xl);
-        Ui.Text(paper, "sm_util_t2", cx, cy, w, Theme.S(28), "Player", Theme.Title, Theme.Text, Theme.Bold);
+
+        // World: sky presets, day/night, gravity and time scale.
+        float colW = (w - 2 * pad - Theme.S(32)) / 2f, rx = cx + colW + Theme.S(32), ly = cy;
+        Ui.Text(paper, "sm_util_tw", cx, cy, w, Theme.S(28), "World", Theme.Title, Theme.Text, Theme.Bold);
         cy += Theme.S(34);
-        Ui.Text(paper, "sm_util_nc", cx, cy, w, Theme.S(22), "Noclip", Theme.Body, Theme.Text);
-        Ui.Toggle(paper, "sm_util_nct", cx + Theme.S(150), cy, game.Player.Noclip, _ => game.Player.ToggleNoclip());
+        Ui.Text(paper, "sm_util_sky", cx, cy, w, Theme.S(18), "Sky", Theme.Caption, Theme.TextMuted, Theme.SemiBold);
+        cy += Theme.S(22);
+        int cur = Array.FindIndex(DayNightCycle.Presets, p => MathF.Abs(p.Time - game.DayNight.TimeOfDay) < 0.01f);
+        Ui.Segmented(paper, "sm_util_skyseg", cx, cy, colW, DayNightCycle.Presets.Select(p => p.Name).ToArray(), cur,
+            v => game.Enqueue(() => { game.DayNight.TimeOfDay = DayNightCycle.Presets[v].Time; game.DayNight.Apply(game); }));
+        cy += Theme.S(48);
+        float lw = Theme.S(150), sw = colW - lw - Theme.S(60);
+        Ui.Text(paper, "sm_util_dn", cx, cy, w, Theme.S(22), "Day/night cycle", Theme.Body, Theme.Text);
+        Ui.Toggle(paper, "sm_util_dnt", cx + lw, cy, game.DayNight.Enabled, v => game.DayNight.Enabled = v);
+        cy += Theme.S(36);
+        float grav = -game.World.Physics.Gravity.Y;
+        Ui.Text(paper, "sm_util_g", cx, cy, w, Theme.S(22), "Gravity", Theme.Body, Theme.Text);
+        Ui.Slider(paper, "sm_util_gs", cx + lw, cy - Theme.S(1), sw, grav, 0f, 30f, v => game.SetGravity(MathF.Round(v * 10f) / 10f));
+        Ui.Text(paper, "sm_util_gv", cx + lw + sw + Theme.S(8), cy, Theme.S(60), Theme.S(22), $"{grav:0.0}", Theme.Body, Theme.Accent, Theme.SemiBold);
+        cy += Theme.S(36);
+        Ui.Text(paper, "sm_util_ts", cx, cy, w, Theme.S(22), "Time scale", Theme.Body, Theme.Text);
+        Ui.Slider(paper, "sm_util_tss", cx + lw, cy - Theme.S(1), sw, game.Settings.TimeScale, 0.1f, 2f, v => game.Settings.TimeScale = MathF.Round(v * 20f) / 20f);
+        Ui.Text(paper, "sm_util_tsv", cx + lw + sw + Theme.S(8), cy, Theme.S(60), Theme.S(22), $"{game.Settings.TimeScale:0.00}×", Theme.Body, Theme.Accent, Theme.SemiBold);
+
+        // Player column.
+        cy = ly;
+        Ui.Text(paper, "sm_util_t2", rx, cy, w, Theme.S(28), "Player", Theme.Title, Theme.Text, Theme.Bold);
         cy += Theme.S(34);
-        Ui.Text(paper, "sm_util_fps", cx, cy, w, Theme.S(22), "FPS counter", Theme.Body, Theme.Text);
-        Ui.Toggle(paper, "sm_util_fpst", cx + Theme.S(150), cy, game.Settings.ShowFps, v => { game.Settings.ShowFps = v; game.Settings.Save(); });
+        Ui.Text(paper, "sm_util_nc", rx, cy, w, Theme.S(22), "Noclip", Theme.Body, Theme.Text);
+        Ui.Toggle(paper, "sm_util_nct", rx + lw, cy, game.Player.Noclip, _ => game.Player.ToggleNoclip());
+        cy += Theme.S(36);
+        Ui.Text(paper, "sm_util_fd", rx, cy, w, Theme.S(22), "Fall damage", Theme.Body, Theme.Text);
+        Ui.Toggle(paper, "sm_util_fdt", rx + lw, cy, game.Health.FallDamage, v => { game.Health.FallDamage = v; if (game.Meta is { } m) m.Modifiers.FallDamage = v; });
+        cy += Theme.S(36);
+        Ui.Text(paper, "sm_util_fps", rx, cy, w, Theme.S(22), "FPS counter", Theme.Body, Theme.Text);
+        Ui.Toggle(paper, "sm_util_fpst", rx + lw, cy, game.Settings.ShowFps, v => { game.Settings.ShowFps = v; game.Settings.Save(); });
+        cy += Theme.S(36);
+        Ui.Button(paper, "sm_util_heal", rx, cy, Theme.S(150), bh, "Heal", () => game.Enqueue(() => game.Health.Set(100f, game.Health.Armor)), icon: Icon.Heart, radius: bh / 2f);
     }
 
     private static void DrawEmpty(Paper paper, float x, float y, float w, float h, string title, string body)

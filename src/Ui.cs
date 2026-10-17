@@ -177,8 +177,8 @@ public static class Ui
     {
         float h = Theme.S(30), seg = w / options.Length;
         Rect(paper, id + "_bg", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusXs + 2));
-        float sx = SpringTo(id + "#x", x + selected * seg, x + selected * seg);
-        Rect(paper, id + "_sel", sx + Theme.S(2), y + Theme.S(2), seg - Theme.S(4), h - Theme.S(4), Theme.AccentSoft, Theme.S(Theme.RadiusXs));
+        float sx = SpringTo(id + "#x", x + Math.Max(0, selected) * seg, x + Math.Max(0, selected) * seg);
+        if (selected >= 0) Rect(paper, id + "_sel", sx + Theme.S(2), y + Theme.S(2), seg - Theme.S(4), h - Theme.S(4), Theme.AccentSoft, Theme.S(Theme.RadiusXs));
         for (int i = 0; i < options.Length; i++)
         {
             int captured = i;

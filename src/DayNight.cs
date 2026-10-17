@@ -11,7 +11,7 @@ public sealed class DayNightCycle
     public float TimeOfDay { get; set; } = 0.42f;
     public float DayLengthSeconds { get; set; } = 600f;
 
-    public static readonly (string Name, float Time)[] Presets = [("Morning", 0.3f), ("Noon", 0.5f), ("Golden hour", 0.71f), ("Dusk", 0.77f), ("Night", 0.92f)];
+    public static readonly (string Name, float Time)[] Presets = [("Morning", 0.3f), ("Noon", 0.5f), ("Golden hour", 0.71f), ("Dusk", 0.755f), ("Night", 0.95f)];
 
     public void Tick(SandboxGame g, float dt)
     {
@@ -23,10 +23,11 @@ public sealed class DayNightCycle
     {
         float t = TimeOfDay;
         float elev = MathF.Sin((t - 0.25f) * MathF.Tau);          // -1 midnight … 1 noon
-        float day = Math.Clamp(elev * 3f + 0.25f, 0f, 1f);        // 0 night, 1 day (soft dusk)
+        float day = Math.Clamp(elev * 2.6f + 0.55f, 0f, 1f);        // 0 night, 1 day (soft dusk)
         float warm = Math.Clamp(1f - MathF.Abs(elev) * 3.2f, 0f, 1f) * (elev > -0.15f ? 1f : 0f); // sunrise/sunset tint
 
-        float pitch = -MathF.Max(6f, MathF.Abs(elev) * 75f);
+        // Above the horizon the sun points down; below it, it dips under so the procedural sky darkens for night.
+        float pitch = elev > 0.08f ? -MathF.Max(6f, elev * 75f) : MathF.Min(30f, (0.08f - elev) * 60f) - 4.8f;
         float yaw = 30f + t * 360f;
         g.Sun.Transform.LocalEulerAngles = new Float3(pitch, yaw, 0f);
         g.Sun.Intensity = 0.15f + 1.35f * day;
@@ -37,7 +38,7 @@ public sealed class DayNightCycle
         Float4 sky = L4(L4(skyNight, skyDay, day), skyWarm, warm * 0.5f);
         w.Ambient.SkyColor = sky;
         w.Ambient.GroundColor = L4(new Float4(0.05f, 0.05f, 0.07f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
-        w.Ambient.Strength = 0.35f + 0.55f * day;
+        w.Ambient.Strength = 0.45f + 0.45f * day;
         w.Fog.Color = Lerp(new Color(0.07f, 0.09f, 0.15f, 1f), Lerp(new Color(0.72f, 0.80f, 0.88f, 1f), new Color(0.92f, 0.70f, 0.55f, 1f), warm * 0.6f), day);
     }
 

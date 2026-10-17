@@ -166,6 +166,9 @@ public sealed partial class SandboxGame : Game
             case "main": Menus.Go(Screen.MainMenu); break;
             case "settings": Menus.Go(Screen.Settings); break;
             case "video": Menus.Go(Screen.Settings); Menus.SettingsTab = 1; break;
+            case "night": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.95f; DayNight.Apply(this); ToggleFlashlight(); break;
+            case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
+            case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
             case "tools": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Balloon); break;
             case "entities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Entities; break;
@@ -540,6 +543,15 @@ public sealed partial class SandboxGame
         _frameClock.Restart();
     }
 
+    /// <summary>World gravity (Utilities slider); the player controller follows, and the session modifier is updated.</summary>
+    public void SetGravity(float g)
+    {
+        World.Physics.Gravity = new Float3(0f, -g, 0f);
+        Player.Gravity = 20f * g / 9.81f;
+        if (Meta is { } m) m.Modifiers.Gravity = g;
+        foreach (Prop p in Props.Props) if (!p.Frozen) p.Body.SetActive(true); // wake sleepers so they feel the change
+    }
+
     public void ToggleFlashlight()
     {
         Flashlight = !Flashlight;
@@ -548,7 +560,7 @@ public sealed partial class SandboxGame
             var go = new GameObject("Flashlight");
             _flashlight = go.AddComponent<SpotLight>();
             _flashlight.Color = new Color(1f, 0.95f, 0.85f, 1f);
-            _flashlight.Intensity = 6f;
+            _flashlight.Intensity = 4.5f;
             _flashlight.Range = 30f;
             _flashlight.SpotAngle = 50f;
             _flashlight.CastShadows = false;
@@ -563,7 +575,7 @@ public sealed partial class SandboxGame
     {
         if (_flashlight is not null && Flashlight)
         {
-            _flashlight.GameObject.Transform.Position = Player.EyePosition + Player.Forward * 0.2f;
+            _flashlight.GameObject.Transform.Position = Player.EyePosition + Player.Forward * 0.75f;
             _flashlight.GameObject.Transform.Rotation = Player.CameraObject.Transform.Rotation;
         }
         bool zoom = input && Input.GetKey(KeyCode.B);
