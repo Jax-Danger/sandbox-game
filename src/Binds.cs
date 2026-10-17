@@ -37,8 +37,10 @@ public static class Binds
         Source.Save();
     }
 
-    public static bool Down(string id) => !KeyCapture.Active && Input.GetKeyDown(Get(id));
-    public static bool Held(string id) => !KeyCapture.Active && Input.GetKey(Get(id));
+    public static bool Down(string id) => !KeyCapture.Active && !Typing && Input.GetKeyDown(Get(id));
+    public static bool Held(string id) => !KeyCapture.Active && !Typing && Input.GetKey(Get(id));
+    /// <summary>True while a text box (console) owns the keyboard.</summary>
+    public static bool Typing { get; set; }
     public static string Name(string id) => KeyName(Get(id));
     public static string KeyName(KeyCode k) => k.ToString().Replace("Keypad", "Num ").Replace("Number", "");
 }

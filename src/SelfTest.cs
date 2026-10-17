@@ -516,6 +516,7 @@ public sealed class SelfTest
                 WorldsRoundTrip(g);
                 TownTest(g);
                 RegressionTests(g);
+                ConsoleTest(g);
                 MarkersTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
@@ -737,6 +738,43 @@ public sealed class SelfTest
     }
 
     /// <summary>One check per bug the soak test (src/Soak.cs) found, so none of them can come back.</summary>
+    /// <summary>Console commands drive the real systems; bad input reports an error instead of throwing; PNG writer round-trips.</summary>
+    private void ConsoleTest(SandboxGame g)
+    {
+        g.ClearMap(notify: false);
+        GameConsole c = g.DevConsole;
+        bool n0 = g.Player.Noclip;
+        Check(c.Execute(g, "noclip") && g.Player.Noclip != n0, "console: noclip toggles");
+        if (g.Player.Noclip != n0) c.Execute(g, "/noclip");
+        Check(c.Execute(g, "time 18") && MathF.Abs(g.DayNight.TimeOfDay - 0.75f) < 0.001f, "console: time 18 sets dusk");
+        Check(c.Execute(g, "gravity 3.5") && MathF.Abs(g.World.Physics.Gravity.Y + 3.5f) < 1e-4f, "console: gravity sets world gravity");
+        c.Execute(g, "gravity 9.81");
+        Check(c.Execute(g, "spawn barrel 3") && g.Props.Props.Count(p => p.Kind == PropKind.Barrel) == 3, "console: spawn barrel 3");
+        Check(c.Execute(g, "give shotgun") && g.Weapons.Current.Id == "weapon_shotgun", "console: give shotgun equips it");
+        c.Execute(g, "give physgun");
+        Check(c.Execute(g, "cleanup") && g.Props.Props.Count == 0, "console: cleanup removes props");
+        int logN = c.Log.Count;
+        bool bad = !c.Execute(g, "gravity banana") && !c.Execute(g, "tp 1 NaN 3") && !c.Execute(g, "/nosuchcmd") && !c.Execute(g, "spawn limb") && !c.Execute(g, "give laser");
+        Check(bad && Player.IsFinite(g.Player.FeetPosition) && c.Log.Count >= logN + 5, "console: bad arguments/unknown commands print errors, never throw");
+        c.Execute(g, "hello world");
+        Check(c.Log[^1].text.EndsWith(": hello world"), "console: plain text is chat");
+        for (int i = 0; i < 300; i++) c.Execute(g, "echo spam " + i);
+        Check(c.Log.Count <= GameConsole.MaxLog, $"console: log capped at {GameConsole.MaxLog}");
+        g.Settings.TimeScale = 1f;
+
+        string dir = Path.Combine(Path.GetTempPath(), $"sandbox shots ü {Environment.ProcessId}");
+        string png = Path.Combine(dir, "photo 1.png");
+        byte[] px = new byte[4 * 3 * 4];
+        px[0] = 255; px[3] = 255; // bottom-left red (GL bottom-up)
+        bool ok = true;
+        try { SandboxGame.WritePng(png, px, 4, 3); using var img = new ImageMagick.MagickImage(png); ok = img.Width == 4 && img.Height == 3; }
+        catch (Exception e) { ok = false; Console.WriteLine(e); }
+        Check(ok && File.Exists(png) && !File.Exists(png + ".tmp"), "screenshot PNG writer handles unicode/space paths");
+        string next = SandboxGame.NextScreenshotPath(new DateTime(2026, 1, 2, 3, 4, 5));
+        Check(next.EndsWith("sandbox_2026-01-02_03-04-05.png"), "screenshot names are timestamped");
+        try { Directory.Delete(dir, true); } catch { }
+    }
+
     private void RegressionTests(SandboxGame g)
     {
         g.ClearMap(notify: false);

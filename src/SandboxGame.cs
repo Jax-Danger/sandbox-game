@@ -47,7 +47,10 @@ public sealed partial class SandboxGame : Game
     private int _frames, _shotToasts;
 
     /// <summary>True when a menu (spawn menu, main/pause/settings) owns the mouse.</summary>
-    public bool MenuOpen => Menus.Blocking || _spawnMenu.Open || Context.Open;
+    public bool MenuOpen => Menus.Blocking || _spawnMenu.Open || Context.Open || DevConsole.Open;
+    public GameConsole DevConsole { get; } = new();
+    /// <summary>Photo mode (F1): hides every HUD element so the world can be screenshotted clean.</summary>
+    public bool PhotoMode { get; set; }
 
     public void Enqueue(Action a) => _pending.Enqueue(a);
     public void Notify(string? message, ToastKind? kind = null) => _hud.Notify(message, kind);
@@ -274,6 +277,7 @@ public sealed partial class SandboxGame : Game
 
     public override void BeginRender()
     {
+        if (_shotRequested && !Application.IsHeadless) { _shotRequested = false; CaptureScreenshot(); }
         if (!Application.IsHeadless && _frames == 2) _icons.RenderAll(Shader, Weapons.All.Select(w => (w.Id, w.ViewModelId)));
     }
 
@@ -318,7 +322,7 @@ public sealed partial class SandboxGame : Game
         }
 
         FrameCap();
-        if (ShotState is null) HandleMenus();
+        if (ShotState is null) { DevConsole.Tick(this); Binds.Typing = DevConsole.Open; HandleMenus(); }
         else if (ShotState == "context") { Context.Open = true; UpdateHighlight(Context.Selected); }
         else ShotTick();
         bool gameplay = !MenuOpen;
@@ -379,6 +383,12 @@ public sealed partial class SandboxGame : Game
 
     private void ShotTick()
     {
+        if (ShotState == "console" && !DevConsole.Open && Time.UnscaledTotalTime > 4f)
+        {
+            DevConsole.Toggle(true);
+            foreach (string l in new[] { "help", "spawn barrel 3", "time 18", "give laser", "nice build!" }) DevConsole.Execute(this, l);
+            RequestScreenshot();
+        }
         if (ShotState == "physgun" && Time.UnscaledTotalTime > 5f)
         {
             if (PhysGun.Held is null)
@@ -415,12 +425,18 @@ public sealed partial class SandboxGame : Game
     {
         if (IsRoleplay && Binds.Down("jobs") && Menus.Screen is Screen.Playing or Screen.Jobs)
             Menus.Go(Menus.Screen == Screen.Jobs ? Screen.Playing : Screen.Jobs);
+        if (!DevConsole.Open && !DevConsole.JustClosed && Menus.Screen == Screen.Playing)
+        {
+            if (Input.GetKeyDown(KeyCode.F1)) { PhotoMode = !PhotoMode; if (PhotoMode) Notify("Photo mode · F1 to exit, F12 to save a screenshot"); }
+            if (Input.GetKeyDown(KeyCode.F12)) RequestScreenshot();
+        }
+        if (DevConsole.Open || DevConsole.JustClosed) return;
         if ((Input.GetKeyDown(KeyCode.Escape) && !KeyCapture.Active))
         {
             if (_spawnMenu.Open) _spawnMenu.Open = false;
             else if (Menus.Screen != Screen.MainMenu) Menus.Back(this);
         }
-        bool held = Binds.Held("spawnmenu") || Input.GetKey(KeyCode.Tab);
+        bool held = Binds.Held("spawnmenu") || (!Binds.Typing && Input.GetKey(KeyCode.Tab));
         _spawnMenu.Open = !Menus.Blocking && !InVehicle && (held || _spawnMenu.SearchFocused);
         Context.Open = !Menus.Blocking && !_spawnMenu.Open && !InVehicle && Binds.Held("context");
         Context.Update(this, Input.GetMouseButtonDown(0), _pointerOverContextUi);
@@ -576,6 +592,7 @@ public sealed partial class SandboxGame : Game
         Ui.Dt = dt;
 
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
+        if (PhotoMode && Menus.Screen == Screen.Playing) { _hud.Draw(paper, w, h, this, dt, chrome: false); return; }
         _hud.Draw(paper, w, h, this, dt, chrome);
         if (chrome || Health.Dead) Health.DrawOverlay(paper, w, h);
         if (chrome) CameraFeeds.Draw(paper, w, h);
@@ -583,6 +600,7 @@ public sealed partial class SandboxGame : Game
         Context.Draw(paper, w, h, dt, this);
         _spawnMenu.Draw(paper, w, h, dt, this);
         Menus.Draw(paper, w, h, dt, this);
+        DevConsole.Draw(paper, w, h);
     }
 }
 
@@ -754,5 +772,66 @@ public sealed partial class SandboxGame
             }
         }
         catch (Exception e) { Log.Warn($"Window mode change failed: {e.Message}"); Notify("Couldn't change the window mode on this system", ToastKind.Danger); }
+    }
+}
+
+public sealed partial class SandboxGame
+{
+    private bool _shotRequested;
+    public static string ScreenshotDir => Path.Combine(Path.GetDirectoryName(Worlds.Root) ?? ".", "screenshots");
+    public string? LastScreenshot { get; private set; }
+
+    public void RequestScreenshot()
+    {
+        if (Application.IsHeadless) { Notify("Screenshots need a window", ToastKind.Danger); return; }
+        _shotRequested = true;
+    }
+
+    /// <summary>Unique timestamped file name in <see cref="ScreenshotDir"/> (never overwrites).</summary>
+    public static string NextScreenshotPath(DateTime now)
+    {
+        string baseName = $"sandbox_{now:yyyy-MM-dd_HH-mm-ss}";
+        string path = Path.Combine(ScreenshotDir, baseName + ".png");
+        for (int i = 2; File.Exists(path); i++) path = Path.Combine(ScreenshotDir, $"{baseName}_{i}.png");
+        return path;
+    }
+
+    /// <summary>Writes bottom-up RGBA8 pixels (GL order) as a PNG.</summary>
+    public static void WritePng(string path, byte[] rgba, int w, int h)
+    {
+        Directory.CreateDirectory(Path.GetDirectoryName(path)!);
+        using var img = new ImageMagick.MagickImage(rgba, new ImageMagick.PixelReadSettings((uint)w, (uint)h, ImageMagick.StorageType.Char, ImageMagick.PixelMapping.RGBA));
+        img.Flip();
+        img.Alpha(ImageMagick.AlphaOption.Off);
+        string tmp = path + ".tmp";
+        img.Write(tmp, ImageMagick.MagickFormat.Png);
+        File.Move(tmp, path, true);
+    }
+
+    /// <summary>Renders the player camera (world only, no HUD) to an offscreen target and saves it.</summary>
+    private void CaptureScreenshot()
+    {
+        try
+        {
+            var cam = Player.CameraObject.GetComponent<Camera>();
+            if (cam is null) return;
+            var fb = Window.InternalWindow.FramebufferSize;
+            int w = Math.Max(16, fb.X), h = Math.Max(16, fb.Y);
+            var rt = new RenderTexture(w, h, true, [TextureImageFormat.Color4b]);
+            RenderTexture? old = cam.Target;
+            cam.Target = rt;
+            try { cam.UpdateRenderData(); (cam.Pipeline ?? Prowl.Runtime.Rendering.DefaultRenderPipeline.Default).Render(cam, new Prowl.Runtime.Rendering.RenderingData()); }
+            finally { cam.Target = old; cam.UpdateRenderData(); }
+            byte[] px = new byte[w * h * 4];
+            rt.MainTexture.GetData(new Memory<byte>(px));
+            rt.Dispose();
+            string path = NextScreenshotPath(DateTime.Now);
+            System.Threading.Tasks.Task.Run(() =>
+            {
+                try { WritePng(path, px, w, h); LastScreenshot = path; Enqueue(() => { Notify($"Saved screenshot {Path.GetFileName(path)}", ToastKind.Success); Sounds.Play("sfx_click", 0.5f); }); }
+                catch (Exception e) { Enqueue(() => Notify($"Screenshot failed: {e.Message}", ToastKind.Danger)); }
+            });
+        }
+        catch (Exception e) { Notify($"Screenshot failed: {e.Message}", ToastKind.Danger); }
     }
 }
