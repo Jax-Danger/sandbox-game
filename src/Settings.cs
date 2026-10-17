@@ -18,6 +18,7 @@ public sealed class Settings
     public GraphicsQuality Graphics { get; set; } = GraphicsQuality.Medium;
     public bool ShowFps { get; set; }
     public bool ShowHints { get; set; } = true;
+    public bool DamageNumbers { get; set; } = true;
     public List<string> SeenHints { get; set; } = [];
     public WindowMode WindowMode { get; set; } = WindowMode.Windowed;
     public int ResolutionWidth { get; set; } = 1280;

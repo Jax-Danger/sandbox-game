@@ -61,3 +61,29 @@ public static class CollisionPairs
         if (_pairs.TryGetValue(a, out var s) && s.Remove(b) && s.Count == 0) _pairs.Remove(a);
     }
 }
+
+/// <summary>
+/// The engine's PhysicsConstraint creates a temporary static Jitter body whenever it (re)builds without a connected
+/// body (on AddComponent and on property setters before ConnectedBody is set) and never removes it. Every joint
+/// leaked bodies (soak: 23k after 90 s, managed heap growing ~0.25 MB/s). This sweeps bodies that are provably
+/// orphaned: untagged (not a Rigidbody3D or a layer static body), static, no shapes, no constraints, not NullBody.
+/// </summary>
+public static class PhysicsSweep
+{
+    public static int Swept { get; private set; }
+
+    public static int Run(Prowl.Runtime.Resources.Scene scene)
+    {
+        var world = scene.Physics.World;
+        if (world is null) return 0;
+        List<Jitter2.Dynamics.RigidBody>? dead = null;
+        foreach (var b in world.RigidBodies)
+            if (b.Tag is null && !ReferenceEquals(b, world.NullBody) && b.MotionType == Jitter2.Dynamics.MotionType.Static
+                && b.Shapes.Count == 0 && b.Constraints.Count == 0)
+                (dead ??= []).Add(b);
+        if (dead is null) return 0;
+        foreach (var b in dead) world.Remove(b);
+        Swept += dead.Count;
+        return dead.Count;
+    }
+}

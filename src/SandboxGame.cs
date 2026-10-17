@@ -27,6 +27,8 @@ public sealed partial class SandboxGame : Game
     public DayNightCycle DayNight { get; } = new();
     public WeatherSystem Weather { get; } = new();
     public Hints Hints { get; } = new();
+    public Combat Combat => _combat ??= new Combat(this);
+    private Combat? _combat;
     public RoleplaySystem Roleplay { get; private set; } = null!;
     public bool Flashlight { get; private set; }
     /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
@@ -316,6 +318,7 @@ public sealed partial class SandboxGame : Game
         Achievements.Tick(this, dt);
         if (DayNight.Enabled) DayNight.Tick(this, Time.DeltaTime);
         Weather.Tick(this, dt);
+        Combat.Tick(Time.DeltaTime);
         if (Menus.Screen == Screen.Playing && (ShotState is null or "hints")) Hints.Tick(this, dt);
         if (IsRoleplay) Roleplay.Tick(Time.DeltaTime);
 
@@ -393,6 +396,23 @@ public sealed partial class SandboxGame : Game
     private void ShotTick()
     {
         if (ShotState is "rain" or "storm" or "fog" && Weather.Kind == WeatherKind.Clear) Weather.Set(WeatherSystem.Parse(ShotState), this, instant: true);
+        if (ShotState == "combat" && _shotToasts == 0 && Time.UnscaledTotalTime > 4f)
+        {
+            _shotToasts = 1;
+            Weapons.Select(this, Weapons.All.First(w => w.Id == "weapon_pistol"));
+            var a = EntityCatalog.SpawnDummy(this, new Float3(-1.5f, 0f, -5f), 180f, recordUndo: false, team: NpcTeam.Hostile);
+            EntityCatalog.SpawnDummy(this, new Float3(1.8f, 0f, -4f), 180f, recordUndo: false, team: NpcTeam.Citizen);
+            var b = EntityCatalog.SpawnDummy(this, new Float3(4f, 0f, -6f), 180f, recordUndo: false, team: NpcTeam.Police);
+            Combat.Hit(a.Limbs.First(l => l.Go.Name.EndsWith(" Head")).Body, 60f, a.Limbs[1].Go.Transform.Position + new Float3(0f, 0.6f, 0f), "Pistol");
+            Combat.Hit(a.Limbs[1].Body, 60f, a.Limbs[1].Go.Transform.Position, "Pistol");
+            Combat.Hit(b.Limbs[1].Body, 120f, b.Limbs[1].Go.Transform.Position, "Shotgun");
+        }
+        if (ShotState == "combat" && _shotToasts == 1 && Time.UnscaledTotalTime > 7.4f)
+        {
+            _shotToasts = 2;
+            foreach (var r in Ragdoll.All.ToArray())
+                if (r.Pelvis.Go.GetComponent<DummyBrain>() is { Limp: false, Team: NpcTeam.Citizen } c) Combat.Hit(r.Limbs[1].Body, 14f, r.Limbs[1].Go.Transform.Position + new Float3(0f, 0.3f, 0f), "SMG");
+        }
         if (ShotState == "hints" && _frames < 5) Hints.Reset(this);
         if (ShotState == "console" && !DevConsole.Open && Time.UnscaledTotalTime > 4f)
         {
@@ -606,7 +626,7 @@ public sealed partial class SandboxGame : Game
         bool chrome = !_spawnMenu.Visible && !Menus.Blocking && !Context.Visible;
         if (PhotoMode && Menus.Screen == Screen.Playing) { _hud.Draw(paper, w, h, this, dt, chrome: false); return; }
         _hud.Draw(paper, w, h, this, dt, chrome);
-        if (chrome) Hints.Draw(paper, w, h);
+        if (chrome) { Hints.Draw(paper, w, h); Combat.Draw(paper, w, h); }
         if (chrome || Health.Dead) Health.DrawOverlay(paper, w, h);
         if (chrome) CameraFeeds.Draw(paper, w, h);
         _pointerOverContextUi = Context.PointerOverPanel(paper, w, h);

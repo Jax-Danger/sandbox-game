@@ -290,7 +290,18 @@ public sealed class PropManager(Scene scene, Shader shader)
                 if (ReferenceEquals(c.ConnectedBody, prop.Body))
                     other.Go.RemoveComponent(c);
         if (prop.Go.Scene != null)
-            Scene.Remove(prop.Go);
+            SafeRemove(Scene, prop.Go);
+    }
+
+    /// <summary>
+    /// Removes a physics GameObject without leaking. The engine's Rigidbody3D.OnDisable re-enables child colliders so
+    /// they attach to a standalone static body, which is never removed: every deleted prop left an invisible static
+    /// collider in the Jitter world (soak: 23k bodies after 90 s). Disabling the colliders first detaches them for good.
+    /// </summary>
+    public static void SafeRemove(Prowl.Runtime.Resources.Scene scene, GameObject go)
+    {
+        try { foreach (Collider c in go.GetComponentsInChildren<Collider>()) if (c.Enabled) c.Enabled = false; } catch { }
+        scene.Remove(go);
     }
 
     public void ClearAll()
@@ -299,6 +310,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             Remove(p);
         Ragdoll.All.Clear();
         _undo.Clear();
+        PhysicsSweep.Run(Scene);
     }
 
     /// <summary>Registers an externally built body (e.g. a ragdoll limb) as a prop so tools and the physgun work on it.</summary>

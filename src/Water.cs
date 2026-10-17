@@ -59,11 +59,13 @@ public static class Water
 public sealed class WaterSimulator : MonoBehaviour
 {
     public SandboxGame? Game;
+    private int _sweep;
 
     public override void FixedUpdate()
     {
         if (Game is null) return;
         PhysicsGuard.Clamp(Game);
+        if (++_sweep % 120 == 0) PhysicsSweep.Run(Game.World);
         if (Water.Volumes.Count == 0) return;
         foreach (Prop p in Game.Props.Props)
         {
@@ -107,6 +109,13 @@ public static class PhysicsGuard
     /// True when the solver left the body's pose NaN/huge. The Transform setter silently rejects NaN, so the
     /// Jitter body itself is checked (internal engine field; read-only).
     /// </summary>
+    /// <summary>True when the component is still alive but its Jitter body is gone (removed this frame).</summary>
+    public static bool Detached(Rigidbody3D rb)
+    {
+        if (rb.GameObject is not { Scene: not null } || BodyField?.GetValue(rb) is not Jitter2.Dynamics.RigidBody jb) return true;
+        try { _ = jb.Position; return false; } catch (NullReferenceException) { return true; }
+    }
+
     public static bool Corrupt(Rigidbody3D? rb)
     {
         if (rb is null || !rb.Enabled || rb.GameObject is not { Scene: not null }) return false;

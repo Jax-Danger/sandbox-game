@@ -519,6 +519,31 @@ public sealed class SelfTest
                 ConsoleTest(g);
                 AchievementsTest(g);
                 {
+                    g.ClearMap(notify: false); g.Combat.Clear();
+                    Ragdoll npc = EntityCatalog.SpawnDummy(g, new Float3(-30f, 0f, 80f), 0f, recordUndo: false, team: NpcTeam.Hostile);
+                    DummyBrain brain = npc.Pelvis.Go.GetComponent<DummyBrain>()!;
+                    Prop head = npc.Limbs.First(l => l.Go.Name.EndsWith(" Head")), torso = npc.Limbs[1];
+                    float d1 = g.Combat.Hit(torso.Body, 24f, torso.Go.Transform.Position, "Pistol");
+                    float d2 = g.Combat.Hit(head.Body, 24f, head.Go.Transform.Position, "Pistol");
+                    bool hp = d1 == 24f && d2 == 48f && MathF.Abs(brain.Health - 28f) < 0.01f && !brain.Limp && g.Combat.NumberCount == 2;
+                    int kills0 = g.Combat.Kills;
+                    g.Combat.Hit(torso.Body, 40f, torso.Go.Transform.Position, "Pistol");
+                    bool dead = brain.Limp && g.Combat.Kills == kills0 + 1 && g.Combat.FeedLines.Last().Contains("Criminal") && g.Combat.FeedLines.Last().Contains("Pistol");
+                    bool noDouble = g.Combat.Hit(torso.Body, 40f, torso.Go.Transform.Position, "Pistol") == 0f && g.Combat.Kills == kills0 + 1;
+                    Ragdoll npc2 = EntityCatalog.SpawnDummy(g, new Float3(-26f, 0f, 80f), 0f, recordUndo: false);
+                    g.Combat.Explosion(npc2.Pelvis.Go.Transform.Position, 6f, 120f);
+                    bool boom = npc2.Pelvis.Go.GetComponent<DummyBrain>()!.Limp && g.Combat.FeedLines.Last().Contains("Explosion");
+                    bool nan = g.Combat.Hit(torso.Body, float.NaN, default, "x") == 0f && g.Combat.Hit(null, 50f, default, "x") == 0f;
+                    g.Settings.DamageNumbers = false; int n0 = g.Combat.NumberCount;
+                    Ragdoll npc3 = EntityCatalog.SpawnDummy(g, new Float3(-22f, 0f, 80f), 0f, recordUndo: false);
+                    g.Combat.Hit(npc3.Limbs[1].Body, 10f, default, "SMG");
+                    bool optional = g.Combat.NumberCount == n0; g.Settings.DamageNumbers = true;
+                    for (int i = 0; i < 400; i++) g.Combat.Tick(1f / 60f);
+                    Check(hp && dead && noDouble && boom && nan && optional && g.Combat.FeedLines.Count == 0,
+                        $"NPC health: body/head damage, death → limp + kill feed, explosion damage, optional numbers (hp {brain.Health:0})");
+                    g.ClearMap(notify: false);
+                }
+                {
                     g.ClearMap(notify: false);
                     g.Hints.Reset(g); g.Settings.ShowHints = true;
                     for (int i = 0; i < 120; i++) g.Hints.Tick(g, 1f / 30f);
@@ -936,6 +961,13 @@ public sealed class SelfTest
         int pairsWith = CollisionPairs.EnginePairs;
         g.ClearMap(notify: false);
         Check(pairsWith > pairs0 && CollisionPairs.EnginePairs == pairs0 && CollisionPairs.TrackedBodies == 0, $"no-collide pairs released on removal ({pairs0}->{pairsWith}->{CollisionPairs.EnginePairs})");
+        // 5d. Removing props frees their physics bodies (colliders re-attached to a static body and leaked before).
+        g.ClearMap(notify: false);
+        int bodies0 = g.World.Physics.World.RigidBodies.Count;
+        for (int i = 0; i < 20; i++) g.Props.Spawn(PropKind.Cube, new Float3(-40f + i, 3f, 70f), 0f, recordUndo: false);
+        Ragdoll.Spawn(g, new Float3(-40f, 1.2f, 74f), 0f, recordUndo: false);
+        g.ClearMap(notify: false);
+        Check(g.World.Physics.World.RigidBodies.Count == bodies0, $"removed props free their physics bodies ({bodies0} -> {g.World.Physics.World.RigidBodies.Count})");
         // 5a. A prop whose pose went NaN is removed before Jitter's next broadphase (threw on a worker thread in the 300 s soak).
         Prop nanProp = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 5f, 60f), 0f, recordUndo: false);
         int removed0 = PhysicsGuard.Removed;

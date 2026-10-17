@@ -25,6 +25,7 @@ public sealed class Achievements
         new("mad_scientist", "Mad Scientist", "Change the world's gravity"),
         new("night_owl", "Night Owl", "Stay up past midnight"),
         new("hacker", "Hacker", "Run a console command"),
+        new("first_blood", "First Blood", "Take down an NPC"),
         new("tycoon", "Tycoon", "Hold $2,000 between wallet and bank", Roleplay: true),
         new("lawman", "Long Arm of the Law", "Make an arrest", Roleplay: true),
     ];

@@ -152,6 +152,8 @@ public sealed partial class Menus
                 Ui.Slider(paper, "st_ts", vx, cy + Theme.S(2), sw, s.TimeScale, 0.1f, 2f, v => s.TimeScale = MathF.Round(v * 20f) / 20f); cy += Theme.S(44);
                 Row("Tutorial hints");
                 Ui.Toggle(paper, "st_hints", vx, cy + Theme.S(3), s.ShowHints, v => { s.ShowHints = v; if (v) g.Hints.Reset(g); }); cy += Theme.S(44);
+                Row("Damage numbers");
+                Ui.Toggle(paper, "st_dmgn", vx, cy + Theme.S(3), s.DamageNumbers, v => s.DamageNumbers = v); cy += Theme.S(44);
                 break;
             case 1:
                 Row("Graphics quality");

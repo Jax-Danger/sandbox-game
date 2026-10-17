@@ -215,6 +215,8 @@ public sealed class ElasticBand : MonoBehaviour
     {
         Rigidbody3D? a = GetComponent<Rigidbody3D>();
         if (a is null || Other is not { Alive: true } o) return;
+        // Either body can be detached from the physics world mid-frame (removed/undone); its velocity then throws.
+        if (!a.Enabled || o.Body is not { Enabled: true } || PhysicsGuard.Detached(a) || PhysicsGuard.Detached(o.Body)) return;
         Float3 pa = Transform.TransformPoint(LocalA), pb = o.Go.Transform.TransformPoint(LocalB);
         Float3 d = pb - pa;
         float len = Float3.Length(d);

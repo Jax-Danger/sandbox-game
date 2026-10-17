@@ -111,6 +111,7 @@ public sealed class Fx(SandboxGame g)
         Sparks(hit.Point, hit.Normal, 4);
         Decal(hit.Point, hit.Normal, hit.Rigidbody);
         Push(hit.Rigidbody, dir * impulse, hit.Point);
+        g.Combat.Hit(hit.Rigidbody, impulse * 4f, hit.Point, g.Weapons.Current?.Name ?? "Gun");
         if (hit.Rigidbody?.GameObject is { } hgo && hgo.GetComponent<SandboxButton>() is { } btn) btn.Press(g);
         hit.Rigidbody?.GameObject.GetComponent<ExplosiveBarrel>()?.Damage(impulse * 1.5f);
         g.Sounds.Play("sfx_impact", 0.35f, hit.Point, 0.9f + Random.Shared.NextSingle() * 0.2f);
@@ -140,6 +141,7 @@ public sealed class Fx(SandboxGame g)
         });
         Sparks(at, Float3.UnitY, 14);
         g.Sounds.Play("sfx_explosion", 1f, at);
+        g.Combat.Explosion(at, radius, 120f);
         foreach (Prop p in g.Props.Props.ToArray())
         {
             if (!p.Alive || p.Frozen) continue;

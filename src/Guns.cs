@@ -195,6 +195,7 @@ public sealed class CrowbarWeapon : Weapon
         if (!g.Player.Trace(2.0f, out RaycastHit hit)) return;
         Hits++;
         Fx.Push(hit.Rigidbody, g.Player.Forward * 9f, hit.Point);
+        g.Combat.Hit(hit.Rigidbody, 34f, hit.Point, "Crowbar");
         g.Fx.Sparks(hit.Point, hit.Normal, 3);
         g.Fx.Decal(hit.Point, hit.Normal, hit.Rigidbody);
         g.Sounds.Play("sfx_impact", 0.7f, hit.Point);

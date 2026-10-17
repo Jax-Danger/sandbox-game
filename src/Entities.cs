@@ -75,6 +75,7 @@ public sealed class DummyBrain : MonoBehaviour
     public float StandHeight;
     public NpcTeam Team = NpcTeam.Dummy;
     public bool Limp { get; private set; }
+    public float Health = Combat.NpcMaxHealth;
     public static SandboxGame? Game;
     private Prowl.Vector.Float3 _wander;
     private float _wanderTimer, _attackCd, _heading;
