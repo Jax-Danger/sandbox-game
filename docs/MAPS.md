@@ -55,7 +55,7 @@ A scale of exactly 1 means "use the default". For a door that really is 1 m wide
 A custom map that has any RP marker (`jail_cell`, `atm`, `laws_board`, `door_*` or `npc_path_*`) switches on the town
 features in Roleplay worlds: doors you can buy and lock, the ATM, the laws board, NPC walking routes, and the
 jail and arrest flow. A map with no `jail_cell` still works in Roleplay; arrests then use a short timed sentence
-at the spawn point. Sandbox worlds ignore the RP markers, but spawns and water are always used.
+at the spawn point. Spawns and water work in every mode. Buying doors, the bank and the jail are Roleplay features.
 
 ## Checklist
 
