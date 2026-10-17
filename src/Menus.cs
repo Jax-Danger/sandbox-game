@@ -112,7 +112,7 @@ public sealed partial class Menus
     private void DrawSettings(Paper paper, float w, float h, SandboxGame g)
     {
         Settings s = g.Settings;
-        float pw = MathF.Min(w * 0.86f, Theme.S(820)), ph = MathF.Min(h * 0.84f, Theme.S(600));
+        float pw = MathF.Min(w * 0.86f, Theme.S(760)), ph = MathF.Min(h * 0.84f, Theme.S(_settingsTab switch { 1 => 600, 3 => 470, _ => 400 }));
         float x = (w - pw) / 2f, y = (h - ph) / 2f + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Xl);
         Ui.Glass(paper, "st_panel", x, y, pw, ph, strong: true).IsNotInteractable();
         Ui.Text(paper, "st_title", x + pad, y + pad, pw, Theme.S(32), "Settings", Theme.Heading, Theme.Text, Theme.Bold);
@@ -122,10 +122,11 @@ public sealed partial class Menus
         for (int i = 0; i < tabs.Length; i++)
         {
             int c = i;
-            float tw = Theme.S(96);
-            Ui.Button(paper, $"st_tab_{i}", tx, ty, tw, Theme.S(32), tabs[i], () => _settingsTab = c, selected: _settingsTab == i,
-                ghost: _settingsTab != i, size: Theme.Body, radius: Theme.S(16));
-            tx += tw + Theme.S(6);
+            Icon[] tIcons = [Icon.Gear, Icon.Image, Icon.Play, Icon.Keyboard];
+            float tw = Theme.S(38) + (float)paper.MeasureText(tabs[i], Theme.S(Theme.Caption), Theme.SemiBold, 0f).X;
+            Ui.Button(paper, $"st_tab_{i}", tx, ty, tw, Theme.S(28), tabs[i], () => _settingsTab = c, selected: _settingsTab == i,
+                ghost: _settingsTab != i, size: Theme.Caption, icon: tIcons[i], radius: Theme.S(14));
+            tx += tw + Theme.S(2);
         }
 
         float cy = ty + Theme.S(56), lx = x + pad, cw = pw - 2 * pad, vx = lx + Theme.S(240), vw = cw - Theme.S(240);

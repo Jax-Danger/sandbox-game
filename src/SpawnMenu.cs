@@ -394,7 +394,14 @@ public sealed class SpawnMenu(IconRenderer icons)
     private static void DrawUtilities(Paper paper, float x, float y, float w, float h, SandboxGame game)
     {
         Ui.Panel(paper, "sm_util", x, y, w, h, Theme.PanelSunken, Theme.S(Theme.RadiusSm + 2), shadow: false).IsNotInteractable();
-        float pad = Theme.S(Theme.Xl), cx = x + pad, cy = y + pad;
+        float pad = Theme.S(Theme.Xl + Theme.Md), cx = x + pad, cy = y + pad;
+        // Content is capped to a readable width; each group sits on its own raised card.
+        w = MathF.Min(w, Theme.S(980));
+        float cardPad = Theme.S(Theme.Md);
+        Ui.Panel(paper, "sm_util_card0", cx - cardPad, cy - cardPad, w - 2 * pad + 2 * cardPad, Theme.S(118) + cardPad, Theme.PanelRaised, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+        float colW0 = (w - 2 * pad - Theme.S(32)) / 2f, cardTop = cy + Theme.S(118) + Theme.S(Theme.Xl) + cardPad;
+        Ui.Panel(paper, "sm_util_card1", cx - cardPad, cardTop - cardPad, colW0 + 2 * cardPad, Theme.S(214), Theme.PanelRaised, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+        Ui.Panel(paper, "sm_util_card2", cx + colW0 + Theme.S(32) - cardPad, cardTop - cardPad, colW0 + 2 * cardPad, Theme.S(214), Theme.PanelRaised, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
         Section(paper, "sm_util_t", cx, cy, w - 2 * pad, "MAP");
         cy += Theme.S(28);
         Ui.Text(paper, "sm_util_c", cx, cy, w, Theme.S(20), $"{game.Props.Props.Count} props · {game.Props.UndoCount} undo steps",
@@ -405,7 +412,8 @@ public sealed class SpawnMenu(IconRenderer icons)
         Ui.Button(paper, "sm_util_clear", cx + bw + gap, cy, bw, bh, "Clear props", () => game.Enqueue(() => game.ClearMap()), icon: Icon.Trash, radius: bh / 2f);
         Ui.Button(paper, "sm_util_save", cx + 2 * (bw + gap), cy, bw, bh, game.Session is null ? "Save map" : "Save world",
             () => game.Enqueue(() => { if (game.Session is null) game.SaveMap(); else { game.SaveSession(true, true); game.Notify("World saved"); } }), icon: Icon.Save, radius: bh / 2f);
-        cy += bh + Theme.S(Theme.Xl);
+        cy += bh + Theme.S(Theme.Xl) + cardPad * 2f;
+        cy = cardTop;
 
         // World: sky presets, day/night, gravity and time scale.
         float colW = (w - 2 * pad - Theme.S(32)) / 2f, rx = cx + colW + Theme.S(32), ly = cy;
