@@ -6,7 +6,12 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 
 | | |
 |---|---|
-| ![Main menu](docs/v3-main.png) | ![Physgun](docs/v4-physgun.png) |
+| ![Main menu](docs/r5-main.png) | ![Worlds](docs/r5-worlds.png) |
+| ![Create world](docs/r5-create.png) | ![Loading](docs/r5-loading.png) |
+| ![Roleplay HUD](docs/r5-rp.png) | ![F4 jobs menu](docs/r5-jobs.png) |
+| ![Rolling Hills](docs/r5-hills.png) | ![Dusk](docs/r5-dusk.png) |
+| ![Utilities](docs/r5-utilities.png) | ![Video settings](docs/r5-video.png) |
+| ![Physgun](docs/v4-physgun.png) | ![Night + flashlight](docs/r5-night.png) |
 | ![SMG](docs/v4-smg.png) | ![Buggy](docs/v4-drive.png) |
 | ![Spawn menu](docs/v4-props.png) | ![Tools](docs/v4-tools.png) |
 | ![Entities](docs/v4-entities.png) | ![Context menu](docs/v3-context.png) |
@@ -60,6 +65,39 @@ Build macOS on a Mac when you can, because `build-all.sh` ad-hoc codesigns the `
 
 The first build downloads Prowl's NuGet dependencies, so it needs internet and takes a minute or two.
 
+## Worlds (Singleplayer)
+
+**Main menu → Singleplayer** opens the Worlds list, which works like Minecraft's world list. Each row shows a thumbnail, name, when you last played it, the mode, the map, the prop count and how long you've played. The buttons are **Play Selected** (or double-click a row), **Create New**, **Edit** (rename), **Duplicate**, **Delete** (asks you to confirm) and **Open Folder**.
+
+**Create New World** asks for:
+- a name
+- a mode: **Sandbox** or **Roleplay**
+- a map: **Flatgrass**, **Rolling Hills** (terrain plus a pond), or **Custom map**. A custom map is a `.glb/.gltf/.fbx/.obj/.vrm` file you pick with *Browse…* (uses zenity/kdialog on Linux) or paste a path to. The file is copied into the world folder and gets static mesh colliders.
+- modifiers: gravity, prop limit, fall damage, day/night cycle and NPCs. Roleplay worlds also have starting money and paid prop spawning.
+
+Each world is a folder under `%AppData%/ProwlSandbox/saves/<name>/` (on Linux, `~/.config/ProwlSandbox/saves`):
+
+| File | Contents |
+| --- | --- |
+| `session.json` | name, created, last played, mode, map, modifiers, seed, format and game version |
+| `world.json` | props with exact transforms, velocities and frozen state; colours and materials; welds, ropes, ball-sockets, thrusters, wheels; lights, buttons, entities; ragdolls and NPC teams; buggies; roleplay money printers and shipments |
+| `player.json` | position, look, noclip, weapon, health and armor; roleplay money, job and laws |
+| `icon.png` | the thumbnail, captured from your view |
+
+The game autosaves every 5 seconds on a background thread. Each write goes to a temp file and is renamed into place, and the previous file is kept as `.bak`; if a file is corrupt, loading falls back to the `.bak`. The game also saves on **Save & exit to Worlds**, on Quit and when you close the window.
+
+**Loading** a world goes through a loading screen with real progress. It runs these stages: *Loading assets*, *Loading models*, *Loading shaders*, *Building physics*, *Spawning entities (n/N)*, *Restoring player*. File reading happens on a background task. Main-thread work runs in batches of 6 ms per frame, so the window keeps responding.
+
+## Roleplay mode (DarkRP-style)
+
+The HUD adds a wallet/job chip, a salary countdown, a WANTED or ARRESTED badge when that applies, and the laws board. **F4** opens the City menu:
+- **Jobs:** Citizen, Police Officer (baton arrests, pistol), Mayor (writes the laws), Thief (lockpick), Medic (medkit, cheaper armour), Gun Dealer (weapon shipments), Gangster (pistol, +25 % printer cash) and Hobo (free props). Each job has its own colour, salary, description and player limit.
+- **Shop:** money printer, armour, medkit, ammo and shipments. Shipments can only be bought as Gun Dealer.
+- **Laws:** edited by the Mayor.
+- **Money:** drop cash.
+
+Press **E** to pick up money, collect from a printer or open a shipment. Printers print $25 every 20 s. Dying drops 10 % of your wallet. Town NPC citizens and police wander the map, and police chase you while you're wanted. With paid spawning on, props cost $20 each.
+
 ## What you see
 
 A 1280×720 window titled **Sandbox**. You stand on a large 120 × 120 m floor with walls around the edge, three ramps, a raised platform, a free-standing wall and a staircase. A few starter props (cubes, a sphere, a barrel, a plank) sit in front of you. The props use Prowl's default grid texture.
@@ -72,19 +110,21 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 | --- | --- |
 | Mouse | Look (cursor locked while playing) |
 | W A S D / Shift / Space | Walk / run / jump |
-| Ctrl | Fly down (noclip) |
+| Ctrl | Crouch (fly down in noclip) |
+| F | Flashlight (inspects the weapon when you hold the tool gun) |
+| Hold B | Zoom |
+| F4 | Roleplay City menu (jobs, shop, laws, money) |
 | V | Toggle noclip |
 | Hold Q or Tab | Spawn menu: Spawnlists, Entities, Vehicles, Weapons, Tools, Utilities |
 | Hold C | Context menu: click a prop to edit freeze, colour, material, mass or delete it. Also has the current tool's settings |
 | 1 … 5, mouse wheel | Weapon slots (press a number again to cycle within the slot): **1** Hands, Crowbar · **2** Physgun, Tool gun, Spawn gun · **3** Pistol, SMG · **4** Shotgun · **5** Rocket launcher, Grenades |
 | Left / right mouse | Primary / secondary fire |
 | R | Reload (in a vehicle: flip the buggy upright) |
-| F | Inspect weapon |
 | E | Pick up / drop a light prop (left click throws it) · press a button · enter / exit a vehicle |
 | T G Y H U J | Default keys for thrusters, wheels and buttons |
 | Z | Undo |
 | F3 | FPS counter |
-| Esc | Pause menu: Resume, Save, Load, Clear map, Settings, Main menu |
+| Esc | Pause menu: Resume, Save now, Clear map, Settings, Save & exit to Worlds |
 
 **Hands (1):** E picks up anything up to 15 kg and carries it in front of you. Left click throws it; E again drops it. With nothing held, left click gives a light shove.
 
@@ -103,7 +143,20 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 **Vehicles tab:** Buggy. Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
 
-**Saving:** Esc → Save / Load writes `%AppData%/ProwlSandbox/saves/quicksave.json`. Everything is saved: props (colour, material, mass, frozen), welds, balloons, ropes, ball-sockets, thrusters, wheels, lights, buttons (with their keys), explosive barrels, bouncy balls, NPC dummies, ragdolls, cameras and buggies. Procedural textures are on by default; set `SANDBOX_PROCTEX=0` to use flat colours instead.
+**Health:** health and armor show bottom-left. Falls faster than about 13 m/s hurt (you can turn this off per world or in Utilities). When you die you respawn after 3 s.
+
+**Utilities tab:** sky presets (Morning, Noon, Golden hour, Dusk, Night), a day/night cycle toggle, gravity and time-scale sliders, noclip, fall damage, heal and save.
+
+**Settings → Video:**
+- graphics quality; Medium is the default (FXAA, bloom, tonemapping)
+- window mode: windowed, borderless or fullscreen
+- resolution
+- frame-rate cap
+- VSync, which applies after a restart
+
+**Logs and crashes:** the game writes a log to `<app data>/ProwlSandbox/logs/latest.log` and keeps the previous run's log as `previous.log`. An unhandled error writes `crash-<time>.txt` and shows a dialog. If the window can't get an OpenGL 4.1 context, the dialog explains that and says what to update.
+
+**Legacy quicksave:** Utilities → Save map (shown when no world is loaded) writes `quicksave.json`. Everything is saved: props (colour, material, mass, frozen), welds, balloons, ropes, ball-sockets, thrusters, wheels, lights, buttons (with their keys), explosive barrels, bouncy balls, NPC dummies, ragdolls, cameras and buggies. Procedural textures are on by default; set `SANDBOX_PROCTEX=0` to use flat colours instead.
 
 ## Adding your own models and sounds
 
@@ -179,7 +232,12 @@ This runs the game for about 6 seconds without a window. It scripts spawning, fa
 | --- | --- |
 | `src/Program.cs` | Entry point (`--headless` runs the self-test) |
 | `src/SandboxGame.cs` | Game loop, input routing, tool selection, menus |
-| `src/MapBuilder.cs` | Static test map and light |
+| `src/MapBuilder.cs` | Maps (Flatgrass, Rolling Hills, custom model import) and the sun |
+| `src/Worlds.cs`, `src/Session.cs`, `src/WorldsMenu.cs` | World folders, atomic saves, async loader, Worlds/Create/Loading/F4 screens |
+| `src/Roleplay.cs` | Jobs, economy, printers, shipments, baton/lockpick/medkit |
+| `src/Health.cs`, `src/DayNight.cs` | Health/armor/fall damage/respawn; sky presets and day/night |
+| `src/Meshes.cs` | Procedural bevelled boxes, rounded cylinders, tyres, capsules (placeholders the asset manifest can replace) |
+| `src/Log.cs` | Log file, crash reports, native error dialogs |
 | `src/Player.cs` | First-person CharacterController with gravity, jumping and noclip |
 | `src/Props.cs` | Prop definitions, spawning, removal, undo stack |
 | `src/PhysGun.cs` | Grab, hold, push/pull, throw, freeze |
