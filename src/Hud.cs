@@ -222,7 +222,19 @@ public sealed class Hud
         Ui.Text(paper, "rp_money", m + Theme.S(42), y + Theme.S(2), w, Theme.S(24), money, Theme.Title + pulse, Theme.Text, Theme.Bold);
         Ui.Text(paper, "rp_job", m + Theme.S(20), y + Theme.S(26), w, Theme.S(18), rp.Job.Name, Theme.Caption, rp.Job.Color, Theme.SemiBold);
         Ui.Text(paper, "rp_pay", m, y + Theme.S(26), w - Theme.S(10), Theme.S(18), $"+${rp.Job.Salary} in {rp.PayTimer:0}s", Theme.Micro, Theme.TextFaint, Theme.SemiBold, TextAlignment.MiddleRight);
+        {
+            float bx = m + Theme.S(20), bw = w - Theme.S(30), by = y + ch - Theme.S(6), f = rp.Hunger / 100f;
+            Color hc = f <= 0f ? Theme.Danger : f < 0.25f ? Theme.Warning : Theme.WithAlpha(Theme.Success, 0.75f);
+            Ui.Rect(paper, "rp_hunger_bg", bx, by, bw, Theme.S(2), Theme.Border, Theme.S(1));
+            Ui.Rect(paper, "rp_hunger", bx, by, MathF.Max(Theme.S(2), bw * f), Theme.S(2), hc, Theme.S(1));
+        }
         y += ch + Theme.S(6);
+        if (rp.Starving)
+        {
+            Ui.Glass(paper, "rp_starving", m, y, w, Theme.S(24), Theme.S(12), shadow: false).IsNotInteractable();
+            Ui.Text(paper, "rp_starving_t", m, y, w, Theme.S(24), "STARVING · F4 for food", Theme.Micro, Theme.Danger, Theme.Bold, TextAlignment.MiddleCenter);
+            y += Theme.S(30);
+        }
         if (rp.WantedTimer > 0f)
         {
             Ui.Glass(paper, "rp_wanted", m, y, w, Theme.S(24), Theme.S(12), shadow: false).IsNotInteractable();

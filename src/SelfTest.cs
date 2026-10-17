@@ -519,6 +519,25 @@ public sealed class SelfTest
                 ConsoleTest(g);
                 AchievementsTest(g);
                 {
+                    var rp = g.Roleplay;
+                    rp.Reset(new SessionMeta { Mode = "Roleplay", Modifiers = { StartingMoney = 500 } });
+                    g.Health.Set(100f, 0f);
+                    rp.TickHunger(RoleplaySystem.HungerSeconds / 2f);
+                    bool half = MathF.Abs(rp.Hunger - 50f) < 0.5f && g.Health.Hp == 100f;
+                    rp.TickHunger(RoleplaySystem.HungerSeconds / 2f + 0.01f); // empty; then 8 s of starving = 2 hits
+                    for (int i = 0; i < 8; i++) rp.TickHunger(1f);
+                    bool starving = rp.Starving && g.Health.Hp < 100f && g.Health.Hp >= 100f - 4 * RoleplaySystem.StarveDamage;
+                    var burger = RoleplaySystem.Shop.First(b => b.Id == "rp_burger");
+                    rp.Buy(burger);
+                    bool ate = MathF.Abs(rp.Hunger - 45f) < 0.01f && rp.Money == 500 - burger.Price && !rp.Starving;
+                    var save = new PlayerSave(); rp.Capture(save);
+                    rp.Reset(new SessionMeta { Mode = "Roleplay" }); rp.Restore(save);
+                    bool persisted = MathF.Abs(rp.Hunger - 45f) < 0.01f;
+                    save.Hunger = float.NaN; rp.Restore(save);
+                    Check(half && starving && ate && persisted && rp.Hunger == 100f, $"RP hunger: drains, starves, food restores, saves (hp {g.Health.Hp:0}, hunger {rp.Hunger:0})");
+                    rp.Reset(null); g.Health.Set(100f, 0f);
+                }
+                {
                     g.ClearMap(notify: false);
                     var ents = SpawnCatalog.Entries.Where(e => e.Tab == MenuTab.Spawnlists).Take(15).ToArray();
                     foreach (var e in ents) g.Spawn(e);

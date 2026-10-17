@@ -57,6 +57,7 @@ public sealed class PlayerSave
     public List<string> LockedDoors { get; set; } = [];
     public float JailTimer { get; set; }
     public float WantedTimer { get; set; }
+    public float Hunger { get; set; } = 100f;
 }
 
 public sealed record WorldEntry(string Folder, SessionMeta Meta)

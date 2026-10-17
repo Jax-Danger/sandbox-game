@@ -32,12 +32,31 @@ public sealed class RoleplaySystem(SandboxGame g)
         new("rp_armor", "Armour vest", Icon.Shield, 250, "+50 armour."),
         new("rp_medkit", "Health kit", Icon.Heart, 120, "Restores 50 health."),
         new("rp_ammo", "Ammo box", Icon.Crate, 60, "Refills reserve ammo for every gun."),
+        new("rp_burger", "Burger", Icon.Heart, 30, "+45 hunger. Hunger drains over ~8 minutes."),
+        new("rp_soda", "Soda", Icon.Heart, 10, "+15 hunger."),
         new("ship_pistol", "Pistol shipment", Icon.Pistol, 600, "Crate with a pistol (press E to equip).", "gundealer"),
         new("ship_smg", "SMG shipment", Icon.Smg, 1500, "Crate with an SMG.", "gundealer"),
         new("ship_shotgun", "Shotgun shipment", Icon.Shotgun, 1800, "Crate with a shotgun.", "gundealer"),
     ];
 
     public const float PayInterval = 60f;
+    /// <summary>Hunger 0-100 (100 = full). Drains fully in <see cref="HungerSeconds"/>; at 0 you starve (2 hp / 4 s).</summary>
+    public float Hunger { get; private set; } = 100f;
+    public const float HungerSeconds = 480f, StarveInterval = 4f, StarveDamage = 2f;
+    private float _starve;
+    public bool Starving => Active && Hunger <= 0f;
+    public void Eat(float amount) { Hunger = Math.Clamp(Hunger + amount, 0f, 100f); _starve = StarveInterval; }
+    /// <summary>Hunger tick, split out so tests can drive it with a large dt.</summary>
+    public void TickHunger(float dt)
+    {
+        if (!Active || JailTimer > 0f || g.Health.Dead) return;
+        float before = Hunger;
+        Hunger = MathF.Max(0f, Hunger - dt * 100f / HungerSeconds);
+        if (before > 25f && Hunger <= 25f) g.Notify("You're getting hungry · buy food from the F4 shop");
+        if (Hunger > 0f || before > 0f) { if (Hunger > 0f) _starve = StarveInterval; return; } // starve time starts once empty
+        _starve -= dt;
+        if (_starve <= 0f) { _starve = StarveInterval; g.Health.Damage(g, StarveDamage, "starvation"); } // max one hit per tick
+    }
     public const int PropCost = 20;
     public bool Active { get; private set; }
     public int Money { get; private set; }
@@ -63,6 +82,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         Laws.Clear();
         if (Active) Laws.AddRange(["Do not steal.", "No weapons in public.", "Printers are illegal."]);
         WantedTimer = 0f; JailTimer = 0f; PayTimer = PayInterval; Bank = 0; Arrests = 0; AtAtm = false;
+        Hunger = 100f; _starve = StarveInterval;
     }
 
     public void Restore(PlayerSave p)
@@ -72,6 +92,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         Job = Jobs.FirstOrDefault(j => j.Id == p.Job) ?? Jobs[0];
         if (p.Laws.Count > 0 || Job.Id == "mayor") { Laws.Clear(); Laws.AddRange(p.Laws); }
         Bank = p.Bank; JailTimer = p.JailTimer; WantedTimer = p.WantedTimer;
+        Hunger = float.IsFinite(p.Hunger) ? Math.Clamp(p.Hunger, 0f, 100f) : 100f;
         foreach (Door d in Town.Doors)
         {
             if (p.OwnedDoors.Contains(d.Id)) d.Owner = "you";
@@ -84,7 +105,7 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         p.Money = Money; p.Job = Job.Id; p.Laws = Laws.ToList();
-        p.Bank = Bank; p.JailTimer = JailTimer; p.WantedTimer = WantedTimer;
+        p.Bank = Bank; p.JailTimer = JailTimer; p.WantedTimer = WantedTimer; p.Hunger = Hunger;
         p.OwnedDoors = Town.Doors.Where(d => d.Owner == "you").Select(d => d.Id).ToList();
         p.LockedDoors = Town.Doors.Where(d => d.Locked).Select(d => d.Id).ToList();
     }
@@ -209,6 +230,8 @@ public sealed class RoleplaySystem(SandboxGame g)
             case "rp_armor": g.Health.AddArmor(50f); break;
             case "rp_medkit": g.Health.Heal(50f); break;
             case "rp_ammo": foreach (Firearm f in g.Weapons.All.OfType<Firearm>()) f.Refill(); break;
+            case "rp_burger": Eat(45f); break;
+            case "rp_soda": Eat(15f); break;
             default:
                 if (b.Id.StartsWith("ship_")) SpawnShipment(pos, "weapon_" + b.Id[5..]);
                 break;
@@ -332,6 +355,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         int lost = Money / 10;
         if (lost > 0) { Money -= lost; SpawnMoney(g.Player.FeetPosition + new Float3(0f, 0.5f, 0f), lost); }
         WantedTimer = 0f;
+        Hunger = MathF.Max(Hunger, 60f);
     }
 
     public void OnNpcDown(DummyBrain npc)
@@ -364,6 +388,7 @@ public sealed class RoleplaySystem(SandboxGame g)
     public void Tick(float dt)
     {
         if (!Active) return;
+        TickHunger(dt);
         if (WantedTimer > 0f) WantedTimer -= dt;
         if (JailTimer > 0f)
         {
