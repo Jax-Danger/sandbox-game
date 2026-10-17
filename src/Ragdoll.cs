@@ -63,7 +63,7 @@ public sealed class Ragdoll
             go.Transform.Position = feet + Rot(d.Center);
             go.Transform.LocalEulerAngles = new Float3(0f, yawDegrees, 0f);
             Color col = d.Name == "Head" || d.Name.StartsWith("Lower arm") ? skin : d.Name == "Torso" || d.Name.StartsWith("Upper arm") ? shirt : pants;
-            var mat = new Material(g.Shader);
+            var mat = Mats.New(g.Shader);
             mat.SetColor("_MainColor", col);
             try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             MeshRenderer r = go.AddComponent<MeshRenderer>();

@@ -63,7 +63,7 @@ public sealed class IconRenderer
         MeshRenderer r = subject.AddComponent<MeshRenderer>();
         (Mesh mesh, float extent) = MeshFor(kind);
         r.Mesh = mesh;
-        var mat = new Material(shader);
+        var mat = Mats.New(shader);
         mat.SetColor("_MainColor", PropManager.IconColor(kind));
         SurfaceMaterial.Get(PropManager.DefaultSurface(kind)).ApplyVisual(mat);
         r.Material = mat;

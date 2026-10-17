@@ -182,7 +182,7 @@ public sealed class ViewModel
                     'c' => Meshes.RoundedCylinder(part.Size.X / 2f * PartScale, part.Size.Y * PartScale, MathF.Min(part.Size.X, part.Size.Y) * PartScale * 0.12f, 24),
                     _ => Meshes.RoundedBox(part.Size * PartScale, MathF.Min(part.Size.X, MathF.Min(part.Size.Y, part.Size.Z)) * PartScale * 0.18f, 2),
                 };
-                var m = new Material(shader);
+                var m = Mats.New(shader);
                 m.SetColor("_MainColor", part.Color);
                 try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
                 if (part.Emissive && !Application.IsHeadless)

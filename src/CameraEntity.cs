@@ -42,7 +42,7 @@ public static class CameraFeeds
         lens.Transform.LocalEulerAngles = new Float3(90f, 0f, 0f);
         MeshRenderer r = lens.AddComponent<MeshRenderer>();
         r.Mesh = Mesh.CreateCylinder(0.14f, 0.12f, 16);
-        var m = new Material(g.Shader);
+        var m = Mats.New(g.Shader);
         m.SetColor("_MainColor", new Color(0.05f, 0.06f, 0.08f, 1f));
         if (!Application.IsHeadless) { m.SetTexture("_EmissionTex", ProcTex.Solid(40, 110, 255)); m.SetFloat("_EmissionIntensity", 1.5f); }
         r.Material = m;

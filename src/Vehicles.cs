@@ -36,7 +36,7 @@ public sealed class Buggy
         Go.Transform.LocalEulerAngles = new Float3(0f, yaw, 0f);
         var size = new Float3(1.5f, 0.35f, 2.8f);
         var paint = new Color(0.80f, 0.42f, 0.10f, 1f);
-        var mat = new Material(g.Shader);
+        var mat = Mats.New(g.Shader);
         try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetColor("_MainColor", paint);
         MeshRenderer r = Go.AddComponent<MeshRenderer>();
@@ -79,7 +79,7 @@ public sealed class Buggy
             mesh.Transform.LocalEulerAngles = new Float3(0f, 0f, 90f);
             MeshRenderer wr = mesh.AddComponent<MeshRenderer>();
             wr.Mesh = Meshes.Tyre(0.42f, 0.32f);
-            var wm = new Material(g.Shader);
+            var wm = Mats.New(g.Shader);
         try { wm.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             wm.SetColor("_MainColor", dark);
             wr.Material = wm;
@@ -107,7 +107,7 @@ public sealed class Buggy
         d.Transform.LocalEulerAngles = rot;
         MeshRenderer r = d.AddComponent<MeshRenderer>();
         r.Mesh = mesh;
-        var m = new Material(g.Shader);
+        var m = Mats.New(g.Shader);
         try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         m.SetColor("_MainColor", c);
         r.Material = m;

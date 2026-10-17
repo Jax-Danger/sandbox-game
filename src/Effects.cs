@@ -20,7 +20,7 @@ public sealed class Fx(SandboxGame g)
     private Material Mat(string key, Color c, float emission = 0f)
     {
         if (_mats.TryGetValue(key, out Material? m)) return m;
-        m = new Material(g.Shader);
+        m = Mats.New(g.Shader);
         m.SetColor("_MainColor", c);
         try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         if (emission > 0f)

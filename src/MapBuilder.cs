@@ -140,7 +140,7 @@ public static class MapBuilder
         GameObject terrain = new("Terrain");
         MeshRenderer r = terrain.AddComponent<MeshRenderer>();
         r.Mesh = mesh;
-        var m = new Material(shader);
+        var m = Mats.New(shader);
         m.SetColor("_MainColor", new Color(0.55f, 0.72f, 0.42f, 1f));
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0") m.SetTexture("_MainTex", ProcTex.Grass());
         r.Material = m;
@@ -152,7 +152,7 @@ public static class MapBuilder
         water.Transform.Position = new Float3(45f, -1.6f, 35f);
         MeshRenderer wr = water.AddComponent<MeshRenderer>();
         wr.Mesh = Mesh.CreateCube(new Float3(48f, 0.05f, 48f));
-        var wm = new Material(shader);
+        var wm = Mats.New(shader);
         wm.SetColor("_MainColor", new Color(0.18f, 0.42f, 0.62f, 1f));
         if (!Application.IsHeadless) { wm.SetTexture("_MainTex", ProcTex.Solid(40, 96, 140)); wm.SetTexture("_SurfaceTex", ProcTex.Surface(0.08f, 0.1f)); }
         wr.Material = wm;
@@ -210,7 +210,7 @@ public static class MapBuilder
         go.Transform.LocalEulerAngles = euler;
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
         renderer.Mesh = Meshes.RoundedBox(size, MathF.Min(0.06f, MathF.Min(size.X, MathF.Min(size.Y, size.Z)) * 0.2f));
-        var material = new Material(shader);
+        var material = Mats.New(shader);
         material.SetColor("_MainColor", color);
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {

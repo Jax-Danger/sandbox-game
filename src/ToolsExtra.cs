@@ -178,7 +178,7 @@ public sealed partial class ToolGun
         l.CastShadows = false;
         MeshRenderer r = go.AddComponent<MeshRenderer>();
         r.Mesh = Mesh.CreateSphere(0.08f, 8, 10);
-        var mat = new Material(props.Shader);
+        var mat = Mats.New(props.Shader);
         mat.SetColor("_MainColor", color);
         try { mat.SetTexture("_EmissionTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetFloat("_EmissionIntensity", 3f);
@@ -225,7 +225,7 @@ public sealed partial class ToolGun
         go.Transform.Up = normal;
         MeshRenderer r = go.AddComponent<MeshRenderer>();
         r.Mesh = Mesh.CreateCylinder(radius, width, 20);
-        var mat = new Material(props.Shader);
+        var mat = Mats.New(props.Shader);
         var c = new Color(0.12f, 0.12f, 0.13f, 1f);
         mat.SetColor("_MainColor", c);
         r.Material = mat;
@@ -286,7 +286,7 @@ public sealed class RopeVisual : MonoBehaviour
         _localA = localA; _b = b; _localB = localB;
         if (_mat is null)
         {
-            _mat = new Material(Shader.LoadDefault(DefaultShader.Standard));
+            _mat = Mats.New(Shader.LoadDefault(DefaultShader.Standard));
             _mat.SetColor("_MainColor", new Color(0.55f, 0.42f, 0.28f, 1f));
             try { _mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         }
@@ -336,7 +336,7 @@ public sealed class Thruster : MonoBehaviour
         v.Transform.Up = normal;
         MeshRenderer r = v.AddComponent<MeshRenderer>();
         r.Mesh = Mesh.CreateCylinder(0.1f, 0.2f, 12);
-        var m = new Material(props.Shader);
+        var m = Mats.New(props.Shader);
         m.SetColor("_MainColor", new Color(0.3f, 0.32f, 0.36f, 1f));
         r.Material = m;
         t._visual = v;

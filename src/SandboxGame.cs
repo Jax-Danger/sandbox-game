@@ -128,7 +128,7 @@ public sealed partial class SandboxGame : Game
     /// <summary>Slow orbit around the starter props while no session is running.</summary>
     private void OrbitMenuCamera()
     {
-        float t = (float)Time.UnscaledTotalTime * 0.06f;
+        float t = 0.6f + (float)Time.UnscaledTotalTime * 0.13f;
         Float3 c = new(0f, 1.2f, -1.5f);
         Float3 eye = c + new Float3(MathF.Sin(t) * 9f, 2.6f + MathF.Sin(t * 0.7f) * 0.5f, -MathF.Cos(t) * 9f);
         Player.Teleport(eye - new Float3(0f, Player.EyeHeight, 0f));

@@ -34,12 +34,19 @@ public sealed class DayNightCycle
         g.Sun.Color = Lerp(new Color(0.55f, 0.62f, 0.95f, 1f), Lerp(new Color(1f, 0.97f, 0.92f, 1f), new Color(1f, 0.62f, 0.35f, 1f), warm), day);
 
         Prowl.Runtime.Resources.Scene w = g.World;
-        Float4 skyDay = new(0.55f, 0.65f, 0.80f, 1f), skyNight = new(0.06f, 0.08f, 0.16f, 1f), skyWarm = new(0.85f, 0.55f, 0.45f, 1f);
+        Float4 skyDay = new(0.55f, 0.65f, 0.80f, 1f), skyNight = new(0.16f, 0.20f, 0.34f, 1f), skyWarm = new(0.85f, 0.55f, 0.45f, 1f);
         Float4 sky = L4(L4(skyNight, skyDay, day), skyWarm, warm * 0.5f);
         w.Ambient.SkyColor = sky;
-        w.Ambient.GroundColor = L4(new Float4(0.05f, 0.05f, 0.07f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
-        w.Ambient.Strength = 0.45f + 0.45f * day;
-        w.Fog.Color = Lerp(new Color(0.07f, 0.09f, 0.15f, 1f), Lerp(new Color(0.72f, 0.80f, 0.88f, 1f), new Color(0.92f, 0.70f, 0.55f, 1f), warm * 0.6f), day);
+        // The procedural sky goes black once the sun is below the horizon: blend to a solid deep-blue night sky instead.
+        if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1")
+        {
+            bool night = day < 0.22f;
+            g.Player.Camera.ClearFlags = night ? CameraClearFlags.SolidColor : CameraClearFlags.Skybox;
+            g.Player.Camera.ClearColor = new Color(0.035f, 0.045f, 0.095f, 1f);
+        }
+        w.Ambient.GroundColor = L4(new Float4(0.12f, 0.12f, 0.16f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
+        w.Ambient.Strength = 0.6f + 0.3f * day;
+        w.Fog.Color = Lerp(new Color(0.12f, 0.15f, 0.24f, 1f), Lerp(new Color(0.72f, 0.80f, 0.88f, 1f), new Color(0.92f, 0.70f, 0.55f, 1f), warm * 0.6f), day);
     }
 
     private static Color Lerp(Color a, Color b, float t) => new(a.R + (b.R - a.R) * t, a.G + (b.G - a.G) * t, a.B + (b.B - a.B) * t, 1f);

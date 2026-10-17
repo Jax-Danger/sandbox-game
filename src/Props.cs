@@ -174,7 +174,7 @@ public sealed class PropManager(Scene scene, Shader shader)
         go.Transform.LocalEulerAngles = new Float3(kind == PropKind.Ramp ? -20f : 0f, yawDegrees, 0f);
 
         Color color = ColorFor(kind, _counter);
-        var material = new Material(Shader);
+        var material = Mats.New(Shader);
         material.SetColor("_MainColor", color);
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
         renderer.Material = material;
