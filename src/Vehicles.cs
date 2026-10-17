@@ -35,11 +35,12 @@ public sealed class Buggy
         Go.Transform.Position = pos;
         Go.Transform.LocalEulerAngles = new Float3(0f, yaw, 0f);
         var size = new Float3(1.5f, 0.35f, 2.8f);
-        var paint = new Color(0.95f, 0.55f, 0.15f, 1f);
+        var paint = new Color(0.80f, 0.42f, 0.10f, 1f);
         var mat = new Material(g.Shader);
+        try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetColor("_MainColor", paint);
         MeshRenderer r = Go.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateCube(size);
+        r.Mesh = Meshes.RoundedBox(size, 0.08f);
         r.Material = mat;
         Body = Go.AddComponent<Rigidbody3D>();
         Body.Mass = 450f;
@@ -51,16 +52,16 @@ public sealed class Buggy
 
         // Visual-only details (no colliders): seat, roll cage, bumper.
         var dark = new Color(0.12f, 0.12f, 0.13f, 1f);
-        Detail(g, "Seat", Mesh.CreateCube(new Float3(0.6f, 0.5f, 0.15f)), new Float3(0f, 0.4f, -0.55f), dark);
-        Detail(g, "SeatBase", Mesh.CreateCube(new Float3(0.6f, 0.12f, 0.55f)), new Float3(0f, 0.22f, -0.3f), dark);
+        Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.6f, 0.5f, 0.15f), 0.025f, 2), new Float3(0f, 0.4f, -0.55f), dark);
+        Detail(g, "SeatBase", Meshes.RoundedBox(new Float3(0.6f, 0.12f, 0.55f), 0.025f, 2), new Float3(0f, 0.22f, -0.3f), dark);
         foreach (float x in new[] { -0.65f, 0.65f })
         {
-            Detail(g, "CageA", Mesh.CreateCube(new Float3(0.06f, 1.0f, 0.06f)), new Float3(x, 0.65f, -0.85f), dark);
-            Detail(g, "CageB", Mesh.CreateCube(new Float3(0.06f, 0.06f, 1.2f)), new Float3(x, 1.15f, -0.3f), dark);
-            Detail(g, "CageC", Mesh.CreateCube(new Float3(0.06f, 0.95f, 0.06f)), new Float3(x, 0.65f, 0.3f), dark, new Float3(-25f, 0f, 0f));
+            Detail(g, "CageA", Meshes.RoundedBox(new Float3(0.06f, 1.0f, 0.06f), 0.025f, 2), new Float3(x, 0.65f, -0.85f), dark);
+            Detail(g, "CageB", Meshes.RoundedBox(new Float3(0.06f, 0.06f, 1.2f), 0.025f, 2), new Float3(x, 1.15f, -0.3f), dark);
+            Detail(g, "CageC", Meshes.RoundedBox(new Float3(0.06f, 0.95f, 0.06f), 0.025f, 2), new Float3(x, 0.65f, 0.3f), dark, new Float3(-25f, 0f, 0f));
         }
-        Detail(g, "CageTop", Mesh.CreateCube(new Float3(1.36f, 0.06f, 0.06f)), new Float3(0f, 1.15f, -0.85f), dark);
-        Detail(g, "Bumper", Mesh.CreateCube(new Float3(1.6f, 0.15f, 0.15f)), new Float3(0f, 0.0f, 1.45f), dark);
+        Detail(g, "CageTop", Meshes.RoundedBox(new Float3(1.36f, 0.06f, 0.06f), 0.025f, 2), new Float3(0f, 1.15f, -0.85f), dark);
+        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.6f, 0.15f, 0.15f), 0.025f, 2), new Float3(0f, 0.0f, 1.45f), dark);
 
         foreach (var (name, lp, front) in new[]
         {
@@ -77,8 +78,9 @@ public sealed class Buggy
             mesh.Transform.Parent = visual.Transform;
             mesh.Transform.LocalEulerAngles = new Float3(0f, 0f, 90f);
             MeshRenderer wr = mesh.AddComponent<MeshRenderer>();
-            wr.Mesh = Mesh.CreateCylinder(0.42f, 0.32f, 18);
+            wr.Mesh = Meshes.Tyre(0.42f, 0.32f);
             var wm = new Material(g.Shader);
+        try { wm.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             wm.SetColor("_MainColor", dark);
             wr.Material = wm;
             WheelCollider wc = wheel.AddComponent<WheelCollider>();
@@ -106,6 +108,7 @@ public sealed class Buggy
         MeshRenderer r = d.AddComponent<MeshRenderer>();
         r.Mesh = mesh;
         var m = new Material(g.Shader);
+        try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         m.SetColor("_MainColor", c);
         r.Material = m;
         g.World.Add(d);

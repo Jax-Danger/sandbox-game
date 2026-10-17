@@ -178,9 +178,9 @@ public sealed class ViewModel
                 MeshRenderer r = go.AddComponent<MeshRenderer>();
                 r.Mesh = part.Shape switch
                 {
-                    's' => Mesh.CreateSphere(part.Size.X / 2f * PartScale, 10, 14),
-                    'c' => Mesh.CreateCylinder(part.Size.X / 2f * PartScale, part.Size.Y * PartScale, 14),
-                    _ => Mesh.CreateCube(part.Size * PartScale),
+                    's' => Meshes.Sphere(part.Size.X / 2f * PartScale),
+                    'c' => Meshes.RoundedCylinder(part.Size.X / 2f * PartScale, part.Size.Y * PartScale, MathF.Min(part.Size.X, part.Size.Y) * PartScale * 0.12f, 24),
+                    _ => Meshes.RoundedBox(part.Size * PartScale, MathF.Min(part.Size.X, MathF.Min(part.Size.Y, part.Size.Z)) * PartScale * 0.18f, 2),
                 };
                 var m = new Material(shader);
                 m.SetColor("_MainColor", part.Color);

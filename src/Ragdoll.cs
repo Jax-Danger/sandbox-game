@@ -65,6 +65,7 @@ public sealed class Ragdoll
             Color col = d.Name == "Head" || d.Name.StartsWith("Lower arm") ? skin : d.Name == "Torso" || d.Name.StartsWith("Upper arm") ? shirt : pants;
             var mat = new Material(g.Shader);
             mat.SetColor("_MainColor", col);
+            try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             MeshRenderer r = go.AddComponent<MeshRenderer>();
             r.Material = mat;
             Rigidbody3D body = go.AddComponent<Rigidbody3D>();

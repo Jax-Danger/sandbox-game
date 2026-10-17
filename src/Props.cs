@@ -118,8 +118,18 @@ public sealed class PropManager(Scene scene, Shader shader)
         };
     }
 
+    public static Float3 SizeOf(PropKind kind) => kind switch
+    {
+        PropKind.Plank => new Float3(3f, 0.15f, 0.6f),
+        PropKind.BigCrate => new Float3(2f, 2f, 2f),
+        PropKind.Ramp => new Float3(2f, 0.2f, 3.5f),
+        PropKind.SmallCrate => new Float3(0.6f, 0.6f, 0.6f),
+        PropKind.Panel => new Float3(2f, 2f, 0.1f),
+        _ => Float3.One,
+    };
+
     /// <summary>Builds a kind's mesh ahead of time so the first spawn doesn't hitch (used by the loading screen).</summary>
-    public static void WarmMesh(PropKind kind) { try { _ = kind is PropKind.Cube or PropKind.Sphere or PropKind.BigBall or PropKind.Barrel or PropKind.Pole ? MeshFor(kind) : null; } catch { } }
+    public static void WarmMesh(PropKind kind) { try { _ = MeshFor(kind, SizeOf(kind)); } catch { } }
 
     public static readonly PropKind[] AllKinds = Enum.GetValues<PropKind>().Where(k => k != PropKind.Limb).ToArray();
 

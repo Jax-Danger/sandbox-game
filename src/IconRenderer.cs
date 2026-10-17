@@ -87,16 +87,16 @@ public sealed class IconRenderer
 
     private static (Mesh mesh, float extent) MeshFor(PropKind kind) => kind switch
     {
-        PropKind.Cube => (Mesh.CreateCube(Float3.One), 0.9f),
-        PropKind.Sphere => (Mesh.CreateSphere(0.5f, 24, 32), 0.6f),
-        PropKind.Plank => (Mesh.CreateCube(new Float3(3f, 0.15f, 0.6f)), 1.6f),
-        PropKind.Barrel => (Mesh.CreateCylinder(0.4f, 1.1f, 32), 0.75f),
-        PropKind.BigCrate => (Mesh.CreateCube(new Float3(2f, 2f, 2f)), 1.8f),
-        PropKind.Ramp => (Mesh.CreateCube(new Float3(2f, 0.2f, 3.5f)), 2.0f),
-        PropKind.SmallCrate => (Mesh.CreateCube(new Float3(0.6f, 0.6f, 0.6f)), 0.55f),
-        PropKind.Pole => (Mesh.CreateCylinder(0.08f, 3f, 16), 1.6f),
-        PropKind.Panel => (Mesh.CreateCube(new Float3(2f, 2f, 0.1f)), 1.5f),
-        PropKind.BigBall => (Mesh.CreateSphere(1f, 24, 32), 1.2f),
+        PropKind.Cube => (PropManager.MeshFor(PropKind.Cube, PropManager.SizeOf(PropKind.Cube)), 0.9f),
+        PropKind.Sphere => (PropManager.MeshFor(PropKind.Sphere, PropManager.SizeOf(PropKind.Sphere)), 0.6f),
+        PropKind.Plank => (PropManager.MeshFor(PropKind.Plank, PropManager.SizeOf(PropKind.Plank)), 1.6f),
+        PropKind.Barrel => (PropManager.MeshFor(PropKind.Barrel, PropManager.SizeOf(PropKind.Barrel)), 0.75f),
+        PropKind.BigCrate => (PropManager.MeshFor(PropKind.BigCrate, PropManager.SizeOf(PropKind.BigCrate)), 1.8f),
+        PropKind.Ramp => (PropManager.MeshFor(PropKind.Ramp, PropManager.SizeOf(PropKind.Ramp)), 2.0f),
+        PropKind.SmallCrate => (PropManager.MeshFor(PropKind.SmallCrate, PropManager.SizeOf(PropKind.SmallCrate)), 0.55f),
+        PropKind.Pole => (PropManager.MeshFor(PropKind.Pole, PropManager.SizeOf(PropKind.Pole)), 1.6f),
+        PropKind.Panel => (PropManager.MeshFor(PropKind.Panel, PropManager.SizeOf(PropKind.Panel)), 1.5f),
+        PropKind.BigBall => (PropManager.MeshFor(PropKind.BigBall, PropManager.SizeOf(PropKind.BigBall)), 1.2f),
         _ => (Mesh.CreateCube(Float3.One), 0.9f),
     };
 }
