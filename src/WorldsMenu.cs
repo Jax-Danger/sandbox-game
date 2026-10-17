@@ -36,19 +36,19 @@ public sealed partial class Menus
     private void DrawWorlds(Paper paper, float w, float h, SandboxGame g)
     {
         _worlds ??= Worlds.List();
-        float pw = MathF.Min(w * 0.9f, Theme.S(1000)), ph = MathF.Min(h * 0.88f, Theme.S(660));
-        float x = (w - pw) / 2f, y = (h - ph) / 2f + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Xl);
+        float mg = Theme.S(12), pw = w - 2 * mg, ph = h - 2 * mg;
+        float x = mg, y = mg + (1f - Ui.Alpha) * Theme.S(20), pad = Theme.S(Theme.Lg);
         Ui.Glass(paper, "wl_panel", x, y, pw, ph, strong: true).IsNotInteractable();
         Ui.Text(paper, "wl_kick", x + pad, y + pad - Theme.S(4), pw, Theme.S(16), "SINGLEPLAYER", Theme.Micro, Theme.Accent, Theme.Bold);
         Ui.Text(paper, "wl_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Worlds", Theme.Heading, Theme.Text, Theme.Bold);
         Ui.Text(paper, "wl_count", x + pad, y + pad + Theme.S(12), pw - 2 * pad, Theme.S(34), $"{_worlds.Count} world{(_worlds.Count == 1 ? "" : "s")} · autosaves every {SandboxGame.AutosaveInterval:0} s",
             Theme.Caption, Theme.TextFaint, null, TextAlignment.MiddleRight);
 
-        float bh = Theme.S(40), footer = bh + Theme.S(28);
-        float ly = y + pad + Theme.S(62), lh = ph - (ly - y) - footer - pad / 2f, lw = pw - 2 * pad;
+        float bh = Theme.S(30), footer = bh + Theme.S(18);
+        float ly = y + pad + Theme.S(52), lh = ph - (ly - y) - footer - pad / 2f, lw = pw - 2 * pad;
         Ui.Panel(paper, "wl_list_bg", x + pad, ly, lw, lh, Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
 
-        float rowH = Theme.S(92), gap = Theme.S(8), inner = Theme.S(8);
+        float rowH = Theme.S(62), gap = Theme.S(5), inner = Theme.S(6);
         float contentH = _worlds.Count * (rowH + gap) + inner;
         float maxScroll = MathF.Max(0f, contentH - lh);
         _worldScroll = Math.Clamp(_worldScroll, 0f, maxScroll);
@@ -79,12 +79,13 @@ public sealed partial class Menus
         WorldEntry? sel = _worlds.Count > 0 ? _worlds[Math.Clamp(_selected, 0, _worlds.Count - 1)] : null;
         float fy = y + ph - pad - bh, fx = x + pad;
         bool has = sel is not null && _modal is null;
-        Ui.Button(paper, "wl_play", fx, fy, Theme.S(170), bh, "Play Selected", () => { if (sel is not null) g.Enqueue(() => g.EnterSession(sel)); },
+        Ui.Rect(paper, "wl_footer_rule", x + pad, fy - Theme.S(9), pw - 2 * pad, 1f, Theme.Border);
+        Ui.Button(paper, "wl_play", fx, fy, Theme.S(136), bh, "Play Selected", () => { if (sel is not null) g.Enqueue(() => g.EnterSession(sel)); },
             selected: has, enabled: has, icon: Icon.Play, radius: bh / 2f);
-        fx += Theme.S(178);
-        Ui.Button(paper, "wl_new", fx, fy, Theme.S(140), bh, "Create New", () => { BeginCreate(); }, icon: Icon.Plus, radius: bh / 2f, enabled: _modal is null);
-        fx += Theme.S(148);
-        float sw = Theme.S(108);
+        fx += Theme.S(142);
+        Ui.Button(paper, "wl_new", fx, fy, Theme.S(116), bh, "Create New", () => { BeginCreate(); }, icon: Icon.Plus, radius: bh / 2f, enabled: _modal is null);
+        fx += Theme.S(128);
+        float sw = Theme.S(78);
         Ui.Button(paper, "wl_edit", fx, fy, sw, bh, "Edit", () => { _renameText = sel!.Meta.Name; _modal = "rename"; }, icon: Icon.Pencil, radius: bh / 2f, enabled: has, ghost: true);
         fx += sw + Theme.S(4);
         Ui.Button(paper, "wl_dup", fx, fy, sw + Theme.S(16), bh, "Duplicate", () => g.Enqueue(() => { var d = Worlds.Duplicate(sel!); RefreshWorlds(); _selected = _worlds!.FindIndex(x => x.Folder == d.Folder); g.Notify($"Duplicated as {d.Meta.Name}"); }),
@@ -92,8 +93,8 @@ public sealed partial class Menus
         fx += sw + Theme.S(20);
         Ui.Button(paper, "wl_del", fx, fy, sw, bh, "Delete", () => _modal = "delete", icon: Icon.Trash, radius: bh / 2f, enabled: has, ghost: true);
         fx += sw + Theme.S(4);
-        Ui.Button(paper, "wl_folder", fx, fy, Theme.S(138), bh, "Open Folder", () => Worlds.OpenFolder(sel?.Folder ?? Worlds.Root), icon: Icon.Folder, radius: bh / 2f, ghost: true, enabled: _modal is null);
-        Ui.Button(paper, "wl_back", x + pw - pad - Theme.S(100), fy, Theme.S(100), bh, "Back", () => Go(Screen.MainMenu), icon: Icon.Back, radius: bh / 2f, ghost: true, enabled: _modal is null);
+        Ui.Button(paper, "wl_folder", fx, fy, Theme.S(112), bh, "Open Folder", () => Worlds.OpenFolder(sel?.Folder ?? Worlds.Root), icon: Icon.Folder, radius: bh / 2f, ghost: true, enabled: _modal is null);
+        Ui.Button(paper, "wl_back", x + pw - pad - Theme.S(84), fy, Theme.S(84), bh, "Back", () => Go(Screen.MainMenu), icon: Icon.Back, radius: bh / 2f, ghost: true, enabled: _modal is null);
 
         if (_modal is not null && sel is not null) DrawWorldModal(paper, w, h, g, sel);
     }
@@ -111,7 +112,7 @@ public sealed partial class Menus
             .OnClick(0, (_, _) => { if (_modal is not null) return; if (_selected == capturedI && _lastClick.Elapsed.TotalSeconds < 0.4) g.Enqueue(() => g.EnterSession(we)); _selected = capturedI; _lastClick.Restart(); Ui.ClickSound?.Invoke(); });
 
         // Thumbnail 16:9.
-        float th = rh - Theme.S(16), tw = th * 16f / 9f, tx = rx + Theme.S(8), ty = ry + Theme.S(8);
+        float th = rh - Theme.S(10), tw = th * 16f / 9f, tx = rx + Theme.S(5), ty = ry + Theme.S(5);
         Texture2D? thumb = Worlds.Thumbnail(we);
         paper.Box($"wr_th_{i}").PositionType(PositionType.SelfDirected).Position(tx, ty).Size(tw, th).IsNotInteractable()
             .OnPostLayout((handle, rect) => paper.Draw(ref handle, (canvas, r) =>
@@ -128,17 +129,17 @@ public sealed partial class Menus
             }));
         if (thumb is null) Ui.Icon(paper, $"wr_thi_{i}", tx + tw / 2f - Theme.S(12), ty + th / 2f - Theme.S(12), Theme.S(24), we.Meta.Mode == "Roleplay" ? Icon.Users : Icon.Globe, Theme.TextFaint);
 
-        float cx = tx + tw + Theme.S(16), cw = rw - (cx - rx) - Theme.S(12);
-        Ui.Text(paper, $"wr_n_{i}", cx, ry + Theme.S(12), cw, Theme.S(24), we.Meta.Name, Theme.Title, Theme.Text, Theme.SemiBold);
-        Ui.Text(paper, $"wr_d_{i}", cx, ry + Theme.S(38), cw, Theme.S(18), $"Last played {Ago(we.Meta.LastPlayed)}", Theme.Caption, Theme.TextMuted);
-        Ui.Text(paper, $"wr_m_{i}", cx, ry + Theme.S(58), cw, Theme.S(18),
+        float cx = tx + tw + Theme.S(12), cw = rw - (cx - rx) - Theme.S(12);
+        Ui.Text(paper, $"wr_n_{i}", cx, ry + Theme.S(7), cw, Theme.S(20), we.Meta.Name, Theme.Label, Theme.Text, Theme.SemiBold);
+        Ui.Text(paper, $"wr_d_{i}", cx, ry + Theme.S(27), cw, Theme.S(15), $"Last played {Ago(we.Meta.LastPlayed)}", Theme.Caption, Theme.TextMuted);
+        Ui.Text(paper, $"wr_m_{i}", cx, ry + Theme.S(42), cw, Theme.S(15),
             $"{we.Meta.Mode} · {MapName(we.Meta)} · {we.Meta.PropCount} props · {TimeSpan.FromSeconds(we.Meta.PlaySeconds):h\\:mm} played", Theme.Caption, Theme.TextFaint);
         // Mode pill.
         string mode = we.Meta.Mode.ToUpperInvariant();
         float mw = (float)paper.MeasureText(mode, Theme.S(Theme.Micro), Theme.Bold, 0f).X + Theme.S(16);
         Color mc = we.Meta.Mode == "Roleplay" ? Theme.Warning : Theme.Accent;
-        Ui.Panel(paper, $"wr_pill_{i}", rx + rw - mw - Theme.S(12), ry + Theme.S(14), mw, Theme.S(20), Color.FromArgb(40, mc.R, mc.G, mc.B), Theme.S(10), shadow: false).IsNotInteractable();
-        Ui.Text(paper, $"wr_pillt_{i}", rx + rw - mw - Theme.S(12), ry + Theme.S(14), mw, Theme.S(20), mode, Theme.Micro, mc, Theme.Bold, TextAlignment.MiddleCenter);
+        Ui.Panel(paper, $"wr_pill_{i}", rx + rw - mw - Theme.S(12), ry + (rh - Theme.S(18)) / 2f, mw, Theme.S(18), Color.FromArgb(40, mc.R, mc.G, mc.B), Theme.S(10), shadow: false).IsNotInteractable();
+        Ui.Text(paper, $"wr_pillt_{i}", rx + rw - mw - Theme.S(12), ry + (rh - Theme.S(18)) / 2f, mw, Theme.S(18), mode, Theme.Micro, mc, Theme.Bold, TextAlignment.MiddleCenter);
     }
 
     private readonly Stopwatch _lastClick = Stopwatch.StartNew();
@@ -193,30 +194,30 @@ public sealed partial class Menus
 
     private void DrawCreate(Paper paper, float w, float h, SandboxGame g)
     {
-        float pw = MathF.Min(w * 0.9f, Theme.S(920)), ph = MathF.Min(h * 0.9f, Theme.S(680));
-        float x = (w - pw) / 2f, y = (h - ph) / 2f + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Xl);
+        float mg = Theme.S(12), pw = w - 2 * mg, ph = h - 2 * mg;
+        float x = mg, y = mg + (1f - Ui.Alpha) * Theme.S(20), pad = Theme.S(Theme.Lg);
         Ui.Glass(paper, "cw_panel", x, y, pw, ph, strong: true).IsNotInteractable();
         Ui.Text(paper, "cw_kick", x + pad, y + pad - Theme.S(4), pw, Theme.S(16), "SINGLEPLAYER", Theme.Micro, Theme.Accent, Theme.Bold);
         Ui.Text(paper, "cw_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Create New World", Theme.Heading, Theme.Text, Theme.Bold);
 
         float colW = (pw - 2 * pad - Theme.S(28)) / 2f, lx = x + pad, rx = lx + colW + Theme.S(28);
-        float cy = y + pad + Theme.S(66);
+        float cy = y + pad + Theme.S(54);
         SessionMeta d = _draft; WorldModifiers m = d.Modifiers;
 
         void Label(string id, float px, float py, string t) => Ui.Text(paper, id, px, py, colW, Theme.S(18), t, Theme.Caption, Theme.TextMuted, Theme.SemiBold);
         Label("cw_l_name", lx, cy, "World name");
-        TextInput(paper, "cw_name", lx, cy + Theme.S(22), colW, Theme.S(40), d.Name, v => d.Name = v, "My world");
-        cy += Theme.S(80);
+        TextInput(paper, "cw_name", lx, cy + Theme.S(20), colW, Theme.S(32), d.Name, v => d.Name = v, "My world");
+        cy += Theme.S(64);
         Label("cw_l_mode", lx, cy, "Game mode");
-        Ui.Segmented(paper, "cw_mode", lx, cy + Theme.S(22), colW, ["Sandbox", "Roleplay"], d.Mode == "Roleplay" ? 1 : 0, v => d.Mode = v == 1 ? "Roleplay" : "Sandbox");
-        Ui.Paragraph(paper, "cw_mode_d", lx, cy + Theme.S(64), colW, Theme.S(40), d.Mode == "Roleplay"
+        Ui.Segmented(paper, "cw_mode", lx, cy + Theme.S(20), colW, ["Sandbox", "Roleplay"], d.Mode == "Roleplay" ? 1 : 0, v => d.Mode = v == 1 ? "Roleplay" : "Sandbox");
+        Ui.Paragraph(paper, "cw_mode_d", lx, cy + Theme.S(58), colW, Theme.S(40), d.Mode == "Roleplay"
             ? "DarkRP-style: jobs, salaries, money, printers, laws and NPC citizens. Press F4 in game for jobs and the shop."
             : "Classic sandbox: spawn anything, build contraptions, no rules.", Theme.Caption, Theme.TextFaint);
-        cy += Theme.S(112);
+        cy += Theme.S(96);
         Label("cw_l_map", lx, cy, "Map");
         int mapIdx = Math.Max(0, Array.FindIndex(MapBuilder.Maps, mm => mm.Id == d.Map));
-        Ui.Segmented(paper, "cw_map", lx, cy + Theme.S(22), colW, MapBuilder.Maps.Select(mm => mm.Name).ToArray(), mapIdx, v => d.Map = MapBuilder.Maps[v].Id);
-        Ui.Paragraph(paper, "cw_map_d", lx, cy + Theme.S(64), colW, Theme.S(22), MapBuilder.Maps[mapIdx].Description, Theme.Caption, Theme.TextFaint);
+        Ui.Segmented(paper, "cw_map", lx, cy + Theme.S(20), colW, MapBuilder.Maps.Select(mm => mm.Name).ToArray(), mapIdx, v => d.Map = MapBuilder.Maps[v].Id);
+        Ui.Paragraph(paper, "cw_map_d", lx, cy + Theme.S(58), colW, Theme.S(22), MapBuilder.Maps[mapIdx].Description, Theme.Caption, Theme.TextFaint);
         cy += Theme.S(92);
         if (d.Map == "custom")
         {
@@ -229,10 +230,10 @@ public sealed partial class Menus
         }
 
         // Right column: modifiers.
-        float ry = y + pad + Theme.S(66);
+        float ry = y + pad + Theme.S(54);
         Ui.Text(paper, "cw_mods", rx, ry, colW, Theme.S(18), "Modifiers", Theme.Caption, Theme.TextMuted, Theme.SemiBold);
-        ry += Theme.S(26);
-        float rowH = Theme.S(44), sx = rx + Theme.S(150), sw = colW - Theme.S(150) - Theme.S(56);
+        ry += Theme.S(20);
+        float rowH = Theme.S(36), sx = rx + Theme.S(150), sw = colW - Theme.S(150) - Theme.S(56);
         void Row(string id, string label, string? value)
         {
             Ui.Panel(paper, id + "_bg", rx, ry, colW, rowH - Theme.S(6), Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
@@ -242,19 +243,33 @@ public sealed partial class Menus
         float sy() => ry + (rowH - Theme.S(6) - Theme.S(24)) / 2f;
         Row("cw_g", "Gravity", $"{m.Gravity:0.0}"); Ui.Slider(paper, "cw_g_s", sx, sy(), sw, m.Gravity, 1f, 25f, v => m.Gravity = MathF.Round(v * 10f) / 10f); ry += rowH;
         Row("cw_pl", "Prop limit", $"{m.PropLimit}"); Ui.Slider(paper, "cw_pl_s", sx, sy(), sw, m.PropLimit, 50f, 1000f, v => m.PropLimit = (int)(MathF.Round(v / 10f) * 10f)); ry += rowH;
-        Row("cw_fd", "Fall damage", null); Ui.Toggle(paper, "cw_fd_t", rx + colW - Theme.S(56), ry + (rowH - Theme.S(6) - Theme.S(22)) / 2f, m.FallDamage, v => m.FallDamage = v); ry += rowH;
-        Row("cw_dn", "Day/night cycle", null); Ui.Toggle(paper, "cw_dn_t", rx + colW - Theme.S(56), ry + (rowH - Theme.S(6) - Theme.S(22)) / 2f, m.DayNight, v => m.DayNight = v); ry += rowH;
-        Row("cw_npc", "NPCs", null); Ui.Toggle(paper, "cw_npc_t", rx + colW - Theme.S(56), ry + (rowH - Theme.S(6) - Theme.S(22)) / 2f, m.Npcs, v => m.Npcs = v); ry += rowH;
+        // Toggles in a tight two-column grid.
+        var toggles = new List<(string Id, string Label, bool Val, Action<bool> Set)>
+        {
+            ("cw_fd", "Fall damage", m.FallDamage, v => m.FallDamage = v), ("cw_dn", "Day/night", m.DayNight, v => m.DayNight = v),
+            ("cw_npc", "NPCs", m.Npcs, v => m.Npcs = v),
+        };
+        if (d.Mode == "Roleplay") toggles.Add(("cw_ps", "Props cost money", m.PaidSpawning, v => m.PaidSpawning = v));
+        float half = (colW - Theme.S(6)) / 2f;
+        for (int ti = 0; ti < toggles.Count; ti++)
+        {
+            var t = toggles[ti];
+            float tx2 = rx + (ti % 2) * (half + Theme.S(6)), ty2 = ry + (ti / 2) * rowH;
+            Ui.Panel(paper, t.Id + "_bg", tx2, ty2, half, rowH - Theme.S(6), Theme.PanelSunken, Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+            Ui.Text(paper, t.Id + "_l", tx2 + Theme.S(10), ty2, half, rowH - Theme.S(6), t.Label, Theme.Body, Theme.Text);
+            Ui.Toggle(paper, t.Id + "_t", tx2 + half - Theme.S(50), ty2 + (rowH - Theme.S(6) - Theme.S(22)) / 2f, t.Val, t.Set);
+        }
+        ry += ((toggles.Count + 1) / 2) * rowH;
         if (d.Mode == "Roleplay")
         {
             Row("cw_sm", "Starting money", $"${m.StartingMoney:N0}"); Ui.Slider(paper, "cw_sm_s", sx, sy(), sw - Theme.S(30), m.StartingMoney, 0f, 10000f, v => m.StartingMoney = (int)(MathF.Round(v / 50f) * 50f)); ry += rowH;
-            Row("cw_ps", "Props cost money", null); Ui.Toggle(paper, "cw_ps_t", rx + colW - Theme.S(56), ry + (rowH - Theme.S(6) - Theme.S(22)) / 2f, m.PaidSpawning, v => m.PaidSpawning = v); ry += rowH;
         }
 
-        float bh = Theme.S(42), fy = y + ph - pad - bh;
+        float bh = Theme.S(32), fy = y + ph - pad - bh;
+        Ui.Rect(paper, "cw_footer_rule", x + pad, fy - Theme.S(10), pw - 2 * pad, 1f, Theme.Border);
         if (_createError is not null) Ui.Text(paper, "cw_err", x + pad, fy - Theme.S(28), pw - 2 * pad, Theme.S(20), _createError, Theme.Caption, Theme.Danger, Theme.SemiBold);
-        Ui.Button(paper, "cw_create", x + pw - pad - Theme.S(190), fy, Theme.S(190), bh, "Create World", () => g.Enqueue(() => Create(g)), selected: true, icon: Icon.Check, radius: bh / 2f);
-        Ui.Button(paper, "cw_cancel", x + pw - pad - Theme.S(310), fy, Theme.S(110), bh, "Cancel", () => Go(Screen.Worlds), ghost: true, radius: bh / 2f);
+        Ui.Button(paper, "cw_create", x + pw - pad - Theme.S(150), fy, Theme.S(150), bh, "Create World", () => g.Enqueue(() => Create(g)), selected: true, icon: Icon.Check, radius: bh / 2f);
+        Ui.Button(paper, "cw_cancel", x + pw - pad - Theme.S(246), fy, Theme.S(90), bh, "Cancel", () => Go(Screen.Worlds), ghost: true, radius: bh / 2f);
     }
 
     private void Create(SandboxGame g)

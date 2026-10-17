@@ -32,12 +32,15 @@ public static class Theme
     public static readonly Color Shadow = Color.FromArgb(90, 0, 0, 0);
 
     // Spacing (logical pixels before UI scale).
-    public const float Xs = 4f, Sm = 8f, Md = 12f, Lg = 16f, Xl = 24f, Xxl = 32f;
-    public const float Radius = 16f, RadiusSm = 10f, RadiusXs = 6f;
+    // Compact, GMod-dense spacing (s&box glass look kept).
+    public const float Xs = 3f, Sm = 6f, Md = 9f, Lg = 12f, Xl = 16f, Xxl = 22f;
+    public const float Radius = 12f, RadiusSm = 8f, RadiusXs = 5f;
     public const float Blur = 18f;
 
     // Type scale.
-    public const float Micro = 11f, Caption = 12f, Body = 14f, Label = 15f, Title = 19f, Heading = 26f, Display = 64f;
+    public const float Micro = 10f, Caption = 11f, Body = 12.5f, Label = 13.5f, Title = 16f, Heading = 21f, Display = 52f;
+    /// <summary>Global density: everything is laid out at this fraction of the 1280x720 reference size.</summary>
+    public const float Density = 0.92f;
 
     // Animation.
     public const float OpenSpeed = 7f;   // 1/s, menu open/close
@@ -56,7 +59,7 @@ public static class Theme
     public static float Scale { get; private set; } = 1f;
 
     public static void UpdateScale(float width, float height)
-        => Scale = Math.Clamp(MathF.Min(width / 1280f, height / 720f), 0.75f, 2.5f) * UserScale;
+        => Scale = Math.Clamp(MathF.Min(width / 1280f, height / 720f), 0.75f, 2.5f) * UserScale * Density;
 
     public static float S(float v) => v * Scale;
 
