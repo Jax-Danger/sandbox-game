@@ -29,13 +29,20 @@ public sealed class Buggy
     public static readonly Float3 SeatOffset = new(0f, 0.55f, -0.25f);
     private static int _counter;
 
-    public Buggy(SandboxGame g, Float3 pos, float yaw)
+    public string Kind { get; }
+    public bool IsAirboat => Kind == "airboat";
+    private Transform? _fan;
+    public static string Title(string kind) => kind switch { "jeep" => "Jeep", "airboat" => "Airboat", _ => "Buggy" };
+
+    public Buggy(SandboxGame g, Float3 pos, float yaw, string kind = "buggy")
     {
-        Go = new GameObject($"Buggy #{++_counter}");
+        Kind = kind;
+        Go = new GameObject($"{Title(kind)} #{++_counter}");
         Go.Transform.Position = pos;
         Go.Transform.LocalEulerAngles = new Float3(0f, yaw, 0f);
-        var size = new Float3(1.5f, 0.35f, 2.8f);
-        var paint = new Color(0.80f, 0.42f, 0.10f, 1f);
+        bool jeep = kind == "jeep", boat = kind == "airboat";
+        var size = jeep ? new Float3(1.8f, 0.55f, 3.4f) : boat ? new Float3(1.9f, 0.3f, 3.6f) : new Float3(1.5f, 0.35f, 2.8f);
+        var paint = jeep ? new Color(0.33f, 0.38f, 0.22f, 1f) : boat ? new Color(0.20f, 0.36f, 0.52f, 1f) : new Color(0.80f, 0.42f, 0.10f, 1f);
         var mat = Mats.New(g.Shader);
         try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetColor("_MainColor", paint);
@@ -43,15 +50,19 @@ public sealed class Buggy
         r.Mesh = Meshes.RoundedBox(size, 0.08f);
         r.Material = mat;
         Body = Go.AddComponent<Rigidbody3D>();
-        Body.Mass = 450f;
+        Body.Mass = jeep ? 750f : boat ? 380f : 450f;
+        if (jeep) { MaxEngineTorque = 170f; TopSpeedKmh = 92f; MaxSteerDeg = 30f; }
         Body.AngularDamping = 0.05f;
         Body.LinearDamping = 0.0001f;
         Body.AngularDamping = 0.05f;
         Go.AddComponent<BoxCollider>().Size = size;
         g.World.Add(Go);
 
-        // Visual-only details (no colliders): seat, roll cage, bumper.
         var dark = new Color(0.12f, 0.12f, 0.13f, 1f);
+        if (jeep) JeepDetails(g, paint, dark);
+        else if (boat) BoatDetails(g, dark);
+        else {
+        // Visual-only details (no colliders): seat, roll cage, bumper.
         Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.6f, 0.5f, 0.15f), 0.025f, 2), new Float3(0f, 0.4f, -0.55f), dark);
         Detail(g, "SeatBase", Meshes.RoundedBox(new Float3(0.6f, 0.12f, 0.55f), 0.025f, 2), new Float3(0f, 0.22f, -0.3f), dark);
         foreach (float x in new[] { -0.65f, 0.65f })
@@ -62,11 +73,13 @@ public sealed class Buggy
         }
         Detail(g, "CageTop", Meshes.RoundedBox(new Float3(1.36f, 0.06f, 0.06f), 0.025f, 2), new Float3(0f, 1.15f, -0.85f), dark);
         Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.6f, 0.15f, 0.15f), 0.025f, 2), new Float3(0f, 0.0f, 1.45f), dark);
+        }
+        float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? -0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.25f : 0.42f;
 
         foreach (var (name, lp, front) in new[]
         {
-            ("FL", new Float3(-0.85f, -0.15f, 1.05f), true), ("FR", new Float3(0.85f, -0.15f, 1.05f), true),
-            ("RL", new Float3(-0.85f, -0.15f, -1.05f), false), ("RR", new Float3(0.85f, -0.15f, -1.05f), false),
+            ("FL", new Float3(-wx, wy, wz), true), ("FR", new Float3(wx, wy, wz), true),
+            ("RL", new Float3(-wx, wy, -wz), false), ("RR", new Float3(wx, wy, -wz), false),
         })
         {
             var wheel = new GameObject($"Wheel {name}");
@@ -78,19 +91,20 @@ public sealed class Buggy
             mesh.Transform.Parent = visual.Transform;
             mesh.Transform.LocalEulerAngles = new Float3(0f, 0f, 90f);
             MeshRenderer wr = mesh.AddComponent<MeshRenderer>();
-            wr.Mesh = Meshes.Tyre(0.42f, 0.32f);
+            wr.Mesh = Meshes.Tyre(rad, jeep ? 0.38f : 0.32f);
+            if (boat) wr.Enabled = false; // skids: the hull slides on hidden rollers
             var wm = Mats.New(g.Shader);
         try { wm.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             wm.SetColor("_MainColor", dark);
             wr.Material = wm;
             WheelCollider wc = wheel.AddComponent<WheelCollider>();
-            wc.Radius = 0.42f;
-            wc.Width = 0.32f;
+            wc.Radius = rad;
+            wc.Width = jeep ? 0.38f : 0.32f;
             wc.SuspensionDistance = 0.3f;
             wc.SuspensionFrequency = 2.2f;
             wc.SuspensionDampingRatio = 0.7f;
-            wc.ForwardFriction = 2.5f;
-            wc.SidewaysFriction = 1.6f;
+            wc.ForwardFriction = boat ? 0.04f : 2.5f;
+            wc.SidewaysFriction = boat ? 0.35f : 1.6f;
             wc.visualTransform = visual.Transform;
             g.World.Add(wheel);
             (front ? Front : Rear).Add(wc);
@@ -99,7 +113,59 @@ public sealed class Buggy
         Prop = g.Props.Adopt(Go, Body, mat, paint, PropKind.Limb, 0.5f);
     }
 
-    private void Detail(SandboxGame g, string name, Mesh mesh, Float3 lp, Color c, Float3 rot = default)
+    private void JeepDetails(SandboxGame g, Color paint, Color dark)
+    {
+        Detail(g, "Hood", Meshes.RoundedBox(new Float3(1.7f, 0.3f, 1.2f), 0.06f, 2), new Float3(0f, 0.42f, 1.05f), paint);
+        Detail(g, "Grille", Meshes.RoundedBox(new Float3(1.2f, 0.4f, 0.06f), 0.02f, 2), new Float3(0f, 0.3f, 1.72f), dark);
+        foreach (float x in new[] { -0.5f, 0.5f })
+            Detail(g, "Light", Meshes.RoundedBox(new Float3(0.22f, 0.22f, 0.05f), 0.08f, 2), new Float3(x, 0.38f, 1.74f), new Color(0.95f, 0.92f, 0.75f, 1f));
+        Detail(g, "Windshield", Meshes.RoundedBox(new Float3(1.6f, 0.6f, 0.05f), 0.02f, 2), new Float3(0f, 0.85f, 0.42f), new Color(0.55f, 0.68f, 0.78f, 1f), new Float3(-12f, 0f, 0f));
+        foreach (float x in new[] { -0.4f, 0.4f })
+        {
+            Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.55f, 0.55f, 0.14f), 0.03f, 2), new Float3(x, 0.62f, -0.55f), dark);
+            Detail(g, "SeatBase", Meshes.RoundedBox(new Float3(0.55f, 0.12f, 0.5f), 0.03f, 2), new Float3(x, 0.33f, -0.3f), dark);
+        }
+        Detail(g, "RollBar", Meshes.RoundedBox(new Float3(1.6f, 0.07f, 0.07f), 0.03f, 2), new Float3(0f, 1.3f, -0.9f), dark);
+        foreach (float x in new[] { -0.8f, 0.8f })
+            Detail(g, "RollPost", Meshes.RoundedBox(new Float3(0.07f, 1.0f, 0.07f), 0.03f, 2), new Float3(x, 0.8f, -0.9f), dark);
+        var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
+        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.9f, 0.16f, 0.16f), 0.04f, 2), new Float3(0f, 0.05f, 1.78f), dark);
+    }
+
+    private void BoatDetails(SandboxGame g, Color dark)
+    {
+        var white = new Color(0.86f, 0.87f, 0.88f, 1f);
+        Detail(g, "Bow", Meshes.RoundedBox(new Float3(1.9f, 0.25f, 0.8f), 0.1f, 2), new Float3(0f, 0.12f, 1.85f), white, new Float3(-14f, 0f, 0f));
+        foreach (float x in new[] { -0.9f, 0.9f })
+            Detail(g, "Rail", Meshes.RoundedBox(new Float3(0.1f, 0.22f, 3.4f), 0.04f, 2), new Float3(x, 0.24f, 0f), white);
+        Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.7f, 0.9f, 0.5f), 0.06f, 2), new Float3(0f, 0.6f, -0.4f), dark);
+        Detail(g, "Mast", Meshes.RoundedBox(new Float3(0.1f, 1.3f, 0.1f), 0.03f, 2), new Float3(0f, 0.8f, -1.2f), dark);
+        Detail(g, "Cage", Meshes.Tyre(0.85f, 0.12f), new Float3(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f), new Float3(90f, 0f, 0f));
+        var fan = new GameObject("Fan");
+        fan.Transform.Parent = Go.Transform;
+        fan.Transform.LocalPosition = new Float3(0f, 1.25f, -1.4f);
+        g.World.Add(fan);
+        _fan = fan.Transform;
+        foreach (float a in new[] { 0f, 120f, 240f })
+        {
+            var blade = new GameObject("Blade");
+            blade.Transform.Parent = fan.Transform;
+            blade.Transform.LocalEulerAngles = new Float3(0f, 0f, a);
+            blade.Transform.LocalPosition = Float3.Zero;
+            var child = new GameObject("BladeMesh");
+            child.Transform.Parent = blade.Transform;
+            child.Transform.LocalPosition = new Float3(0f, 0.38f, 0f);
+            MeshRenderer r = child.AddComponent<MeshRenderer>();
+            r.Mesh = Meshes.RoundedBox(new Float3(0.14f, 0.7f, 0.03f), 0.02f, 2);
+            var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Color(0.7f, 0.55f, 0.3f, 1f)); r.Material = m;
+            g.World.Add(blade); g.World.Add(child);
+        }
+        Detail(g, "Rudder", Meshes.RoundedBox(new Float3(0.05f, 0.8f, 0.4f), 0.02f, 2), new Float3(0f, 1.2f, -1.75f), dark);
+    }
+
+    public float Thrust { get; private set; }
+
+    private GameObject Detail(SandboxGame g, string name, Mesh mesh, Float3 lp, Color c, Float3 rot = default)
     {
         var d = new GameObject(name);
         d.Transform.Parent = Go.Transform;
@@ -112,12 +178,14 @@ public sealed class Buggy
         m.SetColor("_MainColor", c);
         r.Material = m;
         g.World.Add(d);
+        return d;
     }
 
     /// <summary>Same drivetrain as CarPhysicsDemo's CarController, but fed explicit input.</summary>
     public void Drive(float steer, bool accel, bool decel, bool handbrake)
     {
         if (!Go.IsValid()) return;
+        if (IsAirboat) { DriveBoat(steer, accel, decel, handbrake); return; }
         float fwd = Float3.Dot(Body.LinearVelocity, Go.Transform.Forward);
         // Smooth steering that tightens at speed (less twitchy, GMod-jeep-like).
         float speedK = Math.Clamp(MathF.Abs(fwd) * 3.6f / TopSpeedKmh, 0f, 1f);
@@ -152,8 +220,30 @@ public sealed class Buggy
         if (Gear < 0 && -fwd * 3.6f > 25f) throttle = 0f;
         float torque = MaxEngineTorque * Math.Clamp(1f - 1.25f * (t - 0.6f) * (t - 0.6f), 0.2f, 1f) * throttle;
         float perWheel = Rear.Count > 0 ? torque * ratio * 0.9f / Rear.Count : 0f;
-        foreach (WheelCollider w in Front) { w.MotorTorque = 0f; w.BrakeTorque = braking ? BrakeTorque : 0f; }
+        bool awd = Kind == "jeep";
+        if (awd) perWheel *= 0.5f;
+        foreach (WheelCollider w in Front) { w.MotorTorque = awd ? perWheel : 0f; w.BrakeTorque = braking ? BrakeTorque : 0f; }
         foreach (WheelCollider w in Rear) { w.MotorTorque = perWheel; w.BrakeTorque = (braking ? BrakeTorque : 0f) + (handbrake ? BrakeTorque : 0f); }
+        if (accel || decel) Body.SetActive(true);
+    }
+
+    /// <summary>Airboat: a big fan pushes the hull; steering yaws it. Wheels are frictionless skids.</summary>
+    private void DriveBoat(float steer, bool accel, bool decel, bool brake)
+    {
+        float fwd = Float3.Dot(Body.LinearVelocity, Go.Transform.Forward);
+        float want = accel ? 1f : decel ? -0.5f : 0f;
+        Thrust += (want - Thrust) * 0.08f;
+        if (fwd * 3.6f > 85f && Thrust > 0f) Thrust = 0f;
+        Body.AddForce(Go.Transform.Forward * (Thrust * 5200f));
+        float yawRate = Float3.Dot(Body.AngularVelocity, Go.Transform.Up);
+        Body.AddTorque(Go.Transform.Up * ((steer * 1.6f - yawRate) * 900f));
+        // Bleed sideways slide so it carves instead of drifting forever.
+        Float3 side = Go.Transform.Right * Float3.Dot(Body.LinearVelocity, Go.Transform.Right);
+        Body.AddForce(side * -(brake ? 700f : 260f) + Go.Transform.Forward * (brake ? -fwd * 400f : 0f));
+        foreach (WheelCollider w in Front.Concat(Rear)) { w.MotorTorque = 0f; w.BrakeTorque = 0f; w.SteerAngle = 0f; }
+        Rpm = IdleRpm + MathF.Abs(Thrust) * (MaxRpm - IdleRpm);
+        Gear = Thrust < -0.05f ? -1 : 1;
+        if (_fan is not null) _fan.LocalEulerAngles = new Float3(0f, 0f, _fan.LocalEulerAngles.Z + 6f + 40f * MathF.Abs(Thrust));
         if (accel || decel) Body.SetActive(true);
     }
 
@@ -183,11 +273,15 @@ public sealed class VehicleSystem(SandboxGame game)
     {
         SpawnCatalog.Register(new SpawnEntry("vehicle_buggy", "Buggy", MenuTab.Vehicles, "Cars", Icon.Car, null,
             (g, pos, yaw) => g.Vehicles.SpawnBuggy(pos + new Float3(0f, 0.8f, 0f), yaw).Name, 0.5f));
+        SpawnCatalog.Register(new SpawnEntry("vehicle_jeep", "Jeep", MenuTab.Vehicles, "Cars", Icon.Car, null,
+            (g, pos, yaw) => g.Vehicles.SpawnBuggy(pos + new Float3(0f, 1.0f, 0f), yaw, kind: "jeep").Name, 0.5f));
+        SpawnCatalog.Register(new SpawnEntry("vehicle_airboat", "Airboat", MenuTab.Vehicles, "Boats", Icon.Car, null,
+            (g, pos, yaw) => g.Vehicles.SpawnBuggy(pos + new Float3(0f, 0.7f, 0f), yaw, kind: "airboat").Name, 0.5f));
     }
 
-    public Buggy SpawnBuggy(Float3 pos, float yaw, bool recordUndo = true)
+    public Buggy SpawnBuggy(Float3 pos, float yaw, bool recordUndo = true, string kind = "buggy")
     {
-        var b = new Buggy(game, pos, yaw);
+        var b = new Buggy(game, pos, yaw, kind);
         All.Add(b);
         if (recordUndo) game.Props.PushUndo(new BuggyUndo(this, b));
         return b;

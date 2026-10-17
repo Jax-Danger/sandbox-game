@@ -169,6 +169,15 @@ public sealed partial class SandboxGame : Game
             case "settings": Menus.Go(Screen.Settings); break;
             case "video": Menus.Go(Screen.Settings); Menus.SettingsTab = 1; break;
             case "night": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.95f; DayNight.Apply(this); ToggleFlashlight(); break;
+            case "garage":
+                Menus.Go(Screen.Playing);
+                ClearMap(false);
+                Vehicles.SpawnBuggy(new Float3(-4.5f, 1.0f, 0f), 210f, false, "buggy");
+                Vehicles.SpawnBuggy(new Float3(0f, 1.2f, 1f), 200f, false, "jeep");
+                Vehicles.SpawnBuggy(new Float3(4.8f, 0.9f, 0f), 160f, false, "airboat");
+                Player.Teleport(new Float3(0f, 0.1f, -8f));
+                Player.SetLook(0f, 14f);
+                break;
             case "models":
                 Menus.Go(Screen.Playing);
                 ClearMap(false);

@@ -17,7 +17,9 @@ public sealed class SelfTest
     private float _vmRestY;
     private Prop? _target, _barrel;
     private PistolWeapon? _pistol;
-    private Buggy? _buggy;
+    private Buggy? _buggy, _jeep, _boat;
+    private Float3 _jeepStart, _boatStart;
+    private Prop? _ea, _eb, _hb;
     private Prop? _thrust, _xbarrel, _button, _ball;
     private Ragdoll? _dummy;
     private float _ballMaxY;
@@ -307,6 +309,15 @@ public sealed class SelfTest
                     g.ClearMap();
                     _buggy = g.Vehicles.SpawnBuggy(g.Player.FeetPosition + new Float3(4f, 1.2f, 0f), 0f);
                     _buggyStart = _buggy.Go.Transform.Position;
+                    _jeep = g.Vehicles.SpawnBuggy(g.Player.FeetPosition + new Float3(-6f, 1.4f, 0f), 0f, kind: "jeep");
+                    _boat = g.Vehicles.SpawnBuggy(g.Player.FeetPosition + new Float3(-14f, 1.0f, 0f), 0f, kind: "airboat");
+                    // Physics behaviour: elastic pulls, hoverball holds.
+                    _ea = g.Props.Spawn(PropKind.Cube, new Float3(30f, 8f, -30f), 0f, recordUndo: false);
+                    _eb = g.Props.Spawn(PropKind.Cube, new Float3(36f, 8f, -30f), 0f, recordUndo: false);
+                    _ea.Body.AffectedByGravity = false; _eb.Body.AffectedByGravity = false;
+                    g.ToolGun.Elastic(_ea, Float3.Zero, _eb, Float3.Zero, 3f, rest: 1f, recordUndo: false);
+                    _hb = g.Props.Spawn(PropKind.Cube, new Float3(-30f, 3f, -30f), 0f, recordUndo: false);
+                    Hoverball.Attach(g.Props, _hb, _hb.Go.Transform.Position, Float3.UnitY, 1f, KeyCode.Keypad8, KeyCode.Keypad2);
                     Check(g.Weapons.All.Select(w => w.Id).Distinct().Count() == g.Weapons.All.Count && g.Weapons.All.Count >= 10, $"weapon switcher has {g.Weapons.All.Count} weapons");
                 }
                 break;
@@ -323,6 +334,8 @@ public sealed class SelfTest
                 _buggy!.Drive(0f, true, false, false);
                 g.Vehicles.Tick(Time.DeltaTime, false);
                 _buggy.Drive(0f, true, false, false);
+                if (_frame >= 620) { _jeep!.Drive(0f, true, false, false); _boat!.Drive(0f, true, false, false); }
+                else { _jeepStart = _jeep!.Go.Transform.Position; _boatStart = _boat!.Go.Transform.Position; }
                 break;
             case 720:
                 {
@@ -330,6 +343,15 @@ public sealed class SelfTest
                     float moved = Float3.Length(b.Go.Transform.Position - _buggyStart);
                     Check(moved > 3f && b.SpeedKmh > 15f && b.SpeedKmh < 55f, $"throttle drives the buggy at a sane pace ({moved:0.0} m, {b.SpeedKmh:0} km/h, gear {b.Gear})");
                     Check(g.Vehicles.TryUse() && !g.InVehicle && Float3.Length(g.Player.FeetPosition - b.Go.Transform.Position) < 4f, "E exits beside the buggy");
+                    float jm = Float3.Dot(_jeep!.Go.Transform.Position - _jeepStart, _jeep.Go.Transform.Forward), bm = Float3.Dot(_boat!.Go.Transform.Position - _boatStart, _boat.Go.Transform.Forward);
+                    Check(jm > 2f && _jeep.Front.Concat(_jeep.Rear).Count(w => w.IsGrounded) >= 3, $"jeep drives on four wheels ({jm:0.0} m)");
+                    Check(bm > 2f && _boat.Go.Transform.Up.Y > 0.8f, $"airboat fan pushes the hull forward upright ({bm:0.0} m)");
+                    float ed = Float3.Length(_ea!.Go.Transform.Position - _eb!.Go.Transform.Position);
+                    Check(ed < 4.5f, $"elastic pulls props together (6.0 → {ed:0.0} m)");
+                    float hy = _hb!.Go.Transform.Position.Y, ht = _hb.Go.GetComponent<Hoverball>()!.Target;
+                    Check(MathF.Abs(hy - ht) < 0.6f, $"hoverball holds its height (y {hy:0.00}, target {ht:0.00})");
+                    var data = MapSave.Capture(g);
+                    Check(data.Buggies.Select(x => x.Kind).Distinct().Count() == 3, "vehicle kinds saved");
                 }
                 {
                     g.ClearMap();

@@ -34,7 +34,7 @@ public static class MapSave
     public sealed class WheelData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float[] Normal { get; set; } = []; public float Speed { get; set; } public string Fwd { get; set; } = "T"; public string Back { get; set; } = "G"; }
     public sealed class LightData { public int Prop { get; set; } public float[] Point { get; set; } = []; public float Range { get; set; } public float[] Color { get; set; } = []; }
     public sealed class RagdollData { public float[] Feet { get; set; } = []; public float Yaw { get; set; } public bool Dummy { get; set; } public string Team { get; set; } = "Dummy"; }
-    public sealed class BuggyData { public float[] Position { get; set; } = []; public float Yaw { get; set; } public float[] Rotation { get; set; } = []; public float[] Velocity { get; set; } = []; }
+    public sealed class BuggyData { public float[] Position { get; set; } = []; public float Yaw { get; set; } public float[] Rotation { get; set; } = []; public float[] Velocity { get; set; } = []; public string Kind { get; set; } = "buggy"; }
 
     public sealed class SaveData
     {
@@ -134,7 +134,7 @@ public static class MapSave
         foreach (Buggy b in g.Vehicles.All)
         {
             Quaternion q = b.Go.Transform.Rotation;
-            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = b.Go.Transform.LocalEulerAngles.Y, Rotation = [q.X, q.Y, q.Z, q.W], Velocity = F(b.Body.LinearVelocity) });
+            data.Buggies.Add(new BuggyData { Position = F(b.Go.Transform.Position), Yaw = b.Go.Transform.LocalEulerAngles.Y, Rotation = [q.X, q.Y, q.Z, q.W], Velocity = F(b.Body.LinearVelocity), Kind = b.Kind });
         }
         return data;
     }
@@ -256,7 +256,7 @@ public static class MapSave
         }
         foreach (BuggyData b in data.Buggies)
         {
-            Buggy car = g.Vehicles.SpawnBuggy(V(b.Position) + new Float3(0f, b.Rotation.Length == 4 ? 0f : 0.3f, 0f), b.Yaw, recordUndo: false);
+            Buggy car = g.Vehicles.SpawnBuggy(V(b.Position) + new Float3(0f, b.Rotation.Length == 4 ? 0f : 0.3f, 0f), b.Yaw, recordUndo: false, kind: b.Kind ?? "buggy");
             if (b.Rotation.Length == 4) car.Go.Transform.Rotation = new Quaternion(b.Rotation[0], b.Rotation[1], b.Rotation[2], b.Rotation[3]);
             if (b.Velocity.Length == 3) car.Body.LinearVelocity = V(b.Velocity);
             yield return ++step;
