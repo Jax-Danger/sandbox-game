@@ -272,7 +272,7 @@ public sealed partial class SandboxGame : Game
 
     public override void BeginRender()
     {
-        if (!Application.IsHeadless && _frames == 2) _icons.RenderAll(Shader);
+        if (!Application.IsHeadless && _frames == 2) _icons.RenderAll(Shader, Weapons.All.Select(w => (w.Id, w.ViewModelId)));
     }
 
     public override void EndUpdate()

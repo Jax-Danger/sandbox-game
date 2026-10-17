@@ -23,7 +23,7 @@ public sealed class IconRenderer
     private readonly Dictionary<string, RenderTexture> _models = [];
     public RenderTexture? Get(string spawnId) => _models.GetValueOrDefault(spawnId);
 
-    public void RenderAll(Shader shader)
+    public void RenderAll(Shader shader, IEnumerable<(string Id, string? Vm)>? weapons = null)
     {
         if (_attempted) return;
         _attempted = true;
@@ -33,8 +33,12 @@ public sealed class IconRenderer
                 _icons[kind] = RenderOne(kind, shader);
             foreach (ModelDef def in ModelProps.All)
                 _models["prop_" + def.Id] = RenderOne(PropKind.Cube, shader, def);
+            foreach (var (id, vm) in weapons ?? [])
+                if (IconSubjects.Weapon(id, vm) is { } wd) _models[id] = RenderOne(PropKind.Cube, shader, wd, weapon: !IconSubjects.IsCustom(id));
+            foreach (SpawnEntry e in SpawnCatalog.Entries.Where(x => x.Tab == MenuTab.Entities))
+                if (IconSubjects.Entity(e.Id) is { } ed) _models[e.Id] = RenderOne(PropKind.Cube, shader, ed);
             Ready = true;
-            Console.WriteLine($"Rendered {_icons.Count} prop thumbnails.");
+            Console.WriteLine($"Rendered {_icons.Count + _models.Count} thumbnails.");
         }
         catch (Exception e)
         {
@@ -43,7 +47,7 @@ public sealed class IconRenderer
         }
     }
 
-    private static RenderTexture RenderOne(PropKind kind, Shader shader, ModelDef? model = null)
+    private static RenderTexture RenderOne(PropKind kind, Shader shader, ModelDef? model = null, bool weapon = false)
     {
         var scene = new Scene { Name = $"Icon {kind}" };
 
@@ -81,7 +85,7 @@ public sealed class IconRenderer
             Float3 c = model.Collider;
             extent = MathF.Sqrt(c.X * c.X + c.Y * c.Y + c.Z * c.Z) * 0.5f;
         }
-        subject.Transform.LocalEulerAngles = new Float3(kind == PropKind.Ramp ? -20f : 0f, 25f, 0f);
+        subject.Transform.LocalEulerAngles = weapon ? new Float3(0f, 105f, 0f) : new Float3(kind == PropKind.Ramp ? -20f : 0f, 25f, 0f);
         scene.Add(subject);
 
         scene.Enable();
