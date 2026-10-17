@@ -8,12 +8,13 @@ namespace Sandbox;
 /// Builds the static world. Maps are rebuildable (every session picks one): "flatgrass" (the test arena),
 /// "hills" (outdoor terrain with a lake) and "custom" (a user model imported with Prowl.Clay, with static mesh colliders).
 /// </summary>
-public static class MapBuilder
+public static partial class MapBuilder
 {
     public static readonly (string Id, string Name, string Description)[] Maps =
     [
         ("flatgrass", "Flatgrass", "Classic flat arena with ramps, steps and walls."),
         ("hills", "Rolling Hills", "Outdoor terrain with hills and a lake."),
+        ("town", "RP Town", "Streets, a spawn plaza, police station, shops and houses with doors."),
         ("custom", "Custom map", "Import your own model (glb, gltf, fbx, obj, vrm)."),
     ];
     public static readonly string[] ImportExtensions = [".glb", ".gltf", ".fbx", ".obj", ".vrm"];
@@ -28,6 +29,7 @@ public static class MapBuilder
     {
         "hills" => HillsHeight(x, z),
         "flatgrass" => 0f,
+        "town" => 0f,
         _ => fallback,
     };
 
@@ -61,11 +63,13 @@ public static class MapBuilder
     public static string? Load(Scene scene, Shader shader, string map, string? customFile)
     {
         Clear(scene);
+        Town.Reset();
         Current = map;
         string? error = null;
         switch (map)
         {
             case "hills": BuildHills(scene, shader); break;
+            case "town": BuildTown(scene, shader); break;
             case "custom":
                 error = BuildCustom(scene, shader, customFile);
                 if (error is not null) { Current = "flatgrass"; BuildFlatgrass(scene, shader); }
@@ -203,7 +207,7 @@ public static class MapBuilder
 
     private static void Add(Scene scene, GameObject go) { scene.Add(go); _objects.Add(go); }
 
-    private static void Box(Scene scene, Shader shader, string name, Float3 position, Float3 size, Float3 euler, Color color, bool collide = true)
+    private static GameObject Box(Scene scene, Shader shader, string name, Float3 position, Float3 size, Float3 euler, Color color, bool collide = true)
     {
         GameObject go = new(name);
         go.Transform.Position = position;
@@ -215,11 +219,13 @@ public static class MapBuilder
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {
             bool floor = name == "Floor";
+            if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Solid(0, 215, 255)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); return go; }
             material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
             material.SetVector("_Tiling", floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f)));
         }
         renderer.Material = material;
         if (collide) go.AddComponent<BoxCollider>().Size = size;
         Add(scene, go);
+        return go;
     }
 }

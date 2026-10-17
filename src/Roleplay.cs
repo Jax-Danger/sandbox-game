@@ -47,6 +47,11 @@ public sealed class RoleplaySystem(SandboxGame g)
     public bool Wanted => Active && WantedTimer > 0f;
     public float PayTimer { get; private set; } = PayInterval;
     public float JailTimer { get; private set; }
+    public int Bank { get; private set; }
+    public bool AtAtm { get; set; }
+    public int Arrests { get; private set; }
+    public bool Jailed => Active && JailTimer > 0f;
+    private float _brandish;
     private SessionMeta? _meta;
 
     public void Reset(SessionMeta? meta)
@@ -57,7 +62,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         Job = Jobs[0];
         Laws.Clear();
         if (Active) Laws.AddRange(["Do not steal.", "No weapons in public.", "Printers are illegal."]);
-        WantedTimer = 0f; JailTimer = 0f; PayTimer = PayInterval;
+        WantedTimer = 0f; JailTimer = 0f; PayTimer = PayInterval; Bank = 0; Arrests = 0; AtAtm = false;
     }
 
     public void Restore(PlayerSave p)
@@ -66,12 +71,93 @@ public sealed class RoleplaySystem(SandboxGame g)
         Money = p.Money;
         Job = Jobs.FirstOrDefault(j => j.Id == p.Job) ?? Jobs[0];
         if (p.Laws.Count > 0 || Job.Id == "mayor") { Laws.Clear(); Laws.AddRange(p.Laws); }
+        Bank = p.Bank; JailTimer = p.JailTimer; WantedTimer = p.WantedTimer;
+        foreach (Door d in Town.Doors)
+        {
+            if (p.OwnedDoors.Contains(d.Id)) d.Owner = "you";
+            d.Locked = p.LockedDoors.Contains(d.Id) || (d.Locked && d.Owner is "police");
+        }
+        if (Jailed && Town.Active) g.Player.Teleport(Town.CellCenter + new Float3(0f, 0.2f, 0f));
     }
 
     public void Capture(PlayerSave p)
     {
         if (!Active) return;
         p.Money = Money; p.Job = Job.Id; p.Laws = Laws.ToList();
+        p.Bank = Bank; p.JailTimer = JailTimer; p.WantedTimer = WantedTimer;
+        p.OwnedDoors = Town.Doors.Where(d => d.Owner == "you").Select(d => d.Id).ToList();
+        p.LockedDoors = Town.Doors.Where(d => d.Locked).Select(d => d.Id).ToList();
+    }
+
+    // ---------------------------------------------------------------- doors, ATM
+
+    public bool CanUnlock(Door d) => d.Owner == "you" || (d.Owner == "police" && Active && Job.Id == "police") || (!Active && d.Owner != "police");
+
+    /// <summary>E on a door: opens/closes it, or unlocks it if it's yours.</summary>
+    public string UseDoor(Door d)
+    {
+        if (d.Locked)
+        {
+            if (!CanUnlock(d)) { g.Sounds.Play("sfx_impact", 0.35f, d.Transform.Position); return $"{d.Title} is locked"; }
+            d.Locked = false;
+        }
+        d.SetOpen(!d.Open);
+        g.Sounds.Play("sfx_door", 0.5f, d.Transform.Position);
+        return d.Open ? $"Opened {d.Title}" : $"Closed {d.Title}";
+    }
+
+    /// <summary>F2 on a door: buy it if it's for sale, sell it back (half price) if it's yours.</summary>
+    public string BuyOrSellDoor(Door d)
+    {
+        if (!Active) return "Doors can be bought in Roleplay";
+        if (d.Owner == "you")
+        {
+            int refund = d.Price / 2;
+            d.Owner = ""; d.Locked = false;
+            Earn(refund);
+            return $"Sold {d.Title} for ${refund:N0}";
+        }
+        if (d.Owner != "" || d.Price <= 0) return $"{d.Title} isn't for sale";
+        if (!TrySpend(d.Price, d.Title)) return "";
+        d.Owner = "you";
+        g.Sounds.Play("sfx_coin", 0.6f);
+        return $"You own {d.Title} · L to lock";
+    }
+
+    public string ToggleLock(Door d)
+    {
+        if (!CanUnlock(d)) return "You don't have the keys";
+        if (d.Open && !d.Locked) d.SetOpen(false);
+        d.Locked = !d.Locked;
+        g.Sounds.Play("sfx_tool", 0.4f, d.Transform.Position);
+        return d.Locked ? $"Locked {d.Title}" : $"Unlocked {d.Title}";
+    }
+
+    /// <summary>A thief picked <paramref name="d"/>: it unlocks and swings open; picking police locks always gets you wanted.</summary>
+    public string PickDoor(Door d)
+    {
+        d.Locked = false;
+        d.SetOpen(true);
+        if (d.Owner == "police" || Random.Shared.NextSingle() < 0.5f) MakeWanted($"breaking into {d.Title}");
+        return $"Picked the lock on {d.Title}";
+    }
+
+    public string Deposit(int amount)
+    {
+        amount = Math.Min(amount, Money);
+        if (amount <= 0) return "Nothing to deposit";
+        Money -= amount; Bank += amount;
+        g.Sounds.Play("sfx_coin", 0.5f);
+        return $"Deposited ${amount:N0}";
+    }
+
+    public string Withdraw(int amount)
+    {
+        amount = Math.Min(amount, Bank);
+        if (amount <= 0) return "Your account is empty";
+        Bank -= amount; Money += amount;
+        g.Sounds.Play("sfx_coin", 0.5f);
+        return $"Withdrew ${amount:N0}";
     }
 
     public void Earn(int amount, string? why = null)
@@ -220,19 +306,25 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         WantedTimer = 0f;
-        JailTimer = 10f;
+        JailTimer = Town.Active ? 30f : 10f;
+        Arrests++;
         int fine = Math.Min(Money, 200);
         Money -= fine;
-        g.Player.Teleport(MapBuilder.SpawnPoint + new Float3(0f, 0f, -3f));
-        g.Notify($"{why}. Fined ${fine:N0}; jailed for 10 s.", ToastKind.Danger);
+        g.Player.Teleport(Town.Active ? Town.CellCenter + new Float3(0f, 0.2f, 0f) : MapBuilder.SpawnPoint + new Float3(0f, 0f, -3f));
+        if (Town.Find("door_cell") is { } cell) { cell.SetOpen(false); cell.Locked = true; }
+        g.Notify($"{why}. Fined ${fine:N0}; jailed for {JailTimer:0} s.", ToastKind.Danger);
     }
 
     public void MakeWanted(string why)
     {
         if (!Active) return;
+        bool was = WantedTimer > 0f;
         WantedTimer = 45f;
-        g.Notify($"You are wanted: {why}", ToastKind.Danger);
+        WantedFor = why;
+        if (!was) g.Notify($"You are wanted: {why}", ToastKind.Danger);
     }
+
+    public string WantedFor { get; private set; } = "";
 
     public void OnDeath()
     {
@@ -246,11 +338,21 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         if (npc.Team == NpcTeam.Hostile && Job.Id == "police") Earn(150, "for stopping a criminal");
-        else if (npc.Team is NpcTeam.Citizen or NpcTeam.Police && Job.Id != "police") MakeWanted("assault");
+        else if (npc.Team is NpcTeam.Citizen or NpcTeam.Police && Job.Id != "police" && npc.Doll is { } d
+                 && Float3.Length(d.Pelvis.Go.Transform.Position - g.Player.FeetPosition) < 8f) MakeWanted("assault");
     }
 
     public void SpawnTownNpcs()
     {
+        if (Town.Active && Town.Waypoints.Count > 0)
+        {
+            for (int i = 0; i < 10; i++)
+            {
+                Float3 w = Town.Waypoints[(i * 7) % Town.Waypoints.Count];
+                EntityCatalog.SpawnDummy(g, w + new Float3(0f, 0.2f, 0f), i * 36f, recordUndo: false, team: i < 7 ? NpcTeam.Citizen : NpcTeam.Police);
+            }
+            return;
+        }
         for (int i = 0; i < 6; i++)
         {
             float a = i * 1.05f, r = 8f + i * 2.5f;
@@ -263,7 +365,24 @@ public sealed class RoleplaySystem(SandboxGame g)
     {
         if (!Active) return;
         if (WantedTimer > 0f) WantedTimer -= dt;
-        if (JailTimer > 0f) JailTimer -= dt;
+        if (JailTimer > 0f)
+        {
+            JailTimer -= dt;
+            if (Town.Active && !Town.InCell(g.Player.FeetPosition) && JailTimer > 0.5f) { JailTimer = 0f; MakeWanted("jailbreak"); }
+            else if (JailTimer <= 0f)
+            {
+                JailTimer = 0f;
+                if (Town.Active) g.Player.Teleport(Town.ReleasePoint);
+                g.Notify("Released from jail. Behave.", ToastKind.Success);
+            }
+        }
+        // Brandishing: police nearby see you holding a gun while it's against the law.
+        bool armedLaw = Laws.Any(l => l.Contains("weapon", StringComparison.OrdinalIgnoreCase));
+        bool seen = armedLaw && Job.Id != "police" && g.Weapons.Current is Firearm && !Wanted
+            && Ragdoll.All.Any(r => r.Alive && r.Team == NpcTeam.Police && Float3.Length(r.Pelvis.Go.Transform.Position - g.Player.FeetPosition) < 12f);
+        _brandish = seen ? _brandish + dt : 0f;
+        if (_brandish > 0.01f && _brandish - dt <= 0.01f) g.Notify("Police: put that weapon away!", ToastKind.Danger);
+        if (_brandish > 3f) { _brandish = 0f; MakeWanted("carrying a weapon in public"); }
         PayTimer -= dt;
         if (PayTimer <= 0f)
         {
@@ -334,10 +453,20 @@ public sealed class LockpickWeapon : Weapon
     public override bool Available(SandboxGame g) => g.Roleplay.Active && g.Roleplay.Job.Id == "thief";
     public float Progress { get; private set; }
     private Prop? _target;
+    private Door? _door;
     public override string? AmmoText => Progress > 0f ? $"{Progress * 100f:0}%" : null;
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {
         Prop? aimed = g.Player.Trace(2.5f, out RaycastHit hit) ? g.Props.FromBody(hit.Rigidbody) : null;
+        Door? door = aimed is null && g.Player.Trace(2.5f, out RaycastHit dh) ? Town.DoorFrom(dh) : null;
+        if (door is { Locked: true })
+        {
+            if (!i.PrimaryHeld || !ReferenceEquals(door, _door)) { Progress = 0f; _door = i.PrimaryHeld ? door : null; return; }
+            Progress += dt / 4f;
+            if (Progress >= 1f) { Progress = 0f; _door = null; g.Notify(g.Roleplay.PickDoor(door)); g.Sounds.Play("sfx_tool", 0.6f); }
+            return;
+        }
+        _door = null;
         bool valid = aimed is not null && (aimed.Frozen || aimed.Entity == "rp_printer");
         if (!i.PrimaryHeld || !valid || !ReferenceEquals(aimed, _target)) { Progress = 0f; _target = valid && i.PrimaryHeld ? aimed : null; return; }
         Progress += dt / 3f;

@@ -52,6 +52,11 @@ public sealed class PlayerSave
     public int Money { get; set; }
     public string Job { get; set; } = "citizen";
     public List<string> Laws { get; set; } = [];
+    public int Bank { get; set; }
+    public List<string> OwnedDoors { get; set; } = [];
+    public List<string> LockedDoors { get; set; } = [];
+    public float JailTimer { get; set; }
+    public float WantedTimer { get; set; }
 }
 
 public sealed record WorldEntry(string Folder, SessionMeta Meta)

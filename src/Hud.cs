@@ -55,7 +55,9 @@ public sealed class Hud
         float m = Theme.S(20);
         if (chrome)
         {
+            DrawLawsBoard(paper, w, h, game);
             if (!game.InVehicle) DrawCrosshair(paper, w / 2f, h / 2f, game);
+            if (!game.InVehicle) DrawInteract(paper, w / 2f, h / 2f, game);
             DrawCorners(paper, w, h, m, game);
             DrawSwitcher(paper, w, m, game);
             game.Vehicles.DrawHud(paper, w, h, m);
@@ -64,6 +66,83 @@ public sealed class Hud
             Ui.Text(paper, "hud_fps", w - m - Theme.S(80), Theme.S(8), Theme.S(80), Theme.S(16), $"{_fps:0} FPS",
                 Theme.Micro, Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleRight);
         DrawToasts(paper, w / 2f, h - m - Theme.S(chrome ? 44 : 0), dt);
+    }
+
+    /// <summary>Small s&box-style prompt under the crosshair for doors and the ATM.</summary>
+    private static void DrawInteract(Paper paper, float cx, float cy, SandboxGame game)
+    {
+        var (door, atm, _) = game.WorldAim();
+        if (door is null && !atm) return;
+        RoleplaySystem rp = game.Roleplay;
+        string title = door?.Title ?? "ATM", sub = door?.Status ?? "Deposit and withdraw";
+        var keys = new List<(string Key, string What)>();
+        if (door is not null)
+        {
+            keys.Add(("E", door.Locked && !rp.CanUnlock(door) ? "Knock" : door.Open ? "Close" : "Open"));
+            if (rp.Active && door.Owner == "" && door.Price > 0) keys.Add(("F2", $"Buy ${door.Price:N0}"));
+            if (rp.Active && door.Owner == "you") { keys.Add(("L", door.Locked ? "Unlock" : "Lock")); keys.Add(("F2", "Sell")); }
+            else if (rp.CanUnlock(door) && door.Owner == "police") keys.Add(("L", door.Locked ? "Unlock" : "Lock"));
+        }
+        else keys.Add(("E", "Use ATM"));
+        float y = cy + Theme.S(26);
+        float tw = (float)paper.MeasureText(title, Theme.S(Theme.Body), Theme.SemiBold, 0f).X;
+        Ui.Text(paper, "ia_t", cx - tw / 2f - Theme.S(20), y, tw + Theme.S(40), Theme.S(20), title, Theme.Body, Theme.Text, Theme.SemiBold, TextAlignment.MiddleCenter);
+        y += Theme.S(19);
+        if (sub.Length > 0)
+        {
+            Ui.Text(paper, "ia_s", cx - Theme.S(150), y, Theme.S(300), Theme.S(16), sub, Theme.Caption, door?.Locked == true ? Theme.Warning : Theme.TextMuted, Theme.Regular, TextAlignment.MiddleCenter);
+            y += Theme.S(22);
+        }
+        float kh = Theme.S(22), gap = Theme.S(10);
+        float[] widths = keys.Select(k => Theme.S(30) + (float)paper.MeasureText(k.What, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X).ToArray();
+        float total = widths.Sum() + gap * (keys.Count - 1), x = cx - total / 2f;
+        for (int i = 0; i < keys.Count; i++)
+        {
+            float kw = Theme.S(10) + (float)paper.MeasureText(keys[i].Key, Theme.S(Theme.Micro), Theme.Bold, 0f).X;
+            Ui.Glass(paper, $"ia_k{i}", x, y, kw + Theme.S(4), kh, Theme.S(5), shadow: false).IsNotInteractable();
+            Ui.Text(paper, $"ia_kt{i}", x, y, kw + Theme.S(4), kh, keys[i].Key, Theme.Micro, Theme.Text, Theme.Bold, TextAlignment.MiddleCenter);
+            Ui.Text(paper, $"ia_kw{i}", x + kw + Theme.S(10), y, widths[i], kh, keys[i].What, Theme.Caption, Theme.TextMuted, Theme.SemiBold);
+            x += widths[i] + gap;
+        }
+    }
+
+    /// <summary>Projects a world point onto the screen (null when behind the camera).</summary>
+    public static Prowl.Vector.Float2? Project(SandboxGame game, Prowl.Vector.Float3 world, float w, float h)
+    {
+        var cam = game.Player.CameraObject.Transform;
+        Prowl.Vector.Float3 l = cam.InverseTransformDirection(world - cam.Position);
+        if (l.Z < 0.2f) return null;
+        float f = 1f / MathF.Tan(game.Player.Camera.FieldOfView * MathF.PI / 360f);
+        return new Prowl.Vector.Float2(w / 2f + l.X / l.Z * f * h / 2f, h / 2f - l.Y / l.Z * f * h / 2f);
+    }
+
+    /// <summary>The town laws board, drawn as a world panel over its 3D frame (like s&box WorldPanels).</summary>
+    private static void DrawLawsBoard(Paper paper, float w, float h, SandboxGame game)
+    {
+        if (Town.Board is not { } board || game.InVehicle) return;
+        Prowl.Vector.Float3 c = board.Transform.Position;
+        Prowl.Vector.Float3 eye = game.Player.EyePosition;
+        float dist = Prowl.Vector.Float3.Length(c - eye);
+        if (dist > 30f || eye.Z > c.Z - 0.1f) return;
+        if (Project(game, c + new Prowl.Vector.Float3(-1.9f, 1.0f, -0.05f), w, h) is not { } tl || Project(game, c + new Prowl.Vector.Float3(1.9f, -1.0f, -0.05f), w, h) is not { } br) return;
+        float bw = br.X - tl.X, bh = br.Y - tl.Y;
+        if (bw < 40f || bh < 20f) return;
+        float k = bh / Theme.S(220);   // text scales with the board on screen
+        float a = Math.Clamp((30f - dist) / 6f, 0f, 1f);
+        float old = Ui.Alpha; Ui.Alpha = a;
+        RoleplaySystem rp = game.Roleplay;
+        var laws = rp.Laws.Count > 0 ? rp.Laws : ["No laws yet.", "The mayor writes laws in the F4 menu."];
+        Ui.Text(paper, "lb_kick", tl.X + 14f * k, tl.Y + 10f * k, bw, 18f * k, "CITY OF PROWL", MathF.Max(7f, 11f * k), Theme.WithAlpha(Theme.Warning, 0.95f), Theme.Bold);
+        Ui.Text(paper, "lb_title", tl.X + 14f * k, tl.Y + 26f * k, bw, 34f * k, "Laws", MathF.Max(9f, 28f * k), Theme.Text, Theme.Bold);
+        float ly = tl.Y + 70f * k;
+        for (int i = 0; i < laws.Count && i < 7; i++)
+        {
+            Ui.Text(paper, $"lb_n{i}", tl.X + 14f * k, ly, 24f * k, 20f * k, $"{i + 1}", MathF.Max(7f, 14f * k), Theme.Accent, Theme.Bold);
+            Ui.Text(paper, $"lb_l{i}", tl.X + 38f * k, ly, bw - 50f * k, 20f * k, laws[i], MathF.Max(7f, 14f * k), Theme.Text, Theme.Regular);
+            ly += 22f * k;
+        }
+        Ui.Text(paper, "lb_foot", tl.X + 14f * k, br.Y - 24f * k, bw - 28f * k, 16f * k, rp.Active ? $"Mayor: {(rp.Job.Id == "mayor" ? "you" : "vacant")}" : "Roleplay laws", MathF.Max(6f, 10f * k), Theme.TextFaint, Theme.SemiBold);
+        Ui.Alpha = old;
     }
 
     private static void DrawCrosshair(Paper paper, float cx, float cy, SandboxGame game)
@@ -91,7 +170,7 @@ public sealed class Hud
         float hpW = game.Health.DrawHud(paper, m, h - m - Theme.S(34), Theme.S(34));
         h -= Theme.S(34) + Theme.S(8);
         if (game.IsRoleplay) DrawRoleplay(paper, m, game);
-        string left = game.IsRoleplay ? $"{game.Props.Props.Count}/{game.PropLimit} props" : $"{game.Props.Props.Count} props";
+        string left = game.IsRoleplay ? $"{game.Props.Props.Count(p => p.Kind != PropKind.Limb)}/{game.PropLimit} props" : $"{game.Props.Props.Count(p => p.Kind != PropKind.Limb)} props";
         float lw = (float)paper.MeasureText(left, Theme.S(Theme.Caption), Theme.SemiBold, 0f).X + Theme.S(36);
         Ui.Glass(paper, "hud_props", m, h - m - ch, lw, ch, ch / 2f, shadow: false).IsNotInteractable();
         Ui.Icon(paper, "hud_props_ic", m + Theme.S(9), h - m - ch + Theme.S(6), Theme.S(14), Icon.Cube, Theme.TextMuted);
@@ -156,7 +235,7 @@ public sealed class Hud
             Ui.Text(paper, "rp_jail_t", m, y, w, Theme.S(24), $"ARRESTED · {rp.JailTimer:0}s", Theme.Micro, Theme.Warning, Theme.Bold, TextAlignment.MiddleCenter);
             y += Theme.S(30);
         }
-        if (rp.Laws.Count > 0)
+        if (rp.Laws.Count > 0 && !Town.Active)
         {
             float lh = Theme.S(18), bw = Theme.S(260), bh = Theme.S(28) + rp.Laws.Count * lh;
             Ui.Glass(paper, "rp_laws", m, y, bw, bh, Theme.S(10), shadow: false).IsNotInteractable();

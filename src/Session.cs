@@ -114,7 +114,7 @@ public sealed class SessionLoader
             Progress = 0.38f + 0.55f * done / MathF.Max(1, total);
             yield return true;
         }
-        if (meta.Modifiers.Npcs && meta.Mode == "Roleplay" && world.Props.Count == 0) _g.Roleplay.SpawnTownNpcs();
+        if (meta.Modifiers.Npcs && meta.Mode == "Roleplay" && world.Props.Count == 0 && world.Ragdolls.Count == 0) _g.Roleplay.SpawnTownNpcs();
 
         // 6. Player.
         Stage = "Restoring player...";
@@ -165,6 +165,14 @@ public sealed partial class SandboxGame
             Menus.Go(Screen.Playing);
             Notify($"Welcome to {Session.Meta.Name}");
             if (ShotState == "jobs") Menus.Go(Screen.Jobs);
+            switch (ShotState)
+            {
+                case "town": Player.Teleport(new Float3(-3f, 0.2f, 2.5f)); Player.SetLook(8f, 2f); break;
+                case "towndoor": Roleplay.Earn(0); Player.Teleport(new Float3(-26.3f, 0.2f, 18.6f)); Player.SetLook(0f, 8f); break;
+                case "townair": if (!Player.Noclip) Player.ToggleNoclip(); Player.Teleport(new Float3(-30f, 34f, -52f)); Player.SetLook(28f, 34f); break;
+                case "jail": Roleplay.Arrest("Arrested for the screenshot"); Player.SetLook(200f, 6f); break;
+                case "bank": Roleplay.AtAtm = true; Menus.OpenBank(); break;
+            }
         }
     }
 

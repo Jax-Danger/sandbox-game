@@ -387,8 +387,11 @@ public sealed partial class Menus
 
     // ---------------------------------------------------------------- Roleplay F4 menu
 
+    public void OpenBank() { _jobsTab = 3; Go(Screen.Jobs); }
+
     private void DrawJobs(Paper paper, float w, float h, SandboxGame g)
     {
+        if (Screen != Screen.Jobs) g.Roleplay.AtAtm = false;
         RoleplaySystem rp = g.Roleplay;
         float pw = MathF.Min(w * 0.9f, Theme.S(980)), ph = MathF.Min(h * 0.86f, Theme.S(620));
         float x = (w - pw) / 2f, y = (h - ph) / 2f + (1f - Ui.Alpha) * Theme.S(24), pad = Theme.S(Theme.Xl);
@@ -483,7 +486,20 @@ public sealed partial class Menus
                     Ui.Button(paper, $"mn_drop_{i}", x + pad + i * Theme.S(130), cy + Theme.S(34), Theme.S(120), Theme.S(44), $"Drop ${a:N0}", () => g.Enqueue(() => rp.DropMoney(a)),
                         enabled: rp.Money >= a, icon: Icon.Money, radius: Theme.S(Theme.RadiusSm));
                 }
-                Ui.Paragraph(paper, "mn_p", x + pad, cy + Theme.S(100), cw, Theme.S(80),
+                // Bank: only usable at an ATM.
+                float by = cy + Theme.S(100);
+                Ui.Panel(paper, "mn_bank", x + pad, by, cw, Theme.S(104), Theme.WithAlpha(System.Drawing.Color.FromArgb(26, 255, 255, 255), 1f), Theme.S(Theme.RadiusSm), shadow: false).IsNotInteractable();
+                Ui.Icon(paper, "mn_bank_ic", x + pad + Theme.S(16), by + Theme.S(16), Theme.S(18), Icon.Briefcase, Theme.Accent);
+                Ui.Text(paper, "mn_bank_t", x + pad + Theme.S(44), by + Theme.S(10), cw, Theme.S(28), $"Bank  ${rp.Bank:N0}", Theme.Title, Theme.Text, Theme.Bold);
+                Ui.Text(paper, "mn_bank_s", x + pad + Theme.S(44), by + Theme.S(36), cw, Theme.S(18), rp.AtAtm ? "ATM connected · money in the bank is safe when you die" : "Find an ATM (plaza) to deposit or withdraw", Theme.Caption, Theme.TextMuted);
+                (string L, Func<string> A)[] ops = [("Deposit $100", () => rp.Deposit(100)), ("Deposit all", () => rp.Deposit(rp.Money)), ("Withdraw $100", () => rp.Withdraw(100)), ("Withdraw $500", () => rp.Withdraw(500))];
+                for (int i = 0; i < ops.Length; i++)
+                {
+                    var op = ops[i];
+                    Ui.Button(paper, $"mn_bank_{i}", x + pad + Theme.S(44) + i * Theme.S(138), by + Theme.S(62), Theme.S(130), Theme.S(30), op.L, () => g.Enqueue(() => g.Notify(op.A())),
+                        enabled: rp.AtAtm, size: Theme.Caption, radius: Theme.S(15), ghost: i >= 2);
+                }
+                Ui.Paragraph(paper, "mn_p", x + pad, cy + Theme.S(220), cw, Theme.S(80),
                     $"Salary: ${rp.Job.Salary} every {RoleplaySystem.PayInterval:0} s. Props cost ${RoleplaySystem.PropCost} each when paid spawning is on. Money printers print $25 every 20 s (gangsters get 25% more); press E on a printer to collect. Dying drops 10% of your wallet.",
                     Theme.Caption, Theme.TextFaint);
                 break;

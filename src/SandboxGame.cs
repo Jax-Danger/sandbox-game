@@ -218,7 +218,7 @@ public sealed partial class SandboxGame : Game
             case "worlds": SeedDemoWorlds(); Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); break;
             case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
             case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
-            case "rp" or "jobs": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
+            case "rp" or "jobs" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
             case "hills": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
                 Menus.Go(Screen.Playing);
@@ -345,6 +345,7 @@ public sealed partial class SandboxGame : Game
 
         if (Input.GetKeyDown(KeyCode.F3)) { Settings.ShowFps = !Settings.ShowFps; Settings.Save(); }
         if (Input.GetKeyDown(KeyCode.E) && Carry.Held is null && Vehicles.TryUse()) return;
+        if (!InVehicle && SeatedIn is null && UseWorld()) return;
         if (InVehicle) { Carry.Drop(); return; }
         if (Health.Dead) return;
         if (Input.GetKeyDown(KeyCode.F) && Weapons.Current is not ToolGunWeapon) ToggleFlashlight();
@@ -662,11 +663,40 @@ public sealed partial class SandboxGame
     public float HoldLoaderAt { get; set; } = 2f;
 
     /// <summary>Screenshot mode: a few example worlds so the Worlds screen isn't empty.</summary>
+    /// <summary>What the crosshair is on, for town interactions (doors, ATM, laws board), within reach.</summary>
+    public (Door? Door, bool Atm, bool Board) WorldAim()
+    {
+        if (!Town.Active || !Player.Trace(3f, out RaycastHit hit) || Town.At(hit) is not { } go) return (null, false, false);
+        return (go.GetComponent<Door>(), go.GetComponent<AtmMachine>() is not null, go.GetComponent<LawsBoard>() is not null);
+    }
+
+    /// <summary>E / F2 / L on town objects. Returns true when the key press was consumed.</summary>
+    private bool UseWorld()
+    {
+        bool e = Input.GetKeyDown(KeyCode.E), f2 = Input.GetKeyDown(KeyCode.F2), l = Input.GetKeyDown(KeyCode.L);
+        if (!e && !f2 && !l) return false;
+        var (door, atm, _) = WorldAim();
+        if (door is not null)
+        {
+            string msg = e ? Roleplay.UseDoor(door) : f2 ? Roleplay.BuyOrSellDoor(door) : Roleplay.ToggleLock(door);
+            if (msg.Length > 0) Notify(msg);
+            return true;
+        }
+        if (atm && e)
+        {
+            if (!IsRoleplay) { Notify("The ATM only works in Roleplay"); return true; }
+            Roleplay.AtAtm = true;
+            Menus.OpenBank();
+            return true;
+        }
+        return false;
+    }
+
     private List<WorldEntry> SeedDemoWorlds()
     {
         var list = Worlds.List();
         if (list.Count > 0) return list;
-        (string Name, string Mode, string Map)[] demos = [("Flatgrass build", "Sandbox", "flatgrass"), ("Rolling Hills", "Sandbox", "hills"), ("Downtown RP", "Roleplay", "flatgrass")];
+        (string Name, string Mode, string Map)[] demos = [("Flatgrass build", "Sandbox", "flatgrass"), ("Rolling Hills", "Sandbox", "hills"), ("Downtown RP", "Roleplay", "town")];
         foreach (var (name, mode, map) in demos)
         {
             var meta = new SessionMeta { Name = name, Mode = mode, Map = map, PlaySeconds = name.Length * 300, PropCount = name.Length * 3, LastPlayed = DateTime.Now.AddHours(-name.Length) };

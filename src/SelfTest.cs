@@ -487,6 +487,7 @@ public sealed class SelfTest
                 }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 WorldsRoundTrip(g);
+                TownTest(g);
                 _done = true;
                 ExitCode = _failures.Count == 0 ? 0 : 1;
                 Console.WriteLine(_failures.Count == 0
@@ -494,6 +495,55 @@ public sealed class SelfTest
                     : $"Sandbox self-test FAILED ({_failures.Count}): {string.Join("; ", _failures)}");
                 break;
         }
+    }
+
+    /// <summary>RP town: doors (open/buy/lock/pick), ATM bank, arrest → jail cell → jailbreak, and door state save.</summary>
+    private void TownTest(SandboxGame g)
+    {
+        g.ClearMap(notify: false);
+        MapBuilder.Load(g.World, g.Shader, "town", null);
+        g.Roleplay.Reset(new SessionMeta { Mode = "Roleplay", Map = "town" });
+        Check(Town.Active && Town.Doors.Count >= 8 && Town.Atm is not null && Town.Board is not null && Town.Waypoints.Count > 40,
+            $"town map builds ({Town.Doors.Count} doors, {Town.Waypoints.Count} waypoints, ATM, laws board)");
+        Door house = Town.Find("door_house1")!;
+        Float3 c = house.Transform.Position;
+        bool Blocked() => g.World.Physics.Raycast(new Float3(c.X, 1.2f, c.Z - 2f), new Float3(0f, 0f, 1f), 4f, out RaycastHit h) && Town.DoorFrom(h) == house;
+        bool any = g.World.Physics.Raycast(new Float3(c.X, 1.2f, c.Z - 2f), new Float3(0f, 0f, 1f), 4f, out RaycastHit dbg);
+        Check(Blocked(), $"closed door blocks the doorway (door at {c.X:0.0},{c.Y:0.0},{c.Z:0.0}; hit {(any ? dbg.Transform?.GameObject.Name + " @" + dbg.Point.Z.ToString("0.00") : "nothing")})");
+        g.Roleplay.UseDoor(house);
+        bool hitPlane = g.World.Physics.Raycast(new Float3(c.X, 1.2f, c.Z - 2f), new Float3(0f, 0f, 1f), 4f, out RaycastHit oh) && MathF.Abs(oh.Point.Z - c.Z) < 0.3f;
+        Check(house.Open && !Blocked() && !hitPlane, "E opens the door (doorway physically clear)");
+        g.Roleplay.UseDoor(house);
+        Check(!house.Open && Blocked(), "E closes it again");
+        int m0 = g.Roleplay.Money;
+        string buy = g.Roleplay.BuyOrSellDoor(house);
+        Check(house.Owner == "you" && g.Roleplay.Money == m0 - house.Price, $"buy a house door ({buy})");
+        g.Roleplay.ToggleLock(house);
+        Check(house.Locked && g.Roleplay.UseDoor(house).StartsWith("Opened") && !house.Locked, "owner locks, then unlocks with E");
+        Door store = Town.Find("door_generalstore")!;
+        Check(g.Roleplay.BuyOrSellDoor(store).Contains("isn't for sale") && g.Roleplay.ToggleLock(store).Contains("keys"), "city doors can't be bought or locked");
+        Door cell = Town.Find("door_cell")!;
+        Check(cell.Locked && g.Roleplay.UseDoor(cell).Contains("locked"), "jail cell is locked to citizens");
+        g.Roleplay.PickDoor(cell);
+        Check(!cell.Locked && cell.Open && g.Roleplay.Wanted, "lockpicking the police cell unlocks it and makes you wanted");
+        g.Roleplay.Arrest("Test arrest");
+        Check(g.Roleplay.Jailed && Town.InCell(g.Player.FeetPosition) && cell.Locked && !cell.Open && !g.Roleplay.Wanted, "arrest puts you in the locked jail cell");
+        g.Player.Teleport(Town.ReleasePoint);
+        g.Roleplay.Tick(0.1f);
+        Check(!g.Roleplay.Jailed && g.Roleplay.Wanted && g.Roleplay.WantedFor == "jailbreak", "leaving the cell early is a jailbreak (wanted)");
+        g.Roleplay.Earn(500);
+        int wallet = g.Roleplay.Money;
+        g.Roleplay.Deposit(300); g.Roleplay.Withdraw(100);
+        Check(g.Roleplay.Bank == 200 && g.Roleplay.Money == wallet - 200, "ATM deposit / withdraw");
+        g.Roleplay.ToggleLock(house);
+        var ps = new PlayerSave();
+        g.Roleplay.Capture(ps);
+        MapBuilder.Load(g.World, g.Shader, "town", null);
+        g.Roleplay.Reset(new SessionMeta { Mode = "Roleplay", Map = "town" });
+        g.Roleplay.Restore(ps);
+        Check(Town.Find("door_house1") is { Owner: "you", Locked: true } && g.Roleplay.Bank == 200, "owned/locked doors and bank survive save/load");
+        g.Roleplay.Reset(null);
+        MapBuilder.Load(g.World, g.Shader, "flatgrass", null);
     }
 
     /// <summary>Worlds: create → play → autosave (atomic + .bak) → reload through the async loader; plus the roleplay economy.</summary>

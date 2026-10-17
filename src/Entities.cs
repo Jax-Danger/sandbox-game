@@ -72,6 +72,8 @@ public sealed class DummyBrain : MonoBehaviour
     public static SandboxGame? Game;
     private Prowl.Vector.Float3 _wander;
     private float _wanderTimer, _attackCd, _heading;
+    private bool _facing;
+    public string Mood { get; private set; } = "idle";
 
     public void GoLimp() => Limp = true;
 
@@ -90,7 +92,7 @@ public sealed class DummyBrain : MonoBehaviour
             Prowl.Vector.Float3 up = b.GameObject.Transform.Up;
             Prowl.Vector.Float3 axis = Prowl.Vector.Float3.Cross(up, Prowl.Vector.Float3.UnitY);
             Prowl.Vector.Float3 fwd = b.GameObject.Transform.Forward;
-            float yawErr = speed > 0.05f ? Wrap(_heading - MathF.Atan2(fwd.X, fwd.Z)) : 0f;
+            float yawErr = speed > 0.05f || _facing ? Wrap(_heading - MathF.Atan2(fwd.X, fwd.Z)) : 0f;
             b.AngularVelocity = axis * 12f + new Prowl.Vector.Float3(0f, yawErr * 4f, 0f) + b.AngularVelocity * 0.2f;
         }
         float ground = Team == NpcTeam.Dummy ? StandHeight - 1f : MapBuilder.GroundHeight(p.X, p.Z, StandHeight - 1f);
@@ -113,11 +115,21 @@ public sealed class DummyBrain : MonoBehaviour
     /// <summary>Desired horizontal velocity (m/s).</summary>
     private Prowl.Vector.Float3 Steer(Prowl.Vector.Float3 p, float dt)
     {
+        _facing = false;
         if (Team == NpcTeam.Dummy || Game is null) return Prowl.Vector.Float3.Zero;
         Prowl.Vector.Float3 player = Game.Player.FeetPosition;
         Prowl.Vector.Float3 toPlayer = new(player.X - p.X, 0f, player.Z - p.Z);
         float dist = Prowl.Vector.Float3.Length(toPlayer);
-        bool chase = Team == NpcTeam.Hostile || (Team == NpcTeam.Police && Game.Roleplay.Wanted);
+        // Citizens back away from drawn guns and wanted players; everyone turns to look at you up close.
+        bool armed = Game.Weapons.Current is Firearm;
+        if (Team == NpcTeam.Citizen && dist < 9f && dist > 0.01f && (armed || Game.Roleplay.Wanted))
+        {
+            Mood = "flee";
+            return -toPlayer / dist * 2.8f;
+        }
+        bool jailedHere = Game.Roleplay.Jailed;
+        bool chase = Team == NpcTeam.Hostile || (Team == NpcTeam.Police && Game.Roleplay.Wanted && !jailedHere);
+        Mood = chase && dist < 40f ? "chase" : "wander";
         _attackCd -= dt;
         if (chase && !Game.Health.Dead && dist < 40f)
         {
@@ -133,8 +145,21 @@ public sealed class DummyBrain : MonoBehaviour
             }
             return toPlayer / dist * (Team == NpcTeam.Police ? 3.2f : 2.6f);
         }
+        if (dist < 2.6f && Team is NpcTeam.Citizen or NpcTeam.Police or NpcTeam.Friendly)
+        {
+            _facing = true; Mood = "greet";
+            _heading = MathF.Atan2(toPlayer.X, toPlayer.Z);
+            return Prowl.Vector.Float3.Zero;
+        }
         _wanderTimer -= dt;
         Prowl.Vector.Float3 flat = new(p.X, 0f, p.Z);
+        if (Town.Active && Town.Waypoints.Count > 0 && (_wanderTimer <= 0f || Prowl.Vector.Float3.Length(_wander - flat) < 1f))
+        {
+            // Walk the sidewalks: pick one of the nearer waypoints, pause now and then.
+            _wanderTimer = 6f + Random.Shared.NextSingle() * 8f;
+            var near = Town.Waypoints.OrderBy(w => Prowl.Vector.Float3.Length(w - flat)).Skip(1).Take(4).ToArray();
+            _wander = Random.Shared.NextSingle() < 0.2f ? flat : near[Random.Shared.Next(near.Length)];
+        }
         if (_wanderTimer <= 0f || Prowl.Vector.Float3.Length(_wander - flat) < 1f)
         {
             _wanderTimer = 4f + Random.Shared.NextSingle() * 6f;
@@ -144,7 +169,7 @@ public sealed class DummyBrain : MonoBehaviour
         }
         Prowl.Vector.Float3 d = _wander - flat;
         float l = Prowl.Vector.Float3.Length(d);
-        return l < 0.5f ? Prowl.Vector.Float3.Zero : d / l * 1.3f;
+        return l < 0.5f ? Prowl.Vector.Float3.Zero : d / l * (Team == NpcTeam.Police ? 1.6f : 1.3f);
     }
 }
 
