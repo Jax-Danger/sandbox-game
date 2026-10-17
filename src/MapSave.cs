@@ -199,7 +199,7 @@ public static class MapSave
             {
                 BallSocketConstraint s = a.Go.AddComponent<BallSocketConstraint>();
                 s.ConnectedBody = b.Body;
-                PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+                CollisionPairs.Ignore(a.Body, b.Body);
             }
             yield return ++step;
         }

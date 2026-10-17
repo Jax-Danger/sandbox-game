@@ -283,6 +283,7 @@ public sealed class PropManager(Scene scene, Shader shader)
     public void Remove(Prop prop)
     {
         if (!_props.Remove(prop)) return;
+        CollisionPairs.Release(prop.Body);
         // Break welds on other props that point at this one, so no constraint references a dead body.
         foreach (Prop other in _props)
             foreach (PhysicsConstraint c in other.Go.GetComponents<PhysicsConstraint>().ToArray())

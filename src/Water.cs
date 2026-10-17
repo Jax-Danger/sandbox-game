@@ -109,9 +109,14 @@ public static class PhysicsGuard
     /// </summary>
     public static bool Corrupt(Rigidbody3D? rb)
     {
-        if (rb is null || BodyField?.GetValue(rb) is not Jitter2.Dynamics.RigidBody jb) return false;
-        var p = jb.Position; var q = jb.Orientation;
-        return !float.IsFinite(p.X + p.Y + p.Z) || !float.IsFinite(q.X + q.Y + q.Z + q.W) || MathF.Abs(p.X) + MathF.Abs(p.Y) + MathF.Abs(p.Z) > 1e6f;
+        if (rb is null || !rb.Enabled || rb.GameObject is not { Scene: not null }) return false;
+        if (BodyField?.GetValue(rb) is not Jitter2.Dynamics.RigidBody jb) return false;
+        try
+        {
+            var p = jb.Position; var q = jb.Orientation;
+            return !float.IsFinite(p.X + p.Y + p.Z) || !float.IsFinite(q.X + q.Y + q.Z + q.W) || MathF.Abs(p.X) + MathF.Abs(p.Y) + MathF.Abs(p.Z) > 1e6f;
+        }
+        catch (NullReferenceException) { return false; } // body already detached from the Jitter world this frame
     }
 
     /// <summary>

@@ -147,7 +147,7 @@ public sealed partial class ToolGun(PropManager props)
         FixedAngleConstraint angle = a.Go.AddComponent<FixedAngleConstraint>();
         angle.ConnectedBody = b.Body;
         angle.Softness = softness;
-        PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+        CollisionPairs.Ignore(a.Body, b.Body);
         a.Body.SetActive(true);
         b.Body.SetActive(true);
         if (recordUndo) props.PushUndo(new WeldUndo(a, b, socket, angle));
@@ -161,7 +161,7 @@ public sealed partial class ToolGun(PropManager props)
             if (!a.Alive) return;
             if (socket.IsValid()) a.Go.RemoveComponent(socket);
             if (angle.IsValid()) a.Go.RemoveComponent(angle);
-            if (b.Alive) PhysicsWorld.EnableCollisionBetween(a.Body, b.Body);
+            if (b.Alive) CollisionPairs.Enable(a.Body, b.Body);
             a.Body.SetActive(true);
         }
     }

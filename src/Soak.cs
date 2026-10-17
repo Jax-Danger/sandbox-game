@@ -295,7 +295,7 @@ public sealed class Soak(float seconds, int seed)
         GC.Collect(); GC.WaitForPendingFinalizers(); GC.Collect();
         var objs = _g?.World.AllObjects.ToList() ?? [];
         string top = string.Join(", ", objs.GroupBy(o => Regex.Replace(o.Name, @"[\d.]+", "#")).OrderByDescending(x => x.Count()).Take(4).Select(x => $"{x.Key}:{x.Count()}"));
-        _mem.Add((_clock.Elapsed.TotalSeconds, GC.GetTotalMemory(true), Process.GetCurrentProcess().WorkingSet64, objs.Count, top));
+        _mem.Add((_clock.Elapsed.TotalSeconds, GC.GetTotalMemory(true), Process.GetCurrentProcess().WorkingSet64, objs.Count, top + $" | nocollide engine {CollisionPairs.EnginePairs} tracked {CollisionPairs.TrackedBodies}"));
     }
 
     private void Report(SandboxGame g)

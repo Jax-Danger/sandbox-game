@@ -119,10 +119,10 @@ public sealed partial class ToolGun
 
     public string NoCollide(Prop a, Prop b, bool recordUndo = true)
     {
-        PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+        CollisionPairs.Ignore(a.Body, b.Body);
         NoCollideLink link = a.Go.AddComponent<NoCollideLink>();
         link.Other = b;
-        if (recordUndo) props.PushUndo(new ActionUndo("Undone: no-collide", () => { if (a.Alive) a.Go.RemoveComponent(link); if (a.Alive && b.Alive) PhysicsWorld.EnableCollisionBetween(a.Body, b.Body); }));
+        if (recordUndo) props.PushUndo(new ActionUndo("Undone: no-collide", () => { if (a.Alive) a.Go.RemoveComponent(link); if (a.Alive && b.Alive) CollisionPairs.Enable(a.Body, b.Body); }));
         return $"{a.Go.Name} no longer collides with {b.Go.Name}";
     }
 
@@ -146,7 +146,7 @@ public sealed partial class ToolGun
         j.MinDistance = -4f;
         j.MaxDistance = 4f;
         j.ConnectedBody = b.Body;
-        PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+        CollisionPairs.Ignore(a.Body, b.Body);
         a.Body.SetActive(true);
         if (recordUndo) props.PushUndo(new ActionUndo("Undone: slider", () => { if (a.Alive) a.Go.RemoveComponent(j); }));
         return $"{a.Go.Name} slides along {b.Go.Name}";
@@ -158,7 +158,7 @@ public sealed partial class ToolGun
         h.Anchor = localA;
         h.Axis = Float3.Normalize(localAxis);
         h.ConnectedBody = b.Body;
-        PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+        CollisionPairs.Ignore(a.Body, b.Body);
         a.Body.SetActive(true);
         if (recordUndo) props.PushUndo(new ActionUndo("Undone: hinge", () => { if (a.Alive) a.Go.RemoveComponent(h); }));
         return $"Hinged {a.Go.Name} to {b.Go.Name}";

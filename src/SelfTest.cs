@@ -901,6 +901,13 @@ public sealed class SelfTest
         fb.Body.MotionType = Jitter2.Dynamics.MotionType.Static;
         bool flipOk = true; try { fb.Flip(); } catch { flipOk = false; }
         Check(flipOk, "flipping a frozen vehicle does nothing instead of throwing");
+        // 5c. Ragdoll no-collide pairs are released when it is removed (engine kept them forever -> GameObject leak).
+        g.ClearMap(notify: false);
+        int pairs0 = CollisionPairs.EnginePairs;
+        Ragdoll.Spawn(g, new Float3(-40f, 1.2f, 64f), 0f, recordUndo: false);
+        int pairsWith = CollisionPairs.EnginePairs;
+        g.ClearMap(notify: false);
+        Check(pairsWith > pairs0 && CollisionPairs.EnginePairs == pairs0 && CollisionPairs.TrackedBodies == 0, $"no-collide pairs released on removal ({pairs0}->{pairsWith}->{CollisionPairs.EnginePairs})");
         // 5a. A prop whose pose went NaN is removed before Jitter's next broadphase (threw on a worker thread in the 300 s soak).
         Prop nanProp = g.Props.Spawn(PropKind.Cube, new Float3(-40f, 5f, 60f), 0f, recordUndo: false);
         int removed0 = PhysicsGuard.Removed;

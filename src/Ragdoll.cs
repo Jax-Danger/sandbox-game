@@ -108,7 +108,7 @@ public sealed class Ragdoll
         }
         for (int i = 0; i < rd.Limbs.Count; i++)
             for (int j = i + 1; j < rd.Limbs.Count; j++)
-                PhysicsWorld.IgnoreCollisionBetween(rd.Limbs[i].Body, rd.Limbs[j].Body);
+                CollisionPairs.Ignore(rd.Limbs[i].Body, rd.Limbs[j].Body);
 
         All.Add(rd);
         if (recordUndo) g.Props.PushUndo(new RagdollUndo(g.Props, rd));

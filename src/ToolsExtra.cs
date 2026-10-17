@@ -213,9 +213,9 @@ public sealed partial class ToolGun
         BallSocketConstraint s = a.Go.AddComponent<BallSocketConstraint>();
         s.Anchor = localA;
         s.ConnectedBody = b.Body;
-        PhysicsWorld.IgnoreCollisionBetween(a.Body, b.Body);
+        CollisionPairs.Ignore(a.Body, b.Body);
         a.Body.SetActive(true);
-        props.PushUndo(new ActionUndo($"Undone: ball socket", () => { if (a.Alive) a.Go.RemoveComponent(s); if (a.Alive && b.Alive) PhysicsWorld.EnableCollisionBetween(a.Body, b.Body); }));
+        props.PushUndo(new ActionUndo($"Undone: ball socket", () => { if (a.Alive) a.Go.RemoveComponent(s); if (a.Alive && b.Alive) CollisionPairs.Enable(a.Body, b.Body); }));
         return $"Ball-socketed {a.Go.Name} to {b.Go.Name}";
     }
 
@@ -247,7 +247,7 @@ public sealed partial class ToolGun
         h.MotorMaxForce = 40f;
         h.MotorTargetVelocity = 0f;
         h.ConnectedBody = prop.Body;
-        PhysicsWorld.IgnoreCollisionBetween(body, prop.Body);
+        CollisionPairs.Ignore(body, prop.Body);
         var (fwd, back) = keys ?? (WheelFwd, WheelBack);
         WheelMotor m = go.AddComponent<WheelMotor>();
         m.Joint = h; m.Fwd = fwd; m.Back = back; m.Speed = speed ?? WheelSpeed;
