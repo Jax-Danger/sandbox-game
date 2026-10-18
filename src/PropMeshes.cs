@@ -79,9 +79,13 @@ public static class PropMeshes
     public static Mesh BenchSide() => Sweep([
         new Sec(V(0f, -0.42f, -0.26f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.05f, -0.24f), 0.028f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, 0.2f, -0.28f), 0.026f, 0.02f, 3f, Float3.UnitX),
         new Sec(V(0f, 0.4f, -0.3f), 0.024f, 0.018f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f);
-    public static Mesh BenchLeg() => Sweep([
-        new Sec(V(0f, -0.42f, 0.25f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.03f, 0.22f), 0.026f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, -0.01f, 0.05f), 0.024f, 0.022f, 3f, Float3.UnitX),
-        new Sec(V(0f, -0.01f, -0.24f), 0.024f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, 0.18f, 0.22f), 0.02f, 0.016f, 3f, Float3.UnitX), new Sec(V(0f, 0.2f, 0.28f), 0.022f, 0.02f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f);
+    // Front leg curving under the seat to the back upright, plus a separate armrest that runs forward from the
+    // backrest and scrolls down onto the seat front. (Was one sweep that zig-zagged back through the seat.)
+    public static Mesh BenchLeg() => Merge(
+        Sweep([new Sec(V(0f, -0.42f, 0.25f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.03f, 0.22f), 0.026f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, -0.01f, 0.05f), 0.024f, 0.022f, 3f, Float3.UnitX),
+            new Sec(V(0f, -0.01f, -0.24f), 0.024f, 0.022f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f),
+        Sweep([new Sec(V(0f, 0.2f, -0.28f), 0.02f, 0.016f, 3f, Float3.UnitX), new Sec(V(0f, 0.23f, -0.05f), 0.022f, 0.018f, 3f, Float3.UnitX), new Sec(V(0f, 0.22f, 0.2f), 0.024f, 0.02f, 3f, Float3.UnitX),
+            new Sec(V(0f, 0.17f, 0.26f), 0.022f, 0.018f, 3f, Float3.UnitX), new Sec(V(0f, 0.08f, 0.25f), 0.02f, 0.016f, 3f, Float3.UnitX), new Sec(V(0f, 0.035f, 0.22f), 0.02f, 0.016f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f));
 
     public static Mesh SignFoot() => Sweep([new Sec(V(0f, -0.02f, -0.2f), 0.28f, 0.02f, 4f), new Sec(V(0f, 0.01f, 0f), 0.3f, 0.03f, 4f), new Sec(V(0f, -0.02f, 0.2f), 0.28f, 0.02f, 4f)], Float3.UnitX, 20, 0.6f);
 

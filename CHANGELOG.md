@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.29 — 2026-10-18
+- Park bench: real scrolled armrests from the backrest down to the seat front (the old leg sweep zig-zagged back through the seat, leaving stray stubs)
+
 ## v0.17.28 — 2026-10-18
 - Fridge: softer off-white doors with a magnet-held shopping list and a child's drawing
 
