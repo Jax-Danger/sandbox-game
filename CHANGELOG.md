@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.16 — 2026-10-18
+- Shotgun view model: left hand grips the rear half of the pump, shortening the left-arm reach.
+
 ## v0.9.15 — 2026-10-18
 - Bouncy Ball entity gets a smooth high-res shell, yellow seam band and valve like its icon; gallery set gal_ent_<ids> for entity close-ups.
 
