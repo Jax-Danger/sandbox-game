@@ -308,7 +308,39 @@ public static class EntityCatalog
         var cap = new GameObject("ButtonCap");
         cap.SetParent(p.Go, false);
         cap.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.3f, 0f);
-        if (p.Go.GetComponent<MeshRenderer>() is { } housing) housing.Mesh = Meshes.RoundedBox(new Prowl.Vector.Float3(0.6f, 0.6f, 0.6f), 0.12f, 4);
+        if (p.Go.GetComponent<MeshRenderer>() is { } housing)
+        {
+            housing.Mesh = Meshes.RoundedBox(new Prowl.Vector.Float3(0.6f, 0.56f, 0.6f), 0.05f, 4);
+            p.SetSurface(SurfaceMaterial.Get("Metal"));
+            if (!Application.IsHeadless) try { housing.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+        }
+        if (!Application.IsHeadless && p.Go.Transform.Find("ButtonPlate") is null)
+        {
+            // Industrial push-station: yellow top plate with screws, black/yellow hazard collar, "PUSH" plate and a foot plinth.
+            var yel = Mats.New(g.Shader); yel.SetColor("_MainColor", new Prowl.Vector.Color(0.95f, 0.74f, 0.1f, 1f));
+            var blk = Mats.New(g.Shader); blk.SetColor("_MainColor", new Prowl.Vector.Color(0.07f, 0.07f, 0.08f, 1f));
+            var stl = Mats.New(g.Shader); stl.SetColor("_MainColor", new Prowl.Vector.Color(0.7f, 0.71f, 0.73f, 1f));
+            var wht = Mats.New(g.Shader); wht.SetColor("_MainColor", new Prowl.Vector.Color(0.95f, 0.95f, 0.94f, 1f));
+            void Part(string n, Mesh mesh, Prowl.Vector.Float3 at, Material mt, Prowl.Vector.Float3 eul = default)
+            {
+                var c = new GameObject(n); c.SetParent(p.Go, false); c.Transform.LocalPosition = at; c.Transform.LocalEulerAngles = eul;
+                MeshRenderer mr = c.AddComponent<MeshRenderer>(); mr.Mesh = mesh; mr.Material = mt;
+            }
+            Part("ButtonPlate", Meshes.RoundedBox(new Prowl.Vector.Float3(0.56f, 0.03f, 0.56f), 0.01f, 3), new(0f, 0.285f, 0f), yel);
+            foreach (var (sx, sz) in new[] { (-1f, -1f), (1f, -1f), (-1f, 1f), (1f, 1f) })
+                Part("Screw", Meshes.Lathe("btnscrew", [(0.0001f, 0f), (0.018f, 0f), (0.018f, 0.006f), (0.012f, 0.01f), (0.0001f, 0.011f)], 12), new(sx * 0.23f, 0.3f, sz * 0.23f), stl);
+            // Hazard collar: alternating black/yellow chevron blocks around the top edge.
+            for (int i = 0; i < 4; i++)
+                for (int k = 0; k < 5; k++)
+                {
+                    float off = -0.24f + k * 0.12f;
+                    Prowl.Vector.Float3 at = i switch { 0 => new(off, 0.245f, 0.302f), 1 => new(off, 0.245f, -0.302f), 2 => new(0.302f, 0.245f, off), _ => new(-0.302f, 0.245f, off) };
+                    Part("Hazard", Meshes.RoundedBox(i < 2 ? new Prowl.Vector.Float3(0.12f, 0.05f, 0.006f) : new Prowl.Vector.Float3(0.006f, 0.05f, 0.12f), 0.002f, 2), at, k % 2 == 0 ? blk : yel);
+                }
+            Part("PushPlate", Meshes.RoundedBox(new Prowl.Vector.Float3(0.26f, 0.09f, 0.008f), 0.004f, 2), new(0f, 0.05f, 0.3f), blk);
+            Part("PushText", Glyphs.Text("PUSH", 0.06f, 0f, 0.003f), new(0f, 0.05f, 0.304f), wht);
+            Part("Plinth", Meshes.RoundedBox(new Prowl.Vector.Float3(0.64f, 0.04f, 0.64f), 0.01f, 3), new(0f, -0.28f, 0f), blk);
+        }
         var bezel = new GameObject("ButtonBezel");
         bezel.SetParent(p.Go, false);
         bezel.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.3f, 0f);

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.4 — 2026-10-18
+- Button entity is an industrial push station: crisp steel housing (no crate wood texture), yellow top plate with four screws, black/yellow hazard collar, PUSH plate and a plinth around the red mushroom button.
+
 ## v0.9.3 — 2026-10-18
 - Potted plant rebuilt: terracotta pot with rolled rim, foot and saucer, mulch chips, three arching stems and ~45 individual V-folded, drooping leaf blades in two greens (replaces three foliage blobs).
 
