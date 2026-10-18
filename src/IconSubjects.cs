@@ -31,12 +31,6 @@ public static class IconSubjects
             M(Meshes.Sweep([new Meshes.Sec(new(0f, -0.12f, 0f), 0.014f, 0.006f, 3f), new Meshes.Sec(new(0f, 0.5f, 0f), 0.012f, 0.005f, 3f), new Meshes.Sec(new(0.05f, 0.58f, 0f), 0.011f, 0.005f, 3f)], Float3.UnitZ, 10, 0.6f), Steel),
             M(Meshes.Sweep([new Meshes.Sec(new(0.09f, -0.12f, 0.02f), 0.012f, 0.005f, 3f), new Meshes.Sec(new(0.13f, 0.35f, 0.02f), 0.011f, 0.005f, 3f), new Meshes.Sec(new(0.08f, 0.4f, 0.02f), 0.01f, 0.005f, 3f)], Float3.UnitZ, 10, 0.6f), Steel),
         ],
-        "weapon_medkit" =>
-        [
-            new('b', new(0.80f, 0.56f, 0.30f), Float3.Zero, new Color(0.94f, 0.94f, 0.92f, 1f)),
-            new('b', new(0.36f, 0.10f, 0.02f), new(0f, 0f, 0.16f), Red), new('b', new(0.10f, 0.36f, 0.02f), new(0f, 0f, 0.16f), Red),
-            M(VehicleModels.BentPipe(0.025f, 0.05f, Float3.UnitZ, new(-0.16f, 0.26f, 0f), new(-0.14f, 0.38f, 0f), new(0.14f, 0.38f, 0f), new(0.16f, 0.26f, 0f)), Grip),
-        ],
         _ => null,
     };
 

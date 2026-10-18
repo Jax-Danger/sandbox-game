@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.26 — 2026-10-18
+- Medkit spawn icon rendered from the new case model (red cross, bumpers) instead of a plain white box
+
 ## v0.17.25 — 2026-10-18
 - Spawn gun: own view model (orange body with bumpers, hazard stripes, fabricator ring with a glowing cube, rear screen) instead of empty hands
 
