@@ -177,5 +177,56 @@ public static class IconSubjects
         _ => null,
     };
 
+
+    /// <summary>Spawn-menu thumbnail for a vehicle: body, main details and wheels at ride height (same meshes as in game).</summary>
+    public static ModelDef? Vehicle(string id)
+    {
+        string kind = id.Replace("vehicle_", "");
+        bool jeep = kind == "jeep", boat = kind == "airboat";
+        if (!jeep && !boat && kind != "buggy") return null;
+        Color dark = new(0.12f, 0.12f, 0.13f, 1f), paint = jeep ? new Color(0.33f, 0.38f, 0.22f, 1f) : boat ? new Color(0.20f, 0.36f, 0.52f, 1f) : new Color(0.80f, 0.42f, 0.10f, 1f);
+        var l = new List<Part>();
+        void D(Prowl.Runtime.Resources.Mesh m, Float3 o, Color c, Float3 rot = default) => l.Add(new('m', new(0.4f, 0.4f, 0.1f), o, c, false, rot, m));
+        D(jeep ? VehicleModels.JeepBody() : boat ? VehicleModels.Hull() : VehicleModels.BuggyBody(), Float3.Zero, paint);
+        if (jeep)
+        {
+            D(VehicleModels.JeepHood(), Float3.Zero, paint);
+            foreach (float x in new[] { -0.9f, 0.9f }) foreach (float z in new[] { -1.25f, 1.25f }) D(VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
+            D(VehicleModels.Grille(), Float3.Zero, dark);
+            foreach (float x in new[] { -0.6f, 0.6f }) D(VehicleModels.Lamp(0.12f), new(x, 0.4f, 1.72f), new Color(0.95f, 0.92f, 0.75f, 1f));
+            D(VehicleModels.Windshield(), new(0f, 0.85f, 0.5f), new Color(0.55f, 0.68f, 0.78f, 1f), new(-12f, 0f, 0f));
+            foreach (float x in new[] { -0.4f, 0.4f }) D(VehicleModels.Seat(0.24f), new(x, 0.36f, -0.42f), dark);
+            D(VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new(-0.8f, 0.3f, -0.9f), new(-0.8f, 1.3f, -0.9f), new(0.8f, 1.3f, -0.9f), new(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
+            D(Meshes.Tyre(0.42f, 0.25f), new(0f, 0.55f, -1.82f), dark, new(90f, 0f, 0f));
+        }
+        else if (boat)
+        {
+            D(VehicleModels.Seat(0.3f), new(0f, 0.25f, -0.35f), dark);
+            D(VehicleModels.BentPipe(0.04f, 0.1f, Float3.UnitX, new(-0.45f, 0.18f, -1.2f), new(0f, 1.25f, -1.25f), new(0.45f, 0.18f, -1.2f)), Float3.Zero, dark);
+            D(VehicleModels.Ring(0.85f, 0.035f), new(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f));
+            foreach (float a in new[] { 0f, 120f, 240f }) D(VehicleModels.Blade(), new(0f, 1.25f, -1.4f), new Color(0.7f, 0.55f, 0.3f, 1f), new(0f, 0f, a));
+            D(VehicleModels.BuggyEngine(), new(0f, 0.38f, -1.25f), new Color(0.3f, 0.31f, 0.33f, 1f));
+        }
+        else
+        {
+            D(VehicleModels.BuggyNose(), Float3.Zero, paint); D(VehicleModels.BuggyDash(), Float3.Zero, dark);
+            D(VehicleModels.Seat(0.27f), new(0f, 0.22f, -0.4f), dark);
+            foreach (float x in new[] { -0.62f, 0.62f }) D(VehicleModels.BentPipe(0.032f, 0.18f, Float3.UnitX, new(x, 0.15f, -0.95f), new(x, 1.15f, -0.85f), new(x * 0.9f, 1.15f, 0.0f), new(x, 0.15f, 0.55f)), Float3.Zero, dark);
+            D(VehicleModels.BentPipe(0.032f, 0.1f, Float3.UnitY, new(-0.62f, 1.15f, -0.85f), new(0.62f, 1.15f, -0.85f)), Float3.Zero, dark);
+            foreach (float x in new[] { -0.85f, 0.85f }) D(VehicleModels.BuggyArch(x, -1.05f, 0.42f), Float3.Zero, paint * 0.9f);
+            D(VehicleModels.BuggyEngine(), new(0f, 0.3f, -1.15f), new Color(0.28f, 0.29f, 0.3f, 1f));
+        }
+        if (!boat)
+        {
+            float wx = jeep ? 0.95f : 0.85f, wz = jeep ? 1.25f : 1.05f, wy = (jeep ? -0.2f : -0.15f) - 0.22f, rad = jeep ? 0.5f : 0.42f, tw = jeep ? 0.38f : 0.32f;
+            foreach (float x in new[] { -wx, wx }) foreach (float z in new[] { -wz, wz })
+            {
+                D(Meshes.Tyre(rad, tw), new(x, wy, z), dark, new(0f, 0f, 90f));
+                foreach (float f in new[] { 90f, -90f }) D(PropMeshes.Rim(rad * 0.56f, tw * 0.72f, jeep ? 6 : 5), new(x, wy, z), jeep ? new Color(0.55f, 0.56f, 0.5f, 1f) : new Color(0.72f, 0.74f, 0.77f, 1f), new(0f, 0f, f));
+            }
+        }
+        return M(id, jeep ? new(1.9f, 1.8f, 3.6f) : boat ? new(1.9f, 2.2f, 3.6f) : new(1.6f, 1.6f, 3.0f), l.ToArray());
+    }
+
     private static ModelDef M(string id, Float3 size, Part[] parts) => new("e_" + id, id, "Entity", size, 1f, "Plastic", parts);
 }

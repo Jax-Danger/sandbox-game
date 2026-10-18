@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.20 — 2026-10-18
+- Vehicles tab shows rendered thumbnails of the buggy, jeep and airboat (same meshes as in game) instead of a generic car glyph
+
 ## v0.8.19 — 2026-10-18
 - Rolling Hills trees get three forked branches running up into the crown
 

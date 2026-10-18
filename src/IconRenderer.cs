@@ -37,6 +37,8 @@ public sealed class IconRenderer
                 if (IconSubjects.Weapon(id, vm) is { } wd) _models[id] = RenderOne(PropKind.Cube, shader, wd, weapon: !IconSubjects.IsCustom(id));
             foreach (SpawnEntry e in SpawnCatalog.Entries.Where(x => x.Tab == MenuTab.Entities))
                 if (IconSubjects.Entity(e.Id) is { } ed) _models[e.Id] = RenderOne(PropKind.Cube, shader, ed);
+            foreach (SpawnEntry e in SpawnCatalog.Entries.Where(x => x.Tab == MenuTab.Vehicles))
+                if (IconSubjects.Vehicle(e.Id) is { } vd) _models[e.Id] = RenderOne(PropKind.Cube, shader, vd);
             Ready = true;
             Console.WriteLine($"Rendered {_icons.Count + _models.Count} thumbnails.");
         }
