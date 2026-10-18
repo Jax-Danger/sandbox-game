@@ -184,6 +184,71 @@ public static partial class ModelProps
         ];
     }
 
+    /// <summary>Double-sided leaf blade from <paramref name="b"/> along <paramref name="d"/>: pointed tip, slight
+    /// V-fold along the midrib and a gentle droop; top and underside faces with their own normals.</summary>
+    private static Mesh Leaf(Float3 b, Float3 d, Float3 side, float len, float wmax, int st = 8)
+    {
+        Float3 up = Float3.Normalize(Float3.Cross(side, d));
+        if (up.Y < 0f) { up = -up; side = -side; }
+        var rows = new List<Float3[]>();
+        for (int i = 0; i <= st; i++)
+        {
+            float u = i / (float)st, w = wmax * MathF.Pow(MathF.Sin(MathF.PI * MathF.Pow(u, 0.8f)), 0.8f) + 0.0035f;
+            Float3 c = b + d * (len * u) - up * (0.2f * len * u * u);
+            rows.Add([c - side * w + up * (w * 0.25f), c, c + side * w + up * (w * 0.25f)]);
+        }
+        var faces = new List<Float3[]>();
+        for (int i = 0; i < st; i++)
+            for (int e = 0; e < 2; e++)
+            {
+                Float3 p0 = rows[i][e], p1 = rows[i][e + 1], p2 = rows[i + 1][e + 1], p3 = rows[i + 1][e];
+                Float3[] q = i == st - 1 ? (e == 0 ? [p0, p1, rows[st][1]] : [p0, p1, rows[st][1]]) : [p0, p1, p2, p3];
+                Float3 nn = Float3.Cross(p1 - p0, p3 - p0);
+                if (Float3.Dot(Float3.Cross(q[1] - q[0], q[2] - q[0]), up) < 0f) q = q.Reverse().ToArray();
+                faces.Add(q.Select(x => x + up * 0.0008f).ToArray());
+                faces.Add(q.Reverse().Select(x => x - up * 0.0008f).ToArray());
+            }
+        return Faces(faces.ToArray());
+    }
+
+    /// <summary>Rubber-plant style houseplant: terracotta pot with rolled rim and saucer, bark mulch, three arching
+    /// stems and ~30 individual leaves (tapered, midrib-folded blades) spiralling up them by the golden angle.</summary>
+    private static Part[] PlantParts()
+    {
+        Color terra = C(0.66f, 0.36f, 0.22f), leafA = C(0.16f, 0.3f, 0.13f), leafB = C(0.22f, 0.37f, 0.16f), stemC = C(0.33f, 0.36f, 0.2f);
+        var rnd = new Random(7);
+        var leavesA = new List<Mesh>(); var leavesB = new List<Mesh>(); var stems = new List<Mesh>();
+        Float3[] tops = [P3(0.02f, 0.47f, 0.01f), P3(0.13f, 0.33f, -0.07f), P3(-0.12f, 0.36f, 0.09f)];
+        int n = 0;
+        foreach (Float3 top in tops)
+        {
+            Float3 root = P3(top.X * 0.25f, -0.17f, top.Z * 0.25f);
+            Float3 Mid(float t) => root + (top - root) * t + P3(top.X * 0.35f, 0f, top.Z * 0.35f) * MathF.Sin(t * MathF.PI);
+            var sec = new List<Sec>();
+            for (int k = 0; k <= 6; k++) { float t = k / 6f; sec.Add(new Sec(Mid(t), 0.009f - 0.004f * t, 0.009f - 0.004f * t)); }
+            stems.Add(Sweep(sec, Float3.UnitX, 8, 0.6f));
+            for (float t = 0.25f; t <= 1.001f; t += 0.05f, n++)
+            {
+                float ang = n * 2.39996f, L = 0.16f + 0.1f * (1f - MathF.Abs(t - 0.6f)) + (float)rnd.NextDouble() * 0.03f;
+                Float3 b = Mid(MathF.Min(t, 1f));
+                Float3 d = Float3.Normalize(P3(MathF.Cos(ang), 0.45f - t * 0.45f, MathF.Sin(ang)));
+                Float3 side = Float3.Normalize(Float3.Cross(d, Float3.UnitY));
+                (n % 3 == 0 ? leavesB : leavesA).Add(Leaf(b, d, side, L, 0.05f * (0.85f + 0.3f * L)));
+            }
+        }
+        return
+        [
+            // Pot: tapered body, rolled rim, foot ring; saucer underneath; soil with bark chips.
+            M(Lathe("pot2", [(0.0001f, -0.5f), (0.15f, -0.5f), (0.155f, -0.49f), (0.148f, -0.48f), (0.2f, -0.21f), (0.23f, -0.205f), (0.24f, -0.19f), (0.238f, -0.15f), (0.226f, -0.14f), (0.205f, -0.15f), (0.2f, -0.19f), (0.0001f, -0.19f)], 40), 0, 0, 0, terra, true),
+            M(Lathe("saucer", [(0.0001f, -0.5f), (0.2f, -0.5f), (0.21f, -0.47f), (0.2f, -0.468f), (0.18f, -0.485f), (0.0001f, -0.485f)], 40), 0, -0.002f, 0, C(0.55f, 0.3f, 0.19f)),
+            M(Lathe("soil2", [(0.0001f, -0.17f), (0.2f, -0.175f), (0.202f, -0.168f), (0.0001f, -0.162f)], 32), 0, 0, 0, C(0.22f, 0.15f, 0.09f)),
+            M(Bake(Enumerable.Range(0, 14).Select(i => (RoundedBox(P3(0.026f, 0.006f, 0.018f), 0.003f), P3(MathF.Cos(i * 2.4f) * (0.05f + i * 0.0095f), -0.164f, MathF.Sin(i * 2.4f) * (0.05f + i * 0.0095f))))), 0, 0, 0, C(0.3f, 0.21f, 0.14f)),
+            M(Merge(stems.ToArray()), 0, 0, 0, stemC),
+            M(Merge(leavesA.ToArray()), 0, 0, 0, leafA),
+            M(Merge(leavesB.ToArray()), 0, 0, 0, leafB),
+        ];
+    }
+
     private static Part[] ArrowSignParts()
     {
         Color blue = C(0.08f, 0.3f, 0.7f), white = C(0.96f, 0.96f, 0.95f);

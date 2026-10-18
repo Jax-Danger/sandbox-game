@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.3 — 2026-10-18
+- Potted plant rebuilt: terracotta pot with rolled rim, foot and saucer, mulch chips, three arching stems and ~45 individual V-folded, drooping leaf blades in two greens (replaces three foliage blobs).
+
 ## v0.9.2 — 2026-10-18
 - Explosive barrel wears curved yellow hazard labels with black border stripes and a flame mark on both sides (Meshes.CylPatch for decals that hug cylinders).
 

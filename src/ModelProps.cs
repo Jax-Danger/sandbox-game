@@ -93,7 +93,7 @@ public static partial class ModelProps
         new("trash_can", "Trash Can", "Furniture", new(0.5f, 0.8f, 0.5f), 8f, "Metal",
             TrashCanParts(), Round: true),
         new("plant", "Potted Plant", "Furniture", new(0.5f, 1.0f, 0.5f), 10f, "Concrete",
-            [M(Meshes.Lathe("pot", [(0.0001f, -0.18f), (0.15f, -0.18f), (0.22f, 0.14f), (0.235f, 0.15f), (0.235f, 0.18f), (0.2f, 0.18f), (0.2f, 0.12f)], 36), 0, -0.32f, 0, C(0.62f, 0.32f, 0.2f), true), Cy(0.03f, 0.3f, 0, -0.0f, 0, DarkWood), M(Meshes.Blob(0.25f, 3, 0.22f), 0, 0.25f, 0, Green), M(Meshes.Blob(0.17f, 4, 0.22f), 0.12f, 0.37f, 0.05f, C(0.25f, 0.62f, 0.3f)), M(Meshes.Blob(0.15f, 5, 0.22f), -0.12f, 0.31f, -0.06f, C(0.18f, 0.5f, 0.22f)), M(Meshes.Lathe("soil", [(0.0001f, 0f), (0.2f, 0f), (0.2f, 0.01f), (0.0001f, 0.02f)], 28), 0, -0.16f, 0, C(0.25f, 0.17f, 0.1f))], Round: true),
+            PlantParts(), Round: true),
         // ---------------- Construction
         new("cinder", "Cinder Block", "Construction", new(0.4f, 0.2f, 0.2f), 14f, "Concrete",
             CinderParts()),
