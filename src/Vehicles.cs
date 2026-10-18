@@ -71,7 +71,13 @@ public sealed class Buggy
         Detail(g, "CageX", VehicleModels.BentPipe(0.03f, 0.1f, Float3.UnitY, new Float3(-0.56f, 1.15f, 0.0f), new Float3(0.56f, 1.15f, 0.0f)), Float3.Zero, cage);
         Detail(g, "Bumper", VehicleModels.BentPipe(0.05f, 0.15f, Float3.UnitY, new Float3(-0.7f, 0.1f, 1.25f), new Float3(-0.55f, 0.02f, 1.52f), new Float3(0.55f, 0.02f, 1.52f), new Float3(0.7f, 0.1f, 1.25f)), Float3.Zero, cage);
         foreach (float x in new[] { -0.2f, 0.2f })
-            HeadLamp(g, VehicleModels.Lamp(0.07f), 0.07f, new Float3(x, 0.36f, 1.18f), new Float3(-8f, 0f, 0f));
+        {
+            // Off-road spot lamps in black steel buckets on short stalks above the cowl (were half-sunk into the nose).
+            Float3 la = new(x, 0.43f, 1.16f);
+            HeadLamp(g, VehicleModels.Lamp(0.07f), 0.07f, la, new Float3(-8f, 0f, 0f));
+            Detail(g, "LampBucket", Meshes.LatheZ([(0.0001f, -0.045f), (0.05f, -0.04f), (0.074f, -0.01f), (0.079f, 0.03f), (0.072f, 0.032f)], 24), la, cage, new Float3(-8f, 0f, 0f));
+            Detail(g, "LampStalk", VehicleModels.Pipe(0.012f, Float3.UnitZ, la + new Float3(0f, -0.03f, -0.03f), new Float3(x, 0.33f, 1.12f)), Float3.Zero, cage);
+        }
         // Dune-buggy body: raised fibreglass nose cowl with a scooped dash, rear wheel arches, side nerf bars,
         // rear engine with air filter and twin exhausts. (Was a flat plank with a cage on it.)
         Detail(g, "Nose", VehicleModels.BuggyNose(), Float3.Zero, paint);

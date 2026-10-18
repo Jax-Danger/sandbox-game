@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.18 — 2026-10-18
+- Buggy: spot lamps raised onto short stalks in black steel buckets (were half-sunk into the nose cowl)
+
 ## v0.17.17 — 2026-10-18
 - Shotgun ADS: sight centred (new ViewModelDef.AimExtra pose on top of sight centring); gun pushed out 3.5 cm, heel dropped, muzzle pitched up 6.5 deg and canted 11 deg so the rib runs to the bead and the grip glove clears the sight line (replaces the off-centre shoulder raise)
 
