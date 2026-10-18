@@ -118,7 +118,7 @@ public static partial class ModelProps
              M(Meshes.RoundedBox(new(0.14f, 0.14f, 0.14f), 0.03f), 0.45f, 0.45f, -0.45f, Steel), M(Meshes.RoundedBox(new(0.14f, 0.14f, 0.14f), 0.03f), -0.45f, 0.45f, -0.45f, Steel), M(Meshes.RoundedBox(new(0.14f, 0.14f, 0.14f), 0.03f), 0.45f, -0.45f, -0.45f, Steel), M(Meshes.RoundedBox(new(0.14f, 0.14f, 0.14f), 0.03f), -0.45f, -0.45f, -0.45f, Steel),
              M(PropMeshes.Handle(0.2f), 0.5f, 0.1f, 0, Dark, false, new(0, 90, 90)), M(PropMeshes.Handle(0.2f), -0.5f, 0.1f, 0, Dark, false, new(0, -90, 90))]),
         new("gas_can", "Gas Canister", "Construction", new(0.35f, 1.3f, 0.35f), 25f, "Metal",
-            [M(PropMeshes.GasCan(), 0, 0, 0, Red, true), Cy(0.045f, 0.1f, 0, 0.6f, 0, Steel), M(Meshes.Lathe("valve", [(0.07f, -0.01f), (0.075f, 0f), (0.075f, 0.015f), (0.07f, 0.02f)], 20), 0, 0.64f, 0, Dark)], Round: true),
+            GasCanParts(), Round: true),
         new("fence", "Fence Panel", "Construction", new(2.0f, 1.2f, 0.08f), 18f, "Wood",
             [M(Meshes.Lathe("fpost", [(0.0001f, -0.6f), (0.04f, -0.6f), (0.04f, 0.52f), (0.048f, 0.54f), (0.048f, 0.56f), (0.03f, 0.6f), (0.0001f, 0.62f)], 4), -0.96f, 0, 0, DarkWood, false, new(0, 45, 0)), M(Meshes.Lathe("fpost", [(0.0001f, -0.6f), (0.04f, -0.6f), (0.04f, 0.52f), (0.048f, 0.54f), (0.048f, 0.56f), (0.03f, 0.6f), (0.0001f, 0.62f)], 4), 0.96f, 0, 0, DarkWood, false, new(0, 45, 0)),
              M(Meshes.RoundedBox(new(1.9f, 0.08f, 0.035f), 0.01f), 0, 0.3f, -0.005f, Wood, true), M(Meshes.RoundedBox(new(1.9f, 0.08f, 0.035f), 0.01f), 0, -0.35f, -0.005f, Wood, true),
@@ -135,7 +135,7 @@ public static partial class ModelProps
         new("billboard", "Billboard", "Signs", new(3.0f, 3.2f, 0.3f), 150f, "Metal",
             BillboardParts()),
         new("street_lamp", "Street Lamp", "Signs", new(0.4f, 4.0f, 0.4f), 60f, "Metal",
-            [M(PropMeshes.Post(0.07f, 3.9f), 0, 0f, 0, Dark, true), M(PropMeshes.LampArm(), 0, 1.6f, 0, Dark, true), M(PropMeshes.StreetHead(), 0, 1.78f, 0.82f, Dark, true), M(Meshes.Sweep([new Meshes.Sec(new Float3(0f, 0f, -0.15f), 0.1f, 0.012f, 2.4f), new Meshes.Sec(new Float3(0f, 0f, 0.15f), 0.09f, 0.012f, 2.4f)], Float3.UnitX, 20, 0.5f), 0, 1.78f, 0.84f, C(1f, 0.92f, 0.7f), false, default) with { Glow = true }], Round: true),
+            StreetLampParts()),
         // ---------------- Wheels
         new("wheel_small", "Small Wheel", "Wheels", new(0.4f, 0.12f, 0.4f), 3f, "Rubber",
             [Ty(0.2f, 0.12f, 0, 0, 0, Side), M(PropMeshes.Rim(0.1f, 0.13f, 4), 0, 0, 0, Steel, true, Side)], Round: true),
@@ -144,8 +144,7 @@ public static partial class ModelProps
         new("wheel_tractor", "Tractor Wheel", "Wheels", new(1.4f, 0.45f, 1.4f), 70f, "Rubber",
             [Ty(0.7f, 0.45f, 0, 0, 0, Side), M(PropMeshes.Rim(0.42f, 0.47f, 8), 0, 0, 0, Yellow, true, Side), new('c', new(0.2f, 0.5f, 0.2f), new(0, 0, 0), Dark, false, Side)], Round: true),
         new("gear", "Gear", "Wheels", new(0.8f, 0.12f, 0.8f), 20f, "Metal",
-            [new('c', new(0.7f, 0.12f, 0.7f), new(0, 0, 0), Steel, true, Side), new('c', new(0.14f, 0.14f, 0.14f), new(0, 0, 0), Dark, false, Side),
-             M(PropMeshes.GearTeeth(10, 0.34f, 0.06f, 0.11f), 0, 0, 0, Steel, true, Side)], Round: true),
+            GearParts(), Round: true),
         // ---------------- Vehicle parts
         new("seat", "Vehicle Seat", "Vehicle parts", new(0.55f, 0.9f, 0.55f), 15f, "Rubber",
             [Cu(0.55f, 0.14f, 0.55f, 0, -0.3f, 0.02f, Dark, true), Cu(0.55f, 0.14f, 0.65f, 0, 0.1f, -0.22f, Dark, true, new(80, 0, 0)), Cu(0.36f, 0.1f, 0.2f, 0, 0.36f, -0.27f, Dark, true, new(80, 0, 0)),

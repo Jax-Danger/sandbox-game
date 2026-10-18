@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.3 — 2026-10-18
+- Remodelled street lamp (bolted base plate, cast foot with access hatch, tapered shaft with collars, scroll-braced arm, cobra head with glowing lens), gas cylinder (domed shoulder, foot ring, label bands, valve guard, brass valve with hand wheel) and gear (rim, web with lightening holes, keyed hub, bolts, trapezoid teeth); gallery close-ups aim at the subject
+
 ## v0.8.2 — 2026-10-18
 - Remodelled cinder block (open cores), Jersey barrier (light concrete, fork slots, reflectors, connector loops, stencil), steel pipe (threads, hex coupling, cap, seam, band), sofa (frame, rolled arms, piped cushions, feet, pillows), office chair (contoured mesh back, lumbar, spine, star base with casters, arm pads), floor lamp (drum shade, rims, glowing bulb, pull chain), billboard (lettered poster, catwalk, flood lights, bracing).
 

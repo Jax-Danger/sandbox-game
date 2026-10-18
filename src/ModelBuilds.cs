@@ -442,4 +442,92 @@ public static partial class ModelProps
         }
         return l.ToArray();
     }
+
+    private static Part[] StreetLampParts()
+    {
+        Color iron = C(0.16f, 0.18f, 0.19f), iron2 = C(0.22f, 0.24f, 0.25f), lens = C(1f, 0.93f, 0.72f);
+        var bolts = new List<(Mesh, Float3)>();
+        for (int i = 0; i < 4; i++) { float a = i * MathF.Tau / 4f + 0.785f; bolts.Add((Meshes.Prism(6, 0.018f, 0.03f), P3(MathF.Cos(a) * 0.15f, -1.93f, MathF.Sin(a) * 0.15f))); }
+        return
+        [
+            // Square base plate with nut cluster, a fluted cast foot, tapering shaft with collars.
+            RB(0.4f, 0.04f, 0.4f, 0.012f, 0, -1.98f, 0, C(0.42f, 0.43f, 0.44f)), M(Bake(bolts), 0, 0, 0, C(0.5f, 0.5f, 0.52f)),
+            M(Lathe("slfoot", [(0.0001f, -1.96f), (0.16f, -1.96f), (0.165f, -1.92f), (0.14f, -1.9f), (0.14f, -1.6f), (0.12f, -1.55f), (0.1f, -1.45f), (0.085f, -1.38f), (0.0001f, -1.38f)], 8), 0, 0, 0, iron, true, P3(0, 22.5f, 0)),
+            RB(0.07f, 0.16f, 0.012f, 0.005f, 0, -1.72f, 0.135f, iron2), M(Rot90X(RoundedCylinder(0.006f, 0.006f, 0.002f, 10)), 0, -1.66f, 0.142f, C(0.5f, 0.5f, 0.52f)),
+            M(Lathe("slshaft", [(0.0001f, -1.4f), (0.075f, -1.4f), (0.07f, 0.4f), (0.055f, 1.75f), (0.0001f, 1.75f)], 28), 0, 0, 0, iron, true),
+            M(Lathe("slcol1", [(0.07f, -0.03f), (0.09f, -0.02f), (0.09f, 0.02f), (0.07f, 0.03f)], 28), 0, -1.38f, 0, iron2),
+            M(Lathe("slcol2", [(0.058f, -0.025f), (0.072f, -0.015f), (0.072f, 0.015f), (0.058f, 0.025f)], 28), 0, 1.5f, 0, iron2),
+            M(Lathe("slcap", [(0.0001f, 0.08f), (0.03f, 0.075f), (0.06f, 0.03f), (0.065f, 0f), (0.055f, -0.02f)], 24), 0, 1.76f, 0, iron2),
+            // Swept arm with a scroll brace, cobra head with lens glowing downward.
+            M(Sweep([new Sec(P3(0, 1.58f, 0.03f), 0.038f, 0.038f), new Sec(P3(0, 1.74f, 0.1f), 0.034f, 0.034f), new Sec(P3(0, 1.84f, 0.32f), 0.03f, 0.03f), new Sec(P3(0, 1.86f, 0.6f), 0.028f, 0.028f), new Sec(P3(0, 1.84f, 0.74f), 0.028f, 0.028f)], Float3.UnitX, 14, 0.5f), 0, 0, 0, iron),
+            M(Sweep([new Sec(P3(0, 1.3f, 0.05f), 0.014f, 0.014f), new Sec(P3(0, 1.48f, 0.2f), 0.013f, 0.013f), new Sec(P3(0, 1.68f, 0.3f), 0.012f, 0.012f), new Sec(P3(0, 1.83f, 0.36f), 0.012f, 0.012f)], Float3.UnitX, 10, 0.5f), 0, 0, 0, iron),
+            M(Sweep([new Sec(P3(0, 1.86f, 0.68f), 0.06f, 0.04f, 2.4f), new Sec(P3(0, 1.88f, 0.8f), 0.15f, 0.07f, 2.6f), new Sec(P3(0, 1.88f, 1.0f), 0.17f, 0.075f, 2.6f), new Sec(P3(0, 1.86f, 1.16f), 0.12f, 0.05f, 2.4f), new Sec(P3(0, 1.84f, 1.2f), 0.04f, 0.02f, 2.4f)], Float3.UnitX, 28, 0.6f), 0, 0, -0.38f, C(0.55f, 0.57f, 0.58f), true),
+            M(Sweep([new Sec(P3(0, 1.825f, 0.8f), 0.11f, 0.02f, 2.6f), new Sec(P3(0, 1.82f, 0.95f), 0.13f, 0.025f, 2.6f), new Sec(P3(0, 1.825f, 1.1f), 0.09f, 0.02f, 2.6f)], Float3.UnitX, 24, 0.6f), 0, 0, -0.38f, lens) with { Glow = true },
+            M(Lathe("slphoto", [(0.0001f, 0.03f), (0.025f, 0.025f), (0.03f, 0f), (0.0001f, 0f)], 16), 0, 1.95f, 0.62f, C(0.2f, 0.2f, 0.22f)),
+        ];
+    }
+
+    private static Part[] GasCanParts()
+    {
+        Color red = C(0.72f, 0.1f, 0.08f), brass = C(0.78f, 0.6f, 0.28f), steel = C(0.55f, 0.56f, 0.58f);
+        return
+        [
+            // Seamless cylinder with domed shoulder, rolled foot ring, neck ring, label band and a guard collar round the valve.
+            M(Lathe("gcbody", [(0.0001f, -0.6f), (0.14f, -0.6f), (0.16f, -0.57f), (0.165f, -0.5f), (0.165f, 0.3f), (0.158f, 0.38f), (0.135f, 0.45f), (0.095f, 0.5f), (0.05f, 0.52f), (0.0001f, 0.525f)], 40), 0, 0, 0, red, true),
+            M(Lathe("gcfoot", [(0.15f, -0.65f), (0.168f, -0.645f), (0.17f, -0.58f), (0.162f, -0.55f), (0.15f, -0.56f)], 40), 0, 0, 0, C(0.18f, 0.18f, 0.2f)),
+            M(Lathe("gcband", [(0.1665f, -0.12f), (0.1665f, 0.14f)], 40), 0, 0, 0, C(0.92f, 0.9f, 0.82f)),
+            M(Lathe("gcband2", [(0.1668f, -0.02f), (0.1668f, 0.04f)], 40), 0, 0, 0, C(0.12f, 0.35f, 0.15f)),
+            M(Lathe("gcneck", [(0.04f, 0.5f), (0.05f, 0.505f), (0.052f, 0.56f), (0.045f, 0.565f)], 24), 0, 0, 0, steel),
+            M(Lathe("gcguard", [(0.1f, 0.5f), (0.108f, 0.5f), (0.11f, 0.68f), (0.116f, 0.69f), (0.116f, 0.7f), (0.1f, 0.7f), (0.1f, 0.5f)], 32), 0, -0.04f, 0, red, true),
+            // Brass valve body with outlet stub, hand wheel with spokes.
+            RB(0.05f, 0.08f, 0.05f, 0.012f, 0, 0.6f, 0, brass), Cy(0.016f, 0.07f, 0.045f, 0.59f, 0, brass, false, P3(0, 0, 90)),
+            M(Meshes.Prism(6, 0.02f, 0.02f), 0.08f, 0.59f, 0, brass, false, P3(0, 0, 90)),
+            Cy(0.008f, 0.04f, 0, 0.66f, 0, steel),
+            M(Lathe("gcwheel", [(0.035f, -0.008f), (0.045f, -0.006f), (0.047f, 0f), (0.045f, 0.006f), (0.035f, 0.008f), (0.033f, 0f)], 24), 0, 0.685f, 0, C(0.15f, 0.15f, 0.16f)),
+            RB(0.07f, 0.008f, 0.008f, 0.003f, 0, 0.685f, 0, C(0.15f, 0.15f, 0.16f)), RB(0.008f, 0.008f, 0.07f, 0.003f, 0, 0.685f, 0, C(0.15f, 0.15f, 0.16f)),
+        ];
+    }
+
+    private static Part[] GearParts()
+    {
+        Color st = C(0.6f, 0.61f, 0.63f), dk = C(0.3f, 0.31f, 0.33f);
+        var teeth = new List<(Mesh, Float3)>();
+        int n = 16; float rr = 0.335f;
+        Mesh tooth = Rot90X(Slab([new(-0.034f, 0f), new(0.034f, 0f), new(0.02f, 0.062f), new(-0.02f, 0.062f)], -0.05f, 0.05f));
+        var l = new List<Part>
+        {
+            // Rim, thin web, raised hub with keyway, six lightening holes (dark discs) and bolt heads.
+            M(Lathe("grim", [(0.27f, -0.05f), (0.34f, -0.05f), (0.345f, -0.045f), (0.345f, 0.045f), (0.34f, 0.05f), (0.27f, 0.05f), (0.26f, 0.04f), (0.26f, -0.04f)], 64), 0, 0, 0, st, true, Side),
+            M(Lathe("gweb", [(0.1f, -0.018f), (0.265f, -0.018f), (0.265f, 0.018f), (0.1f, 0.018f)], 64), 0, 0, 0, st, true, Side),
+            M(Lathe("ghub", [(0.04f, -0.07f), (0.1f, -0.07f), (0.11f, -0.06f), (0.11f, 0.06f), (0.1f, 0.07f), (0.04f, 0.07f), (0.04f, -0.07f)], 40), 0, 0, 0, st, true, Side),
+            M(Lathe("gbore", [(0.04f, -0.071f), (0.04f, 0.071f)], 24), 0, 0, 0, dk, false, Side),
+            RB(0.072f, 0.142f, 0.02f, 0.002f, 0, 0, 0.041f, dk, false, P3(0, 0, 90)),
+        };
+        for (int i = 0; i < n; i++)
+        {
+            float a = i * MathF.Tau / n;
+            teeth.Add((Spin(tooth, a), P3(MathF.Cos(a) * rr, 0, MathF.Sin(a) * rr)));
+        }
+        l.Add(M(Bake(teeth), 0, 0, 0, st, true, Side));
+        var holes = new List<(Mesh, Float3)>(); var bolts = new List<(Mesh, Float3)>();
+        for (int i = 0; i < 6; i++)
+        {
+            float a = i * MathF.Tau / 6f, b = a + MathF.Tau / 12f;
+            holes.Add((RoundedCylinder(0.045f, 0.038f, 0.004f, 24), P3(MathF.Cos(a) * 0.185f, 0, MathF.Sin(a) * 0.185f)));
+            bolts.Add((Meshes.Prism(6, 0.014f, 0.15f), P3(MathF.Cos(b) * 0.075f, 0, MathF.Sin(b) * 0.075f)));
+        }
+        l.Add(M(Bake(holes), 0, 0, 0, C(0.06f, 0.06f, 0.07f), false, Side));
+        l.Add(M(Bake(bolts), 0, 0, 0, dk, false, Side));
+        return l.ToArray();
+    }
+
+    /// <summary>Rotate a mesh about Y so its local +Y... keeps +Y; local +Y-up tooth at +X is turned to angle a in XZ.</summary>
+    private static Mesh Spin(Mesh m, float a)
+    {
+        // Tooth built pointing along +Z after Rot90X? Map its outward axis to (cos a, 0, sin a).
+        float c = MathF.Cos(a), s = MathF.Sin(a);
+        Float3 R(Float3 v) => P3(v.X * s + v.Z * c, v.Y, -v.X * c + v.Z * s);
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(R).ToArray(), Normals = m.Normals?.Select(R).ToArray(), UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
+    }
 }
