@@ -764,6 +764,8 @@ public sealed class VehicleSystem(SandboxGame game)
     {
         if (Driving is not { } b) return;
         b.Drive(0f, false, false, true);
+        foreach (MeshRenderer gr in b.Go.GetComponentsInChildren<MeshRenderer>())
+            if (gr.GameObject.Name is "Windshield" or "Sheen") gr.Enabled = true; // shown again once nobody looks from the seat
         Float3 side = b.Go.Transform.Right * -1.8f;
         game.Player.Teleport(b.Go.Transform.Position + side + new Float3(0f, 0.2f, 0f));
         game.Player.SetLook(b.Go.Transform.LocalEulerAngles.Y, 0f);
@@ -800,6 +802,10 @@ public sealed class VehicleSystem(SandboxGame game)
         // Keep the (invisible) player body parked above the car so it doesn't block anything.
         game.Player.Teleport(car.Go.Transform.Position + new Float3(0f, 40f, 0f), moveCamera: false);
 
+        // The glass is opaque (no transparent pass), so from the driver's seat the windscreen pane blocked the whole view:
+        // hide pane + sheen streaks in first person and keep the frame/wipers as the "glass" outline.
+        foreach (MeshRenderer gr in car.Go.GetComponentsInChildren<MeshRenderer>())
+            if (gr.GameObject.Name is "Windshield" or "Sheen") gr.Enabled = !FirstPerson;
         if (FirstPerson)
         {
             Transform ct = car.Go.Transform;

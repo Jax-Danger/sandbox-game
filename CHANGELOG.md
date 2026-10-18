@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.6 — 2026-10-18
+- Jeep: in first-person driving the opaque windscreen pane and sheen hide so the frame/wipers outline the screen instead of a dark blue wall blocking the road; restored on exit (screens/s11-seatfp-b.png vs s11-seatfp.png)
+
 ## v0.16.5 — 2026-10-18
 - NPCs: sky-bent face normals push the sun terminator below the chin - the hard dark line across every face at nose height (read as a beard) is gone (screens/s11-bend-c.png vs s11-beard.png); SANDBOX_NOSHADOW/SANDBOX_NOAO debug env
 
