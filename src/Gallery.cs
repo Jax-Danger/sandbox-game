@@ -78,8 +78,19 @@ public static class Gallery
                 Float3 c = new(0f, 0f, 6f);
                 g.Vehicles.SpawnBuggy(c + new Float3(0f, 0.9f, 0f), 0f, false, kind);
                 float r = ang * MathF.PI / 180f;
-                g.Player.Teleport(c - new Float3(MathF.Sin(r), 0f, MathF.Cos(r)) * dist - new Float3(0f, 0.6f, 0f));
-                g.Player.SetLook(ang, 14f);
+                // Optional 5th field = eye height (m): hovers in noclip and pitches down at the car's waist so hood/deck
+                // detail is visible (the default sunk camera only grazed the hood). "car_jeep_150_5_2.6".
+                if (a.Length > 4 && float.TryParse(a[4], System.Globalization.CultureInfo.InvariantCulture, out float eye))
+                {
+                    if (!g.Player.Noclip) g.Player.ToggleNoclip();
+                    g.Player.Teleport(c - new Float3(MathF.Sin(r), 0f, MathF.Cos(r)) * dist + new Float3(0f, eye - 1.6f, 0f));
+                    g.Player.SetLook(ang, MathF.Atan2(eye - 0.8f, dist) * 180f / MathF.PI);
+                }
+                else
+                {
+                    g.Player.Teleport(c - new Float3(MathF.Sin(r), 0f, MathF.Cos(r)) * dist - new Float3(0f, 0.6f, 0f));
+                    g.Player.SetLook(ang, 14f);
+                }
                 break;
             }
             case "drive":

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.15.2 — 2026-10-18
+- Gallery: gal_car_<kind>_<ang>_<dist>_<eye> hovers the camera at a chosen eye height and pitches at the vehicle so hood/deck detail is visible (screens/s10-jeep-c.png vs s10-jeep-a.png)
+
 ## v0.15.1 — 2026-10-18
 - Town: building walls use a bright painted-render texture with world-oriented UVs (U horizontal, V up on every face) at 2.5 m, so non-square buildings tile consistently and wall colours read true instead of being halved by dark concrete (screens/s10-tile-c.png vs s10-tile-b.png)
 
