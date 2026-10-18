@@ -150,6 +150,40 @@ public static partial class MapBuilder
             b.Add(plate, Bx(sw, 0.5f, 0.08f, 0, sy, -hd - face - 0.05f));
             b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy + 0.27f, -hd - face - 0.05f)); b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy - 0.27f, -hd - face - 0.05f));
             b.Add(frame, Xf(Glyphs.Text(word, 0.3f, -hd - face - 0.12f, -hd - face - 0.09f, mirror: false), 0f, L3(0, sy, 0)));
+            if (title == "General Store")
+            {
+                // Striped canvas awnings over each shop window (sloped, with a scalloped valance) and a produce stand by the door.
+                Color sa = new(0.2f, 0.5f, 0.3f, 1f), sb = new(0.94f, 0.93f, 0.88f, 1f);
+                float z0 = -hd - face - 0.02f;
+                foreach (float x in Span(hw, true))
+                {
+                    float aw = ww + 0.5f; int n = 7;
+                    for (int i = 0; i < n; i++)
+                    {
+                        float x0 = x - aw / 2f + aw * i / n, x1 = x - aw / 2f + aw * (i + 1) / n;
+                        Color col = i % 2 == 0 ? sa : sb;
+                        b.Add(col, Meshes.Faces(
+                            [L3(x0, 2.95f, z0), L3(x1, 2.95f, z0), L3(x1, 2.55f, z0 - 0.9f), L3(x0, 2.55f, z0 - 0.9f)],
+                            [L3(x1, 2.93f, z0), L3(x0, 2.93f, z0), L3(x0, 2.53f, z0 - 0.9f), L3(x1, 2.53f, z0 - 0.9f)],
+                            [L3(x0, 2.55f, z0 - 0.9f), L3(x1, 2.55f, z0 - 0.9f), L3(x1, 2.4f, z0 - 0.905f), L3((x0 + x1) / 2f, 2.33f, z0 - 0.905f), L3(x0, 2.4f, z0 - 0.905f)],
+                            [L3(x1, 2.55f, z0 - 0.895f), L3(x0, 2.55f, z0 - 0.895f), L3(x0, 2.4f, z0 - 0.895f), L3((x0 + x1) / 2f, 2.33f, z0 - 0.895f), L3(x1, 2.4f, z0 - 0.895f)]));
+                    }
+                    b.Add(new Color(0.3f, 0.3f, 0.32f, 1f), Bx(aw + 0.06f, 0.05f, 0.05f, x, 2.96f, z0 - 0.02f));
+                }
+                // Produce stand: slatted crate table, three trays of fruit, a little price board.
+                float px = -dw / 2f - 0.9f, pz = z0 - 0.75f;
+                Color wood = new(0.55f, 0.38f, 0.22f, 1f);
+                b.Add(wood, Bx(1.3f, 0.06f, 0.6f, px, 0.78f, pz));
+                foreach (float lx in new[] { -0.6f, 0.6f }) foreach (float lz in new[] { -0.25f, 0.25f }) b.Add(wood, Bx(0.06f, 0.78f, 0.06f, px + lx, 0.39f, pz + lz));
+                var fruit = new[] { new Color(0.85f, 0.15f, 0.12f, 1f), new Color(0.98f, 0.6f, 0.1f, 1f), new Color(0.55f, 0.75f, 0.2f, 1f) };
+                for (int t = 0; t < 3; t++)
+                {
+                    float tx = px - 0.42f + t * 0.42f;
+                    b.Add(wood, Bx(0.38f, 0.1f, 0.5f, tx, 0.86f, pz));
+                    for (int fx = 0; fx < 3; fx++) for (int fz = 0; fz < 4; fz++) b.Add(fruit[t], Xf(Meshes.Sphere(0.052f), 0f, L3(tx - 0.11f + fx * 0.11f, 0.95f + (fx + fz) % 2 * 0.02f, pz - 0.18f + fz * 0.12f)));
+                }
+                b.Add(new Color(0.15f, 0.16f, 0.15f, 1f), Bx(0.4f, 0.28f, 0.03f, px + 0.5f, 1.15f, pz + 0.2f));
+            }
             if (title == "Police Station")
             {
                 // Flagpole on the front lawn: lathed pole on a concrete footing, gold finial, rippled blue-and-white flag.
