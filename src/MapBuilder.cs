@@ -154,7 +154,7 @@ public static partial class MapBuilder
         MeshRenderer r = terrain.AddComponent<MeshRenderer>();
         r.Mesh = mesh;
         var m = Mats.New(shader);
-        m.SetColor("_MainColor", new Color(0.55f, 0.72f, 0.42f, 1f));
+        m.SetColor("_MainColor", new Color(0.46f, 0.5f, 0.36f, 1f));
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0") m.SetTexture("_MainTex", ProcTex.Grass());
         r.Material = m;
         terrain.AddComponent<MeshCollider>().Mesh = mesh;

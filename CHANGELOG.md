@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.24 — 2026-10-18
+- Rolling Hills turf toned down from neon green to a natural meadow green
+
 ## v0.8.23 — 2026-10-18
 - Explosive barrel entity icon uses the steel drum mesh
 
