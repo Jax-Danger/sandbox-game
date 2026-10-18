@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.8 — 2026-10-18
+- Ramp prop is a steel deck between raised side rails with anti-slip cleats and end lips, instead of a plain slab.
+
 ## v0.10.7 — 2026-10-18
 - Apartments: French door with a Juliet balcony on turned balusters in the upper centre bay, and flower boxes under the upper windows.
 

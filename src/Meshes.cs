@@ -433,6 +433,22 @@ public static class Meshes
         return _cache[key] = Build(v, n, uv, idx);
     }
 
+    /// <summary>Ramp prop (2 x 0.2 x 3.5): steel deck between raised side rails, with anti-slip cleats across the top.</summary>
+    public static Mesh RampDeck()
+    {
+        if (_cache.TryGetValue("rampdeck", out Mesh? hit)) return hit;
+        static Mesh At(Mesh m, float x, float y, float z)
+        {
+            var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + new Float3(x, y, z)).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+            mm.RecalculateBounds(); return mm;
+        }
+        var parts = new List<Mesh> { RoundedBox(new Float3(1.84f, 0.12f, 3.46f), 0.02f) };
+        foreach (float sx in new[] { -0.94f, 0.94f }) parts.Add(At(RoundedBox(new Float3(0.12f, 0.2f, 3.5f), 0.03f), sx, 0f, 0f));
+        for (float z = -1.55f; z <= 1.56f; z += 0.25f) parts.Add(At(RoundedBox(new Float3(1.8f, 0.035f, 0.06f), 0.012f), 0f, 0.07f, z));
+        foreach (float sz in new[] { -1.72f, 1.72f }) parts.Add(At(RoundedBox(new Float3(1.84f, 0.16f, 0.06f), 0.02f), 0f, -0.01f, sz));
+        return _cache["rampdeck"] = Merge(parts.ToArray());
+    }
+
     /// <summary>Chiselled boulder: a sphere cut by random planes, flat shaded so facets read crisply.</summary>
     public static Mesh Rock(float r, int seed)
     {
