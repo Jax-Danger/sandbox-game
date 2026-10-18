@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.9 — 2026-10-18
+- SMG red dot: longer open tube with sunshade hood, base and clamp rings; dropped the smoothed opaque rear lens that read as a black ball from the hip; paler front glass (screens/vm/r2/s12smgc-crop.png vs s12smg-crop.png)
+
 ## v0.17.8 — 2026-10-18
 - Crowbar VM: held upright like a club (shaft no longer pokes level into the crosshair) and one-handed, dropping the half-cropped free glove in the lower-left (screens/vm/r2/raw/s12crowb-vm_crowbar.png vs s12all-vm_crowbar.png)
 

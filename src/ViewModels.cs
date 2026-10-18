@@ -354,9 +354,12 @@ public static partial class ViewModels
                 k.Bar("weapon", Black, Finish.Metal, V(0, 0.0985f, -0.06f), V(0, 0.0985f, 0.17f), 0.0088f, 0.0035f, 5f, 0.3f);
                 for (int i = 0; i < 16; i++) k.Bar("weapon", Black, Finish.Metal, V(0, 0.1018f, -0.055f + i * 0.0145f), V(0, 0.1018f, -0.049f + i * 0.0145f), 0.0092f, 0.0014f, 5f, 0.3f);
                 k.Bar("weapon", Black, Finish.Metal, V(0, 0.106f, 0.02f), V(0, 0.106f, 0.065f), 0.0085f, 0.0045f, 4f, 0.4f);
-                k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.022f), (0.0158f, 0f), (0.0162f, 0.004f), (0.0162f, 0.044f), (0.0156f, 0.048f), (0.0128f, 0.048f), (0.0128f, 0.002f), (0f, 0.002f));
-                k.Add("weapon", LatheZ([(0f, 0f), (0.0129f, 0f), (0.0129f, 0.001f), (0f, 0.001f)]), new Color(0.25f, 0.42f, 0.55f, 1f), Finish.Gloss, V(0, 0.1235f, 0.066f));
-                k.Dot("weapon", new Color(1f, 0.18f, 0.12f, 1f), V(0, 0.1235f, 0.064f), 0.0012f);
+                // Longer tube with a flared sunshade hood (the stubby 44 mm can read as a ball from the hip), plus a flat-sided base.
+                k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.022f), (0.0158f, 0f), (0.0162f, 0.004f), (0.0162f, 0.05f), (0.0172f, 0.056f), (0.0178f, 0.064f), (0.0172f, 0.068f), (0.0136f, 0.068f), (0.0128f, 0.06f), (0.0128f, 0.002f), (0.0158f, 0f)); // open rear: ADS looks down the tube to the dot
+                k.Bar("weapon", Black, Finish.Metal, V(0, 0.111f, 0.024f), V(0, 0.111f, 0.062f), 0.0125f, 0.006f, 5f, 0.3f);
+                for (int i = 0; i < 2; i++) k.Bar("weapon", Gunmetal, Finish.Metal, V(0, 0.1235f, 0.03f + i * 0.026f), V(0, 0.1235f, 0.033f + i * 0.026f), 0.0166f, 0.0166f, 2f, 0.9f);
+                k.Add("weapon", LatheZ([(0f, 0f), (0.0129f, 0f), (0.0129f, 0.001f), (0f, 0.001f)]), new Color(0.55f, 0.7f, 0.76f, 1f), Finish.Gloss, V(0, 0.1235f, 0.06f)); // pale coated glass so ADS reads as a window with the dot, not a black disc
+                k.Dot("weapon", new Color(1f, 0.18f, 0.12f, 1f), V(0, 0.1235f, 0.058f), 0.0012f);
                 // Magazine (forward of the grip, slightly curved), magwell, grip, guard, stock.
                 k.Sw("mag", Black, Finish.Metal, Float3.UnitX, 0.4f,
                     new Sec(V(0, 0.04f, 0.115f), 0.0118f, 0.019f, 4f), new Sec(V(0, -0.03f, 0.125f), 0.0118f, 0.0195f, 4f), new Sec(V(0, -0.09f, 0.143f), 0.0118f, 0.02f, 4f));
@@ -391,8 +394,8 @@ public static partial class ViewModels
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(-0.0135f, 0.087f, -0.138f), V(0.0135f, 0.087f, -0.138f), 0.0026f, 0.0026f, 2f, 0.9f, Float3.UnitY);
                 k.Bar("weapon", Dark, Finish.Polymer, V(-0.0145f, 0.034f, -0.142f), V(0.0145f, 0.034f, -0.142f), 0.0045f, 0.0045f, 2.4f, 0.8f, Float3.UnitY);
                 // Red dot: rear lens rim, windage turret on the right, crossbolt knob on the left of the mount.
-                k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.019f), (0.0166f, 0f), (0.0166f, 0.004f), (0.0128f, 0.004f), (0.0128f, 0.001f), (0f, 0.001f));
-                k.Add("weapon", LatheZ([(0f, 0f), (0.0129f, 0f), (0.0129f, 0.001f), (0f, 0.001f)]), new Color(0.12f, 0.16f, 0.2f, 1f), Finish.Gloss, V(0, 0.1235f, 0.0205f));
+                k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.019f), (0.0132f, 0.001f), (0.0166f, 0f), (0.0166f, 0.004f), (0.0132f, 0.004f), (0.0132f, 0.001f));
+                // (no opaque rear lens: its smoothed dark disc read as a black ball and blocked the view when aiming)
                 k.Bar("weapon", Black, Finish.Metal, V(0.0158f, 0.1235f, 0.043f), V(0.0215f, 0.1235f, 0.043f), 0.0055f, 0.0055f, 2f, 0.9f, Float3.UnitZ);
                 for (int i = 0; i < 6; i++) { float an = i * MathF.PI / 3f; k.Bar("weapon", Gunmetal, Finish.Metal, V(0.0175f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), V(0.0215f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), 0.0008f, 0.0008f, 2f, 0.9f, Float3.UnitZ); }
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(-0.0095f, 0.1045f, 0.042f), V(-0.016f, 0.1045f, 0.042f), 0.0042f, 0.0042f, 2f, 0.9f, Float3.UnitZ);
