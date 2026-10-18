@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.7 — 2026-10-18
+- Town: door wall lanterns glow at night with the lit windows (screens/s12-night-e-crop.png vs s12-night-c-crop.png)
+
 ## v0.17.6 — 2026-10-18
 - Town windows at night: warm tungsten glow (was near-white) and the glass streak on lit panes glows with the room instead of cutting a dark bar across it (screens/s12-night-d.png, s12-night-c-crop.png vs s12-night-a-crop.png)
 

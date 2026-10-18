@@ -31,6 +31,8 @@ public static partial class MapBuilder
     private static Color LitGlass(Color g) => new(g.R, g.G, g.B + 0.004f, 1f);
     /// <summary>Pale diagonal glass streak colour. Lit panes put it in its own emissive bucket, so at night the streak
     /// glows with the room instead of cutting a dark diagonal bar across the lit window.</summary>
+    /// <summary>Wall-lantern glass colour; facade buckets of this colour glow at night like lit windows.</summary>
+    private static readonly Color LanternGlass = new(1f, 0.85f, 0.551f, 1f);
     private static Color Sheen(Color g) => new(g.R + 0.1f, g.G + 0.1f, g.B + 0.08f, 1f);
     private static void Window(Bucket b, float a, Float3 o, float w, float h, bool house, Color frame, Color trim, Color glass, Color shutter)
     {
@@ -239,7 +241,7 @@ public static partial class MapBuilder
         // Services on every building: front downpipes with wall brackets and a kick-out shoe, a wall lantern beside the
         // door (dark cage, warm glass), and on commercial buildings an AC condenser with a fan grille on one side wall.
         {
-            Color pipe = house ? new Color(0.92f, 0.92f, 0.9f, 1f) : new Color(0.3f, 0.31f, 0.33f, 1f), metal = new(0.12f, 0.12f, 0.13f, 1f), warm = new(1f, 0.85f, 0.55f, 1f);
+            Color pipe = house ? new Color(0.92f, 0.92f, 0.9f, 1f) : new Color(0.3f, 0.31f, 0.33f, 1f), metal = new(0.12f, 0.12f, 0.13f, 1f), warm = LanternGlass;
             float zf = -hd - face - (house ? 0.09f : 0.12f);
             foreach (float sx in new[] { -1f, 1f })
             {
@@ -269,7 +271,7 @@ public static partial class MapBuilder
         foreach (var (col, list) in b)
         {
             var fgo = Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
-            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass)))) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
+            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass))) || col.Equals(LanternGlass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
             {
                 _batch.Remove(fgo);
                 try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 168, 86)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }
