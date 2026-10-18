@@ -198,17 +198,16 @@ public static class Meshes
 
     public static Mesh Barrel(float radius, float height)
     {
-        float h = height / 2f;
-        var prof = new List<(float, float)> { (0f, -h), (radius * 0.86f, -h), (radius * 0.9f, -h + 0.02f) };
-        for (int k = 0; k <= 12; k++)
+        // Steel drum: recessed heads inside rolled chimes, straight walls with two swaged rolling hoops and shallow ribs.
+        float h = height / 2f, r = radius * 0.95f;
+        var prof = new List<(float, float)> { (0.0001f, -h + 0.03f), (r * 0.9f, -h + 0.03f), (r * 0.93f, -h + 0.01f), (r * 0.97f, -h), (r + 0.012f, -h + 0.012f), (r + 0.01f, -h + 0.03f), (r, -h + 0.045f) };
+        foreach (float hy in new[] { -0.33f, -0.1f, 0.1f, 0.33f })
         {
-            float t = k / 12f, y = -h + 0.04f + t * (height - 0.08f);
-            float bulge = 1f + 0.06f * MathF.Sin(t * MathF.PI);
-            float ring = (MathF.Abs(t - 0.25f) < 0.035f || MathF.Abs(t - 0.75f) < 0.035f) ? 1.025f : 1f;
-            prof.Add((radius * 0.93f * bulge * ring, y));
+            bool hoop = MathF.Abs(hy) > 0.2f; float y = hy * height, d = hoop ? 0.022f : 0.007f, w = hoop ? 0.035f : 0.02f;
+            prof.Add((r, y - w)); prof.Add((r + d * 0.7f, y - w * 0.4f)); prof.Add((r + d, y)); prof.Add((r + d * 0.7f, y + w * 0.4f)); prof.Add((r, y + w));
         }
-        prof.Add((radius * 0.9f, h - 0.02f)); prof.Add((radius * 0.86f, h)); prof.Add((0f, h - 0.015f));
-        return Lathe($"barrel{radius:0.###},{height:0.###}", prof.ToArray(), 36);
+        prof.Add((r, h - 0.045f)); prof.Add((r + 0.01f, h - 0.03f)); prof.Add((r + 0.012f, h - 0.012f)); prof.Add((r * 0.97f, h)); prof.Add((r * 0.93f, h - 0.01f)); prof.Add((r * 0.9f, h - 0.03f)); prof.Add((0.0001f, h - 0.03f));
+        return Lathe($"drum{radius:0.###},{height:0.###}", prof.ToArray(), 40);
     }
 
     /// <summary>Tyre (axis along Y): rounded tread, sidewalls and a recessed hub.</summary>

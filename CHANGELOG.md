@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.21 — 2026-10-18
+- Barrel is a steel drum now: recessed heads inside rolled chimes, two swaged rolling hoops and shallow ribs
+
 ## v0.8.20 — 2026-10-18
 - Vehicles tab shows rendered thumbnails of the buggy, jeep and airboat (same meshes as in game) instead of a generic car glyph
 
