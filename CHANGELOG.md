@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.6 — 2026-10-18
+- Toolgun rear screen shows content: glowing TOOLGUN label, charge bar and crosshair on a dark display instead of a blank pale glow (screens/vm/r2/raw/s7m-vm_toolgun.png vs s7a-tool-c.png)
+
 ## v0.12.5 — 2026-10-18
 - Physgun rear is a knurled steel end ring with a glowing cyan power cell behind a six-rib vent instead of a plain dome; glowing cell windows between the cooling rings (screens/vm/r2/raw/s7k-phys-c.png vs s7i-phys-c.png)
 

@@ -521,7 +521,16 @@ public static partial class ViewModels
                 k.Lz("weapon", Accent, Finish.Gloss, V(0, 0.082f, 0.21f), (0.0128f, 0f), (0.0128f, 0.004f), (0.011f, 0.005f));
                 // Rear screen in a dark bezel, angled toward the eye.
                 k.Bar("weapon", Black, Finish.Polymer, V(0, 0.103f, -0.075f), V(0, 0.08f, -0.08f), 0.0205f, 0.0035f, 5f, 0.4f);
-                k.Bar("weapon", new Color(0.35f, 0.8f, 1f, 1f), Finish.Gloss, V(0, 0.101f, -0.079f), V(0, 0.083f, -0.083f), 0.017f, 0.0008f, 6f, 0.2f, null, true);
+                k.Bar("weapon", new Color(0.03f, 0.07f, 0.11f, 1f), Finish.Gloss, V(0, 0.101f, -0.079f), V(0, 0.083f, -0.083f), 0.017f, 0.0008f, 6f, 0.2f, null, true);
+                // Screen content: tool name, a charge bar and a crosshair, glowing cyan (read through the glass from behind).
+                {
+                    Float3 rot = V(-12.5f, 0f, 0f), cyan = default;
+                    var c = new Color(0.4f, 0.9f, 1f, 1f);
+                    d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(0, 0.0955f, -0.0828f), c, rot, true, Finish.Gloss, null, Glyphs.Text("TOOLGUN", 0.0042f, -0.0003f, 0f)));
+                    d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(-0.004f, 0.0878f, -0.0845f), c, rot, true, Finish.Gloss, null, Meshes.RoundedBox(V(0.02f, 0.0018f, 0.0004f), 0.0002f)));
+                    d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(-0.0015f, 0.0878f, -0.0843f), new Color(0.08f, 0.2f, 0.25f, 1f), rot, true, Finish.Gloss, null, Meshes.RoundedBox(V(0.027f, 0.0026f, 0.0003f), 0.0003f)));
+                    d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(0.0115f, 0.0879f, -0.0846f), c, rot, true, Finish.Gloss, null, Meshes.Merge(Meshes.RoundedBox(V(0.0045f, 0.0007f, 0.0004f), 0.0002f), Meshes.RoundedBox(V(0.0007f, 0.0045f, 0.0004f), 0.0002f))));
+                }
                 k.GripBody("weapon", pistolA, -0.058f, 0.062f, 0.015f, 0.024f, Black, Polymer);
                 k.Guard("weapon", Black, 0.052f, 0.072f, 0.0185f, 0.02f, 0.041f);
                 right = RightPistol(0.015f, 0.024f, 0.012f, Trig(0.034f, 0.045f));
