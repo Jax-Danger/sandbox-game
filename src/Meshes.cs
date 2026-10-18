@@ -278,7 +278,7 @@ public static class Meshes
         return _cache[key] = Lathe(key, prof.ToArray(), 24);
     }
 
-    public static Mesh Sphere(float radius) => _cache.TryGetValue($"sph{radius:0.###}", out Mesh? m) ? m : _cache[$"sph{radius:0.###}"] = Mesh.CreateSphere(radius, 24, 32);
+    public static Mesh Sphere(float radius) => _cache.TryGetValue($"sph{radius:0.###}", out Mesh? m) ? m : _cache[$"sph{radius:0.###}"] = Sanitize(Mesh.CreateSphere(radius, 24, 32));
 
 
     /// <summary>One cross-section of a <see cref="Sweep"/>: centre, half-width (along the side axis), half-height,

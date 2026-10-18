@@ -829,6 +829,14 @@ public sealed class SelfTest
                 foreach (Humans.Detail d in Humans.Limb(limb).Details)
                     bad += d.Mesh.Normals?.Count(n => !float.IsFinite(n.X + n.Y + n.Z) || Float3.Length(n) < 0.5f) ?? 0;
             Check(bad == 0, $"human detail meshes have valid normals ({bad} bad)");
+            var badNames = new List<string>(); int scanned = 0;
+            foreach (var go in g.World.AllObjects.ToList())
+                if (go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh.Res is { } me && me.Normals is { Length: > 0 } nn)
+                {
+                    scanned++;
+                    if (nn.Any(n => !float.IsFinite(n.X + n.Y + n.Z) || Float3.Length(n) < 0.5f)) badNames.Add(go.Name);
+                }
+            Check(badNames.Count == 0, $"no world mesh has zero/NaN normals ({scanned} scanned; bad: {string.Join(", ", badNames.Distinct().Take(8))})");
         }
         Door house = Town.Find("door_house1")!;
         Float3 c = house.Transform.Position;
