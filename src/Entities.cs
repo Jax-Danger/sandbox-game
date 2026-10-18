@@ -233,6 +233,26 @@ public static class EntityCatalog
         p.Go.Name = p.Go.Name.Replace("Barrel", "Explosive Barrel");
         p.Go.AddComponent<ExplosiveBarrel>().Game = g;
         p.Go.AddComponent<ImpactFuse>().Game = g;
+        if (!Application.IsHeadless && p.Go.Transform.Find("HazardLabel") is null)
+        {
+            // Hazard labels on two sides between the upper rib and hoop: yellow band, black border stripes, flame mark.
+            var yel = Mats.New(g.Shader); yel.SetColor("_MainColor", new Prowl.Vector.Color(0.96f, 0.78f, 0.12f, 1f));
+            var blk = Mats.New(g.Shader); blk.SetColor("_MainColor", new Prowl.Vector.Color(0.06f, 0.06f, 0.07f, 1f));
+            const float r = 0.381f;
+            Prowl.Vector.Float3 V(float a, float y, float dr) => new(MathF.Sin(a) * (r + dr), y, MathF.Cos(a) * (r + dr));
+            Mesh flame = Meshes.Faces(
+                [V(-0.16f, 0.16f, 0.004f), V(0.16f, 0.16f, 0.004f), V(0.13f, 0.215f, 0.004f), V(0.04f, 0.315f, 0.004f), V(0.03f, 0.25f, 0.004f), V(-0.03f, 0.3f, 0.004f), V(-0.13f, 0.215f, 0.004f)]);
+            foreach (float yaw in new[] { 0f, 180f })
+            {
+                var root = new GameObject("HazardLabel"); root.SetParent(p.Go, false);
+                root.Transform.LocalEulerAngles = new Prowl.Vector.Float3(0f, yaw, 0f);
+                void Add(Mesh m, Material mt) { var c = new GameObject("lbl"); c.SetParent(root, false); MeshRenderer mr = c.AddComponent<MeshRenderer>(); mr.Mesh = m; mr.Material = mt; }
+                Add(Meshes.CylPatch(r + 0.001f, 0.55f, 0.125f, 0.345f), yel);
+                Add(Meshes.CylPatch(r + 0.002f, 0.55f, 0.125f, 0.14f), blk);
+                Add(Meshes.CylPatch(r + 0.002f, 0.55f, 0.33f, 0.345f), blk);
+                Add(flame, blk);
+            }
+        }
         return p;
     }
 

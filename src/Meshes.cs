@@ -448,6 +448,21 @@ public static class Meshes
         return Build(v, n, uv, idx);
     }
 
+    /// <summary>Curved label patch on a Y-axis cylinder of radius <paramref name="r"/>, centred on +Z, spanning
+    /// ±<paramref name="halfAngle"/> radians and y0..y1. Smooth radial normals, so decals hug drums and pipes.</summary>
+    public static Mesh CylPatch(float r, float halfAngle, float y0, float y1, int segs = 12)
+    {
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        for (int i = 0; i <= segs; i++)
+        {
+            float a = -halfAngle + 2f * halfAngle * i / segs; Float3 d = new(MathF.Sin(a), 0f, MathF.Cos(a));
+            v.Add(d * r + new Float3(0f, y0, 0f)); n.Add(d); uv.Add(new Float2((float)i / segs, 0f));
+            v.Add(d * r + new Float3(0f, y1, 0f)); n.Add(d); uv.Add(new Float2((float)i / segs, 1f));
+        }
+        for (int i = 0; i < segs; i++) { uint b = (uint)(i * 2); idx.AddRange([b, b + 2, b + 1, b + 1, b + 2, b + 3]); }
+        return Build(v, n, uv, idx);
+    }
+
     private static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };

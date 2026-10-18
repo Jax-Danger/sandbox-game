@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.2 — 2026-10-18
+- Explosive barrel wears curved yellow hazard labels with black border stripes and a flame mark on both sides (Meshes.CylPatch for decals that hug cylinders).
+
 ## v0.9.1 — 2026-10-18
 - Police NPCs wear their kit: holstered pistol world model on the right hip, side-handle baton on a belt ring on the left, gold shield badge and silver name bar; police shirt toned to navy. Gallery state gal_police.
 
