@@ -83,6 +83,10 @@ public static class Humans
         // Shoulder yokes: trapezius slopes from the neck out over each shoulder joint so arms hang from the body
         // instead of floating beside a flat-topped box.
         var parts = new List<Detail> { new(neck, Tint.Skin) };
+        // Shirt collar ring, button placket and a chest pocket.
+        parts.Add(new(LatheY("collar", [(0.064f, 0.205f), (0.068f, 0.215f), (0.062f, 0.24f), (0.056f, 0.245f)]), Tint.Cuff));
+        parts.Add(new(Sweep([new Sec(V(0f, -0.24f, 0.106f), 0.012f, 0.003f, 4f), new Sec(V(0f, -0.02f, 0.124f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.1f, 0.13f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.2f, 0.104f), 0.012f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
+        parts.Add(new(Sweep([new Sec(V(-0.09f, 0.06f, 0.123f), 0.035f, 0.003f, 4f), new Sec(V(-0.09f, 0.11f, 0.12f), 0.035f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         foreach (float sd in new[] { -1f, 1f })
             parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.14f, 0.192f, -0.002f), 0.07f, 0.04f),
                 new Sec(V(sd * 0.21f, 0.17f, 0f), 0.056f, 0.047f), new Sec(V(sd * 0.25f, 0.15f, 0f), 0.05f, 0.047f), new Sec(V(sd * 0.272f, 0.125f, 0f), 0.04f, 0.04f), new Sec(V(sd * 0.28f, 0.1f, 0f), 0.026f, 0.026f)],
@@ -136,9 +140,20 @@ public static class Humans
         Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.2f, 0.042f, 0.042f, 0f), (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
         // Relaxed hand: palm, grouped fingers curling in, thumb.
         Mesh palm = Sweep([new Sec(V(0f, -0.13f, 0f), 0.03f, 0.018f, 2.6f, Float3.UnitZ), new Sec(V(0f, -0.17f, 0.003f), 0.042f, 0.017f, 2.8f, Float3.UnitZ), new Sec(V(0f, -0.21f, 0.004f), 0.044f, 0.015f, 3f, Float3.UnitZ)], Float3.UnitZ, 16, 0.7f);
-        var fingers = new List<Sec>();
-        for (int i = 0; i <= 6; i++) { float a = i / 6f * 1.2f; fingers.Add(new Sec(V(0f, -0.21f - MathF.Sin(a) * 0.05f, 0.004f + (1f - MathF.Cos(a)) * 0.05f), 0.042f - i * 0.002f, 0.012f, 3.2f, Float3.UnitZ)); }
-        Mesh fing = Sweep(fingers, Float3.UnitZ, 16, 0.9f);
+        // Four separate curled fingers (was one mitten slab), slightly fanned, middle longest.
+        var fms = new List<Mesh>();
+        float[] fx = [-0.03f, -0.01f, 0.01f, 0.029f], fl = [0.045f, 0.052f, 0.049f, 0.04f];
+        for (int f = 0; f < 4; f++)
+        {
+            var fs = new List<Sec>();
+            for (int i = 0; i <= 6; i++)
+            {
+                float a = i / 6f * 1.25f, L = fl[f];
+                fs.Add(new Sec(V(fx[f] * (1f + 0.15f * i / 6f), -0.205f - MathF.Sin(a) * L, 0.004f + (1f - MathF.Cos(a)) * L), 0.0085f - i * 0.0004f, 0.0085f - i * 0.0004f, 2.2f));
+            }
+            fms.Add(Sweep(fs, Float3.UnitX, 10, 0.9f));
+        }
+        Mesh fing = Merge(fms.ToArray());
         Mesh thumb = Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.046f, -0.18f, 0.03f), 0.011f, 0.01f), new Sec(V(-side * 0.04f, -0.205f, 0.045f), 0.0095f, 0.009f)], Float3.UnitX, 12, 0.9f);
         return (fore, [new(palm, Tint.Skin), new(fing, Tint.Skin), new(thumb, Tint.Skin)]);
     }

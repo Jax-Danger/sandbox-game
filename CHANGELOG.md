@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.7 — 2026-10-18
+- NPCs/avatar: four separate curled fingers on each hand (was a mitten slab), shirt collar, button placket and chest pocket.
+
 ## v0.6.6 — 2026-10-18
 - Flatgrass: ramp decks get anti-slip strips and yellow edge bands; all walls get coping caps, the mid wall a plinth.
 
