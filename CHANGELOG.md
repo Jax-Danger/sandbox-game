@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.13 — 2026-10-18
+- Flatgrass perimeter walls read as poured panels: pilasters every 12 m, formwork joints, dark skirting and an orange shoulder band.
+
 ## v0.10.12 — 2026-10-18
 - Lake surface gets a procedural wind-ripple texture with glint streaks; review screenshot states no longer autosave, so shot props stop piling up in the demo worlds.
 

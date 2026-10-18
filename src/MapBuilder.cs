@@ -106,6 +106,25 @@ public static partial class MapBuilder
         foreach (var (p, sz) in new[] { (new Float3(0f, h, half), new Float3(120f, 0.16f, 1.3f)), (new Float3(0f, h, -half), new Float3(120f, 0.16f, 1.3f)), (new Float3(half, h, 0f), new Float3(1.3f, 0.16f, 120f)), (new Float3(-half, h, 0f), new Float3(1.3f, 0.16f, 120f)), (new Float3(10f, 3f, -12f), new Float3(12.3f, 0.14f, 0.85f)) })
             Shape(scene, shader, "~Coping", Meshes.RoundedBox(sz, 0.05f), p + new Float3(0f, 0.08f, 0f), cap);
         Shape(scene, shader, "~Plinth", Meshes.RoundedBox(new Float3(12.2f, 0.25f, 0.8f), 0.05f), new Float3(10f, 0.125f, -12f), cap);
+        {
+            // Perimeter walls read as poured panels: pilasters every 12 m, a formwork joint every 3 m, a dark skirting and
+            // a painted orange band at shoulder height on the inside faces.
+            var pil = new List<Mesh>(); var joint = new List<Mesh>(); var skirt = new List<Mesh>(); var band = new List<Mesh>();
+            foreach (var (nx, nz) in new[] { (0f, -1f), (0f, 1f), (-1f, 0f), (1f, 0f) })
+            {
+                bool alongX = nx == 0f; float wallC = (alongX ? -nz : -nx) * half, face = wallC + (alongX ? nz : nx) * 0.5f;
+                Float3 P(float t, float y, float d) => alongX ? new Float3(t, y, face + nz * d) : new Float3(face + nx * d, y, t);
+                Float3 S(float along, float y, float d) => alongX ? new Float3(along, y, d) : new Float3(d, y, along);
+                for (float t = -54f; t <= 54.1f; t += 12f) pil.Add(Off(Meshes.RoundedBox(S(0.7f, h, 0.3f), 0.05f), P(t, h / 2f, 0.15f).X, h / 2f, P(t, h / 2f, 0.15f).Z));
+                for (float t = -58.5f; t <= 58.6f; t += 3f) joint.Add(Off(Meshes.RoundedBox(S(0.05f, h - 0.4f, 0.03f), 0.01f), P(t, 0f, 0.01f).X, h / 2f + 0.1f, P(t, 0f, 0.01f).Z));
+                skirt.Add(Off(Meshes.RoundedBox(S(118.5f, 0.3f, 0.08f), 0.02f), P(0f, 0f, 0.04f).X, 0.15f, P(0f, 0f, 0.04f).Z));
+                band.Add(Off(Meshes.RoundedBox(S(118.5f, 0.22f, 0.02f), 0.005f), P(0f, 0f, 0.01f).X, 1.5f, P(0f, 0f, 0.01f).Z));
+            }
+            Shape(scene, shader, "~Wall pilasters", Meshes.Merge(pil.ToArray()), Float3.Zero, new Color(0.66f, 0.66f, 0.64f, 1f));
+            Shape(scene, shader, "~Wall joints", Meshes.Merge(joint.ToArray()), Float3.Zero, new Color(0.45f, 0.45f, 0.44f, 1f));
+            Shape(scene, shader, "~Wall skirting", Meshes.Merge(skirt.ToArray()), Float3.Zero, new Color(0.3f, 0.3f, 0.31f, 1f));
+            Shape(scene, shader, "~Wall band", Meshes.Merge(band.ToArray()), Float3.Zero, accent);
+        }
         Box(scene, shader, "Step 1", new Float3(-10f, 0.25f, -12f), new Float3(3f, 0.5f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 2", new Float3(-13f, 0.5f, -12f), new Float3(3f, 1f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 3", new Float3(-16f, 0.75f, -12f), new Float3(3f, 1.5f, 3f), Float3.Zero, concrete);
