@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.4 — 2026-10-18
+- Jeep spare wheel: domed steel disc with bead ring, raised hub and cap set flush with the tyre face, so the centre no longer reads as a pale hollow (screens/s12-spare-c-crop.png vs s12-spare-a-crop.png)
+
 ## v0.17.3 — 2026-10-18
 - House siding: flat-faced wedge clapboards with a wide soft shadow band replace bevelled boxes, removing the moiré/white streaks at range (screens/s12-siding-d-crop.png vs s12-siding-a-crop.png)
 

@@ -263,9 +263,11 @@ public sealed class Buggy
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
         // Spare wheel rim (was an empty tyre): dished steel disc with a hub cap and five lug nuts, facing rearward.
-        Detail(g, "SpareRim", Meshes.LatheZ([(0.0001f, -0.07f), (0.08f, -0.07f), (0.1f, -0.05f), (0.2f, -0.04f), (0.255f, -0.07f), (0.27f, -0.1f), (0.27f, 0.08f), (0.0001f, 0.08f)], 32), new Float3(0f, 0.55f, -1.82f), new Color(0.5f, 0.51f, 0.46f, 1f), new Float3(0f, 180f, 0f));
-        Detail(g, "SpareCap", VehicleModels.Hub(0.12f), new Float3(0f, 0.55f, -1.95f), new Color(0.4f, 0.41f, 0.42f, 1f), new Float3(0f, 180f, 0f));
-        for (int i = 0; i < 5; i++) { float a = i * MathF.Tau / 5f; Detail(g, "SpareLug", Meshes.Sphere(0.014f), new Float3(MathF.Cos(a) * 0.15f, 0.55f + MathF.Sin(a) * 0.15f, -1.905f), new Color(0.3f, 0.3f, 0.32f, 1f)); }
+        // Domed steel wheel (the old dished profile read as a pale hollow disc): flat outer disc, raised bead ring, a hub
+        // shoulder bulging rearward and a hub cap, so the centre reads solid from behind.
+        Detail(g, "SpareRim", Meshes.LatheZ([(0.0001f, -0.08f), (0.27f, -0.08f), (0.27f, 0.035f), (0.255f, 0.055f), (0.235f, 0.045f), (0.215f, 0.06f), (0.19f, 0.062f), (0.125f, 0.058f), (0.095f, 0.07f), (0.075f, 0.095f), (0.0001f, 0.1f)], 32), new Float3(0f, 0.55f, -1.86f), new Color(0.46f, 0.48f, 0.4f, 1f), new Float3(0f, 180f, 0f));
+        Detail(g, "SpareCap", VehicleModels.Hub(0.1f), new Float3(0f, 0.55f, -1.94f), new Color(0.56f, 0.57f, 0.56f, 1f), new Float3(0f, 180f, 0f));
+        for (int i = 0; i < 5; i++) { float a = i * MathF.Tau / 5f; Detail(g, "SpareLug", Meshes.Sphere(0.014f), new Float3(MathF.Cos(a) * 0.15f, 0.55f + MathF.Sin(a) * 0.15f, -1.92f), new Color(0.3f, 0.3f, 0.32f, 1f)); }
         // Classic seven-slot grille, side mirrors on stalks, tail lamps, hood latches and a jerrycan on the tailgate.
         for (int i = 0; i < 7; i++)
             Detail(g, "GrilleSlot", Meshes.RoundedBox(new Float3(0.07f, 0.3f, 0.02f), 0.03f), new Float3(-0.36f + i * 0.12f, 0.3f, 1.745f), new Color(0.03f, 0.03f, 0.03f, 1f));
