@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.4 — 2026-10-18
+- View model: domed glove fingertips (quarter-circle rings past the last joint) replace the flat disc ends seen wrapping every grip (screens/s11-sgr-c.png vs s11-sgr-b.png)
+
 ## v0.16.3 — 2026-10-18
 - Airboat: gunwale rail and treadplate deck toned down (clipped to a glowing white outline/deck under full sun) (screens/s10-boat-bc.png right=new)
 

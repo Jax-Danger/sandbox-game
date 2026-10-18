@@ -184,6 +184,16 @@ public static partial class ViewModels
                 float rr = r * 0.9f * (1.04f - 0.26f * t + bump);
                 secs.Add(new Sec(pts[i], rr, rr * 0.9f, 2.2f));
             }
+            {
+                // Domed fingertip: a quarter-circle of shrinking rings past the last point (the swept end read as a flat disc).
+                Sec last = secs[^1];
+                Float3 td = Float3.Normalize(pts[^1] - pts[^2]);
+                for (int q = 1; q <= 4; q++)
+                {
+                    float a = MathF.PI / 2f * q / 4.5f;
+                    secs.Add(new Sec(last.P + td * (last.W * 0.95f * MathF.Sin(a)), last.W * MathF.Cos(a), last.H * MathF.Cos(a), 2.2f));
+                }
+            }
             Add(bone, Sweep(secs, side ?? Float3.UnitY, 18, 0.9f), GloveC, Finish.Leather);
             // Rubber knuckle pad over the first joint (tactical-glove detail).
             int j = Math.Clamp((int)(pts.Length * 0.5f), 1, pts.Length - 2);
