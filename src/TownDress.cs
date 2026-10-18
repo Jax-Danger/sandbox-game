@@ -256,4 +256,55 @@ public static partial class MapBuilder
         int k = 0;
         foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
     }
+
+    /// <summary>Interior finish (render only): plank floor with staggered butt joints, plaster wall linings, skirting boards,
+    /// an off-white ceiling with a cove line and a pendant light. Local frame as DressBuilding (front wall at -Z, door at x = 0).</summary>
+    private static void DressInterior(Scene scene, Shader shader, string tag, Float3 c, Float3 s, float yaw, float dw, float dh, bool house)
+    {
+        var b = new Bucket();
+        const float t = 0.3f;
+        float ix = s.X / 2f - t / 2f, iz = s.Z / 2f - t / 2f, h = s.Y;
+        Color[] planks = house ? [new(0.56f, 0.4f, 0.26f, 1f), new(0.53f, 0.38f, 0.24f, 1f), new(0.59f, 0.43f, 0.28f, 1f)] : [new(0.6f, 0.6f, 0.58f, 1f), new(0.63f, 0.63f, 0.61f, 1f), new(0.58f, 0.58f, 0.56f, 1f)];
+        Color plaster = house ? new(0.88f, 0.85f, 0.78f, 1f) : new(0.8f, 0.82f, 0.83f, 1f), skirt = new(0.94f, 0.94f, 0.92f, 1f), ceil = new(0.93f, 0.93f, 0.91f, 1f);
+        var rnd = new Random(tag.Length * 31 + (int)s.X);
+        b.Add(house ? new Color(0.3f, 0.21f, 0.14f, 1f) : new Color(0.36f, 0.36f, 0.35f, 1f), Bx(ix * 2f, 0.01f, iz * 2f, 0f, 0.081f, 0f, 0.002f)); // joint / grout bed
+        float pw = house ? 0.18f : 0.6f; // shops/offices: large floor tiles instead of planks
+        int row = 0;
+        for (float z = -iz + 0.02f; z < iz - pw * 0.5f; z += pw, row++)
+        {
+            float x = -ix + 0.02f + (row % 3) * (house ? 0.6f : pw * 0.5f) * (house ? 1f : 1f) - (house ? 1.8f : pw);
+            while (x < ix - 0.02f)
+            {
+                float len = house ? 1.8f : pw, x0 = MathF.Max(x, -ix + 0.02f), x1 = MathF.Min(x + len, ix - 0.02f);
+                if (x1 - x0 > 0.05f) b.Add(planks[rnd.Next(planks.Length)], Bx(x1 - x0 - 0.006f, 0.012f, pw - 0.006f, (x0 + x1) / 2f, 0.086f, z + pw / 2f, 0.003f));
+                x += len;
+            }
+        }
+        // Wall linings + skirting: back, sides, and the front either side of / above the door.
+        void Wall(float len, float hgt, float cx, float cy, float cz, bool alongX)
+        {
+            b.Add(plaster, Bx(alongX ? len : 0.012f, hgt, alongX ? 0.012f : len, cx, cy, cz, 0.004f));
+        }
+        float wy = (h - 0.08f) / 2f + 0.08f, wh = h - 0.1f;
+        Wall(ix * 2f, wh, 0f, wy, iz - 0.006f, true);
+        Wall(iz * 2f, wh, ix - 0.006f, wy, 0f, false); Wall(iz * 2f, wh, -ix + 0.006f, wy, 0f, false);
+        float sideLen = ix - dw / 2f;
+        Wall(sideLen, wh, -(dw / 2f + sideLen / 2f), wy, -iz + 0.006f, true); Wall(sideLen, wh, dw / 2f + sideLen / 2f, wy, -iz + 0.006f, true);
+        Wall(dw, h - dh - 0.02f, 0f, dh + (h - dh) / 2f, -iz + 0.006f, true);
+        b.Add(skirt, Bx(ix * 2f, 0.11f, 0.025f, 0f, 0.135f, iz - 0.02f));
+        b.Add(skirt, Bx(0.025f, 0.11f, iz * 2f, ix - 0.02f, 0.135f, 0f)); b.Add(skirt, Bx(0.025f, 0.11f, iz * 2f, -ix + 0.02f, 0.135f, 0f));
+        b.Add(skirt, Bx(sideLen, 0.11f, 0.025f, -(dw / 2f + sideLen / 2f), 0.135f, -iz + 0.02f)); b.Add(skirt, Bx(sideLen, 0.11f, 0.025f, dw / 2f + sideLen / 2f, 0.135f, -iz + 0.02f));
+        // Ceiling with a cove line round the edge and a pendant light (rod, shade, warm bulb).
+        b.Add(ceil, Bx(ix * 2f, 0.02f, iz * 2f, 0f, h - 0.012f, 0f, 0.005f));
+        b.Add(skirt, Bx(ix * 2f, 0.06f, 0.06f, 0f, h - 0.05f, iz - 0.03f)); b.Add(skirt, Bx(ix * 2f, 0.06f, 0.06f, 0f, h - 0.05f, -iz + 0.03f));
+        b.Add(skirt, Bx(0.06f, 0.06f, iz * 2f, ix - 0.03f, h - 0.05f, 0f)); b.Add(skirt, Bx(0.06f, 0.06f, iz * 2f, -ix + 0.03f, h - 0.05f, 0f));
+        Color shade = new(0.15f, 0.15f, 0.16f, 1f), bulb = new(1f, 0.9f, 0.7f, 1f);
+        float ly = MathF.Min(h - 0.7f, 2.6f);
+        b.Add(shade, Xf(Meshes.Lathe("pendrod", [(0.008f, 0f), (0.008f, h - ly)], 8), 0f, L3(0f, ly, 0f)));
+        b.Add(shade, Xf(Meshes.Lathe("pendshade", [(0.2f, -0.18f), (0.19f, -0.17f), (0.08f, -0.02f), (0.02f, 0f), (0.0001f, 0.005f)], 24), 0f, L3(0f, ly, 0f)));
+        b.Add(bulb, Xf(Meshes.Lathe("pendbulb", [(0.0001f, -0.17f), (0.05f, -0.15f), (0.06f, -0.11f), (0.03f, -0.06f), (0.0001f, -0.05f)], 16), 0f, L3(0f, ly, 0f)));
+        Float3 eul = new(0f, yaw, 0f);
+        int k = 0;
+        foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} interior {k++}", Meshes.Merge(list.ToArray()), c, col, euler: eul);
+    }
 }

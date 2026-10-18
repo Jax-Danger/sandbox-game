@@ -457,6 +457,7 @@ public static partial class MapBuilder
         Box(scene, shader, $"~{tag} parapet", W(0f, h + 0.35f, -hd - 0.2f), Sz(s.X + 0.6f, 0.3f, 0.2f), Float3.Zero, trim, collide: false);
         Color plate = owner switch { "police" => new Color(0.20f, 0.36f, 0.85f, 1f), "city" => new Color(0.85f, 0.45f, 0.18f, 1f), _ => new Color(0.18f, 0.62f, 0.40f, 1f) };
         DressBuilding(scene, shader, tag, title, c, s, yaw, wall, trim, plate, dw, dh);
+        if (!Application.IsHeadless) DressInterior(scene, shader, tag, c, s, yaw, dw, dh, title.StartsWith("House"));
         if (owner == "police")
         {
             Box(scene, shader, $"~{tag} light R", W(-2.0f, dh + 1.35f, -hd - 0.24f), Sz(0.22f, 0.4f, 0.14f), Float3.Zero, new Color(0.95f, 0.2f, 0.2f, 1f), collide: false);

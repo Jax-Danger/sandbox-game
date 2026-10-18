@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.0 — 2026-10-18
+- Building interiors are finished rooms: plank floors (houses) or large floor tiles (shops) on a grout bed, plaster wall linings, skirting boards, an off-white ceiling with cove moulding and a pendant light (was bare exterior-coloured boxes).
+
 ## v0.13.11 — 2026-10-18
 - Town buildings get services: front downpipes with brackets and kick-out shoes, a caged wall lantern beside every door, and AC condensers with fan grilles and refrigerant lines on commercial side walls.
 
