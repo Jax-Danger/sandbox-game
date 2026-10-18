@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.2 — 2026-10-18
+- Houses get a front garden: white picket fence with a gate gap on the path and round shrubs along the facade.
+
 ## v0.10.1 — 2026-10-18
 - Horizon skirt: a fully fogged ring past the fog end follows the camera and hides the sky's brown below-horizon band from the air on every map.
 

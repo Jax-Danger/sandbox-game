@@ -435,6 +435,33 @@ public static partial class MapBuilder
             Shape(scene, shader, $"~{tag} ridge", Meshes.Sweep([new Meshes.Sec(L(-rx - 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY), new Meshes.Sec(L(rx + 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY)], Float3.UnitY, 12, 0.5f), c, trim, euler: eul);
             Shape(scene, shader, $"~{tag} chimney", Meshes.RoundedBox(new Float3(0.7f, 2.2f, 0.7f), 0.04f), W(hw * 0.55f, ry + rise * 0.55f + 0.6f, hd * 0.35f), new Color(0.55f, 0.3f, 0.24f, 1f), euler: eul);
             Shape(scene, shader, $"~{tag} chimney cap", Meshes.RoundedBox(new Float3(0.86f, 0.12f, 0.86f), 0.03f), W(hw * 0.55f, ry + rise * 0.55f + 1.76f, hd * 0.35f), trim, euler: eul);
+            {
+                // Front garden: a white picket fence with a gate gap on the path, and round shrubs along the facade.
+                var pick = new List<Mesh>(); float fz = -hd - 6.5f, fx = hw + 1.2f;
+                for (float x = -fx; x <= fx + 0.01f; x += 0.16f)
+                {
+                    if (MathF.Abs(x) < 0.9f) continue;
+                    pick.Add(Off(Meshes.Faces(
+                        [L(-0.035f, 0f, -0.012f), L(0.035f, 0f, -0.012f), L(0.035f, 0.82f, -0.012f), L(0f, 0.9f, -0.012f), L(-0.035f, 0.82f, -0.012f)],
+                        [L(0.035f, 0f, 0.012f), L(-0.035f, 0f, 0.012f), L(-0.035f, 0.82f, 0.012f), L(0f, 0.9f, 0.012f), L(0.035f, 0.82f, 0.012f)],
+                        [L(-0.035f, 0f, 0.012f), L(-0.035f, 0f, -0.012f), L(-0.035f, 0.82f, -0.012f), L(-0.035f, 0.82f, 0.012f)],
+                        [L(0.035f, 0f, -0.012f), L(0.035f, 0f, 0.012f), L(0.035f, 0.82f, 0.012f), L(0.035f, 0.82f, -0.012f)],
+                        [L(-0.035f, 0.82f, -0.012f), L(0f, 0.9f, -0.012f), L(0f, 0.9f, 0.012f), L(-0.035f, 0.82f, 0.012f)],
+                        [L(0f, 0.9f, -0.012f), L(0.035f, 0.82f, -0.012f), L(0.035f, 0.82f, 0.012f), L(0f, 0.9f, 0.012f)]), x, 0f, fz));
+                }
+                foreach (float sg in new[] { -1f, 1f })
+                {
+                    float mid = sg * (fx + 0.9f) / 2f, len = fx - 0.9f;
+                    foreach (float ry2 in new[] { 0.28f, 0.62f }) pick.Add(Off(Meshes.RoundedBox(new Float3(len, 0.07f, 0.03f), 0.008f), mid, ry2, fz + 0.03f));
+                    foreach (float px in new[] { sg * 0.95f, sg * fx }) pick.Add(Off(Meshes.RoundedBox(new Float3(0.1f, 1.05f, 0.1f), 0.015f), px, 0.52f, fz));
+                }
+                Shape(scene, shader, $"~{tag} picket fence", Meshes.Merge(pick.ToArray()), c, new Color(0.93f, 0.92f, 0.88f, 1f), euler: eul);
+                var shrubs = new List<Mesh>();
+                foreach (float sg in new[] { -1f, 1f })
+                    for (int k = 0; k < 3; k++)
+                        shrubs.Add(Off(Meshes.Blob(0.42f + 0.06f * (k % 2), 40 + k + (sg > 0 ? 3 : 0), 0.15f), sg * (1.8f + k * 1.15f), 0.36f, -hd - 0.65f));
+                Shape(scene, shader, $"~{tag} shrubs", Meshes.Merge(shrubs.ToArray()), c, new Color(0.24f, 0.36f, 0.19f, 1f), euler: eul);
+            }
             // Porch canopy on brackets over the door.
             {
                 // Porch canopy: a solid shingled slab on a fascia board, carried on two turned brackets off the facade.
