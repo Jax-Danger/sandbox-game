@@ -328,8 +328,10 @@ public static partial class ViewModels
                 Bone("muzzle", "weapon", V(0f, 0.082f, 0.625f));
                 Bone("sight", "weapon", V(0f, 0.1035f, 0.1f));
                 Bone("pump", "weapon", Float3.Zero);
-                k.Sw("weapon", Gunmetal, Finish.Metal, Float3.UnitX, 0.3f,
-                    new Sec(V(0, 0.07f, 0.02f), 0.0185f, 0.0245f, 5f), new Sec(V(0, 0.072f, 0.12f), 0.019f, 0.026f, 5f), new Sec(V(0, 0.073f, 0.205f), 0.0185f, 0.0255f, 5f));
+                // Receiver: softly rounded slab (was a near-box), tapering into the barrel and rounding off at the back.
+                k.Sw("weapon", Gunmetal, Finish.Metal, Float3.UnitX, 0.85f,
+                    new Sec(V(0, 0.069f, 0.008f), 0.015f, 0.02f, 3f), new Sec(V(0, 0.07f, 0.024f), 0.0185f, 0.0245f, 3.2f), new Sec(V(0, 0.072f, 0.12f), 0.019f, 0.026f, 3.2f),
+                    new Sec(V(0, 0.073f, 0.196f), 0.0185f, 0.0255f, 3.2f), new Sec(V(0, 0.074f, 0.212f), 0.015f, 0.02f, 3f));
                 k.Bar("weapon", Dark, Finish.Metal, V(0.014f, 0.08f, 0.09f), V(0.014f, 0.08f, 0.15f), 0.0055f, 0.009f, 4f, 0.5f);
                 k.Bar("weapon", Black, Finish.Metal, V(0, 0.097f, 0.03f), V(0, 0.097f, 0.2f), 0.0075f, 0.0035f, 4f, 0.4f);
                 k.Lz("weapon", Gunmetal, Finish.Metal, V(0, 0.082f, 0.2f), (0.0108f, 0f), (0.0105f, 0.42f), (0.0108f, 0.425f), (0.0085f, 0.428f), (0.0075f, 0.41f), (0f, 0.41f));
