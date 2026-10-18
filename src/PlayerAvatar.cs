@@ -26,7 +26,7 @@ public sealed class PlayerAvatar
     private float _phase, _move;
     private Float3 _lastFeet;
     private bool _built;
-    public static readonly Color Shirt = new(0.22f, 0.36f, 0.62f, 1f), Pants = new(0.16f, 0.17f, 0.2f, 1f), Skin = new(0.86f, 0.68f, 0.54f, 1f);
+    public static readonly Color Shirt = new(0.22f, 0.36f, 0.62f, 1f), Pants = new(0.16f, 0.17f, 0.2f, 1f), Skin = new(0.72f, 0.53f, 0.4f, 1f);
 
     private const float UpperLeg = 0.44f, LowerLeg = 0.44f, UpperArm = 0.30f, LowerArm = 0.30f;
 
