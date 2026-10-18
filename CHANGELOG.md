@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.0 — 2026-10-18
+- Vehicles get a real underbody: frame rails, cross-members, skid plate, exhaust with muffler and tip, fuel tank, plus coil-over shocks, buggy A-arms, jeep live axles with differentials and leaf springs, and brake drums that all follow each wheel's suspension travel and steering (screens/s7-jeep-b-c.png, s7-buggy-c-c.png, s7-buggy-d-c.png)
+
 ## v0.11.7 — 2026-10-18
 - View-model gloves get a fine knit fabric texture with stitched side seams (ProcTex.GloveKnit) instead of plain clay-like shading (screens/vm/r2/raw/s7g-pistolhand.png; before s7a-pistolhand.png)
 

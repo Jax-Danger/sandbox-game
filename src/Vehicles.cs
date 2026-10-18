@@ -144,6 +144,7 @@ public sealed class Buggy
             (front ? Front : Rear).Add(wc);
         }
 
+        if (!boat) BuildUnderbody(g, jeep, wx, wy, wz, jeep ? 0.38f : 0.32f);
         if (!boat) AddSteeringWheel(g);
         Prop = g.Props.Adopt(Go, Body, mat, paint, PropKind.Limb, 0.5f);
     }
@@ -307,6 +308,116 @@ public sealed class Buggy
         Part(VehicleModels.Pipe(0.018f, Float3.UnitX, new Float3(0f, -0.03f, 0f), new Float3(0f, -0.38f, 0f)), dark, Float3.Zero);
     }
     private readonly Dictionary<WheelCollider, Transform> _visuals = new();
+    /// <summary>Suspension parts that follow the wheels: (part, wheel or null, end-point function in world space).
+    /// Struts are unit-length meshes along +Z, stretched between their two ends every frame.</summary>
+    private readonly List<(Transform T, Func<(Float3 A, Float3 B)> Ends)> _struts = new();
+    private readonly List<(Transform T, WheelCollider W, float Side)> _hubs = new();
+
+    private static Mesh ShockMesh() => Meshes.Merge(
+        Meshes.LatheZ([(0.0001f, 0f), (0.022f, 0f), (0.022f, 0.06f), (0.011f, 0.07f), (0.011f, 0.55f), (0.0001f, 0.55f)]),
+        Meshes.LatheZ([(0.0001f, 0.42f), (0.034f, 0.42f), (0.036f, 0.45f), (0.036f, 0.97f), (0.024f, 1f), (0.0001f, 1f)]),
+        Helix(0.052f, 0.0085f, 0.12f, 0.9f, 6.5f),
+        Meshes.LatheZ([(0.0001f, 0.1f), (0.062f, 0.1f), (0.062f, 0.12f), (0.0001f, 0.12f)]),
+        Meshes.LatheZ([(0.0001f, 0.9f), (0.062f, 0.9f), (0.062f, 0.92f), (0.0001f, 0.92f)]));
+
+    private static Mesh Helix(float r, float wire, float z0, float z1, float turns)
+    {
+        var secs = new List<Meshes.Sec>();
+        int n = (int)(turns * 14);
+        for (int i = 0; i <= n; i++)
+        {
+            float t = i / (float)n, a = t * turns * MathF.Tau;
+            secs.Add(new Meshes.Sec(new Float3(MathF.Cos(a) * r, MathF.Sin(a) * r, z0 + (z1 - z0) * t), wire, wire, 2f, Float3.UnitZ));
+        }
+        return Meshes.Sweep(secs, Float3.UnitZ, 8, 0.9f);
+    }
+
+    /// <summary>What you see under the body: frame rails, skid plate, exhaust and fuel tank (static), plus coil-over
+    /// shocks, control arms / a live axle and brake drums that follow each wheel's suspension travel.</summary>
+    private void BuildUnderbody(SandboxGame g, bool jeep, float wx, float wy, float wz, float tw)
+    {
+        var steel = new Color(0.12f, 0.12f, 0.13f, 1f); var coil = jeep ? new Color(0.62f, 0.12f, 0.08f, 1f) : new Color(0.95f, 0.75f, 0.1f, 1f);
+        var chrome = new Color(0.6f, 0.61f, 0.63f, 1f);
+        float rail = jeep ? -0.27f : -0.2f;
+        foreach (float x in new[] { -1f, 1f })
+            Detail(g, "FrameRail", Meshes.RoundedBox(new Float3(0.08f, jeep ? 0.14f : 0.07f, wz * 2f + 0.7f), 0.012f), new Float3(x * (jeep ? 0.42f : 0.32f), rail, 0f), steel);
+        for (int i = -1; i <= 1; i++)
+            Detail(g, "CrossMember", Meshes.RoundedBox(new Float3(jeep ? 0.84f : 0.64f, 0.06f, 0.07f), 0.01f), new Float3(0f, rail, i * wz * 0.62f), steel);
+        Detail(g, "SkidPlate", Meshes.RoundedBox(new Float3(jeep ? 0.7f : 0.5f, 0.02f, 0.6f), 0.008f), new Float3(0f, rail - 0.06f, wz * 0.55f), new Color(0.3f, 0.31f, 0.32f, 1f));
+        Detail(g, "Exhaust", VehicleModels.BentPipe(0.028f, 0.2f, Float3.UnitX, new Float3(0.18f, rail - 0.02f, wz * 0.6f), new Float3(0.22f, rail - 0.06f, 0.2f), new Float3(0.22f, rail - 0.06f, -wz + 0.2f), new Float3(0.3f, rail - 0.03f, -wz - 0.42f)), Float3.Zero, steel);
+        Detail(g, "Muffler", Meshes.LatheZ([(0.0001f, -0.2f), (0.07f, -0.2f), (0.08f, -0.17f), (0.08f, 0.17f), (0.07f, 0.2f), (0.0001f, 0.2f)]), new Float3(0.22f, rail - 0.07f, -wz * 0.35f), steel);
+        Detail(g, "ExhaustTip", Meshes.LatheZ([(0.024f, 0f), (0.034f, 0f), (0.034f, 0.08f), (0.024f, 0.08f)]), new Float3(0.3f, rail - 0.03f, -wz - 0.5f), chrome);
+        Detail(g, "FuelTank", Meshes.RoundedBox(new Float3(0.5f, 0.16f, 0.36f), 0.05f), new Float3(-0.12f, rail - 0.02f, -wz * 0.55f), steel);
+
+        Mesh shock = ShockMesh();
+        Mesh arm = Meshes.LatheZ([(0.0001f, 0f), (0.022f, 0f), (0.018f, 0.04f), (0.018f, 0.96f), (0.022f, 1f), (0.0001f, 1f)]);
+        Mesh axle = Meshes.LatheZ([(0.0001f, 0f), (0.035f, 0f), (0.035f, 1f), (0.0001f, 1f)]);
+        Mesh drum = Meshes.LatheZ([(0.0001f, 0f), (0.13f, 0f), (0.14f, 0.015f), (0.14f, 0.07f), (0.06f, 0.08f), (0.0001f, 0.08f)]);
+        GameObject Part(string name, Mesh m, Color c)
+        {
+            var go = Detail(g, name, m, Float3.Zero, c);
+            if (!Application.IsHeadless) try { go.GetComponent<MeshRenderer>().Material.Res?.SetTexture("_SurfaceTex", ProcTex.Surface(0.4f, 0.7f)); } catch { }
+            return go;
+        }
+        Float3 Body(Float3 p) => Go.Transform.TransformPoint(p);
+        Float3 Inner(WheelCollider w, float side, float extra) => w.GetWheelCenter() - Go.Transform.Right * side * (tw / 2f + extra);
+        foreach (WheelCollider w in Front.Concat(Rear))
+        {
+            float side = MathF.Sign(w.Transform.LocalPosition.X), z = w.Transform.LocalPosition.Z;
+            var wc = w;
+            _struts.Add((Part("Shock", shock, coil).Transform, () => (Inner(wc, side, 0.1f), Body(new Float3(side * (wx - (jeep ? 0.3f : 0.42f)), wy + (jeep ? 0.5f : 0.3f), z - (jeep ? 0.05f : 0.12f))))));
+            var hub = Part("BrakeDrum", drum, steel);
+            _hubs.Add((hub.Transform, wc, side));
+            if (!jeep)
+                foreach (float dz in new[] { -0.2f, 0.2f })
+                {
+                    float dzc = dz;
+                    _struts.Add((Part("ControlArm", arm, steel).Transform, () => (Body(new Float3(side * 0.3f, wy - 0.02f, z + dzc)), Inner(wc, side, 0.06f) - Go.Transform.Up * 0.06f)));
+                }
+        }
+        if (jeep)
+        {
+            // Live axles: a beam between the two wheel hubs of each axle, with a differential pumpkin and leaf springs.
+            foreach (var pair in new[] { Front, Rear })
+            {
+                if (pair.Count < 2) continue;
+                WheelCollider l = pair.First(w => w.Transform.LocalPosition.X < 0f), r = pair.First(w => w.Transform.LocalPosition.X > 0f);
+                _struts.Add((Part("Axle", axle, steel).Transform, () => (Inner(l, -1f, 0.04f), Inner(r, 1f, 0.04f))));
+                var diff = Part("Differential", Meshes.LatheZ([(0.0001f, -0.12f), (0.08f, -0.12f), (0.13f, -0.05f), (0.13f, 0.04f), (0.09f, 0.1f), (0.0001f, 0.11f)]), steel);
+                _struts.Add((diff.Transform, () => { Float3 m = (Inner(l, -1f, 0.04f) + Inner(r, 1f, 0.04f)) / 2f; return (m - Go.Transform.Forward * 0.001f, m + Go.Transform.Forward * (pair == Front ? -1f : 1f) * 0.001f); }));
+                foreach (var (w, sd) in new[] { (l, -1f), (r, 1f) })
+                {
+                    float z = w.Transform.LocalPosition.Z; var ww = w; float sdd = sd;
+                    _struts.Add((Part("LeafSpring", Meshes.LatheZ([(0.0001f, 0f), (0.03f, 0f), (0.03f, 1f), (0.0001f, 1f)]), steel).Transform, () => (Body(new Float3(sdd * 0.42f, rail - 0.06f, z + 0.45f)), Inner(ww, sdd, 0.12f))));
+                    _struts.Add((Part("LeafSpring", Meshes.LatheZ([(0.0001f, 0f), (0.03f, 0f), (0.03f, 1f), (0.0001f, 1f)]), steel).Transform, () => (Body(new Float3(sdd * 0.42f, rail - 0.06f, z - 0.45f)), Inner(ww, sdd, 0.12f))));
+                }
+            }
+        }
+    }
+
+    private void SyncUnderbody()
+    {
+        Float3 up = Go.Transform.Up, fw = Go.Transform.Forward;
+        foreach (var (t, ends) in _struts)
+        {
+            if (!t.GameObject.IsValid()) continue;
+            var (a, b) = ends();
+            Float3 d = b - a; float len = Float3.Length(d);
+            if (len < 1e-5f) continue;
+            Float3 dir = d / len;
+            bool diffPart = len < 0.01f;
+            t.Position = a;
+            t.Rotation = Quaternion.LookRotation(dir, MathF.Abs(Float3.Dot(dir, up)) > 0.9f ? fw : up);
+            t.LocalScale = diffPart ? Float3.One : new Float3(1f, 1f, len);
+        }
+        foreach (var (t, w, side) in _hubs)
+        {
+            if (!t.GameObject.IsValid() || !_visuals.TryGetValue(w, out Transform? vis)) continue;
+            Float3 axleDir = Float3.Normalize(vis.Right) * side; // the visual spins about its X axis, so X stays the axle
+            t.Position = w.GetWheelCenter() - axleDir * 0.17f;
+            t.Rotation = Quaternion.LookRotation(axleDir, up);
+        }
+    }
     /// <summary>Steering-wheel input in -1..1 after smoothing (drives the steering-wheel mesh and the driver's arms).</summary>
     public float SteerInput => _steer;
 
@@ -327,6 +438,7 @@ public sealed class Buggy
             vis.Position = wc.GetWheelCenter();
             vis.Rotation = Quaternion.LookRotation(fwd, up) * Quaternion.AxisAngle(Float3.UnitX, wc.WheelRotation);
         }
+        SyncUnderbody();
     }
 
     private GameObject Detail(SandboxGame g, string name, Mesh mesh, Float3 lp, Color c, Float3 rot = default)
