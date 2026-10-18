@@ -318,7 +318,7 @@ public static partial class ModelProps
 
     private static Part[] BedParts()
     {
-        Color duvet = C(0.62f, 0.16f, 0.14f), throwC = C(0.3f, 0.32f, 0.36f);
+        Color duvet = C(0.62f, 0.16f, 0.14f), throwC = C(0.84f, 0.79f, 0.68f);
         var l = new List<Part>
         {
             // Frame: side and end rails, turned legs, headboard posts with finials and a raised panel, low footboard.
@@ -343,8 +343,8 @@ public static partial class ModelProps
         foreach (float x in new[] { -0.555f, 0.555f }) l.Add(RB(0.025f, 0.2f, 1.36f, 0.01f, x, 0.0f, 0.33f, duvet, false, P3(0, 0, x > 0 ? -4 : 4)));
         l.Add(RB(1.12f, 0.12f, 0.025f, 0.01f, 0, 0.05f, 1.0f, duvet, false, P3(4, 0, 0)));
         l.Add(M(PropMeshes.Cushion(0.32f, 0.035f, 1.16f), 0, 0.15f, 0.78f, throwC, false, P3(0, 90, 0)));
-        l.Add(M(PropMeshes.Cushion(0.04f, 0.037f, 1.17f), 0, 0.15f, 0.7f, C(0.85f, 0.75f, 0.45f), false, P3(0, 90, 0)));
-        l.Add(M(PropMeshes.Cushion(0.04f, 0.037f, 1.17f), 0, 0.15f, 0.86f, C(0.85f, 0.75f, 0.45f), false, P3(0, 90, 0)));
+        l.Add(M(PropMeshes.Cushion(0.045f, 0.05f, 1.175f), 0, 0.152f, 0.7f, C(0.42f, 0.12f, 0.1f), false, P3(0, 90, 0))); // stripes stand proud of the throw (were z-fighting into dashes)
+        l.Add(M(PropMeshes.Cushion(0.045f, 0.05f, 1.175f), 0, 0.152f, 0.86f, C(0.42f, 0.12f, 0.1f), false, P3(0, 90, 0)));
         return l.ToArray();
     }
 
