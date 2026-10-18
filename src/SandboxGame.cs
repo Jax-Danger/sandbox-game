@@ -44,6 +44,7 @@ public sealed partial class SandboxGame : Game
     public bool InVehicle => Vehicles.InVehicle;
     public Shader Shader { get; private set; } = null!;
     public DirectionalLight Sun { get; private set; } = null!;
+    private GameObject? _horizon;
 
     private readonly Hud _hud = new();
     public Hud Hud => _hud;
@@ -86,6 +87,17 @@ public sealed partial class SandboxGame : Game
         World.Ambient.SkyColor = new Float4(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
         World.Ambient.GroundColor = new Float4(0.34f, 0.32f, 0.28f, 1f);
         World.Ambient.Strength = 1.0f;
+        if (!Application.IsHeadless)
+        {
+            // Horizon skirt: a ring past the fog end (fully fogged, so it takes the fog colour) that hides the procedural
+            // sky's brown below-horizon band. It follows the camera in Update.
+            _horizon = new GameObject("~Horizon skirt");
+            var hr = _horizon.AddComponent<MeshRenderer>();
+            (float, float)[] prof = [(290f, -260f), (290f, 5f)]; // top rides just above eye level
+            hr.Mesh = Meshes.Merge(Meshes.Lathe("horizonA", prof, 48), Meshes.Lathe("horizonB", prof.Reverse().ToArray(), 48));
+            var hm = Mats.New(Shader); hm.SetColor("_MainColor", World.Fog.Color); hr.Material = hm;
+            World.Add(_horizon);
+        }
         Props = new PropManager(World, Shader);
         Props.Protection.RoleplayActive = () => Roleplay?.Active == true;
         { var wgo = new GameObject("WaterSimulator"); wgo.AddComponent<WaterSimulator>().Game = this; World.Add(wgo); }
@@ -326,6 +338,8 @@ public sealed partial class SandboxGame : Game
             }
         }
         _hud.Tick(dt);
+        // The sky dips its horizon as you climb; the skirt rises to match.
+        if (_horizon is not null) { Float3 e = Player.EyePosition; _horizon.Transform.Position = new Float3(e.X, e.Y * 0.9f, e.Z); }
         CameraFeeds.Tick(this);
         while (_pending.TryDequeue(out Action? act)) act();
         MenuBackdrop = Session is null && SelfTest is null && !Application.IsHeadless && Menus.Screen != Screen.Playing;

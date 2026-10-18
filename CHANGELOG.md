@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.1 — 2026-10-18
+- Horizon skirt: a fully fogged ring past the fog end follows the camera and hides the sky's brown below-horizon band from the air on every map.
+
 ## v0.10.0 — 2026-10-18
 - Downtown outskirts: farmland beyond the play square, a merged tree line, low hills in the fog and country roads continuing each avenue, so the town no longer ends at a sky edge.
 
