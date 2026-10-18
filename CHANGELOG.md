@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.11 — 2026-10-18
+- Rolling Hills lake shore is clipped at its height contour, so the sand band has a smooth curved edge instead of stair-stepped grid triangles; boulders toned darker.
+
 ## v0.9.10 — 2026-10-18
 - Jeep and buggy headlamps: chrome bezel ring, fresnel rings moulded in the lens and a bulb reflector; lens no longer blows out to flat white.
 

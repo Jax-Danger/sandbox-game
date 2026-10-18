@@ -185,9 +185,22 @@ public static partial class MapBuilder
                         Float3 m3 = (p0 + p1 + p2) / 3f;
                         float ld = MathF.Sqrt((m3.X - 45f) * (m3.X - 45f) + (m3.Z - 35f) * (m3.Z - 35f));
                         if (ld > 25f || hi < -1.75f || lo > -1.38f) continue;
+                        // Clip the triangle at the band's top contour (y = -1.38) so the sand edge follows the terrain
+                        // smoothly instead of stair-stepping along whole grid triangles.
+                        const float top = -1.38f;
+                        var poly = new List<Float3>();
+                        Float3[] tri = [p0, p1, p2];
+                        for (int e = 0; e < 3; e++)
+                        {
+                            Float3 A = tri[e], B = tri[(e + 1) % 3];
+                            bool ain = A.Y <= top, bin = B.Y <= top;
+                            if (ain) poly.Add(A);
+                            if (ain != bin) { float t = (top - A.Y) / (B.Y - A.Y); poly.Add(A + (B - A) * t); }
+                        }
+                        if (poly.Count < 3) continue;
                         uint o = (uint)sv.Count; Float3 up = new(0f, 0.03f, 0f);
-                        sv.AddRange([p0 + up, p1 + up, p2 + up]); su.AddRange([new(p0.X / 3f, p0.Z / 3f), new(p1.X / 3f, p1.Z / 3f), new(p2.X / 3f, p2.Z / 3f)]);
-                        si.AddRange([o, o + 1, o + 2]);
+                        foreach (Float3 q in poly) { sv.Add(q + up); su.Add(new(q.X / 3f, q.Z / 3f)); }
+                        for (int e = 1; e + 1 < poly.Count; e++) si.AddRange([o, o + (uint)e, o + (uint)e + 1]);
                     }
                 }
             if (sv.Count > 0)
@@ -248,7 +261,7 @@ public static partial class MapBuilder
             Shape(scene, shader, "~Grass tufts", gm, Float3.Zero, new Color(0.24f, 0.4f, 0.15f, 1f));
         }
         // A few rocks and a wooden deck near spawn for scale.
-        var rock = new Color(0.4f, 0.39f, 0.37f, 1f);
+        var rock = new Color(0.31f, 0.3f, 0.28f, 1f);
         for (int i = 0; i < 14; i++)
         {
             float a = i * 2.4f, d = 24f + (i * 37 % 50);
