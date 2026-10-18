@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.5.6 — 2026-10-17
+- Props: office chair with five-star base, casters, armrests and back support; desk with inset drawer fronts, pulls, modesty panel and feet; metal crate with inset panels, corner caps and handles; fence with pointed pickets and capped posts; cinder block with rounded cores.
+
 ## v0.5.5 — 2026-10-17
 - Props: wooden chair with curved top rail, spindle back, stretchers and seat cushion; table with apron rails and edge-banded top; bookshelf with crown, plinth and rows of individual books; filing cabinet with inset drawer fronts, label holders and bar pulls; billboard with framed inset face, round posts with cross-bracing, catwalk and lamps.
 
