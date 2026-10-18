@@ -401,6 +401,19 @@ public sealed class Buggy
         foreach (float x in new[] { -0.42f, 0f, 0.42f })
             Detail(g, "Rudder", Meshes.Sweep([new Meshes.Sec(new Float3(0f, -0.45f, 0.02f), 0.01f, 0.12f, 2.5f), new Meshes.Sec(new Float3(0f, 0f, 0f), 0.012f, 0.14f, 2.5f), new Meshes.Sec(new Float3(0f, 0.45f, -0.03f), 0.009f, 0.11f, 2.5f)], Float3.UnitX, 14, 0.5f), new Float3(x, 1.2f, -1.82f), dark);
         Detail(g, "TieBar", VehicleModels.Pipe(0.012f, Float3.UnitY, new Float3(-0.46f, 0f, 0f), new Float3(0.46f, 0f, 0f)), new Float3(0f, 0.8f, -1.66f), dark);
+        // Rudder frame: top and bottom rails carry the blade pivots, braced forward to the guard ring and down to the
+        // transom. (The blades used to hang in mid-air behind the cage.)
+        foreach (float y in new[] { 1.68f, 0.72f })
+        {
+            Detail(g, "RudderRail", VehicleModels.Pipe(0.016f, Float3.UnitY, new Float3(-0.52f, y, -1.72f), new Float3(0.52f, y, -1.72f)), Float3.Zero, dark);
+            float rx = MathF.Sqrt(0.84f * 0.84f - (y - 1.25f) * (y - 1.25f)) - 0.02f;
+            foreach (float x in new[] { -1f, 1f })
+                Detail(g, "RudderBrace", VehicleModels.Pipe(0.014f, Float3.UnitY, new Float3(x * 0.52f, y, -1.72f), new Float3(x * rx, y, -1.6f)), Float3.Zero, dark);
+            foreach (float x in new[] { -0.42f, 0f, 0.42f })
+                Detail(g, "RudderPivot", Meshes.Sphere(0.022f), new Float3(x, y, -1.72f), new Color(0.5f, 0.5f, 0.52f, 1f));
+        }
+        foreach (float x in new[] { -1f, 1f })
+            Detail(g, "RudderPost", VehicleModels.Pipe(0.02f, Float3.UnitZ, new Float3(x * 0.52f, 0.72f, -1.72f), new Float3(x * 0.56f, 0.18f, -1.7f)), Float3.Zero, dark);
         // Hull: grey rub rail along the sheer, a chine strake, non-slip deck pad, bow cleat and navigation lights.
         var rub = new Color(0.22f, 0.23f, 0.25f, 1f);
         foreach (float x in new[] { -1f, 1f })

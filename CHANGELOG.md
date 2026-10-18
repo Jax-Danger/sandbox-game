@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.23 — 2026-10-18
+- Airboat: rudder blades hang from a braced top/bottom rail frame with pivot knuckles and transom posts (were floating behind the cage)
+
 ## v0.17.22 — 2026-10-18
 - Lockpick: own view model (walnut handle with hook pick, rake and tension wrench) instead of empty hands
 
