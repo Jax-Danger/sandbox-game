@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.5 — 2026-10-18
+- Rolling Hills: ~80 leaf-clump trees scattered over the hills (trunks collide; none in the lake or on spawn), boulders are lumpy rocks instead of rotated boxes.
+
 ## v0.6.4 — 2026-10-18
 - Tool gun view model: sculpted shell tapering into the emitter, panel seam, side vent slots, top fin rail and three glowing emitter coils.
 

@@ -174,7 +174,22 @@ public static partial class MapBuilder
             float a = i * 2.4f, d = 24f + (i * 37 % 50);
             float x = MathF.Cos(a) * d, z = MathF.Sin(a) * d;
             float s = 1.2f + (i % 4) * 0.7f;
-            Box(scene, shader, $"Rock {i}", new Float3(x, HillsHeight(x, z) + s * 0.3f, z), new Float3(s, s * 0.8f, s * 1.1f), new Float3(i * 11f, i * 37f, i * 7f), rock);
+            // Lumpy boulders (were rotated boxes); a box collider sized to the core keeps physics simple.
+            Shape(scene, shader, $"~Rock {i}", Meshes.Blob(s * 0.6f, 20 + i % 6, 0.12f), new Float3(x, HillsHeight(x, z) + s * 0.2f, z), rock, new Float3(s * 0.9f, s * 0.7f, s * 0.9f), new Float3(0f, i * 37f, 0f));
+        }
+        // Scattered trees on the hills (none on the spawn plateau, the lake or the rim).
+        var bark = new Color(0.38f, 0.27f, 0.17f, 1f);
+        for (int i = 0; i < 90; i++)
+        {
+            float a = i * 2.39996f, d = 24f + (i * 53 % 78);
+            float x = MathF.Cos(a) * d, z = MathF.Sin(a) * d;
+            if (MathF.Sqrt((x - 45f) * (x - 45f) + (z - 35f) * (z - 35f)) < 30f) continue;
+            float y = HillsHeight(x, z), tk = 0.8f + (i % 5) * 0.12f;
+            Shape(scene, shader, "Tree trunk", Meshes.Lathe("htrunk", [(0.0001f, -0.3f), (0.3f, -0.3f), (0.22f, 0f), (0.17f, 1.6f), (0.12f, 2.6f), (0.0001f, 2.7f)], 16), new Float3(x, y, z), bark, new Float3(0.36f, 5.4f, 0.36f));
+            int sd = i % 9;
+            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.5f * tk, sd), new Float3(x, y + 3.6f * tk, z), new Color(0.24f, 0.46f, 0.22f, 1f));
+            Shape(scene, shader, "~Tree crown b", Meshes.Blob(1.05f * tk, sd + 1), new Float3(x + 0.9f * tk, y + 3.0f * tk, z - 0.4f), new Color(0.2f, 0.4f, 0.18f, 1f));
+            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.95f * tk, sd + 2), new Float3(x - 0.8f * tk, y + 3.2f * tk, z + 0.6f), new Color(0.3f, 0.52f, 0.25f, 1f));
         }
         Box(scene, shader, "Deck", new Float3(6f, HillsHeight(6f, 4f) + 0.2f, 4f), new Float3(6f, 0.3f, 4f), Float3.Zero, new Color(0.62f, 0.44f, 0.28f, 1f));
     }
