@@ -348,11 +348,21 @@ public sealed class Buggy
             var child = new GameObject("BladeMesh");
             child.Transform.Parent = blade.Transform;
             child.Transform.LocalPosition = Float3.Zero;
+            child.Transform.LocalEulerAngles = new Float3(0f, 24f, 0f); // blade pitch: flat paddles read edge-on as thin sticks
             MeshRenderer r = child.AddComponent<MeshRenderer>();
             r.Mesh = VehicleModels.Blade();
             var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Color(0.7f, 0.55f, 0.3f, 1f)); r.Material = m;
-            g.World.Add(blade); g.World.Add(child);
+            // Painted safety tip on each blade.
+            var tip = new GameObject("BladeTip");
+            tip.Transform.Parent = child.Transform;
+            tip.Transform.LocalPosition = new Float3(0f, 0.63f, 0f);
+            MeshRenderer tr = tip.AddComponent<MeshRenderer>();
+            tr.Mesh = Meshes.RoundedBox(new Float3(0.122f, 0.1f, 0.019f), 0.008f);
+            var tm = Mats.New(g.Shader); tm.SetColor("_MainColor", new Color(0.85f, 0.82f, 0.2f, 1f)); tr.Material = tm;
+            g.World.Add(blade); g.World.Add(child); g.World.Add(tip);
         }
+        // Spinner cone over the hub, pointing aft into the guard.
+        Detail(g, "Spinner", Meshes.LatheZ([(0.0001f, 0.12f), (0.04f, 0.1f), (0.075f, 0.05f), (0.09f, 0f), (0.0001f, 0f)], 24), new Float3(0f, 1.25f, -1.42f), new Color(0.75f, 0.2f, 0.15f, 1f), new Float3(0f, 180f, 0f));
         // Aircraft engine on the mast base: finned cylinder bank, exhaust stacks, and guard spokes behind the fan.
         Detail(g, "Engine", VehicleModels.BuggyEngine(), new Float3(0f, 0.38f, -1.25f), new Color(0.3f, 0.31f, 0.33f, 1f));
         foreach (float x in new[] { -0.18f, 0.18f })

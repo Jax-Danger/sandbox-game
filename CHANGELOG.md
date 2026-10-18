@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.12 — 2026-10-18
+- Airboat fan: blades pitched 24 deg (flat paddles read as thin sticks), yellow safety tips and a red spinner cone (screens/s12-boat-b-crop.png, s12-boat-b2-crop.png vs s12-boat-a-crop.png)
+
 ## v0.17.11 — 2026-10-18
 - Jeep: painted grille panel so the seven black slots read (was black-on-black) (screens/s12-jeep-b-crop.png vs s12-jeep-a-crop.png)
 
