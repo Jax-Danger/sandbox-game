@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.5 — 2026-10-18
+- Police station gets a flagpole on the front lawn: concrete footing, tapered pole, gold finial and a rippled blue-and-white flag.
+
 ## v0.10.4 — 2026-10-18
 - ATM kiosk back and sides: service door with lock, wraparound brand stripe, louvre vents and a steel plinth.
 

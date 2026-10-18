@@ -150,6 +150,27 @@ public static partial class MapBuilder
             b.Add(plate, Bx(sw, 0.5f, 0.08f, 0, sy, -hd - face - 0.05f));
             b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy + 0.27f, -hd - face - 0.05f)); b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy - 0.27f, -hd - face - 0.05f));
             b.Add(frame, Xf(Glyphs.Text(word, 0.3f, -hd - face - 0.12f, -hd - face - 0.09f, mirror: false), 0f, L3(0, sy, 0)));
+            if (title == "Police Station")
+            {
+                // Flagpole on the front lawn: lathed pole on a concrete footing, gold finial, rippled blue-and-white flag.
+                float px = -hw + 2.2f, pz = -hd - face - 3.2f;
+                b.Add(stone, Xf(Meshes.Lathe("pfoot", [(0.0001f, 0f), (0.45f, 0f), (0.45f, 0.12f), (0.38f, 0.18f), (0.0001f, 0.18f)], 20), 0f, L3(px, 0f, pz)));
+                b.Add(new Color(0.85f, 0.86f, 0.88f, 1f), Xf(Meshes.Lathe("ppole", [(0.0001f, 0.15f), (0.07f, 0.15f), (0.06f, 3f), (0.04f, 7.6f), (0.0001f, 7.62f)], 14), 0f, L3(px, 0f, pz)));
+                b.Add(new Color(0.9f, 0.72f, 0.25f, 1f), Xf(Meshes.Sphere(0.09f), 0f, L3(px, 7.68f, pz)));
+                Float3 F(float u, float v) => L3(px + 0.06f + u * 1.5f, 7.45f - v * 0.95f, pz + 0.08f * MathF.Sin(u * 7f) * u);
+                var bands = new[] { (0f, 0.36f, new Color(0.16f, 0.27f, 0.6f, 1f)), (0.36f, 0.5f, new Color(0.95f, 0.95f, 0.95f, 1f)), (0.5f, 1f, new Color(0.16f, 0.27f, 0.6f, 1f)) };
+                foreach (var (v0, v1, bc) in bands)
+                {
+                    var quads = new List<Float3[]>();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float u0 = i / 8f, u1 = (i + 1) / 8f;
+                        quads.Add([F(u0, v0), F(u1, v0), F(u1, v1), F(u0, v1)]);
+                        quads.Add([F(u1, v0), F(u0, v0), F(u0, v1), F(u1, v1)]); // back face
+                    }
+                    b.Add(bc, Meshes.Faces(quads.ToArray()));
+                }
+            }
         }
         Float3 eul = new(0f, yaw, 0f);
         int k = 0;
