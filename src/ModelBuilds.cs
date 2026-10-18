@@ -530,4 +530,51 @@ public static partial class ModelProps
         var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(R).ToArray(), Normals = m.Normals?.Select(R).ToArray(), UV = m.UV, Indices = m.Indices };
         mm.RecalculateBounds(); return mm;
     }
+
+    private static Part[] SeatParts()
+    {
+        Color vinyl = C(0.12f, 0.12f, 0.13f), insert = C(0.2f, 0.2f, 0.22f), stitch = C(0.55f, 0.15f, 0.1f), steel = C(0.45f, 0.46f, 0.48f);
+        var l = new List<Part>
+        {
+            // Bucket seat: fluted insert between raised side bolsters, rolled front edge, steel pan and slide rails.
+            M(PropMeshes.Cushion(0.34f, 0.1f, 0.48f), 0, -0.3f, 0.02f, insert),
+            Cu(0.5f, 0.06f, 0.52f, 0, -0.355f, 0.02f, vinyl, true),
+            M(PropMeshes.Cushion(0.34f, 0.09f, 0.6f), 0, 0.1f, -0.235f, insert, false, P3(80, 0, 0)),
+            Cu(0.5f, 0.06f, 0.64f, 0, 0.09f, -0.26f, vinyl, true, P3(80, 0, 0)),
+            Cu(0.3f, 0.12f, 0.17f, 0, 0.39f, -0.27f, vinyl, true, P3(80, 0, 0)),
+            RB(0.46f, 0.03f, 0.48f, 0.01f, 0, -0.4f, 0.02f, steel),
+        };
+        foreach (float x in new[] { -1f, 1f })
+        {
+            l.Add(M(Sweep([new Sec(P3(x * 0.215f, -0.3f, 0.27f), 0.045f, 0.05f), new Sec(P3(x * 0.225f, -0.28f, 0.05f), 0.05f, 0.06f), new Sec(P3(x * 0.225f, -0.27f, -0.18f), 0.05f, 0.06f), new Sec(P3(x * 0.22f, -0.15f, -0.27f), 0.05f, 0.05f), new Sec(P3(x * 0.225f, 0.25f, -0.31f), 0.05f, 0.045f), new Sec(P3(x * 0.205f, 0.36f, -0.31f), 0.035f, 0.035f)], Float3.UnitX, 16, 0.8f), 0, 0, 0, vinyl));
+            foreach (float y in new[] { -0.3f, 0.12f })
+                l.Add(M(Sweep([new Sec(P3(x * 0.17f, y, y < 0 ? 0.25f : -0.255f), 0.0025f, 0.0025f), new Sec(P3(x * 0.17f, y < 0 ? -0.255f : 0.32f, y < 0 ? -0.2f : -0.235f), 0.0025f, 0.0025f)], Float3.UnitX, 4, 0.5f), 0, 0, 0, stitch));
+            l.Add(RB(0.03f, 0.025f, 0.56f, 0.006f, x * 0.17f, -0.43f, 0.02f, C(0.3f, 0.3f, 0.32f)));
+            l.Add(Cy(0.008f, 0.08f, x * 0.08f, 0.33f, -0.29f, C(0.7f, 0.7f, 0.72f)));
+        }
+        l.Add(M(PropMeshes.Handle(0.12f), 0.2f, -0.41f, 0.25f, C(0.6f, 0.6f, 0.62f), false, P3(0, 0, 90)));
+        return l.ToArray();
+    }
+
+    private static Part[] TrashCanParts()
+    {
+        Color g = C(0.2f, 0.45f, 0.25f), g2 = C(0.15f, 0.38f, 0.2f), steel = C(0.55f, 0.56f, 0.58f);
+        var ribs = new List<(Mesh, Float3)>();
+        Mesh hoop = Lathe("binhoop", [(0.0001f, -0.012f), (0.008f, -0.012f), (0.008f, 0.012f), (0.0001f, 0.012f)], 8);
+        var l = new List<Part>
+        {
+            M(PropMeshes.TrashCan(), 0, 0f, 0, g, true), M(PropMeshes.BinLid(), 0, 0.38f, 0, g2),
+            // Corrugation hoops, a foot ring, side drop handles on lugs, and a lid grab handle.
+            M(Lathe("binring1", [(0.222f, -0.012f), (0.232f, 0f), (0.222f, 0.012f)], 40), 0, -0.22f, 0, g2),
+            M(Lathe("binring2", [(0.236f, -0.012f), (0.246f, 0f), (0.236f, 0.012f)], 40), 0, 0.05f, 0, g2),
+            M(Lathe("binfoot", [(0.19f, -0.02f), (0.21f, -0.02f), (0.214f, 0.01f), (0.2f, 0.015f)], 40), 0, -0.39f, 0, C(0.12f, 0.12f, 0.13f)),
+            M(Sweep([new Sec(P3(-0.05f, 0.49f, 0), 0.008f, 0.008f), new Sec(P3(-0.04f, 0.53f, 0), 0.008f, 0.008f), new Sec(P3(0.04f, 0.53f, 0), 0.008f, 0.008f), new Sec(P3(0.05f, 0.49f, 0), 0.008f, 0.008f)], Float3.UnitZ, 8, 0.6f), 0, 0, 0, steel),
+        };
+        foreach (float x in new[] { -1f, 1f })
+        {
+            l.Add(RB(0.03f, 0.05f, 0.08f, 0.01f, x * 0.258f, 0.27f, 0, g2));
+            l.Add(M(Sweep([new Sec(P3(x * 0.27f, 0.27f, -0.05f), 0.007f, 0.007f), new Sec(P3(x * 0.3f, 0.22f, -0.04f), 0.007f, 0.007f), new Sec(P3(x * 0.3f, 0.22f, 0.04f), 0.007f, 0.007f), new Sec(P3(x * 0.27f, 0.27f, 0.05f), 0.007f, 0.007f)], Float3.UnitX, 8, 0.6f), 0, 0, 0, steel));
+        }
+        return l.ToArray();
+    }
 }

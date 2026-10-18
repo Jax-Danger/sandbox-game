@@ -91,7 +91,7 @@ public static partial class ModelProps
              B(1.8f, 0.12f, 0.04f, 0, 0.3f, -0.26f, Wood, true), B(1.8f, 0.12f, 0.04f, 0, 0.18f, -0.26f, Wood, true),
              M(PropMeshes.BenchSide(), -0.8f, 0, 0, Dark), M(PropMeshes.BenchSide(), 0.8f, 0, 0, Dark), M(PropMeshes.BenchLeg(), -0.8f, 0, 0, Dark), M(PropMeshes.BenchLeg(), 0.8f, 0, 0, Dark)], Seat: true),
         new("trash_can", "Trash Can", "Furniture", new(0.5f, 0.8f, 0.5f), 8f, "Metal",
-            [M(PropMeshes.TrashCan(), 0, 0f, 0, Green, true), M(PropMeshes.BinLid(), 0, 0.38f, 0, C(0.15f, 0.42f, 0.2f))], Round: true),
+            TrashCanParts(), Round: true),
         new("plant", "Potted Plant", "Furniture", new(0.5f, 1.0f, 0.5f), 10f, "Concrete",
             [M(Meshes.Lathe("pot", [(0.0001f, -0.18f), (0.15f, -0.18f), (0.22f, 0.14f), (0.235f, 0.15f), (0.235f, 0.18f), (0.2f, 0.18f), (0.2f, 0.12f)], 36), 0, -0.32f, 0, C(0.62f, 0.32f, 0.2f), true), Cy(0.03f, 0.3f, 0, -0.0f, 0, DarkWood), M(Meshes.Blob(0.25f, 3, 0.22f), 0, 0.25f, 0, Green), M(Meshes.Blob(0.17f, 4, 0.22f), 0.12f, 0.37f, 0.05f, C(0.25f, 0.62f, 0.3f)), M(Meshes.Blob(0.15f, 5, 0.22f), -0.12f, 0.31f, -0.06f, C(0.18f, 0.5f, 0.22f)), M(Meshes.Lathe("soil", [(0.0001f, 0f), (0.2f, 0f), (0.2f, 0.01f), (0.0001f, 0.02f)], 28), 0, -0.16f, 0, C(0.25f, 0.17f, 0.1f))], Round: true),
         // ---------------- Construction
@@ -147,8 +147,7 @@ public static partial class ModelProps
             GearParts(), Round: true),
         // ---------------- Vehicle parts
         new("seat", "Vehicle Seat", "Vehicle parts", new(0.55f, 0.9f, 0.55f), 15f, "Rubber",
-            [Cu(0.55f, 0.14f, 0.55f, 0, -0.3f, 0.02f, Dark, true), Cu(0.55f, 0.14f, 0.65f, 0, 0.1f, -0.22f, Dark, true, new(80, 0, 0)), Cu(0.36f, 0.1f, 0.2f, 0, 0.36f, -0.27f, Dark, true, new(80, 0, 0)),
-             B(0.5f, 0.08f, 0.5f, 0, -0.41f, 0.02f, Steel)], Seat: true),
+            SeatParts(), Seat: true),
     ];
 
     public static ModelDef? Find(string? entity) => entity is { } e && e.StartsWith("mdl_") ? All.FirstOrDefault(d => d.Entity == e) : null;

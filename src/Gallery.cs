@@ -55,7 +55,7 @@ public static class Gallery
                 float dist = (MathF.Max(span * 0.6f, far * 1.25f) + 0.4f) * (ids.Contains("z") ? 0.4f : 1f);
                 g.Player.Teleport(new Float3(0f, 0.05f, 2.2f - dist));
                 float cy = list.Max(d => d!.HalfHeight);
-                g.Player.SetLook(0f, MathF.Atan2(1.25f - cy, dist) * 180f / MathF.PI);
+                g.Player.SetLook(0f, Math.Clamp(MathF.Atan2(1.25f - cy, dist + 0.6f) * 180f / MathF.PI, 4f, 28f));
                 break;
             }
             case "car":
