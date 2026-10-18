@@ -37,4 +37,30 @@ public static class WorldWeapons
 
     /// <summary>Real-world size of the model's bounds.</summary>
     public static Float3 Size(SandboxGame g, string weaponId) => Def(g, weaponId) is { } d ? d.Collider * Scale : Float3.Zero;
+    /// <summary>Measures the gun's real mesh bounds in crate space, centres it on the lid, sits it on top and shrinks long ones (RPG) to fit.</summary>
+    public static void FitOnLid(GameObject crate, GameObject gun, Float3 cs)
+    {
+        Float3 lo = new(1e9f), hi = new(-1e9f);
+        foreach (var mr in gun.GetComponentsInChildren<MeshRenderer>())
+            if (mr.Mesh.Res?.Vertices is { } vs)
+                for (int i = 0; i < vs.Length; i += Math.Max(1, vs.Length / 300))
+                {
+                    Float3 q = crate.Transform.InverseTransformPoint(mr.GameObject.Transform.TransformPoint(vs[i]));
+                    lo = new Float3(MathF.Min(lo.X, q.X), MathF.Min(lo.Y, q.Y), MathF.Min(lo.Z, q.Z)); hi = new Float3(MathF.Max(hi.X, q.X), MathF.Max(hi.Y, q.Y), MathF.Max(hi.Z, q.Z));
+                }
+        if (hi.X < lo.X) return;
+        if (crate.GetComponent<MeshRenderer>()?.Mesh.Res?.Vertices is { Length: > 0 } cv)
+        {   // the crate's own mesh extent in its local space (props may be scaled)
+            Float3 a = new(1e9f), b = new(-1e9f);
+            foreach (var q in cv) { a = new Float3(MathF.Min(a.X, q.X), MathF.Min(a.Y, q.Y), MathF.Min(a.Z, q.Z)); b = new Float3(MathF.Max(b.X, q.X), MathF.Max(b.Y, q.Y), MathF.Max(b.Z, q.Z)); }
+            cs = b - a;
+        }
+        Float3 o = gun.Transform.LocalPosition, c = (lo + hi) * 0.5f;
+        // Diagonal lie: the long axis spans both X and Z, so fit each against the lid with a small margin.
+        float f = MathF.Min(1f, MathF.Min(cs.X * 0.82f / MathF.Max(1e-3f, hi.X - lo.X), cs.Z * 0.82f / MathF.Max(1e-3f, hi.Z - lo.Z)));
+        Float3 cn = o + (c - o) * f; float bottom = o.Y + (lo.Y - o.Y) * f;
+        gun.Transform.LocalScale *= f;
+        gun.Transform.LocalPosition = new Float3(o.X - cn.X, o.Y + (cs.Y / 2f + 0.004f - bottom), o.Z - cn.Z);
+    }
+
 }

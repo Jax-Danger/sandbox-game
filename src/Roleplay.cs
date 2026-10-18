@@ -401,7 +401,8 @@ public sealed class RoleplaySystem(SandboxGame g)
                 {
                     Float3 ws = WorldWeapons.Size(g, data);
                     float top = PropManager.SizeOf(PropKind.SmallCrate).Y / 2f;
-                    WorldWeapons.Attach(g, p.Go, data, new Float3(0f, top + ws.X / 2f + 0.005f, 0f), new Float3(0f, ws.Z > 0.5f ? 135f : 90f, 90f));
+                    if (WorldWeapons.Attach(g, p.Go, data, new Float3(0f, top + ws.X / 2f + 0.005f, 0f), new Float3(0f, ws.Z > 0.5f ? 135f : 90f, 90f)) is { } wgo)
+                        WorldWeapons.FitOnLid(p.Go, wgo, PropManager.SizeOf(PropKind.SmallCrate));
                 }
                 break;
         }
