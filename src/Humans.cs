@@ -91,6 +91,17 @@ public static class Humans
                 new Sec(V(sd * 0.058f, 0.198f, 0.106f), 0.012f, 0.004f, 4f), new Sec(V(sd * 0.065f, 0.188f, 0.11f), 0.003f, 0.003f, 4f)], Float3.UnitX, 8, 0.5f), Tint.Cuff));
         parts.Add(new(Sweep([new Sec(V(0f, -0.24f, 0.106f), 0.012f, 0.003f, 4f), new Sec(V(0f, -0.02f, 0.124f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.1f, 0.13f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.2f, 0.104f), 0.012f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         parts.Add(new(Sweep([new Sec(V(-0.09f, 0.06f, 0.123f), 0.035f, 0.003f, 4f), new Sec(V(-0.09f, 0.11f, 0.12f), 0.035f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
+        // Shirt buttons down the placket (following its curve), a pocket flap with its own button.
+        {
+            var btn = new List<Mesh>();
+            (float y, float z)[] plk = [(-0.24f, 0.106f), (-0.02f, 0.124f), (0.1f, 0.13f), (0.2f, 0.104f)];
+            float Z(float y) { for (int i = 0; i < plk.Length - 1; i++) if (y <= plk[i + 1].y) { float t = (y - plk[i].y) / (plk[i + 1].y - plk[i].y); return plk[i].z + (plk[i + 1].z - plk[i].z) * t; } return plk[^1].z; }
+            Mesh disc = LatheZ([(0.0001f, 0f), (0.0055f, 0f), (0.006f, 0.0016f), (0.0045f, 0.0028f), (0.0001f, 0.003f)], 10);
+            foreach (float by in new[] { 0.15f, 0.07f, -0.01f, -0.09f, -0.17f }) btn.Add(Moved(disc, V(0f, by, Z(by) + 0.0025f)));
+            btn.Add(Moved(disc, V(-0.09f, 0.1f, 0.1255f)));
+            parts.Add(new(Merge(btn.ToArray()), Tint.Sclera));
+            parts.Add(new(Sweep([new Sec(V(-0.09f, 0.104f, 0.1235f), 0.037f, 0.0035f, 4f), new Sec(V(-0.09f, 0.12f, 0.121f), 0.037f, 0.0035f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
+        }
         foreach (float sd in new[] { -1f, 1f })
             parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.14f, 0.192f, -0.002f), 0.07f, 0.04f),
                 new Sec(V(sd * 0.21f, 0.17f, 0f), 0.056f, 0.047f), new Sec(V(sd * 0.25f, 0.15f, 0f), 0.05f, 0.047f), new Sec(V(sd * 0.272f, 0.125f, 0f), 0.04f, 0.04f), new Sec(V(sd * 0.28f, 0.1f, 0f), 0.026f, 0.026f)],
@@ -103,6 +114,12 @@ public static class Humans
         var l = new List<Sec>();
         for (int i = 0; i <= 24; i++) { float a = i * MathF.Tau / 24f; l.Add(new Sec(V(MathF.Cos(a) * rx, y, z + MathF.Sin(a) * rz), 0.012f, 0.008f, 2f, Float3.UnitY)); }
         return l.ToArray();
+    }
+
+    private static Mesh Moved(Mesh m, Float3 o)
+    {
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + o).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
     }
 
     private static Mesh LatheY(string key, (float R, float Y)[] p) => Lathe("hum_" + key, p, 24);
