@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.2 — 2026-10-18
+- NPC forearms: tapered forearm normals bent toward the elbow so bare forearms light like the hands instead of reading darker (screens/s12-fore-f-crop.png vs s12-fore-c-crop.png)
+
 ## v0.17.1 — 2026-10-18
 - Hostile NPCs wear a dark knit beanie with a folded cuff (screens/s11-hostile2-c.png)
 

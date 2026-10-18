@@ -240,6 +240,13 @@ public static class Humans
         Mesh thumb = grip
             ? Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.04f, -0.185f, 0.034f), 0.011f, 0.01f), new Sec(V(-side * 0.022f, -0.215f, 0.046f), 0.0095f, 0.009f), new Sec(V(-side * 0.004f, -0.228f, 0.04f), 0.0088f, 0.0085f)], Float3.UnitX, 12, 0.9f)
             : Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.046f, -0.18f, 0.03f), 0.011f, 0.01f), new Sec(V(-side * 0.04f, -0.205f, 0.045f), 0.0095f, 0.009f)], Float3.UnitX, 12, 0.9f);
+        // The forearm tapers toward the wrist, so its normals tilt down away from sun and sky and the skin read
+        // darker than the hands. Bend them up (local +Y = toward the elbow) so the bare arm lights like the hand.
+        {
+            Float3[] nn = fore.Normals;
+            for (int i = 0; i < nn.Length; i++) nn[i] = Float3.Normalize(nn[i] + new Float3(0f, 0.28f, 0f));
+            fore.Normals = nn;
+        }
         return (fore, [new(palm, Tint.Skin), new(fing, Tint.Skin), new(thumb, Tint.Skin)]);
     }
 
