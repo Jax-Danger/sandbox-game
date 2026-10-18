@@ -156,7 +156,17 @@ public sealed class Buggy
         Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
         foreach (float x in new[] { -0.6f, 0.6f })
             Detail(g, "Light", VehicleModels.Lamp(0.12f), new Float3(x, 0.4f, 1.72f), new Color(0.95f, 0.92f, 0.75f, 1f));
-        Detail(g, "Windshield", VehicleModels.Windshield(), new Float3(0f, 0.85f, 0.5f), new Color(0.55f, 0.68f, 0.78f, 1f), new Float3(-12f, 0f, 0f));
+        Detail(g, "Windshield", VehicleModels.Windshield(), new Float3(0f, 0.85f, 0.5f), new Color(0.16f, 0.23f, 0.29f, 1f), new Float3(-12f, 0f, 0f));
+        // Glass sheen streaks, split-screen centre post and two parked wiper arms with rubber blades.
+        foreach (float sx in new[] { -0.42f, 0.36f })
+            Detail(g, "Sheen", Meshes.Faces([new Float3(sx - 0.16f, -0.24f, 0.023f), new Float3(sx - 0.05f, -0.24f, 0.023f), new Float3(sx + 0.13f, 0.24f, 0.023f), new Float3(sx + 0.02f, 0.24f, 0.023f)],
+                [new Float3(sx - 0.02f, -0.24f, 0.023f), new Float3(sx + 0.02f, -0.24f, 0.023f), new Float3(sx + 0.2f, 0.24f, 0.023f), new Float3(sx + 0.16f, 0.24f, 0.023f)]), new Float3(0f, 0.85f, 0.5f), new Color(0.42f, 0.5f, 0.56f, 1f), new Float3(-12f, 0f, 0f));
+        Detail(g, "WindPost", Meshes.RoundedBox(new Float3(0.04f, 0.62f, 0.05f), 0.012f), new Float3(0f, 0.85f, 0.5f), dark, new Float3(-12f, 0f, 0f));
+        foreach (float wx in new[] { -0.55f, 0.15f })
+        {
+            Detail(g, "WiperArm", VehicleModels.Pipe(0.008f, Float3.UnitY, new Float3(wx, 0.57f, 0.58f), new Float3(wx + 0.38f, 0.585f, 0.585f)), Float3.Zero, dark);
+            Detail(g, "WiperBlade", Meshes.RoundedBox(new Float3(0.36f, 0.018f, 0.014f), 0.005f), new Float3(wx + 0.2f, 0.6f, 0.588f), new Color(0.04f, 0.04f, 0.045f, 1f), new Float3(-12f, 0f, 0f));
+        }
         Detail(g, "WindFrame", VehicleModels.BentPipe(0.03f, 0.08f, Float3.UnitZ, new Float3(-0.8f, -0.32f, 0f), new Float3(-0.8f, 0.32f, 0f), new Float3(0.8f, 0.32f, 0f), new Float3(0.8f, -0.32f, 0f)), new Float3(0f, 0.85f, 0.5f), dark, new Float3(-12f, 0f, 0f));
         foreach (float x in new[] { -0.4f, 0.4f })
             Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
