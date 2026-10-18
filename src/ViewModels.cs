@@ -613,7 +613,7 @@ public static partial class ViewModels
             case "crowbar":
             {
                 static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
-                Float3 s = Nz(V(-0.25f, 0.55f, 0.8f));
+                Float3 s = Nz(V(-0.2f, 0.78f, 0.6f)); // held up and across like a club (was nearly level, poking into the crosshair)
                 Float3 back = Nz(V(0f, 0.25f, -1f) - s * Float3.Dot(V(0f, 0.25f, -1f), s));
                 Std(V(0.16f, -0.2f, 0.34f), -6f);
                 Bone("muzzle", "weapon", s * 0.45f);
@@ -641,7 +641,7 @@ public static partial class ViewModels
                 k.Add("weapon", Sweep(tape, back, 18, 0.35f), new Color(0.07f, 0.07f, 0.08f, 1f), Finish.Rubber);
                 Float3 d0 = d0Pre(s);
                 right = Fist(s, d0, 0.0152f, V(0.03f, -0.045f, -0.06f));
-                freeLeft = true;
+                freeLeft = false; // one-handed: the half-cropped free glove hovered in the lower-left corner
                 d.Weight = 1.1f;
                 break;
             }
