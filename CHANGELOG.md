@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.15.0 — 2026-10-18
+- Rendering: 16-bit float (HDR) scene target on Medium/High so night ground and flashlight falloff no longer band (8-bit target banded before the tonemapper); bloom retuned for HDR (threshold 1.8, intensity 0.45). screens/s10-band-cmp.png, s10-hdr-cmp2.png
+
 ## v0.14.21 — 2026-10-18
 - View model: glove gauntlets open with a flared rolled lip that laps over a slimmer palm wrist end, removing the jagged wrist/cuff edge on the pistol hands (screens/s10-pw-d.png vs s10-pw-a.png)
 
