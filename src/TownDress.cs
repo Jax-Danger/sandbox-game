@@ -113,6 +113,19 @@ public static partial class MapBuilder
                 b.Add(stone, Bx(0.54f, 0.3f, 0.18f, x, 0.3f, -hd - face - 0.07f)); b.Add(stone, Bx(0.54f, 0.16f, 0.18f, x, h - 0.28f, -hd - face - 0.07f));
             }
             b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, -hd - face - 0.04f));
+            // Sides and back: plinth, corner quoin pilasters, a cornice band under the parapet and a belt course between floors.
+            b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, hd + face + 0.04f));
+            b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, hw + face + 0.04f, 0.225f, 0)); b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, -hw - face - 0.04f, 0.225f, 0));
+            foreach (float x in new[] { -1f, 1f }) foreach (float z in new[] { -1f, 1f })
+            {
+                b.Add(trim, Bx(0.36f, h - 0.6f, 0.36f, x * (hw + face - 0.1f), 0.45f + (h - 0.6f) / 2f, z * (hd + face - 0.1f)));
+                for (float qy = 0.75f; qy < h - 0.6f; qy += 0.9f) b.Add(stone, Bx(0.42f, 0.3f, 0.42f, x * (hw + face - 0.1f), qy, z * (hd + face - 0.1f), 0.02f));
+            }
+            foreach (float yy in floors > 1 ? new[] { h - 0.22f, 3.05f } : new[] { h - 0.22f })
+            {
+                b.Add(stone, Bx(s.X + 0.5f, 0.14f, 0.14f, 0, yy, hd + face + 0.05f)); b.Add(stone, Bx(s.X + 0.5f, 0.14f, 0.14f, 0, yy, -hd - face - 0.05f));
+                b.Add(stone, Bx(0.14f, 0.14f, s.Z + 0.5f, hw + face + 0.05f, yy, 0)); b.Add(stone, Bx(0.14f, 0.14f, s.Z + 0.5f, -hw - face - 0.05f, yy, 0));
+            }
             // Lettered sign board over the entrance (sits just above the awning; the dentils stop either side of it).
             string word = title switch { "Police Station" => "POLICE", "General Store" => "GENERAL STORE", "Apartment" => "APARTMENTS", "Garage" => "GARAGE", _ => title.ToUpperInvariant() };
             float sw = MathF.Min(s.X - 1f, word.Length * 0.36f + 0.8f), sy = MathF.Min(dh + 1.35f, h - 0.62f);

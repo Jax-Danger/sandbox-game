@@ -199,8 +199,17 @@ public static partial class MapBuilder
             Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(0.8f, 0.7f, -0.35f), 0.09f, 0.04f), new Float3(x, 2.3f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
             Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(-0.7f, 0.8f, 0.45f), 0.08f, 0.035f), new Float3(x, 2.4f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
             Shape(scene, shader, "Lamp post", PropMeshes.Post(0.07f, 4f), new Float3(x * 0.7f, 2f, z * 0.7f), new Color(0.12f, 0.12f, 0.13f, 1f), new Float3(0.14f, 4f, 0.14f));
-            Shape(scene, shader, "~Lamp head", Meshes.Lathe("lantern", [(0.05f, -0.2f), (0.2f, -0.12f), (0.22f, 0.02f), (0.3f, 0.06f), (0.26f, 0.12f), (0.08f, 0.2f), (0.0001f, 0.24f)], 8), new Float3(x * 0.7f, 4.15f, z * 0.7f), new Color(0.15f, 0.15f, 0.16f, 1f));
-            Shape(scene, shader, "~Lamp glass", Meshes.Sphere(0.15f), new Float3(x * 0.7f, 4.12f, z * 0.7f), new Color(1f, 0.92f, 0.70f, 1f));
+            // Victorian lantern: fluted cast foot, collar, ladder bar, a four-post lantern with glowing glass under a peaked cap.
+            Float3 lp = new(x * 0.7f, 0f, z * 0.7f);
+            Shape(scene, shader, "~Lamp foot", Meshes.Lathe("tlfoot", [(0.0001f, 0f), (0.22f, 0f), (0.22f, 0.08f), (0.18f, 0.12f), (0.17f, 0.5f), (0.13f, 0.6f), (0.11f, 0.85f), (0.0001f, 0.85f)], 8), lp, new Color(0.12f, 0.12f, 0.13f, 1f));
+            Shape(scene, shader, "~Lamp collar", Meshes.Lathe("tlcol", [(0.06f, -0.04f), (0.1f, -0.02f), (0.1f, 0.02f), (0.06f, 0.04f)], 20), lp + new Float3(0f, 3.75f, 0f), new Color(0.12f, 0.12f, 0.13f, 1f));
+            Shape(scene, shader, "~Lamp ladder", Meshes.RoundedBox(new Float3(0.7f, 0.04f, 0.04f), 0.012f), lp + new Float3(0f, 3.55f, 0f), new Color(0.12f, 0.12f, 0.13f, 1f));
+            Shape(scene, shader, "~Lamp head", Meshes.Merge(
+                Meshes.Lathe("tlbase", [(0.04f, -0.04f), (0.16f, -0.02f), (0.17f, 0.02f), (0.0001f, 0.03f)], 4),
+                Meshes.Lathe("tlcap", [(0.0001f, 0.33f), (0.24f, 0.33f), (0.25f, 0.35f), (0.12f, 0.46f), (0.03f, 0.5f), (0.03f, 0.56f), (0.0001f, 0.58f)], 4),
+                Meshes.RoundedBox(new Float3(0.025f, 0.32f, 0.025f), 0.006f) is var lpost ? Meshes.Merge(Off(lpost, 0.12f, 0.17f, 0f), Off(lpost, -0.12f, 0.17f, 0f), Off(lpost, 0f, 0.17f, 0.12f), Off(lpost, 0f, 0.17f, -0.12f)) : null!),
+                lp + new Float3(0f, 3.95f, 0f), new Color(0.12f, 0.12f, 0.13f, 1f), euler: new Float3(0f, 45f, 0f));
+            Shape(scene, shader, "~Lamp glass", Meshes.Lathe("tlglass", [(0.0001f, 0f), (0.1f, 0f), (0.15f, 0.31f), (0.0001f, 0.31f)], 4), lp + new Float3(0f, 3.97f, 0f), new Color(1f, 0.92f, 0.70f, 1f), euler: new Float3(0f, 45f, 0f));
         }
         // Laws board (north edge of the plaza, facing spawn).
         Box(scene, shader, "Board posts", new Float3(0f, 1.1f, 12.5f), new Float3(4.4f, 2.2f, 0.18f), Float3.Zero, new Color(0.30f, 0.22f, 0.15f, 1f)).GetComponent<MeshRenderer>()!.Enabled = false;
@@ -372,5 +381,10 @@ public static partial class MapBuilder
         d.Rebuild();
         Town.Doors.Add(d);
         Town.Interactive.Add((go, new Float3(width, height, 0.1f)));
+    }
+    private static Mesh Off(Mesh m, float x, float y, float z)
+    {
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + new Float3(x, y, z)).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
     }
 }
