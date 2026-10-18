@@ -418,6 +418,7 @@ public static partial class ViewModels
                 Std(V(0.115f, -0.165f, 0.37f), -6f);
                 Bone("muzzle", "weapon", V(0f, 0.082f, 0.625f));
                 Bone("sight", "weapon", V(0f, 0.1035f, 0.1f));
+                Bone("bead", "weapon", V(0f, 0.0977f, 0.598f)); // front bead: ADS lines it up with the sight so the receiver sits below the line
                 Bone("pump", "weapon", Float3.Zero);
                 // Receiver: softly rounded slab (was a near-box), tapering into the barrel and rounding off at the back.
                 k.Sw("weapon", Gunmetal, Finish.Metal, Float3.UnitX, 0.85f,
@@ -464,7 +465,7 @@ public static partial class ViewModels
                     [float.NaN, 0.011f, -0.0075f, -0.026f], 86f, V(0.022f, -0.035f, -0.072f), 72f, 196f, 0.03f, 0.044f, Trig(0.036f, 0.054f));
                 leftParent = "pump"; leftPos = V(0f, 0.05f, 0.275f); // rear half of the pump: shorter, more natural left-arm reach
                 left = Under(0.0222f, 0.0222f);
-                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.15f; d.AimExtra = new BonePose(V(0.001f, -0.037f, 0.035f), V(-6.5f, 1.5f, -11f)); // bead centred; gun pushed out, heel dropped, canted so the grip glove clears the sight line
+                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.15f; d.AimExtra = new BonePose(V(-0.0355f, 0.0218f, 0.095f), V(0.6f, 6f, -11f)); // bead centred; gun pushed out, heel dropped, canted so the grip glove clears the sight line
                 break;
             }
             case "rpg":

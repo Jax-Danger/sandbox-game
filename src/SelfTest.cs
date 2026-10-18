@@ -601,6 +601,12 @@ public sealed class SelfTest
                         {
                             Float3 sp = g.Player.CameraObject.Transform.InverseTransformPoint(vm.Bones["sight"].Transform.Position);
                             if (MathF.Abs(sp.X) > 0.006f || MathF.Abs(sp.Y) > 0.006f || sp.Z < 0.05f) { aimOk = false; worst = $"{id} sight {sp.X:0.000},{sp.Y:0.000},{sp.Z:0.000}"; }
+                            if (vm.Bones.TryGetValue("bead", out var bead))
+                            {
+                                Float3 bp = g.Player.CameraObject.Transform.InverseTransformPoint(bead.Transform.Position);
+                                Console.WriteLine($"[aim] {id} sight {sp.X:0.0000},{sp.Y:0.0000},{sp.Z:0.000} bead {bp.X:0.0000},{bp.Y:0.0000},{bp.Z:0.000}");
+                                if (MathF.Abs(bp.X / bp.Z) > 0.012f || MathF.Abs(bp.Y / bp.Z) > 0.012f) { aimOk = false; worst = $"{id} bead off the sight line {bp.X / bp.Z:0.000},{bp.Y / bp.Z:0.000}"; }
+                            }
                         }
                         vm.Kick(5f); vm.Update(0.5f, new VmInput(new Float2(4000f, -4000f), 9f, Float2.UnitX, false, -30f, 20f, true, 1f));
                         for (int f = 0; f < 120; f++) vm.Update(1f / 60f, new VmInput(Float2.Zero, 0f));

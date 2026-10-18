@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.19 — 2026-10-18
+- Shotgun ADS: front bead and rear sight now on one line (new 'bead' bone, self-test checks it), gun pushed out so the receiver sits below the crosshair instead of covering it
+
 ## v0.17.18 — 2026-10-18
 - Buggy: spot lamps raised onto short stalks in black steel buckets (were half-sunk into the nose cowl)
 
