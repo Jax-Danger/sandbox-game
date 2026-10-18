@@ -61,4 +61,35 @@ public static class PropMeshes
     public static Mesh BenchLeg() => Sweep([
         new Sec(V(0f, -0.42f, 0.25f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.03f, 0.22f), 0.026f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, -0.01f, 0.05f), 0.024f, 0.022f, 3f, Float3.UnitX),
         new Sec(V(0f, -0.01f, -0.24f), 0.024f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, 0.18f, 0.22f), 0.02f, 0.016f, 3f, Float3.UnitX), new Sec(V(0f, 0.2f, 0.28f), 0.022f, 0.02f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f);
+
+    public static Mesh SignFoot() => Sweep([new Sec(V(0f, -0.02f, -0.2f), 0.28f, 0.02f, 4f), new Sec(V(0f, 0.01f, 0f), 0.3f, 0.03f, 4f), new Sec(V(0f, -0.02f, 0.2f), 0.28f, 0.02f, 4f)], Float3.UnitX, 20, 0.6f);
+
+    /// <summary>Wheel rim along Y: dished lathe with a hub and n swept spokes (spokes along the disc).</summary>
+    public static Mesh Rim(float r, float w, int spokes)
+    {
+        var parts = new List<Mesh> { Lathe($"rim{r},{w}", [(r * 0.8f, -w / 2f), (r, -w / 2f), (r * 1.02f, -w / 2f + 0.01f), (r * 1.02f, w / 2f - 0.01f), (r, w / 2f), (r * 0.82f, w / 2f), (r * 0.86f, 0f), (r * 0.8f, -w / 2f)], 36) };
+        _ = parts;
+        // A single swept star: hub → spoke tips around the circle, kept as one tube loop so it stays one mesh.
+        var secs = new List<Sec>();
+        for (int i = 0; i <= spokes * 2; i++)
+        {
+            float a = MathF.Tau * i / (spokes * 2), rr = i % 2 == 0 ? r * 0.18f : r * 0.86f;
+            secs.Add(new Sec(V(MathF.Cos(a) * rr, w * 0.38f, MathF.Sin(a) * rr), r * 0.06f, w * 0.1f, 2.6f, Float3.UnitY));
+        }
+        return Merge(parts[0], Sweep(secs, Float3.UnitY, 10, 0f, true, true));
+    }
+
+    /// <summary>Gear teeth ring + web along Y.</summary>
+    public static Mesh GearTeeth(int n, float r, float tooth, float w)
+    {
+        var secs = new List<Sec>();
+        int m = n * 8;
+        for (int i = 0; i <= m; i++)
+        {
+            float a = MathF.Tau * i / m, ph = (i % 8) / 8f;
+            float rr = r + (ph is > 0.15f and < 0.6f ? tooth : 0f);
+            secs.Add(new Sec(V(MathF.Cos(a) * rr, 0f, MathF.Sin(a) * rr), 0.025f, w / 2f, 4f, Float3.UnitY));
+        }
+        return Sweep(secs, Float3.UnitY, 8, 0f, true, true);
+    }
 }

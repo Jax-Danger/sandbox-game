@@ -306,6 +306,20 @@ public static class Meshes
     /// <summary>Lathe along +Z from (radius, z) pairs with caps closed where the radius is 0 (not cached).</summary>
     public static Mesh LatheZ((float R, float Z)[] profile, int slices = 28) => Lathe($"lz{string.Join(',', profile.Select(p => $"{p.R:0.####}/{p.Z:0.####}"))}", profile, slices, alongZ: true);
 
+    /// <summary>Concatenates meshes into one (same material).</summary>
+    public static Mesh Merge(params Mesh[] ms)
+    {
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        foreach (Mesh m in ms)
+        {
+            uint o = (uint)v.Count;
+            v.AddRange(m.Vertices ?? []); n.AddRange(m.Normals ?? []);
+            uv.AddRange(m.UV is { } u && u.Length == (m.Vertices?.Length ?? 0) ? u : new Float2[m.Vertices?.Length ?? 0]);
+            foreach (uint i in m.Indices ?? []) idx.Add(i + o);
+        }
+        return Build(v, n, uv, idx);
+    }
+
     private static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
