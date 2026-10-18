@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.8 — 2026-10-18
+- Glove pass 2: denser palm and thumb sweeps (smoother silhouettes) and a tapered knuckle-guard pad instead of a blunt slab.
+
 ## v0.13.7 — 2026-10-18
 - Pistol VM: front cocking serrations, slide/frame parting line, extractor claw, takedown lever, mag catch, flared magazine base pad and witness hole.
 

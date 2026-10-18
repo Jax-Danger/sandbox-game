@@ -112,19 +112,23 @@ public static partial class ViewModels
                 float h0 = s.H.Where(x => !float.IsNaN(x)).Min() - 0.012f, h1 = s.H.Where(x => !float.IsNaN(x)).Max() + (s.Trigger is null ? 0.012f : 0.03f);
                 float hc = (h0 + h1) / 2f, hw = (h1 - h0) / 2f;
                 var secs = new List<Sec>();
-                for (int i = 0; i <= 6; i++)
+                for (int i = 0; i <= 12; i++)
                 {
-                    float th = s.ThK + s.Dir * 4f - s.Dir * s.PalmArc * i / 6f;
-                    secs.Add(new Sec(F.P(th, hc, 0.0115f), hw, 0.0118f + 0.002f * i / 6f, 2.6f, F.A));
+                    float th = s.ThK + s.Dir * 4f - s.Dir * s.PalmArc * i / 12f;
+                    secs.Add(new Sec(F.P(th, hc, 0.0115f), hw, 0.0118f + 0.002f * i / 12f, 2.6f, F.A));
                 }
                 Float3 last = secs[^1].P;
                 secs.Add(new Sec(Lp(last, s.Wrist, 0.5f), hw * 0.82f, 0.0155f, 2.4f, F.A));
                 secs.Add(new Sec(s.Wrist, 0.026f, 0.019f, 2.2f, F.A));
-                Add(bone, Sweep(secs, F.A, 22, 0.5f), GloveC, Finish.Leather);
-                // Knuckle guard on the back of the hand.
+                Add(bone, Sweep(secs, F.A, 26, 0.5f), GloveC, Finish.Leather);
+                // Knuckle guard on the back of the hand: tapered at both ends so it sits on the glove as a moulded pad
+                // instead of ending in a blunt slab edge.
                 var g = new List<Sec>();
-                for (int i = 0; i <= 3; i++)
-                    g.Add(new Sec(F.P(s.ThK - s.Dir * (6f + 26f * i / 3f), hc + (s.Trigger is null ? 0f : -0.006f), 0.0245f), hw * 0.5f, 0.0036f, 2.6f, F.A));
+                for (int i = 0; i <= 8; i++)
+                {
+                    float u = i / 8f, taper = MathF.Sin(MathF.PI * (0.12f + 0.76f * u));
+                    g.Add(new Sec(F.P(s.ThK - s.Dir * (6f + 26f * u), hc + (s.Trigger is null ? 0f : -0.006f), 0.0245f - 0.002f * (1f - taper)), hw * 0.5f * (0.75f + 0.25f * taper), 0.0036f * taper + 0.0008f, 2.6f, F.A));
+                }
                 Add(bone, Sweep(g, F.A, 18, 0.7f), PadC, Finish.Rubber);
             }
             // Thumb: from the heel of the palm round the other side of the grip.
@@ -132,9 +136,9 @@ public static partial class ViewModels
                 var pts = new List<Float3>();
                 float palmEnd = s.ThK - s.Dir * s.PalmArc;
                 pts.Add(F.P(palmEnd, s.ThumbH0 - 0.006f, 0.004f));
-                for (int i = 0; i <= 10; i++)
+                for (int i = 0; i <= 24; i++)
                 {
-                    float t = i / 10f;
+                    float t = i / 24f;
                     pts.Add(F.P(s.ThumbTh0 + (s.ThumbTh1 - s.ThumbTh0) * t * s.ThumbLen, s.ThumbH0 + (s.ThumbH1 - s.ThumbH0) * t, 0.0112f - 0.002f * t));
                 }
                 var secs = new Sec[pts.Count];
@@ -144,7 +148,7 @@ public static partial class ViewModels
                     float r = 0.0106f * (1.35f - 0.5f * t + 0.05f * MathF.Exp(-MathF.Pow((t - 0.55f) / 0.08f, 2f)));
                     secs[i] = new Sec(pts[i], r, r * 0.9f, 2.2f, F.A);
                 }
-                Add(bone, Sweep(secs, F.A, 16, 0.85f), GloveC, Finish.Leather);
+                Add(bone, Sweep(secs, F.A, 20, 0.85f), GloveC, Finish.Leather);
             }
         }
 
