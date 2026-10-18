@@ -277,7 +277,7 @@ public static partial class MapBuilder
             }
             var gm = new Mesh { IndexFormat = IndexFormat.UInt32, Vertices = gv.ToArray(), Normals = gn.ToArray(), UV = gu.ToArray(), Indices = gi.ToArray() };
             gm.RecalculateBounds();
-            Shape(scene, shader, "~Grass tufts", gm, Float3.Zero, new Color(0.24f, 0.4f, 0.15f, 1f));
+            Shape(scene, shader, "~Grass tufts", gm, Float3.Zero, new Color(0.17f, 0.29f, 0.09f, 1f));
         }
         // A few rocks and a wooden deck near spawn for scale.
         var rock = new Color(0.31f, 0.3f, 0.28f, 1f);
