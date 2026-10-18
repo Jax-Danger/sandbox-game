@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.1 — 2026-10-18
+- Tyres get real tread: staggered blocks + centre rib on car/buggy/jeep/small wheels, chevron lugs on the tractor wheel (was a smooth lathe).
+
 ## v0.8.0 — 2026-10-18
 - Town facades: real window assemblies on every wall (reveal, casing, sash, glazing bars, sheen, sloped sill with drip, lintel/keystone, louvred shutters on houses), lap siding + corner boards + stone plinth + number plaques on houses, pilasters/plinth/dentil cornice and lettered signs (POLICE, GENERAL STORE, APARTMENTS, GARAGE) on commercial blocks; 5x7 Glyphs font; townat_x_y_z_yaw_pitch shot state.
 

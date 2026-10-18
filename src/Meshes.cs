@@ -187,7 +187,48 @@ public static class Meshes
         var prof = new List<(float, float)> { (0f, -w * 0.5f), (hub, -w * 0.5f), (hub * 1.05f, -w * 0.85f) };
         for (int k = 0; k <= 8; k++) { float a = -MathF.PI / 2f + MathF.PI * k / 8f; prof.Add((radius - 0.35f * w + MathF.Cos(a) * 0.35f * w, MathF.Sin(a) * w)); }
         prof.Add((hub * 1.05f, w * 0.85f)); prof.Add((hub, w * 0.5f)); prof.Add((0f, w * 0.5f));
-        return Lathe($"tyre{radius:0.###},{width:0.###}", prof.ToArray(), 40);
+        Mesh body = Lathe($"tyre{radius:0.###},{width:0.###}", prof.ToArray(), 48);
+        string key = $"tread{radius:0.###},{width:0.###}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        // Tread: car tyres get two staggered rows of blocks plus a centre rib; big (tractor) tyres get chevron lugs.
+        var parts = new List<Mesh> { body };
+        bool lug = radius > 0.6f;
+        int n = lug ? 22 : Math.Clamp((int)(radius * 80f), 18, 44);
+        float t = lug ? radius * 0.09f : MathF.Max(0.012f, radius * 0.045f), rr = radius - t * 0.35f;
+        for (int i = 0; i < n; i++)
+        {
+            float a0 = i * MathF.Tau / n;
+            if (lug)
+            {
+                foreach (float sd in new[] { -1f, 1f })
+                {
+                    float a = a0 + (sd > 0 ? MathF.PI / n : 0f);
+                    parts.Add(Block(RoundedBox(new Float3(t, w * 0.8f, radius * 0.11f), t * 0.25f, 1), a, rr, sd * w * 0.42f, sd * 32f));
+                }
+            }
+            else
+            {
+                float len = w * 0.36f, tw = MathF.Tau * radius / n * 0.6f;
+                parts.Add(Block(RoundedBox(new Float3(t, len, tw), t * 0.3f, 1), a0, rr, -w * 0.42f, 0f));
+                parts.Add(Block(RoundedBox(new Float3(t, len, tw), t * 0.3f, 1), a0 + MathF.PI / n, rr, w * 0.42f, 0f));
+                parts.Add(Block(RoundedBox(new Float3(t * 0.8f, w * 0.18f, tw * 0.7f), t * 0.25f, 1), a0 + MathF.PI / (2 * n), rr - t * 0.1f, 0f, 0f));
+            }
+        }
+        return _cache[key] = Merge(parts.ToArray());
+    }
+
+    /// <summary>Tread block: tilted by twist (degrees, chevron) in the axial/tangential plane, pushed out to radius r at angle a, axial offset y.</summary>
+    private static Mesh Block(Mesh m, float a, float r, float y, float twist)
+    {
+        float tw = twist * MathF.PI / 180f, ct = MathF.Cos(tw), st = MathF.Sin(tw), c = MathF.Cos(a), s = MathF.Sin(a);
+        Float3 T(Float3 v)
+        {
+            Float3 q = new(v.X, v.Y * ct - v.Z * st, v.Y * st + v.Z * ct); // twist about the radial axis
+            // radial X → (cos a, 0, sin a); tangential Z → (-sin a, 0, cos a)
+            return new Float3(q.X * c - q.Z * s, q.Y, q.X * s + q.Z * c);
+        }
+        var mm = new Mesh { IndexFormat = IndexFormat.UInt32, Vertices = m.Vertices.Select(v => T(v) + new Float3(c * r, y, s * r)).ToArray(), Normals = m.Normals.Select(T).ToArray(), UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
     }
 
     public static Mesh Capsule(float radius, float height)
