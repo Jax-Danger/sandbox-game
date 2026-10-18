@@ -265,6 +265,7 @@ public sealed class ViewModel
                         };
                         m.SetTexture("_SurfaceTex", ProcTex.Surface(rough, metal));
                         if (part.Finish == Finish.Wood) m.SetTexture("_MainTex", ProcTex.WalnutGrain());
+                        else if (part.Finish == Finish.Leather && part.M is not null) m.SetTexture("_MainTex", ProcTex.GloveKnit());
                     }
                     catch { }
                 if (part.Emissive && !Application.IsHeadless)

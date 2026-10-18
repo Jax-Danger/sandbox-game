@@ -115,6 +115,22 @@ public static class ProcTex
         return (B(v), B(v * 0.9f), B(v * 0.82f), 255);
     });
 
+    /// <summary>Glove fabric for swept VM parts (u = around, v = along at 8 per metre): fine knit, plus stitched side
+    /// seams at u = 0.25 / 0.75 so fingers and palms read as sewn panels rather than clay.</summary>
+    public static Texture2D GloveKnit() => Make("gloveknit", 128, 128, (x, y) =>
+    {
+        float knit = ((x + (y / 2) % 2) % 2 == 0 ? 1f : 0.93f) * (y % 3 == 0 ? 0.95f : 1f);
+        float n = 0.96f + 0.04f * Fbm(x / 9f, y / 9f, 3);
+        float v = knit * n;
+        foreach (int sx in new[] { 32, 96 })
+        {
+            int dx = Math.Abs(x - sx);
+            if (dx <= 1) v *= 0.62f;                                          // seam groove
+            else if (dx == 3 && (y / 3) % 2 == 0) v *= 1.22f;                // running stitch beside it
+        }
+        return (B(v), B(v), B(v), 255);
+    });
+
     /// <summary>Crate/prop panel: lighter border frame with noise, so props read well without the engine grid.</summary>
     public static Texture2D Panel() => Make("panel", 128, 128, (x, y) =>
     {

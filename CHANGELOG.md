@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.7 — 2026-10-18
+- View-model gloves get a fine knit fabric texture with stitched side seams (ProcTex.GloveKnit) instead of plain clay-like shading (screens/vm/r2/raw/s7g-pistolhand.png; before s7a-pistolhand.png)
+
 ## v0.11.6 — 2026-10-18
 - Wooden VM parts get a fine walnut grain texture; shotgun receiver gains ejection port with bolt, loading port, trigger-group pins, side seams, top-tang safety and tang plate (screens/vm/r2/raw/s7f-sg-c.png; before s7a-shotgun-c.png)
 
