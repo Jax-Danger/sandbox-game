@@ -371,8 +371,12 @@ public static class EntityCatalog
                     Prowl.Vector.Float3 at = i switch { 0 => new(off, 0.245f, 0.302f), 1 => new(off, 0.245f, -0.302f), 2 => new(0.302f, 0.245f, off), _ => new(-0.302f, 0.245f, off) };
                     Part("Hazard", Meshes.RoundedBox(i < 2 ? new Prowl.Vector.Float3(0.12f, 0.05f, 0.006f) : new Prowl.Vector.Float3(0.006f, 0.05f, 0.12f), 0.002f, 2), at, k % 2 == 0 ? blk : yel);
                 }
-            Part("PushPlate", Meshes.RoundedBox(new Prowl.Vector.Float3(0.26f, 0.09f, 0.008f), 0.004f, 2), new(0f, 0.05f, 0.3f), blk);
-            Part("PushText", Glyphs.Text("PUSH", 0.06f, 0f, 0.003f), new(0f, 0.05f, 0.304f), wht);
+            // Plates front and back; the glyph mesh reads from -Z, so the front copy turns round.
+            foreach (float sz in new[] { 1f, -1f })
+            {
+                Part("PushPlate", Meshes.RoundedBox(new Prowl.Vector.Float3(0.26f, 0.09f, 0.008f), 0.004f, 2), new(0f, 0.05f, 0.3f * sz), blk);
+                Part("PushText", Glyphs.Text("PUSH", 0.06f, 0f, 0.003f), new(0f, 0.05f, 0.304f * sz), wht, new(0f, sz > 0f ? 180f : 0f, 0f));
+            }
             Part("Plinth", Meshes.RoundedBox(new Prowl.Vector.Float3(0.64f, 0.04f, 0.64f), 0.01f, 3), new(0f, -0.28f, 0f), blk);
         }
         var bezel = new GameObject("ButtonBezel");
