@@ -134,7 +134,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             PropKind.Sphere => Meshes.Sphere(0.5f),
             PropKind.BigBall => Meshes.Sphere(1f),
             PropKind.Barrel => Meshes.Barrel(0.4f, 1.1f),
-            PropKind.Pole => Meshes.RoundedCylinder(0.08f, 3f, 0.02f, 16),
+            PropKind.Pole => Meshes.Lathe("pole2", [(0.0001f, -1.5f), (0.07f, -1.5f), (0.088f, -1.48f), (0.088f, -1.38f), (0.08f, -1.36f), (0.08f, -0.42f), (0.086f, -0.4f), (0.086f, -0.34f), (0.08f, -0.32f), (0.08f, 0.32f), (0.086f, 0.34f), (0.086f, 0.4f), (0.08f, 0.42f), (0.08f, 1.36f), (0.088f, 1.38f), (0.088f, 1.48f), (0.07f, 1.5f), (0.0001f, 1.5f)], 20),
             PropKind.BigCrate or PropKind.SmallCrate => Meshes.Crate(sz.X),
             _ => Meshes.RoundedBox(sz, MathF.Min(0.05f, minDim * 0.3f)),
         };

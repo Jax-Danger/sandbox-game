@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.22 — 2026-10-18
+- Pole gets end caps and two clamp bands instead of a bare cylinder
+
 ## v0.8.21 — 2026-10-18
 - Barrel is a steel drum now: recessed heads inside rolled chimes, two swaged rolling hoops and shallow ribs
 
