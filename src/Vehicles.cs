@@ -42,7 +42,7 @@ public sealed class Buggy
         Go.Transform.LocalEulerAngles = new Float3(0f, yaw, 0f);
         bool jeep = kind == "jeep", boat = kind == "airboat";
         var size = jeep ? new Float3(1.8f, 0.55f, 3.4f) : boat ? new Float3(1.9f, 0.3f, 3.6f) : new Float3(1.5f, 0.35f, 2.8f);
-        var paint = jeep ? new Color(0.33f, 0.38f, 0.22f, 1f) : boat ? new Color(0.20f, 0.36f, 0.52f, 1f) : new Color(0.80f, 0.42f, 0.10f, 1f);
+        var paint = jeep ? new Color(0.22f, 0.26f, 0.14f, 1f) : boat ? new Color(0.20f, 0.36f, 0.52f, 1f) : new Color(0.80f, 0.42f, 0.10f, 1f);
         var mat = Mats.New(g.Shader);
         try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetColor("_MainColor", paint);
@@ -180,6 +180,23 @@ public sealed class Buggy
         foreach (float x in new[] { -0.9f, 0.9f }) foreach (float z in new[] { -1.25f, 1.25f })
             Detail(g, "Fender", VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
         Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
+        // Stencilled five-point star on the hood (centre pentagon + five point triangles) and two over-centre hood latches.
+        {
+            const float sy = 0.546f, sz = 1.12f, ro = 0.19f, ri = 0.075f;
+            Float3 P(float a, float r) => new(MathF.Sin(a) * r, sy, sz + MathF.Cos(a) * r);
+            var polys = new List<Float3[]>();
+            var pent = new Float3[5];
+            for (int k = 0; k < 5; k++) pent[k] = P(MathF.PI * 2f * k / 5f + MathF.PI / 5f, ri);
+            polys.Add(pent);
+            for (int k = 0; k < 5; k++)
+            {
+                float a = MathF.PI * 2f * k / 5f;
+                polys.Add([P(a - MathF.PI / 5f, ri), P(a, ro), P(a + MathF.PI / 5f, ri)]);
+            }
+            Detail(g, "HoodStar", Meshes.Faces(polys.ToArray()), Float3.Zero, new Color(0.6f, 0.6f, 0.55f, 1f));
+            foreach (float x in new[] { -0.74f, 0.74f })
+                Detail(g, "HoodLatch", Meshes.RoundedBox(new Float3(0.03f, 0.09f, 0.05f), 0.01f), new Float3(x, 0.48f, 1.2f), dark);
+        }
         foreach (float x in new[] { -0.6f, 0.6f })
             HeadLamp(g, VehicleModels.Lamp(0.12f), 0.12f, new Float3(x, 0.4f, 1.72f), Float3.Zero);
         Detail(g, "Windshield", VehicleModels.Windshield(), new Float3(0f, 0.85f, 0.5f), new Color(0.16f, 0.23f, 0.29f, 1f), new Float3(-12f, 0f, 0f));
