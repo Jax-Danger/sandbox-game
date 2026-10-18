@@ -288,6 +288,7 @@ public static partial class MapBuilder
             float s = 1.2f + (i % 4) * 0.7f;
             // Lumpy boulders (were rotated boxes); a box collider sized to the core keeps physics simple.
             Shape(scene, shader, $"~Rock {i}", Meshes.Rock(s * 0.62f, 20 + i % 6), new Float3(x, HillsHeight(x, z) + s * 0.2f, z), rock, new Float3(s * 0.9f, s * 0.7f, s * 0.9f), new Float3(0f, i * 37f, 0f));
+            if (!Application.IsHeadless) Shape(scene, shader, $"~Rock moss {i}", Meshes.RockMoss(s * 0.62f, 20 + i % 6), new Float3(x, HillsHeight(x, z) + s * 0.2f, z), new Color(0.14f, 0.2f, 0.08f, 1f), euler: new Float3(0f, i * 37f, 0f));
         }
         // Scattered trees on the hills (none on the spawn plateau, the lake or the rim).
         var bark = new Color(0.38f, 0.27f, 0.17f, 1f);

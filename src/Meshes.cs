@@ -483,6 +483,27 @@ public static class Meshes
     }
 
     /// <summary>Chiselled boulder: a sphere cut by random planes, flat shaded so facets read crisply.</summary>
+    /// <summary>Moss/lichen cap for <see cref="Rock"/>: the rock's upward-facing facets (plus a ragged noisy edge) lifted 1 cm.</summary>
+    public static Mesh RockMoss(float r, int seed)
+    {
+        string key = $"rockmoss{r:0.###},{seed}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        Mesh rock = Rock(r, seed);
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        uint[] ri = rock.Indices; Float3[] rv = rock.Vertices, rn = rock.Normals;
+        for (int t = 0; t + 2 < ri.Length; t += 3)
+        {
+            Float3 c = (rv[ri[t]] + rv[ri[t + 1]] + rv[ri[t + 2]]) / 3f, cn = SafeN(rn[ri[t]] + rn[ri[t + 1]] + rn[ri[t + 2]]);
+            float wob = MathF.Sin(c.X * 7.3f + seed) * MathF.Cos(c.Z * 6.1f - seed) * 0.25f;
+            if (cn.Y + wob < 0.78f) continue;
+            Float3 a = rv[ri[t]], b = rv[ri[t + 1]], cc = rv[ri[t + 2]];
+            Float3 fn = SafeN(Float3.Cross(b - a, cc - a));
+            bool flip = Float3.Dot(fn, c) < 0f; if (flip) fn = -fn; // face outward, whatever the source winding
+            foreach (Float3 p in flip ? new[] { a, cc, b } : new[] { a, b, cc }) { v.Add(p + fn * 0.012f); n.Add(fn); uv.Add(new Float2(p.X + p.Y * 0.5f, p.Z - p.Y * 0.3f)); idx.Add((uint)v.Count - 1); }
+        }
+        return _cache[key] = Build(v, n, uv, idx);
+    }
+
     public static Mesh Rock(float r, int seed)
     {
         string key = $"rock{r:0.###},{seed}";
