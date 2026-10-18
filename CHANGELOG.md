@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.8 — 2026-10-18
+- NPC trousers vary (denim, charcoal, khaki, brown, faded denim) on a different cycle from shirts; police keep navy.
+
 ## v0.14.7 — 2026-10-18
 - Town windows light up at night: about half the facade panes glow warm after dusk (lit rooms), unchanged by day.
 

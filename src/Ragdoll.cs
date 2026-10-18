@@ -55,7 +55,9 @@ public sealed class Ragdoll
             NpcTeam.Citizen => citizenShirts[_counter % citizenShirts.Length],
             _ => new Color(0.30f, 0.45f, 0.70f, 1f),
         };
-        var pants = team == NpcTeam.Police ? new Color(0.08f, 0.10f, 0.16f, 1f) : new Color(0.22f, 0.24f, 0.28f, 1f);
+        // Trousers vary per NPC (denim, charcoal, khaki, brown, faded denim) on a different cycle from shirts; police keep navy.
+        Color[] trousers = [new(0.2f, 0.27f, 0.42f, 1f), new(0.22f, 0.24f, 0.28f, 1f), new(0.55f, 0.48f, 0.34f, 1f), new(0.3f, 0.22f, 0.16f, 1f), new(0.27f, 0.33f, 0.44f, 1f)];
+        var pants = team == NpcTeam.Police ? new Color(0.08f, 0.10f, 0.16f, 1f) : trousers[(_counter * 3 + 1) % trousers.Length];
 
         for (int i = 0; i < Defs.Length; i++)
         {
