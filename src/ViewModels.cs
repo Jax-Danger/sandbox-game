@@ -444,8 +444,19 @@ public static partial class ViewModels
             {
                 Std(V(0.12f, -0.175f, 0.36f), -4f);
                 Bone("muzzle", "weapon", V(0f, 0.082f, 0.215f));
-                k.Sw("weapon", White, Finish.Gloss, Float3.UnitX, 0.3f,
-                    new Sec(V(0, 0.08f, -0.07f), 0.0235f, 0.026f, 5f), new Sec(V(0, 0.081f, 0.05f), 0.025f, 0.028f, 5f), new Sec(V(0, 0.08f, 0.155f), 0.022f, 0.024f, 4.5f));
+                // Body: sculpted shell — fuller over the grip, humped top, tapering into the emitter collar.
+                k.Sw("weapon", White, Finish.Gloss, Float3.UnitX, 0.45f,
+                    new Sec(V(0, 0.079f, -0.078f), 0.021f, 0.024f, 3.6f), new Sec(V(0, 0.081f, -0.04f), 0.0245f, 0.0275f, 3.8f), new Sec(V(0, 0.083f, 0.03f), 0.0255f, 0.029f, 3.8f),
+                    new Sec(V(0, 0.082f, 0.1f), 0.0235f, 0.026f, 3.6f), new Sec(V(0, 0.081f, 0.15f), 0.019f, 0.021f, 3.2f), new Sec(V(0, 0.082f, 0.162f), 0.0165f, 0.0175f, 3f));
+                // Panel seam ring, side vent slots, top fin rail.
+                k.Lz("weapon", Black, Finish.Polymer, V(0, 0.082f, 0.098f), (0.0262f, 0f), (0.0266f, 0.0015f), (0.0262f, 0.003f));
+                foreach (float sx in new[] { -1f, 1f })
+                    for (int vi = 0; vi < 3; vi++)
+                        k.Bar("weapon", Black, Finish.Polymer, V(sx * 0.0255f, 0.088f - vi * 0.0075f, 0.035f), V(sx * 0.0255f, 0.088f - vi * 0.0075f, 0.075f), 0.0012f, 0.0018f, 4f, 0.6f);
+                k.Bar("weapon", new Color(0.82f, 0.84f, 0.87f, 1f), Finish.Gloss, V(0, 0.112f, -0.02f), V(0, 0.111f, 0.09f), 0.004f, 0.0045f, 3f, 0.6f);
+                // Emitter coils glowing in the accent colour.
+                for (int ci = 0; ci < 3; ci++)
+                    k.Lz("weapon", Accent, Finish.Gloss, V(0, 0.082f, 0.168f + ci * 0.012f), (0.0128f, 0f), (0.0138f, 0.002f), (0.0138f, 0.005f), (0.0128f, 0.007f));
                 k.Sw("weapon", Black, Finish.Polymer, Float3.UnitX, 0.4f, new Sec(V(0, 0.058f, -0.065f), 0.0238f, 0.0065f, 5f), new Sec(V(0, 0.057f, 0.15f), 0.0224f, 0.0065f, 5f));
                 k.Bar("weapon", Accent, Finish.Gloss, V(0.0002f, 0.093f, -0.06f), V(0.0002f, 0.093f, 0.14f), 0.0254f, 0.0012f, 5f, 0.3f);
                 k.Lz("weapon", Black, Finish.Metal, V(0, 0.082f, 0.155f), (0.015f, 0f), (0.0125f, 0.012f), (0.0105f, 0.05f), (0.0125f, 0.054f), (0.0125f, 0.062f), (0.006f, 0.064f), (0f, 0.062f));

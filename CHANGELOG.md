@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.4 — 2026-10-18
+- Tool gun view model: sculpted shell tapering into the emitter, panel seam, side vent slots, top fin rail and three glowing emitter coils.
+
 ## v0.6.3 — 2026-10-18
 - Town plaza: laws board on turned posts with finials, framed back panel and a little roof; ATM is a rounded kiosk with screen bezel and hood, angled keypad shelf, card and cash slots. New screenshot states `townatm`, `townboard`.
 
