@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.6 — 2026-10-18
+- Airboat: wire fan guard (12 spokes, two inner hoops), three linked rudder blades with a tie bar, grey rub rails along the sheer, non-slip deck pad, bow cleat and red/green navigation lights; smaller NPC collar flaps
+
 ## v0.8.5 — 2026-10-18
 - NPC faces: white eyeballs with dark irises and catch-lights, upper lid creases and lower lids, heavier brows, shaped lips with a mouth line, slimmer nose, sideburns, a side-parted fringe and a hairline set back off the brows
 

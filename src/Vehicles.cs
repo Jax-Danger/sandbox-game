@@ -213,7 +213,27 @@ public sealed class Buggy
             float a = i * MathF.Tau / 6f;
             Detail(g, "GuardSpoke", VehicleModels.Pipe(0.01f, Float3.UnitZ, new Float3(0f, 0f, 0f), new Float3(MathF.Cos(a) * 0.84f, MathF.Sin(a) * 0.84f, 0f)), new Float3(0f, 1.25f, -1.6f), new Color(0.3f, 0.3f, 0.32f, 1f));
         }
-        Detail(g, "Rudder", Meshes.Sweep([new Meshes.Sec(new Float3(0f, -0.4f, 0f), 0.025f, 0.2f, 2.5f), new Meshes.Sec(new Float3(0f, 0.4f, -0.03f), 0.02f, 0.16f, 2.5f)], Float3.UnitX, 14, 0.5f), new Float3(0f, 1.2f, -1.75f), dark);
+        // Fan guard: denser spokes plus two inner hoops, so it reads as a wire cage rather than a lone ring.
+        for (int i = 0; i < 12; i++)
+        {
+            float a = (i + 0.5f) * MathF.Tau / 12f;
+            Detail(g, "GuardSpoke", VehicleModels.Pipe(0.008f, Float3.UnitZ, new Float3(MathF.Cos(a) * 0.2f, MathF.Sin(a) * 0.2f, 0f), new Float3(MathF.Cos(a) * 0.84f, MathF.Sin(a) * 0.84f, 0f)), new Float3(0f, 1.25f, -1.6f), new Color(0.3f, 0.3f, 0.32f, 1f));
+        }
+        Detail(g, "Hoop", VehicleModels.Ring(0.58f, 0.012f), new Float3(0f, 1.25f, -1.6f), new Color(0.3f, 0.3f, 0.32f, 1f));
+        Detail(g, "Hoop", VehicleModels.Ring(0.32f, 0.012f), new Float3(0f, 1.25f, -1.6f), new Color(0.3f, 0.3f, 0.32f, 1f));
+        // Three linked rudder blades in the prop wash, with a tie bar.
+        foreach (float x in new[] { -0.42f, 0f, 0.42f })
+            Detail(g, "Rudder", Meshes.Sweep([new Meshes.Sec(new Float3(0f, -0.45f, 0.02f), 0.01f, 0.12f, 2.5f), new Meshes.Sec(new Float3(0f, 0f, 0f), 0.012f, 0.14f, 2.5f), new Meshes.Sec(new Float3(0f, 0.45f, -0.03f), 0.009f, 0.11f, 2.5f)], Float3.UnitX, 14, 0.5f), new Float3(x, 1.2f, -1.82f), dark);
+        Detail(g, "TieBar", VehicleModels.Pipe(0.012f, Float3.UnitY, new Float3(-0.46f, 0f, 0f), new Float3(0.46f, 0f, 0f)), new Float3(0f, 0.8f, -1.66f), dark);
+        // Hull: grey rub rail along the sheer, a chine strake, non-slip deck pad, bow cleat and navigation lights.
+        var rub = new Color(0.22f, 0.23f, 0.25f, 1f);
+        foreach (float x in new[] { -1f, 1f })
+        {
+            Detail(g, "RubRail", VehicleModels.BentPipe(0.03f, 0.25f, Float3.UnitY, new Float3(x * 0.9f, 0.13f, -1.8f), new Float3(x * 0.955f, 0.14f, -1.4f), new Float3(x * 0.955f, 0.14f, 1.1f), new Float3(x * 0.85f, 0.2f, 1.7f), new Float3(x * 0.6f, 0.3f, 2.1f), new Float3(x * 0.3f, 0.33f, 2.27f)), Float3.Zero, rub);
+            Detail(g, "NavLight", Meshes.Sphere(0.035f), new Float3(x * 0.42f, 0.33f, 2.05f), x < 0 ? new Color(0.9f, 0.1f, 0.08f, 1f) : new Color(0.1f, 0.8f, 0.2f, 1f));
+        }
+        Detail(g, "DeckPad", Meshes.RoundedBox(new Float3(1.3f, 0.012f, 1.6f), 0.006f), new Float3(0f, 0.175f, 0.55f), new Color(0.32f, 0.34f, 0.36f, 1f));
+        Detail(g, "Cleat", Meshes.Sweep([new Meshes.Sec(new Float3(-0.08f, 0f, 0f), 0.012f, 0.012f), new Meshes.Sec(new Float3(0f, 0.035f, 0f), 0.016f, 0.012f), new Meshes.Sec(new Float3(0.08f, 0f, 0f), 0.012f, 0.012f)], Float3.UnitZ, 10, 0.8f), new Float3(0f, 0.3f, 2.12f), new Color(0.7f, 0.71f, 0.72f, 1f));
     }
 
     public float Thrust { get; private set; }
