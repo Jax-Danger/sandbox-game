@@ -824,6 +824,13 @@ public sealed class SelfTest
         Check(!house.Open && Blocked(), "E closes it again");
         g.Roleplay.ToggleLock(house);
         Check(house.Locked && g.Roleplay.UseDoor(house).StartsWith("Opened") && !house.Locked, "owner locks, then unlocks with E");
+        {
+            Ragdoll friend = EntityCatalog.SpawnDummy(g, g.Player.FeetPosition + new Float3(2f, 0f, 0f), 0f, false, NpcTeam.Citizen);
+            string gave = g.Roleplay.GiveKey(house, false);
+            bool has = house.SharedKeys.Contains(friend.Name);
+            string back = g.Roleplay.GiveKey(house, true);
+            Check(has && house.SharedKeys.Count == 0 && back.StartsWith("Took back"), $"owner gives a nearby NPC a door key and takes it back ({gave} / {back})");
+        }
         Door store = Town.Find("door_generalstore")!;
         Check(g.Roleplay.BuyOrSellDoor(store).Contains("isn't for sale") && g.Roleplay.ToggleLock(store).Contains("keys"), "city doors can't be bought or locked");
         Door cell = Town.Find("door_cell")!;

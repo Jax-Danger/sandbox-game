@@ -80,7 +80,7 @@ public sealed class Hud
         {
             keys.Add((Binds.Name("use"), (door.Locked || (rp.Active && door.ForSale)) && !rp.CanUnlock(door) ? (door.ForSale ? "Locked" : "Knock") : door.Open ? "Close" : "Open"));
             if (rp.Active && door.Owner == "" && door.Price > 0) keys.Add(("F2", $"Buy ${door.Price:N0}"));
-            if (rp.Active && door.Owner == "you") { keys.Add(("L", door.Locked ? "Unlock" : "Lock")); keys.Add(("F2", "Sell")); }
+            if (rp.Active && door.Owner == "you") { keys.Add(("L", door.Locked ? "Unlock" : "Lock")); keys.Add(("F2", "Sell")); keys.Add(("K", door.SharedKeys.Count > 0 ? $"Give key ({door.SharedKeys.Count} shared)" : "Give key")); }
             else if (rp.CanUnlock(door) && door.Jobs.Length > 0) keys.Add(("L", door.Locked ? "Unlock" : "Lock"));
         }
         else keys.Add((Binds.Name("use"), "Use ATM"));

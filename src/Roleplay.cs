@@ -213,6 +213,33 @@ public sealed class RoleplaySystem(SandboxGame g)
         return $"You own {d.Title} · L to lock";
     }
 
+    /// <summary>K on your door: hand a key to the nearest living citizen/police/friendly NPC within 8 m. Shift+K takes all keys back.</summary>
+    public string GiveKey(Door d, bool revoke)
+    {
+        if (!Active) return "Keys can be shared in Roleplay";
+        if (d.Owner != "you") return "Only the owner can hand out keys";
+        if (revoke)
+        {
+            int n = d.SharedKeys.Count; d.SharedKeys.Clear();
+            return n == 0 ? $"Nobody else has a key to {d.Title}" : $"Took back {n} key{(n == 1 ? "" : "s")} to {d.Title}";
+        }
+        Ragdoll? best = null; float bd = 8f;
+        foreach (Ragdoll r in Ragdoll.All)
+        {
+            if (r.Team is NpcTeam.Hostile or NpcTeam.Dummy || !r.Pelvis.Alive) continue;
+            if (r.Pelvis.Go.GetComponent<DummyBrain>() is not { Limp: false }) continue;
+            float dist = Prowl.Vector.Float3.Length(r.Pelvis.Go.Transform.Position - g.Player.FeetPosition);
+            if (dist < bd) { bd = dist; best = r; }
+        }
+        if (best is null) return "Stand near someone (within 8 m) to give them a key";
+        string who = $"the {Combat.NpcName(best.Team).ToLowerInvariant()} #{best.Name[(best.Name.LastIndexOf('#') + 1)..]}";
+        if (!d.SharedKeys.Add(best.Name)) return $"{Cap(who)} already has a key to {d.Title}";
+        g.Sounds.Play("sfx_coin", 0.4f);
+        return $"Gave {who} a key to {d.Title}";
+    }
+
+    private static string Cap(string s) => s.Length == 0 ? s : char.ToUpperInvariant(s[0]) + s[1..];
+
     public string ToggleLock(Door d)
     {
         if (!CanUnlock(d)) return "You don't have the keys";

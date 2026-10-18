@@ -813,12 +813,13 @@ public sealed partial class SandboxGame
     /// <summary>E / F2 / L on town objects. Returns true when the key press was consumed.</summary>
     private bool UseWorld()
     {
-        bool e = Binds.Down("use"), f2 = Input.GetKeyDown(KeyCode.F2), l = Input.GetKeyDown(KeyCode.L);
-        if (!e && !f2 && !l) return false;
+        bool e = Binds.Down("use"), f2 = Input.GetKeyDown(KeyCode.F2), l = Input.GetKeyDown(KeyCode.L), k = Input.GetKeyDown(KeyCode.K);
+        if (!e && !f2 && !l && !k) return false;
         var (door, atm, _) = WorldAim();
         if (door is not null)
         {
-            string msg = e ? Roleplay.UseDoor(door) : f2 ? Roleplay.BuyOrSellDoor(door) : Roleplay.ToggleLock(door);
+            string msg = e ? Roleplay.UseDoor(door) : f2 ? Roleplay.BuyOrSellDoor(door) : l ? Roleplay.ToggleLock(door)
+                : Roleplay.GiveKey(door, Input.IsShiftPressed);
             if (msg.Length > 0) Notify(msg);
             return true;
         }
