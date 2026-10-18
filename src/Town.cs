@@ -226,7 +226,9 @@ public static partial class MapBuilder
         Town.ReleasePoint = new Float3(30f, 0.2f, 17f);
         var bars = new Color(0.20f, 0.20f, 0.22f, 1f);
         for (int i = 0; i < 9; i++)
-            Box(scene, shader, "~Bar", new Float3(cell.X - 2.6f + 0f, 1.4f, cell.Z - 2.6f + 0.3f + i * 0.6f), new Float3(0.08f, 2.8f, 0.08f), Float3.Zero, bars);
+            Shape(scene, shader, "~Bar", Meshes.RoundedCylinder(0.04f, 2.8f, 0.012f, 16), new Float3(cell.X - 2.6f, 1.4f, cell.Z - 2.6f + 0.3f + i * 0.6f), bars);
+        for (int k = 0; k < 2; k++)
+            Box(scene, shader, "~BarRail", new Float3(cell.X - 2.6f, 0.3f + k * 2.3f, cell.Z), new Float3(0.07f, 0.07f, 5.2f), Float3.Zero, bars);
         Box(scene, shader, "Cell wall W", new Float3(cell.X - 2.6f, 1.4f, cell.Z), new Float3(0.1f, 2.8f, 5.2f), Float3.Zero, new Color(0, 0, 0, 0), collide: true).GetComponent<MeshRenderer>()!.Enabled = false;
         Box(scene, shader, "Cell wall S L", new Float3(cell.X - 1.7f, 1.4f, cell.Z - 2.6f), new Float3(1.8f, 2.8f, 0.2f), Float3.Zero, new Color(0.55f, 0.58f, 0.64f, 1f));
         Box(scene, shader, "Cell wall S R", new Float3(cell.X + 1.7f, 1.4f, cell.Z - 2.6f), new Float3(1.8f, 2.8f, 0.2f), Float3.Zero, new Color(0.55f, 0.58f, 0.64f, 1f));
