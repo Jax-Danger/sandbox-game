@@ -190,9 +190,14 @@ public static partial class MapBuilder
         foreach (var (x, z) in new[] { (-14f, -14f), (14f, -14f), (-14f, 14f), (14f, 14f) })
         {
             Shape(scene, shader, "Tree trunk", Meshes.Lathe("trunk", [(0.0001f, -1.2f), (0.34f, -1.2f), (0.24f, -0.9f), (0.2f, 0f), (0.17f, 1.0f), (0.12f, 1.4f), (0.0001f, 1.45f)], 20), new Float3(x, 1.2f, z), new Color(0.40f, 0.28f, 0.18f, 1f), new Float3(0.4f, 2.4f, 0.4f));
-            Shape(scene, shader, "~Tree crown", Crown(0), new Float3(x, 3.4f, z), new Color(0.28f, 0.52f, 0.26f, 1f));
-            Shape(scene, shader, "~Tree crown b", Meshes.Sphere(0.85f), new Float3(x + 0.8f, 3.0f, z - 0.5f), new Color(0.24f, 0.47f, 0.23f, 1f));
-            Shape(scene, shader, "~Tree crown c", Meshes.Sphere(0.75f), new Float3(x - 0.7f, 3.1f, z + 0.6f), new Color(0.31f, 0.56f, 0.28f, 1f));
+            // Clustered leaf clumps in three greens plus a couple of visible branches.
+            int sd = (int)(MathF.Abs(x * 7f + z * 3f)) % 9;
+            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.35f, sd), new Float3(x, 3.5f, z), new Color(0.27f, 0.5f, 0.24f, 1f));
+            Shape(scene, shader, "~Tree crown b", Meshes.Blob(0.95f, sd + 1), new Float3(x + 0.9f, 3.0f, z - 0.4f), new Color(0.22f, 0.44f, 0.2f, 1f));
+            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.9f, sd + 2), new Float3(x - 0.8f, 3.1f, z + 0.5f), new Color(0.32f, 0.56f, 0.27f, 1f));
+            Shape(scene, shader, "~Tree crown d", Meshes.Blob(0.8f, sd + 3), new Float3(x + 0.1f, 4.4f, z + 0.2f), new Color(0.3f, 0.54f, 0.26f, 1f));
+            Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(0.8f, 0.7f, -0.35f), 0.09f, 0.04f), new Float3(x, 2.3f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
+            Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(-0.7f, 0.8f, 0.45f), 0.08f, 0.035f), new Float3(x, 2.4f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
             Shape(scene, shader, "Lamp post", PropMeshes.Post(0.07f, 4f), new Float3(x * 0.7f, 2f, z * 0.7f), new Color(0.12f, 0.12f, 0.13f, 1f), new Float3(0.14f, 4f, 0.14f));
             Shape(scene, shader, "~Lamp head", Meshes.Lathe("lantern", [(0.05f, -0.2f), (0.2f, -0.12f), (0.22f, 0.02f), (0.3f, 0.06f), (0.26f, 0.12f), (0.08f, 0.2f), (0.0001f, 0.24f)], 8), new Float3(x * 0.7f, 4.15f, z * 0.7f), new Color(0.15f, 0.15f, 0.16f, 1f));
             Shape(scene, shader, "~Lamp glass", Meshes.Sphere(0.15f), new Float3(x * 0.7f, 4.12f, z * 0.7f), new Color(1f, 0.92f, 0.70f, 1f));

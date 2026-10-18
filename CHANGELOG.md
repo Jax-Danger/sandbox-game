@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.2 — 2026-10-18
+- Foliage: new noise-displaced leaf-clump mesh; town trees are four clustered clumps in three greens with visible branches, potted plant uses the same clumps over soil.
+
 ## v0.6.1 — 2026-10-18
 - Jeep: seven-slot grille, side mirrors on stalks, tail lamps, hood latches, jerrycan. Airboat: engine with finned heads and exhaust stacks, fan guard spokes.
 

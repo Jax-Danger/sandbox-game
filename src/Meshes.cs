@@ -320,6 +320,48 @@ public static class Meshes
         return Build(v, n, uv, idx);
     }
 
+    /// <summary>Lumpy foliage blob: lat-long sphere displaced by layered sine noise (leaf clumps), smooth normals from the
+    /// displaced surface. Cached by (r, seed).</summary>
+    public static Mesh Blob(float r, int seed, float lump = 0.18f)
+    {
+        string key = $"blob{r:0.###},{seed},{lump:0.###}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        const int la = 18, lo = 28;
+        float ph = seed * 1.7f;
+        Float3 P(float th, float fi)
+        {
+            Float3 d = new(MathF.Sin(th) * MathF.Cos(fi), MathF.Cos(th), MathF.Sin(th) * MathF.Sin(fi));
+            float n = MathF.Sin(d.X * 5.1f + ph) * MathF.Sin(d.Y * 4.3f + ph * 0.7f) * MathF.Sin(d.Z * 4.7f + ph * 1.3f)
+                    + 0.5f * MathF.Sin(d.X * 9.3f - ph) * MathF.Sin(d.Z * 8.1f + ph) * MathF.Cos(d.Y * 7.7f);
+            float flat = d.Y < 0f ? 1f + d.Y * 0.35f : 1f; // flatter underside
+            return d * r * (1f + lump * n) * flat;
+        }
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        for (int i = 0; i <= la; i++)
+            for (int j = 0; j <= lo; j++)
+            {
+                float th = MathF.PI * i / la, fi = MathF.Tau * j / lo, e = 0.01f;
+                Float3 p = P(th, fi), a = P(MathF.Min(MathF.PI, th + e), fi) - P(MathF.Max(0f, th - e), fi), b = P(th, fi + e) - P(th, fi - e);
+                Float3 nn = SafeN(Float3.Cross(b, a));
+                if (i == 0 || i == la || Float3.Dot(nn, p) < 0f) nn = Float3.Dot(nn, p) < 0f ? -nn : nn;
+                if (i == 0 || i == la) nn = SafeN(p);
+                v.Add(p); n.Add(nn); uv.Add(new Float2((float)j / lo * 3f, (float)i / la * 2f));
+            }
+        for (int i = 0; i < la; i++)
+            for (int j = 0; j < lo; j++)
+            {
+                uint a = (uint)(i * (lo + 1) + j), b = a + 1, c = a + (uint)(lo + 1), d = c + 1;
+                idx.Add(a); idx.Add(b); idx.Add(c); idx.Add(b); idx.Add(d); idx.Add(c);
+            }
+        // Wind the triangles outward.
+        for (int t = 0; t < idx.Count; t += 3)
+        {
+            Float3 p0 = v[(int)idx[t]], p1 = v[(int)idx[t + 1]], p2 = v[(int)idx[t + 2]];
+            if (Float3.Dot(Float3.Cross(p1 - p0, p2 - p0), p0 + p1 + p2) < 0f) (idx[t + 1], idx[t + 2]) = (idx[t + 2], idx[t + 1]);
+        }
+        return _cache[key] = Build(v, n, uv, idx);
+    }
+
     /// <summary>Flat-shaded mesh from convex polygons (each wound counter-clockwise seen from outside). UVs are planar in metres.</summary>
     public static Mesh Faces(params Float3[][] polys)
     {
