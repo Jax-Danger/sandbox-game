@@ -493,6 +493,7 @@ public static partial class ViewModels
             }
             case "crowbar":
             {
+                static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
                 Float3 s = Nz(V(-0.25f, 0.55f, 0.8f));
                 Float3 back = Nz(V(0f, 0.25f, -1f) - s * Float3.Dot(V(0f, 0.25f, -1f), s));
                 Std(V(0.16f, -0.2f, 0.34f), -6f);
@@ -508,10 +509,18 @@ public static partial class ViewModels
                 k.Add("weapon", Sweep(shaft, back, 16, 0.4f), RedPaint, Finish.Paint);
                 k.Sw("weapon", Steel, Finish.Metal, back, 0.3f,
                     new Sec(-s * 0.074f, 0.0112f, 0.0112f, 2.4f), new Sec(-s * 0.1f - back * 0.006f, 0.0115f, 0.007f, 3f), new Sec(-s * 0.125f - back * 0.018f, 0.012f, 0.0022f, 4f));
+                // Worn bare-steel band where the paint rubs off at the bend, the claw's nail slot, and a chisel-end bevel line.
+                k.Sw("weapon", new Color(0.55f, 0.56f, 0.58f, 1f), Finish.Metal, back, 0.5f,
+                    new Sec(s * 0.478f + back * 0.006f, 0.0114f, 0.0113f, 2.4f, back), new Sec(s * 0.494f + back * 0.02f, 0.0111f, 0.0102f, 2.6f, back));
+                k.Bar("weapon", Black, Finish.Metal, s * 0.476f + back * 0.07f, s * 0.443f + back * 0.0865f, 0.0016f, 0.0016f, 4f, 0.2f);
+                k.Bar("weapon", Black, Finish.Metal, s * 0.488f + back * 0.055f, s * 0.476f + back * 0.07f, 0.0011f, 0.0011f, 4f, 0.2f);
+                k.Bar("weapon", Black, Finish.Metal, -s * 0.105f - back * 0.0075f + d0Pre(s) * 0.011f, -s * 0.105f - back * 0.0075f - d0Pre(s) * 0.011f, 0.0007f, 0.0007f, 4f, 0.2f);
+                // Stamped steel collar between tape and paint.
+                k.Sw("weapon", Steel, Finish.Metal, back, 0.4f, new Sec(s * 0.08f, 0.0128f, 0.0128f, 2.4f, back), new Sec(s * 0.088f, 0.0128f, 0.0128f, 2.4f, back));
                 var tape = new List<Sec>();
                 for (int i = 0; i <= 24; i++) { float h = -0.07f + 0.15f * i / 24f, r = 0.0148f + 0.0006f * MathF.Sin(i * 2.4f); tape.Add(new Sec(s * h, r, r, 2f)); }
                 k.Add("weapon", Sweep(tape, back, 18, 0.35f), new Color(0.07f, 0.07f, 0.08f, 1f), Finish.Rubber);
-                Float3 d0 = Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
+                Float3 d0 = d0Pre(s);
                 right = Fist(s, d0, 0.0152f, V(0.03f, -0.045f, -0.06f));
                 freeLeft = true;
                 d.Weight = 1.1f;

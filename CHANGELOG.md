@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.30 — 2026-10-18
+- Crowbar view model: steel collar above the grip tape, worn bare-steel band at the bend, claw nail slot and chisel bevel line.
+
 ## v0.8.29 — 2026-10-18
 - Town colour pass: lawn toned from bright green to a natural muted turf and plaza tree crowns use softer olive leaf greens (matching the Rolling Hills pass).
 
