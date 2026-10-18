@@ -29,6 +29,9 @@ public static partial class MapBuilder
     /// <summary>One window, built facing -Z with the wall face at z = 0, then turned by a and moved to o.</summary>
     private static int _winSeq;
     private static Color LitGlass(Color g) => new(g.R, g.G, g.B + 0.004f, 1f);
+    /// <summary>Pale diagonal glass streak colour. Lit panes put it in its own emissive bucket, so at night the streak
+    /// glows with the room instead of cutting a dark diagonal bar across the lit window.</summary>
+    private static Color Sheen(Color g) => new(g.R + 0.1f, g.G + 0.1f, g.B + 0.08f, 1f);
     private static void Window(Bucket b, float a, Float3 o, float w, float h, bool house, Color frame, Color trim, Color glass, Color shutter)
     {
         var parts = new List<(Color, Mesh)>();
@@ -40,7 +43,7 @@ public static partial class MapBuilder
         parts.Add((lit ? LitGlass(glass) : glass, Bx(w - 0.08f, h - 0.08f, 0.01f, 0, 0, -0.035f, 0.002f)));
         // Sheen: two diagonal pale streaks per pane (reads as glass, not blue paint).
         foreach (float sx in new[] { hw * 0.35f })
-            parts.Add((new Color(glass.R + 0.1f, glass.G + 0.1f, glass.B + 0.08f, 1f), Meshes.Faces(new Float3[] { L3(sx - 0.2f, -hh * 0.7f, -0.041f), L3(sx - 0.2f + 0.1f, -hh * 0.7f, -0.041f), L3(sx + 0.15f, hh * 0.7f, -0.041f), L3(sx + 0.05f, hh * 0.7f, -0.041f) }.Reverse().ToArray())));
+            parts.Add((lit ? LitGlass(Sheen(glass)) : Sheen(glass), Meshes.Faces(new Float3[] { L3(sx - 0.2f, -hh * 0.7f, -0.041f), L3(sx - 0.2f + 0.1f, -hh * 0.7f, -0.041f), L3(sx + 0.15f, hh * 0.7f, -0.041f), L3(sx + 0.05f, hh * 0.7f, -0.041f) }.Reverse().ToArray())));
         // Casing (proud of the wall), sash frame, mullion and transom.
         parts.Add((frame, Bx(w + 0.16f, 0.09f, 0.07f, 0, hh + 0.02f, -0.045f))); parts.Add((frame, Bx(0.09f, h + 0.13f, 0.07f, -hw - 0.035f, 0, -0.045f))); parts.Add((frame, Bx(0.09f, h + 0.13f, 0.07f, hw + 0.035f, 0, -0.045f)));
         parts.Add((frame, Bx(w, 0.05f, 0.05f, 0, -hh + 0.025f, -0.05f)));
@@ -266,10 +269,10 @@ public static partial class MapBuilder
         foreach (var (col, list) in b)
         {
             var fgo = Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
-            if (col.Equals(LitGlass(glass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
+            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass)))) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
             {
                 _batch.Remove(fgo);
-                try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 200, 130)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }
+                try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 168, 86)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }
                 Town.NightLamps.Add((wm, null));
             }
         }
