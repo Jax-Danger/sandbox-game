@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.15.5 — 2026-10-18
+- Buggy: twin black racing stripes following the nose cowl crown (screens/s10-buggy-d-c.png vs s10-buggy-a.png)
+
 ## v0.15.4 — 2026-10-18
 - RPG view model: sooty bore liner so the rear of the tube reads as a dark bore instead of bright olive paint; VM olive/walnut base tones deepened (screens/s10-rpg-g.png vs vm/r2/raw/s10e-vm_rpg.png)
 

@@ -76,6 +76,23 @@ public sealed class Buggy
         // rear engine with air filter and twin exhausts. (Was a flat plank with a cage on it.)
         Detail(g, "Nose", VehicleModels.BuggyNose(), Float3.Zero, paint);
         Detail(g, "Dash", VehicleModels.BuggyDash(), Float3.Zero, dark);
+        // Twin racing stripes over the nose cowl, following its crown (top = centre y + half height of each Tub section).
+        {
+            (float z, float top)[] crown = [(0.45f, 0.36f), (0.8f, 0.4f), (1.1f, 0.35f), (1.32f, 0.25f), (1.44f, 0.16f)];
+            foreach (float sx in new[] { -0.075f, 0.075f })
+            {
+                var ss = new List<Meshes.Sec>();
+                for (int i = 0; i <= 16; i++)
+                {
+                    float z = 0.5f + 0.9f * i / 16f;
+                    int j = 0; while (j < crown.Length - 2 && z > crown[j + 1].z) j++;
+                    float t = Math.Clamp((z - crown[j].z) / (crown[j + 1].z - crown[j].z), 0f, 1f);
+                    float y = crown[j].top + (crown[j + 1].top - crown[j].top) * t + 0.009f + 0.012f * MathF.Max(0f, z - 1.1f) / 0.34f;
+                    ss.Add(new Meshes.Sec(new Float3(sx, y, z), 0.032f, 0.003f, 4f));
+                }
+                Detail(g, "Stripe", Meshes.Sweep(ss, Float3.UnitX, 10, 0.4f), Float3.Zero, new Color(0.06f, 0.06f, 0.065f, 1f));
+            }
+        }
         foreach (float x in new[] { -0.85f, 0.85f })
         {
             Detail(g, "Arch", VehicleModels.BuggyArch(x, -1.05f, 0.42f), Float3.Zero, paint * 0.9f);
