@@ -462,7 +462,20 @@ public static partial class ViewModels
                 Std(V(0.125f, -0.19f, 0.34f), -4f);
                 Bone("muzzle", "weapon", V(0f, 0.088f, 0.37f));
                 k.Lz("weapon", new Color(0.32f, 0.34f, 0.37f, 1f), Finish.Metal, V(0, 0.088f, -0.05f),
-                    (0f, 0f), (0.009f, 0.001f), (0.017f, 0.008f), (0.023f, 0.025f), (0.0262f, 0.06f), (0.0262f, 0.15f), (0.024f, 0.21f), (0.0215f, 0.24f), (0.0205f, 0.26f), (0f, 0.26f));
+                    (0f, 0.004f), (0.019f, 0.004f), (0.022f, 0.008f), (0.0245f, 0.02f), (0.0262f, 0.045f), (0.0262f, 0.15f), (0.024f, 0.21f), (0.0215f, 0.24f), (0.0205f, 0.26f), (0f, 0.26f));
+                // Rear: a recessed glowing power cell behind a six-rib vent grille in a knurled steel end ring (was a plain dome).
+                k.Lz("weapon", Steel, Finish.Metal, V(0, 0.088f, -0.052f), (0.0155f, 0f), (0.0235f, 0f), (0.025f, 0.004f), (0.025f, 0.012f), (0.0225f, 0.014f), (0.0155f, 0.014f));
+                for (int i = 0; i < 24; i++) { float an = Rad(i * 15f); k.Bar("weapon", Gunmetal, Finish.Metal, V(MathF.Sin(an) * 0.0252f, 0.088f + MathF.Cos(an) * 0.0252f, -0.05f), V(MathF.Sin(an) * 0.0252f, 0.088f + MathF.Cos(an) * 0.0252f, -0.04f), 0.0008f, 0.0008f, 2f, 0.9f, V(MathF.Cos(an), -MathF.Sin(an), 0f)); }
+                k.Add("weapon", LatheZ([(0f, 0f), (0.0158f, 0f), (0.0158f, 0.002f), (0f, 0.002f)]), new Color(0.25f, 0.9f, 1f, 1f), Finish.Gloss, V(0, 0.088f, -0.0485f), true);
+                for (int i = 0; i < 6; i++) { float an = Rad(i * 60f + 30f); k.Bar("weapon", Black, Finish.Metal, V(0, 0.088f, -0.0505f), V(MathF.Sin(an) * 0.0158f, 0.088f + MathF.Cos(an) * 0.0158f, -0.0505f), 0.0016f, 0.0026f, 3f, 0.6f, V(0, 0, 1)); }
+                k.Lz("weapon", Black, Finish.Metal, V(0, 0.088f, -0.0515f), (0f, 0f), (0.004f, 0f), (0.004f, 0.003f), (0f, 0.003f));
+                // Side cell windows: glowing slots between the cooling rings.
+                foreach (float sx in new[] { -1f, 1f })
+                    for (int i = 0; i < 3; i++)
+                    {
+                        k.Bar("weapon", Dark, Finish.Metal, V(sx * 0.0266f, 0.088f, -0.0015f + i * 0.04f), V(sx * 0.0266f, 0.088f, 0.0175f + i * 0.04f), 0.0014f, 0.0052f, 4f, 0.4f);
+                        k.Bar("weapon", new Color(0.25f, 0.9f, 1f, 1f), Finish.Gloss, V(sx * 0.0276f, 0.088f, 0.0005f + i * 0.04f), V(sx * 0.0276f, 0.088f, 0.0155f + i * 0.04f), 0.0008f, 0.0036f, 4f, 0.4f, null, true);
+                    }
                 for (int i = 0; i < 4; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.088f, -0.02f + i * 0.04f), (0.0266f, 0f), (0.0284f, 0.003f), (0.0284f, 0.013f), (0.0266f, 0.016f));
                 k.Lz("weapon", Steel, Finish.Metal, V(0, 0.088f, 0.2f), (0.023f, 0f), (0.029f, 0.008f), (0.0305f, 0.04f), (0.0275f, 0.05f), (0.017f, 0.052f), (0.0155f, 0.04f), (0f, 0.04f));
                 k.Add("weapon", Sphere(0.0145f), Accent, Finish.Gloss, V(0, 0.088f, 0.25f), true, 'L');

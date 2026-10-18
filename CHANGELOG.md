@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.5 — 2026-10-18
+- Physgun rear is a knurled steel end ring with a glowing cyan power cell behind a six-rib vent instead of a plain dome; glowing cell windows between the cooling rings (screens/vm/r2/raw/s7k-phys-c.png vs s7i-phys-c.png)
+
 ## v0.12.4 — 2026-10-18
 - Crowbar paint is chipped and scuffed (new Finish.Worn with ProcTex.WornPaint, wear concentrated along two knocked edges) instead of a glossy tube (screens/vm/r2/raw/s7h-crow-c.png vs s7a-crow-c.png)
 
