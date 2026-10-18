@@ -38,10 +38,20 @@ public static class CameraFeeds
         p.SetColor(new Color(0.18f, 0.19f, 0.21f, 1f));
         var lens = new GameObject("CameraLens");
         lens.SetParent(p.Go, false);
-        lens.Transform.LocalPosition = new Float3(0f, 0f, 0.3f);
+        // Smooth camcorder body (swept) on the crate collider, lathed lens barrel with a hood, glowing glass.
+        if (p.Go.GetComponent<MeshRenderer>() is { } body)
+            body.Mesh = Meshes.Sweep([new Meshes.Sec(new Float3(0f, 0f, -0.29f), 0.2f, 0.17f, 3.2f), new Meshes.Sec(new Float3(0f, 0.01f, -0.1f), 0.24f, 0.2f, 3.6f),
+                new Meshes.Sec(new Float3(0f, 0.01f, 0.12f), 0.24f, 0.2f, 3.6f), new Meshes.Sec(new Float3(0f, 0f, 0.26f), 0.2f, 0.17f, 3.2f)], Float3.UnitX, 28, 0.35f);
+        var barrel = new GameObject("CameraBarrel");
+        barrel.SetParent(p.Go, false);
+        barrel.Transform.LocalPosition = new Float3(0f, 0f, 0.2f);
+        MeshRenderer br = barrel.AddComponent<MeshRenderer>();
+        br.Mesh = Meshes.LatheZ([(0.0001f, 0f), (0.15f, 0f), (0.155f, 0.03f), (0.14f, 0.1f), (0.17f, 0.16f), (0.18f, 0.2f), (0.15f, 0.2f), (0.13f, 0.12f), (0.0001f, 0.12f)]);
+        var bm = Mats.New(g.Shader); bm.SetColor("_MainColor", new Color(0.08f, 0.08f, 0.09f, 1f)); br.Material = bm;
+        lens.Transform.LocalPosition = new Float3(0f, 0f, 0.322f);
         lens.Transform.LocalEulerAngles = new Float3(90f, 0f, 0f);
         MeshRenderer r = lens.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateCylinder(0.14f, 0.12f, 16);
+        r.Mesh = Meshes.RoundedCylinder(0.125f, 0.012f, 0.005f, 32);
         var m = Mats.New(g.Shader);
         m.SetColor("_MainColor", new Color(0.05f, 0.06f, 0.08f, 1f));
         if (!Application.IsHeadless) { m.SetTexture("_EmissionTex", ProcTex.Solid(40, 110, 255)); m.SetFloat("_EmissionIntensity", 1.5f); }

@@ -73,6 +73,7 @@ public sealed class Fx(SandboxGame g)
 
     private static readonly Dictionary<float, Mesh> _beams = [];
     /// <summary>A 1 m long (Z) beam mesh of the given thickness; scale Z to set length.</summary>
+    private static Mesh? _rocketMesh, _nadeMesh;
     public static Mesh UnitBeam(float thickness) => _beams.TryGetValue(thickness, out Mesh? m) ? m : _beams[thickness] = Mesh.CreateCube(new Float3(thickness, thickness, 1f));
 
     public void Sparks(Float3 at, Float3 normal, int count = 6)
@@ -159,7 +160,7 @@ public sealed class Fx(SandboxGame g)
 
     public void Rocket(Float3 from, Float3 dir)
     {
-        GameObject go = Prim("rocket", Mesh.CreateCube(new Float3(0.08f, 0.08f, 0.35f)), Mat("rocket", new Color(0.35f, 0.38f, 0.30f, 1f)), from);
+        GameObject go = Prim("rocket", _rocketMesh ??= Meshes.LatheZ([(0.0001f, -0.2f), (0.03f, -0.2f), (0.032f, -0.12f), (0.04f, -0.08f), (0.04f, 0.06f), (0.045f, 0.09f), (0.042f, 0.13f), (0.025f, 0.18f), (0.008f, 0.2f), (0.0001f, 0.205f)]), Mat("rocket", new Color(0.35f, 0.38f, 0.30f, 1f)), from);
         go.Transform.Forward = dir;
         Add(go, 6f, dir * 28f, tick: (t, dt) =>
         {
@@ -177,7 +178,7 @@ public sealed class Fx(SandboxGame g)
 
     public void Grenade(Float3 from, Float3 velocity)
     {
-        GameObject go = Prim("grenade", Mesh.CreateSphere(0.09f, 10, 12), Mat("nade", new Color(0.25f, 0.32f, 0.20f, 1f)), from);
+        GameObject go = Prim("grenade", _nadeMesh ??= Meshes.Lathe("fxnade", [(0.0001f, -0.075f), (0.04f, -0.072f), (0.06f, -0.05f), (0.066f, -0.01f), (0.062f, 0.03f), (0.045f, 0.06f), (0.024f, 0.07f), (0.024f, 0.095f), (0.0001f, 0.1f)], 20), Mat("nade", new Color(0.25f, 0.32f, 0.20f, 1f)), from);
         go.AddComponent<SphereCollider>().Radius = 0.09f;
         Rigidbody3D rb = go.AddComponent<Rigidbody3D>();
         rb.Mass = 0.5f;

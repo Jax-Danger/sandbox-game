@@ -217,7 +217,7 @@ public static class EntityCatalog
             case "ent_barrel": MakeBarrel(g, p); break;
             case { } m when m.StartsWith("mdl_"): if (ModelProps.Find(m) is { } def) ModelProps.Apply(g, p, def); break;
             case "ent_ball": MakeBall(p, keepColor: true); break;
-            case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); break;
+            case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); LightModel(g, p); break;
             case "ent_camera": CameraFeeds.Make(g, p); break;
             case "rp_money" or "rp_printer" or "rp_shipment": g.Roleplay.Decorate(p, entity, key); break;
             case "ent_button": MakeButton(g, p, Enum.TryParse(key, out KeyCode k) ? k : KeyCode.T); break;
@@ -250,12 +250,25 @@ public static class EntityCatalog
         return p;
     }
 
+    /// <summary>Work-lamp look on the light crate: lathed glass globe (prop colour) over a dark cage base.</summary>
+    private static void LightModel(SandboxGame g, Prop p)
+    {
+        if (p.Go.GetComponent<MeshRenderer>() is { } r)
+            r.Mesh = Meshes.Lathe("entlightglobe", [(0.0001f, -0.12f), (0.2f, -0.12f), (0.26f, 0f), (0.25f, 0.12f), (0.18f, 0.24f), (0.08f, 0.29f), (0.0001f, 0.3f)], 36);
+        var b = new GameObject("LightBase");
+        b.SetParent(p.Go, false);
+        MeshRenderer br = b.AddComponent<MeshRenderer>();
+        br.Mesh = Meshes.Lathe("entlightbase", [(0.0001f, -0.3f), (0.27f, -0.3f), (0.29f, -0.27f), (0.27f, -0.2f), (0.22f, -0.16f), (0.21f, -0.11f), (0.0001f, -0.11f)], 36);
+        var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Prowl.Vector.Color(0.12f, 0.12f, 0.13f, 1f)); br.Material = m;
+    }
+
     public static Prop SpawnLight(SandboxGame g, Prowl.Vector.Float3 pos)
     {
         Prop p = g.Props.Spawn(PropKind.SmallCrate, pos, 0f);
         p.Entity = "ent_light";
         p.Go.Name = p.Go.Name.Replace("Small Crate", "Light");
         p.SetColor(new Prowl.Vector.Color(1f, 0.92f, 0.7f, 1f));
+        LightModel(g, p);
         g.ToolGun.SetHit(p, pos + new Prowl.Vector.Float3(0f, 0.3f, 0f), Prowl.Vector.Float3.UnitY);
         ToolMode old = g.ToolGun.Mode;
         g.ToolGun.Mode = ToolMode.Light;
@@ -274,9 +287,16 @@ public static class EntityCatalog
         p.SetColor(new Prowl.Vector.Color(0.25f, 0.27f, 0.30f, 1f));
         var cap = new GameObject("ButtonCap");
         cap.SetParent(p.Go, false);
-        cap.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.32f, 0f);
+        cap.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.3f, 0f);
+        if (p.Go.GetComponent<MeshRenderer>() is { } housing) housing.Mesh = Meshes.RoundedBox(new Prowl.Vector.Float3(0.6f, 0.6f, 0.6f), 0.12f, 4);
+        var bezel = new GameObject("ButtonBezel");
+        bezel.SetParent(p.Go, false);
+        bezel.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.3f, 0f);
+        MeshRenderer bz = bezel.AddComponent<MeshRenderer>();
+        bz.Mesh = Meshes.Lathe("btnbezel", [(0.17f, -0.01f), (0.24f, -0.01f), (0.245f, 0.01f), (0.23f, 0.035f), (0.2f, 0.04f), (0.185f, 0.02f)], 40);
+        var bzm = Mats.New(g.Shader); bzm.SetColor("_MainColor", new Prowl.Vector.Color(0.75f, 0.76f, 0.78f, 1f)); bz.Material = bzm;
         MeshRenderer r = cap.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateCylinder(0.18f, 0.08f, 16);
+        r.Mesh = Meshes.Lathe("btncap", [(0.0001f, 0f), (0.175f, 0f), (0.18f, 0.03f), (0.17f, 0.06f), (0.12f, 0.085f), (0.0001f, 0.09f)], 40);
         var m = new Prowl.Runtime.Resources.Material(g.Shader);
         m.SetColor("_MainColor", new Prowl.Vector.Color(0.9f, 0.25f, 0.2f, 1f));
         r.Material = m;
