@@ -282,6 +282,10 @@ public sealed partial class SandboxGame : Game
                 Context.Open = true;
                 Context.Selected = Props.Props[1];
                 break;
+            case { } gal when gal.StartsWith("gal_"):
+                Menus.Go(Screen.Playing);
+                Gallery.Show(this, gal[4..]);
+                break;
             default:
                 if (ShotState is not null) { Menus.Go(Screen.Playing); ShotHooks?.Invoke(this, ShotState); }
                 break;

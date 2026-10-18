@@ -174,7 +174,7 @@ public sealed class WeaponSystem
             Current?.Vm?.Play("draw");
         }
         if (Current?.Vm is not { } vm) return;
-        vm.SetVisible(!g.InVehicle && !g.MenuBackdrop);
+        vm.SetVisible(!g.InVehicle && !g.MenuBackdrop && !Gallery.Active);
         vm.SetFov(camFov, g.Settings.ViewModelFov);
         vm.Update(dt, VmIn(g, mouse, Aiming && Current is Firearm));
         if (Environment.GetEnvironmentVariable("VMDBG") == "1" && Time.FrameCount % 60 == 0) Console.WriteLine($"vm {vm.Def.Id} en={vm.Root.EnabledInHierarchy} scene={vm.Root.Scene != null} muzzle={vm.MuzzlePosition} eye={g.Player.EyePosition} fwd={g.Player.Forward} kids={vm.Root.GetChildrenDeep().Count()}");

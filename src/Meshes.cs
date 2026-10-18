@@ -205,12 +205,14 @@ public static class Meshes
             if (!flatEnd)
             {
                 Sec e = secs[n0 - 1]; Float3 t = Tan(secs, n0 - 1); float r = MathF.Min(e.W, e.H) * round;
+                if (n0 > 1) r = MathF.Min(r, 0.45f * Float3.Length(e.P - secs[n0 - 2].P)); // never fold back past the previous section
                 secs[n0 - 1] = Shrink(e, t, r, 0f) with { P = e.P - t * r };
                 for (int k = 1; k <= 4; k++) secs.Add(Shrink(e with { P = e.P - t * r }, t, r, k / 4f));
             }
             if (!flatStart)
             {
                 Sec b = secs[0]; Float3 t = -Tan(secs, 0); float r = MathF.Min(b.W, b.H) * round;
+                if (secs.Count > 1) r = MathF.Min(r, 0.45f * Float3.Length(secs[1].P - b.P));
                 secs[0] = b with { P = b.P - t * r };
                 for (int k = 1; k <= 4; k++) secs.Insert(0, Shrink(b with { P = b.P - t * r }, t, r, k / 4f));
             }

@@ -74,13 +74,18 @@ public sealed class Ragdoll
                 r.Mesh = Meshes.Sphere(d.Size.X / 2f);
                 go.AddComponent<SphereCollider>().Radius = d.Size.X / 2f;
             }
-            else
+            else go.AddComponent<BoxCollider>().Size = d.Size; // colliders stay boxes (stable stacking)
+            // Sculpted look: swept limbs with hands, shoes, face and hair riding on the limb (visual only).
+            var (main, details) = Humans.Limb(d.Name);
+            r.Mesh = main;
+            foreach (Humans.Detail det in details)
             {
-                // Organic look: capsule limbs, softly rounded torso/pelvis. Colliders stay boxes (stable stacking).
-                bool limb = d.Name.Contains("arm") || d.Name.Contains("leg");
-                r.Mesh = limb ? Meshes.Capsule(MathF.Min(d.Size.X, d.Size.Z) / 2f, d.Size.Y + 0.04f)
-                              : Meshes.RoundedBox(d.Size, MathF.Min(d.Size.X, d.Size.Z) * 0.35f);
-                go.AddComponent<BoxCollider>().Size = d.Size;
+                var dg = new GameObject("detail");
+                dg.SetParent(go, false);
+                dg.Transform.LocalPosition = det.Offset;
+                MeshRenderer dr = dg.AddComponent<MeshRenderer>();
+                dr.Mesh = det.Mesh;
+                dr.Material = DetailMat(g, det.Tint, skin, shirt, pants);
             }
             body.Mass = d.Mass;
             g.World.Add(go);
@@ -116,6 +121,26 @@ public sealed class Ragdoll
     }
 
     public static readonly List<Ragdoll> All = [];
+
+    private static readonly Color[] HairColors = [new(0.12f, 0.08f, 0.05f, 1f), new(0.32f, 0.2f, 0.1f, 1f), new(0.06f, 0.06f, 0.06f, 1f), new(0.62f, 0.46f, 0.24f, 1f)];
+
+    private static Material DetailMat(SandboxGame g, Humans.Tint t, Color skin, Color shirt, Color pants)
+    {
+        Color c = t switch
+        {
+            Humans.Tint.Skin => skin,
+            Humans.Tint.Shoe => new Color(0.16f, 0.11f, 0.08f, 1f),
+            Humans.Tint.Hair => HairColors[_counter % HairColors.Length],
+            Humans.Tint.Eye => new Color(0.05f, 0.05f, 0.06f, 1f),
+            Humans.Tint.Belt => new Color(0.08f, 0.07f, 0.06f, 1f),
+            Humans.Tint.Pants => new Color(pants.R * 0.8f, pants.G * 0.8f, pants.B * 0.8f, 1f),
+            Humans.Tint.Cuff => new Color(shirt.R * 0.75f, shirt.G * 0.75f, shirt.B * 0.75f, 1f),
+            _ => shirt,
+        };
+        var m = Mats.New(g.Shader);
+        m.SetColor("_MainColor", c);
+        return m;
+    }
 
     public bool Alive => Limbs.Any(l => l.Alive);
 

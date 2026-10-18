@@ -5,8 +5,9 @@ using Prowl.Vector;
 namespace Sandbox;
 
 /// <summary>One visual part of a model prop. Shape: b = bevelled box, c = rounded cylinder, s = sphere, t = tyre, n = cone-ish (tapered cylinder).
-/// Paint parts share the prop's material, so the colour tool and the highlight affect them.</summary>
-public sealed record Part(char Shape, Float3 Size, Float3 Offset, Color Color, bool Paint = false, Float3 Rot = default);
+/// Paint parts share the prop's material, so the colour tool and the highlight affect them.
+/// <paramref name="M"/> = a ready-made mesh (swept/lathed) drawn at scale <paramref name="K"/>; <paramref name="Glow"/> = emissive.</summary>
+public sealed record Part(char Shape, Float3 Size, Float3 Offset, Color Color, bool Paint = false, Float3 Rot = default, Mesh? M = null, float K = 1f, bool Glow = false);
 
 /// <summary>A multi-part placeholder model with one box (or cylinder) collider. Real assets can replace it via the manifest id.</summary>
 public sealed record ModelDef(string Id, string Name, string Category, Float3 Collider, float Mass, string Surface, Part[] Parts,
@@ -195,7 +196,8 @@ public static class ModelProps
             MeshRenderer r = go.AddComponent<MeshRenderer>();
             Float3 s = part.Size;
             float min = MathF.Min(s.X, MathF.Min(s.Y, s.Z));
-            r.Mesh = part.Shape switch
+            if (part.K != 1f) go.Transform.LocalScale = new Float3(part.K);
+            r.Mesh = part.M ?? part.Shape switch
             {
                 'c' => Meshes.RoundedCylinder(s.X / 2f, s.Y, min * 0.15f, 28),
                 's' => Meshes.Sphere(s.X / 2f),
@@ -210,6 +212,8 @@ public static class ModelProps
                 {
                     m = Mats.New(shader);
                     m.SetColor("_MainColor", part.Color);
+                    if (part.Glow && !Application.IsHeadless)
+                        try { m.SetTexture("_EmissionTex", ProcTex.Solid((byte)(part.Color.R * 255), (byte)(part.Color.G * 255), (byte)(part.Color.B * 255))); m.SetFloat("_EmissionIntensity", 1.5f); } catch { }
                     mats[part.Color] = m;
                 }
                 r.Material = m;

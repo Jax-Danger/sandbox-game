@@ -61,22 +61,31 @@ public static class IconSubjects
         if (vmId is null) return null;
         ViewModelDef vm;
         try { vm = ViewModels.Create(vmId); } catch { return null; }
-        var src = vm.Parts.Where(p => p.Bone == "weapon").ToList();
+        // The weapon and its moving parts (slide, mag, pump, …) all rest at the weapon origin.
+        string[] bones = ["weapon", "slide", "mag", "charge", "pump", "rocket", "pin"];
+        var src = vm.Parts.Where(p => bones.Contains(p.Bone)).ToList();
         if (src.Count == 0) src = vm.Parts.Where(p => p.Bone == "hand_r").ToList();
         if (src.Count == 0) return null;
         const float k = 4f;
-        Part[] parts = src.Select(p => new Part(p.Shape is 'c' or 's' ? p.Shape : 'b', p.Size * k, p.Offset * k, p.Color, false, p.Rot)).ToArray();
         Float3 min = new(1e9f), max = new(-1e9f);
-        foreach (Part p in parts)
+        void Grow(Float3 a) { min = new Float3(MathF.Min(min.X, a.X), MathF.Min(min.Y, a.Y), MathF.Min(min.Z, a.Z)); max = new Float3(MathF.Max(max.X, a.X), MathF.Max(max.Y, a.Y), MathF.Max(max.Z, a.Z)); }
+        var parts = new List<Part>();
+        foreach (VmPart p in src)
         {
-            float r = MathF.Max(p.Size.X, MathF.Max(p.Size.Y, p.Size.Z)) / 2f;
-            Float3 h = p.Rot == default ? p.Size / 2f : new Float3(r);
-            min = new Float3(MathF.Min(min.X, p.Offset.X - h.X), MathF.Min(min.Y, p.Offset.Y - h.Y), MathF.Min(min.Z, p.Offset.Z - h.Z));
-            max = new Float3(MathF.Max(max.X, p.Offset.X + h.X), MathF.Max(max.Y, p.Offset.Y + h.Y), MathF.Max(max.Z, p.Offset.Z + h.Z));
+            if (p.M is { } mesh)
+            {
+                parts.Add(new Part('m', Float3.One, p.Offset * k, p.Color, false, p.Rot, mesh, k, p.Emissive));
+                foreach (Float3 v in mesh.Vertices ?? []) Grow((v + p.Offset) * k);
+            }
+            else
+            {
+                char sh = p.Shape is 'c' or 's' ? p.Shape : 'b';
+                parts.Add(new Part(sh, p.Size * k, p.Offset * k, p.Color, false, p.Rot, null, 1f, p.Emissive));
+                Grow((p.Offset - p.Size / 2f) * k); Grow((p.Offset + p.Size / 2f) * k);
+            }
         }
         Float3 c = (min + max) / 2f;
-        parts = parts.Select(p => p with { Offset = p.Offset - c }).ToArray();
-        return new ModelDef("w_" + id, id, "Weapon", max - min, 1f, "Metal", parts);
+        return new ModelDef("w_" + id, id, "Weapon", max - min, 1f, "Metal", parts.Select(p => p with { Offset = p.Offset - c }).ToArray());
     }
 
     private static readonly Color Skin = new(0.86f, 0.68f, 0.54f, 1f), Dark = new(0.14f, 0.14f, 0.16f, 1f);

@@ -1,0 +1,121 @@
+using Prowl.Runtime;
+using Prowl.Runtime.Resources;
+using Prowl.Vector;
+using static Sandbox.Meshes;
+
+namespace Sandbox;
+
+/// <summary>
+/// Sculpted humanoid meshes for ragdolls and NPCs: each limb is a smooth swept/lathed shape (deltoids, calves,
+/// a tapered waist and chest), plus detail parts that ride on the limb (hands, shoes, neck, face, hair, belt).
+/// Colliders stay the simple boxes/sphere in <see cref="Ragdoll"/>; this is visual only. Meshes are cached per limb.
+/// </summary>
+public static class Humans
+{
+    public enum Tint { Main, Skin, Shoe, Hair, Eye, Belt, Cuff, Pants }
+    public sealed record Detail(Mesh Mesh, Tint Tint, Float3 Offset = default);
+
+    private static readonly Dictionary<string, (Mesh Main, Detail[] Details)> _cache = [];
+    private static Float3 V(float x, float y, float z) => new(x, y, z);
+
+    /// <summary>Main mesh (drawn with the limb's own tinted material) and detail parts for a limb name from Ragdoll.Defs.</summary>
+    public static (Mesh Main, Detail[] Details) Limb(string name)
+    {
+        string key = name.EndsWith(" L") || name.EndsWith(" R") ? name[..^2] + (name.EndsWith(" L") ? "L" : "R") : name;
+        if (_cache.TryGetValue(key, out var hit)) return hit;
+        float side = name.EndsWith(" L") ? -1f : 1f;
+        (Mesh, Detail[]) r = name switch
+        {
+            "Pelvis" => Pelvis(),
+            "Torso" => Torso(),
+            "Head" => Head(),
+            _ when name.StartsWith("Upper arm") => UpperArm(side),
+            _ when name.StartsWith("Lower arm") => LowerArm(side),
+            _ when name.StartsWith("Upper leg") => UpperLeg(),
+            _ => LowerLeg(),
+        };
+        return _cache[key] = r;
+    }
+
+    private static Mesh Sw(float n, Float3 side, float round, params (float y, float w, float d, float z)[] s)
+        => Sweep(s.Select(x => new Sec(V(0f, x.y, x.z), x.w, x.d, n)).ToArray(), side, 22, round);
+
+    private static (Mesh, Detail[]) Pelvis()
+    {
+        Mesh hips = Sw(2.6f, Float3.UnitX, 0.5f, (0.10f, 0.158f, 0.098f, 0f), (0.02f, 0.172f, 0.104f, 0f), (-0.06f, 0.176f, 0.106f, -0.004f), (-0.11f, 0.16f, 0.096f, -0.006f));
+        Mesh belt = Sw(2.6f, Float3.UnitX, 0.3f, (0.105f, 0.162f, 0.101f, 0f), (0.07f, 0.166f, 0.103f, 0f));
+        Mesh buckle = Sweep([new Sec(V(0f, 0.088f, 0.1f), 0.022f, 0.015f, 4f), new Sec(V(0f, 0.088f, 0.108f), 0.022f, 0.015f, 4f)], Float3.UnitX, 12, 0.4f);
+        return (hips, [new(belt, Tint.Belt), new(buckle, Tint.Cuff)]);
+    }
+
+    private static (Mesh, Detail[]) Torso()
+    {
+        // Waist → chest → shoulders, slightly forward-leaning chest, flatter back.
+        Mesh body = Sw(2.4f, Float3.UnitX, 0.75f,
+            (-0.26f, 0.158f, 0.098f, 0f), (-0.15f, 0.163f, 0.104f, 0.004f), (-0.02f, 0.18f, 0.114f, 0.008f), (0.10f, 0.2f, 0.12f, 0.006f),
+            (0.17f, 0.212f, 0.11f, 0f), (0.225f, 0.19f, 0.088f, -0.006f));
+        Mesh neck = LatheY("neck", [(0.052f, 0.22f), (0.050f, 0.26f), (0.047f, 0.31f)]);
+        return (body, [new(neck, Tint.Skin)]);
+    }
+
+    private static Sec[] Ring(float y, float rx, float rz, float z)
+    {
+        var l = new List<Sec>();
+        for (int i = 0; i <= 24; i++) { float a = i * MathF.Tau / 24f; l.Add(new Sec(V(MathF.Cos(a) * rx, y, z + MathF.Sin(a) * rz), 0.012f, 0.008f, 2f, Float3.UnitY)); }
+        return l.ToArray();
+    }
+
+    private static Mesh LatheY(string key, (float R, float Y)[] p) => Lathe("hum_" + key, p, 24);
+
+    private static (Mesh, Detail[]) Head()
+    {
+        // Egg-shaped skull with a jaw, nose, ears, eyes and a hair cap.
+        Mesh skull = Sweep([
+            new Sec(V(0f, -0.125f, 0.012f), 0.045f, 0.045f), new Sec(V(0f, -0.11f, 0.018f), 0.072f, 0.075f), new Sec(V(0f, -0.07f, 0.01f), 0.098f, 0.105f),
+            new Sec(V(0f, -0.01f, 0f), 0.112f, 0.122f), new Sec(V(0f, 0.05f, -0.006f), 0.114f, 0.126f), new Sec(V(0f, 0.1f, -0.01f), 0.096f, 0.11f),
+            new Sec(V(0f, 0.128f, -0.012f), 0.05f, 0.06f)], Float3.UnitX, 26, 0.3f);
+        Mesh nose = Sweep([new Sec(V(0f, 0.012f, 0.112f), 0.012f, 0.01f), new Sec(V(0f, -0.02f, 0.13f), 0.016f, 0.014f), new Sec(V(0f, -0.035f, 0.126f), 0.017f, 0.012f)], Float3.UnitX, 12, 0.9f);
+        var ears = new List<Detail>();
+        foreach (float sx in new[] { -1f, 1f })
+            ears.Add(new(Sweep([new Sec(V(sx * 0.11f, 0.02f, -0.01f), 0.012f, 0.025f, 2f, Float3.UnitZ), new Sec(V(sx * 0.122f, 0.0f, -0.012f), 0.012f, 0.028f, 2f, Float3.UnitZ), new Sec(V(sx * 0.118f, -0.028f, -0.008f), 0.008f, 0.016f, 2f, Float3.UnitZ)], Float3.UnitZ, 12, 0.9f), Tint.Skin));
+        Mesh eyeL = Sphere(0.0115f), hair = Sweep([
+            new Sec(V(0f, 0.0f, -0.035f), 0.12f, 0.122f), new Sec(V(0f, 0.06f, -0.01f), 0.123f, 0.14f), new Sec(V(0f, 0.105f, -0.01f), 0.106f, 0.124f),
+            new Sec(V(0f, 0.14f, -0.014f), 0.054f, 0.07f)], Float3.UnitX, 26, 0.3f, flatStart: true);
+        var d = new List<Detail> { new(nose, Tint.Skin), new(Sweep([new Sec(V(-0.026f, -0.062f, 0.105f), 0.004f, 0.003f), new Sec(V(0f, -0.066f, 0.112f), 0.004f, 0.003f), new Sec(V(0.026f, -0.062f, 0.105f), 0.004f, 0.003f)], Float3.UnitY, 8, 0.9f), Tint.Eye), new(hair, Tint.Hair), new(eyeL, Tint.Eye, V(-0.04f, 0.018f, 0.104f)), new(eyeL, Tint.Eye, V(0.04f, 0.018f, 0.104f)) };
+        d.AddRange(ears);
+        return (skull, d.ToArray());
+    }
+
+    private static (Mesh, Detail[]) UpperArm(float side)
+    {
+        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.13f, 0.048f, 0.048f, 0.004f), (-0.17f, 0.046f, 0.046f, 0.004f));
+        Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
+        return (arm, [new(hem, Tint.Cuff)]);
+    }
+
+    private static (Mesh, Detail[]) LowerArm(float side)
+    {
+        Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
+        // Relaxed hand: palm, grouped fingers curling in, thumb.
+        Mesh palm = Sweep([new Sec(V(0f, -0.13f, 0f), 0.03f, 0.018f, 2.6f, Float3.UnitZ), new Sec(V(0f, -0.17f, 0.003f), 0.042f, 0.017f, 2.8f, Float3.UnitZ), new Sec(V(0f, -0.21f, 0.004f), 0.044f, 0.015f, 3f, Float3.UnitZ)], Float3.UnitZ, 16, 0.7f);
+        var fingers = new List<Sec>();
+        for (int i = 0; i <= 6; i++) { float a = i / 6f * 1.2f; fingers.Add(new Sec(V(0f, -0.21f - MathF.Sin(a) * 0.05f, 0.004f + (1f - MathF.Cos(a)) * 0.05f), 0.042f - i * 0.002f, 0.012f, 3.2f, Float3.UnitZ)); }
+        Mesh fing = Sweep(fingers, Float3.UnitZ, 16, 0.9f);
+        Mesh thumb = Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.046f, -0.18f, 0.03f), 0.011f, 0.01f), new Sec(V(-side * 0.04f, -0.205f, 0.045f), 0.0095f, 0.009f)], Float3.UnitX, 12, 0.9f);
+        return (fore, [new(palm, Tint.Skin), new(fing, Tint.Skin), new(thumb, Tint.Skin)]);
+    }
+
+    private static (Mesh, Detail[]) UpperLeg()
+        => (Sw(2.3f, Float3.UnitX, 0.9f, (0.22f, 0.084f, 0.08f, 0f), (0.12f, 0.08f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
+
+    private static (Mesh, Detail[]) LowerLeg()
+    {
+        Mesh calf = Sw(2.2f, Float3.UnitX, 0.9f, (0.23f, 0.058f, 0.058f, 0f), (0.14f, 0.06f, 0.064f, -0.008f), (0.0f, 0.052f, 0.052f, -0.004f), (-0.16f, 0.04f, 0.04f, 0f), (-0.2f, 0.04f, 0.04f, 0f));
+        Mesh cuff = Sw(2.2f, Float3.UnitX, 0.3f, (-0.155f, 0.046f, 0.046f, 0f), (-0.19f, 0.046f, 0.046f, 0f));
+        // Shoe swept heel → toe with a sole.
+        Mesh shoe = Sweep([new Sec(V(0f, -0.2f, -0.06f), 0.042f, 0.035f, 3f), new Sec(V(0f, -0.205f, -0.02f), 0.046f, 0.038f, 3f), new Sec(V(0f, -0.212f, 0.05f), 0.05f, 0.03f, 3f),
+            new Sec(V(0f, -0.218f, 0.11f), 0.046f, 0.024f, 3f), new Sec(V(0f, -0.22f, 0.135f), 0.036f, 0.02f, 3f)], Float3.UnitX, 18, 0.7f);
+        Mesh sole = Sweep([new Sec(V(0f, -0.238f, -0.07f), 0.044f, 0.008f, 4f), new Sec(V(0f, -0.24f, 0.05f), 0.052f, 0.008f, 4f), new Sec(V(0f, -0.239f, 0.14f), 0.04f, 0.008f, 4f)], Float3.UnitX, 18, 0.7f);
+        return (calf, [new(cuff, Tint.Pants), new(shoe, Tint.Shoe), new(sole, Tint.Belt)]);
+    }
+}
