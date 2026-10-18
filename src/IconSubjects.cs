@@ -152,9 +152,8 @@ public static class IconSubjects
         "npc_hostile" => M(id, new(0.8f, 1.9f, 0.4f), Person(new Color(0.78f, 0.22f, 0.20f, 1f), new Color(0.15f, 0.15f, 0.17f, 1f))),
         "ent_barrel" => M(id, new(0.7f, 1.0f, 0.7f),
         [
-            new('c', new(0.66f, 1.0f, 0.66f), Float3.Zero, new Color(0.80f, 0.16f, 0.12f, 1f)),
-            new('c', new(0.69f, 0.06f, 0.69f), new(0f, 0.3f, 0f), new Color(0.95f, 0.80f, 0.20f, 1f)),
-            new('c', new(0.69f, 0.06f, 0.69f), new(0f, -0.3f, 0f), new Color(0.95f, 0.80f, 0.20f, 1f)),
+            M(Meshes.Barrel(0.4f, 1.1f), new Color(0.80f, 0.16f, 0.12f, 1f)),
+            new('b', new(0.3f, 0.3f, 0.02f), new(0f, 0.05f, 0.39f), new Color(0.95f, 0.80f, 0.20f, 1f)),
         ]),
         "ent_ball" => M(id, new(0.8f, 0.8f, 0.8f), [new('s', new(0.8f, 0.8f, 0.8f), Float3.Zero, new Color(0.95f, 0.30f, 0.55f, 1f))]),
         "ent_camera" => M(id, new(0.6f, 0.5f, 0.7f),
