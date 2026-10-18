@@ -365,8 +365,10 @@ public static partial class ViewModels
                 Bone("sight", "weapon", V(-0.09f, 0.19f, -0.075f));
                 Bone("rocket", "weapon", Float3.Zero);
                 k.Lz("weapon", Olive, Finish.Paint, V(0, 0.115f, -0.36f),
-                    (0f, 0.375f), (0.03f, 0.375f), (0.03f, 0.36f), (0.0385f, 0.36f), (0.0395f, 0.364f), (0.0372f, 0.374f), (0.0365f, 0.384f), (0.0365f, 0.4f), (0.0365f, 0.72f), (0.0395f, 0.73f), (0.0395f, 0.85f), (0.0345f, 0.86f), (0.031f, 0.86f), (0.031f, 0.84f), (0f, 0.84f));
-                k.Lz("weapon", Dark, Finish.Rubber, V(0, 0.115f, -0.0f), (0f, 0.016f), (0.0302f, 0.016f), (0.0302f, 0.0f));
+                    (0.0385f, 0.36f), (0.0395f, 0.364f), (0.0372f, 0.374f), (0.0365f, 0.384f), (0.0365f, 0.4f), (0.0365f, 0.72f), (0.0395f, 0.73f), (0.0395f, 0.85f), (0.0345f, 0.86f), (0.031f, 0.86f), (0.031f, 0.84f), (0f, 0.84f));
+                // Rear: rolled lip into a sooty recessed bore instead of a flat cap.
+                k.Lz("weapon", Olive, Finish.Paint, V(0, 0.115f, 0.0f), (0.0292f, 0.03f), (0.03f, 0.008f), (0.034f, 0.0f), (0.0385f, 0.002f), (0.0385f, 0.015f));
+                k.Lz("weapon", new Color(0.04f, 0.04f, 0.035f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0f, 0.06f), (0.0293f, 0.06f), (0.0293f, 0.028f));
                 k.Lz("weapon", WoodC, Finish.Wood, V(0, 0.115f, 0.0f), (0.0368f, 0f), (0.0418f, 0.008f), (0.0425f, 0.2f), (0.0372f, 0.208f));
                 for (int i = 0; i < 3; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.115f, 0.03f + i * 0.08f), (0.0428f, 0f), (0.0432f, 0.003f), (0.0432f, 0.009f), (0.0428f, 0.012f));
                 // Warhead: classic double cone with a nose fuse, on the rocket bone.
@@ -380,11 +382,22 @@ public static partial class ViewModels
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(0, 0.075f, 0.17f), V(0, 0.075f, 0.24f), 0.012f, 0.008f, 4f, 0.4f);
                 k.GripBody("weapon", Nz(V(0f, 1f, 0.12f)), -0.05f, 0.06f, 0.0142f, 0.019f, WoodC, new Color(0.33f, 0.19f, 0.1f, 1f));
                 // Side-mounted optic on the left so aiming keeps the tube out of the centre of the view.
-                k.Sw("weapon", Black, Finish.Metal, Float3.UnitX, 0.5f, new Sec(V(-0.034f, 0.13f, -0.02f), 0.007f, 0.006f, 4f), new Sec(V(-0.082f, 0.182f, -0.02f), 0.007f, 0.006f, 4f));
-                k.Sw("weapon", new Color(0.16f, 0.18f, 0.13f, 1f), Finish.Paint, Float3.UnitX, 0.35f,
-                    new Sec(V(-0.09f, 0.19f, -0.06f), 0.0135f, 0.0165f, 3f), new Sec(V(-0.09f, 0.19f, 0.0f), 0.0145f, 0.0175f, 3f), new Sec(V(-0.09f, 0.19f, 0.05f), 0.0135f, 0.0165f, 3f));
+                k.Sw("weapon", Black, Finish.Metal, Float3.UnitX, 0.5f, new Sec(V(-0.034f, 0.13f, -0.02f), 0.016f, 0.0075f, 4f), new Sec(V(-0.08f, 0.18f, -0.02f), 0.024f, 0.007f, 4f));
+                k.Lz("weapon", new Color(0.16f, 0.18f, 0.13f, 1f), Finish.Paint, V(-0.09f, 0.19f, -0.065f),
+                    (0.0128f, 0f), (0.0142f, 0.004f), (0.0145f, 0.03f), (0.0158f, 0.034f), (0.0162f, 0.07f), (0.0158f, 0.1f), (0.0148f, 0.105f), (0.0145f, 0.115f), (0.0122f, 0.116f));
+                k.Lz("weapon", Black, Finish.Metal, V(-0.09f, 0.19f, -0.035f), (0.0161f, 0f), (0.0166f, 0.002f), (0.0166f, 0.008f), (0.0161f, 0.01f));
+                k.Lz("weapon", Black, Finish.Metal, V(-0.09f, 0.204f, -0.03f), (0f, 0.03f), (0.004f, 0.03f), (0.0045f, 0.026f), (0.0045f, 0f));
                 k.Lz("weapon", Black, Finish.Rubber, V(-0.09f, 0.19f, -0.09f), (0.0125f, 0.006f), (0.015f, 0f), (0.0165f, 0.004f), (0.0142f, 0.035f));
                 k.Lz("weapon", Black, Finish.Metal, V(-0.09f, 0.19f, 0.05f), (0.0145f, 0f), (0.0155f, 0.006f), (0.0125f, 0.008f), (0.0122f, 0.0f));
+                // Eyepiece glass (dark blue-green coated lens) and a chunkier eyecup so the optic reads as a scope end-on, not a ring.
+                k.Lz("weapon", new Color(0.05f, 0.09f, 0.11f, 1f), Finish.Gloss, V(-0.09f, 0.19f, -0.062f), (0f, 0.003f), (0.006f, 0.0025f), (0.0128f, 0f));
+                k.Lz("weapon", Black, Finish.Rubber, V(-0.09f, 0.19f, -0.1f), (0.0135f, 0.03f), (0.0168f, 0.026f), (0.019f, 0.012f), (0.0198f, 0.0f), (0.0172f, 0.0f), (0.0142f, 0.03f));
+                // Reticle at the objective: thin cross with a chevron, plus a faint lens ring, so ADS looks through the optic.
+                k.Bar("weapon", Black, Finish.Metal, V(-0.1025f, 0.19f, 0.052f), V(-0.0775f, 0.19f, 0.052f), 0.0006f, 0.0006f, 4f, 0f);
+                k.Bar("weapon", Black, Finish.Metal, V(-0.09f, 0.1775f, 0.052f), V(-0.09f, 0.1885f, 0.052f), 0.0006f, 0.0006f, 4f, 0f);
+                k.Bar("weapon", Black, Finish.Metal, V(-0.0935f, 0.1865f, 0.052f), V(-0.09f, 0.19f, 0.052f), 0.0005f, 0.0005f, 4f, 0f);
+                k.Bar("weapon", Black, Finish.Metal, V(-0.0865f, 0.1865f, 0.052f), V(-0.09f, 0.19f, 0.052f), 0.0005f, 0.0005f, 4f, 0f);
+                k.Lz("weapon", new Color(0.55f, 0.12f, 0.05f, 1f), Finish.Gloss, V(-0.09f, 0.19f, 0.051f), (0.0122f, 0f), (0.0118f, 0.0005f), (0.0118f, 0.002f));
                 right = RightPistol(0.0148f, 0.0245f, 0.012f, Trig(0.034f, 0.047f));
                 leftParent = "weapon"; leftPos = V(0f, 0.0f, 0.206f);
                 left = new HandSpec(new GripFrame(Float3.Zero, Nz(V(0f, 1f, 0.12f)), Float3.UnitX, 0.0142f, 0.019f),
