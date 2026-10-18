@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.21 — 2026-10-18
+- Arrest baton: own view model (black side-handle baton with ribbed grip and steel cap) instead of the red crowbar; shares the crowbar swing clips
+
 ## v0.17.20 — 2026-10-18
 - Medkit: own view model (white first-aid case carried by its handle, red crosses, latches, corner bumpers) instead of the frag grenade; vm_ shot states can show job-only weapons
 

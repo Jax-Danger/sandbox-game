@@ -34,7 +34,7 @@ public static partial class ViewModels
 
         switch (id)
         {
-            case "crowbar":
+            case "crowbar": case "baton":
                 // Forehand: wind up right, fast diagonal cut down-left, follow through, settle with a little overshoot.
                 clips["fire"] = new ClipBuilder(0.48f)
                     .Key(0f, Ease.Linear, B("arm_r"))

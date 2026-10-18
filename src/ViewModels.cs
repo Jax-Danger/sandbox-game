@@ -656,6 +656,31 @@ public static partial class ViewModels
                 d.Weight = 0.8f;
                 break;
             }
+            case "baton":
+            {
+                // Police side-handle baton held like a club: black polymer shaft tapering to a domed tip, ribbed
+                // rubber grip, steel end cap and a short side handle by the hand. (Was the red crowbar.)
+                Float3 s = Nz(V(-0.2f, 0.78f, 0.6f));
+                Float3 back = Nz(V(0f, 0.25f, -1f) - s * Float3.Dot(V(0f, 0.25f, -1f), s));
+                Float3 d0 = Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
+                Std(V(0.16f, -0.2f, 0.34f), -6f);
+                Bone("muzzle", "weapon", s * 0.45f);
+                Color body = new(0.07f, 0.07f, 0.08f, 1f), rub = new(0.13f, 0.13f, 0.14f, 1f);
+                Sec S(float h, float r) => new(s * h, r, r, 2f, back);
+                k.Add("weapon", Sweep([S(-0.088f, 0.0142f), S(0.09f, 0.0142f), S(0.1f, 0.0128f), S(0.44f, 0.0122f), S(0.465f, 0.0116f), S(0.476f, 0.0088f), S(0.481f, 0.004f)], back, 24, 0.5f), body, Finish.Polymer);
+                var grip = new List<Sec>();
+                for (int i = 0; i <= 48; i++) { float h = -0.074f + 0.15f * i / 48f; grip.Add(S(h, 0.0152f + 0.0006f * MathF.Max(0f, MathF.Sin(i * MathF.PI / 2f)))); }
+                k.Add("weapon", Sweep(grip, back, 20, 0.4f), rub, Finish.Rubber);
+                k.Add("weapon", Sweep([S(-0.086f, 0.0148f), S(-0.094f, 0.0148f), S(-0.1f, 0.0115f), S(-0.102f, 0.006f)], back, 20, 0.5f), Steel, Finish.Metal);
+                // Side handle: short stub sticking out behind the grip.
+                Float3 hb = s * 0.095f;
+                k.Sw("weapon", body, Finish.Polymer, s, 0.8f, new Sec(hb, 0.012f, 0.012f, 2.2f), new Sec(hb + back * 0.11f, 0.011f, 0.011f, 2.2f));
+                k.Sw("weapon", body, Finish.Polymer, s, 0.8f, new Sec(hb + back * 0.11f, 0.0118f, 0.0118f, 2.2f), new Sec(hb + back * 0.122f, 0.009f, 0.009f, 2.2f));
+                right = Fist(s, d0, 0.0156f, V(0.03f, -0.045f, -0.06f));
+                freeLeft = false;
+                d.Weight = 0.9f;
+                break;
+            }
             case "crowbar":
             {
                 static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));

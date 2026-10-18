@@ -563,7 +563,7 @@ public sealed class BatonWeapon : Weapon
     public override string Name => "Arrest Baton";
     public override int Slot => 1;
     public override Icon Icon => Icon.Gavel;
-    public override string? ViewModelId => "crowbar";
+    public override string? ViewModelId => "baton";
     public override bool Available(SandboxGame g) => g.Roleplay.Active && g.Roleplay.Job.Id == "police";
     private float _cd;
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
