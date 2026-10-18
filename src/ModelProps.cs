@@ -199,11 +199,11 @@ public static class ModelProps
             if (part.K != 1f) go.Transform.LocalScale = new Float3(part.K);
             r.Mesh = part.M ?? part.Shape switch
             {
-                'c' => Meshes.RoundedCylinder(s.X / 2f, s.Y, min * 0.15f, 28),
+                'c' => Meshes.RoundedCylinder(s.X / 2f, s.Y, min * 0.24f, 32),
                 's' => Meshes.Sphere(s.X / 2f),
                 't' => Meshes.Tyre(s.X / 2f, s.Y),
                 'n' => Meshes.Lathe($"cone{s.X:0.###},{s.Y:0.###}", [(0f, -s.Y / 2f), (s.X / 2f, -s.Y / 2f), (s.X * 0.12f, s.Y / 2f), (0f, s.Y / 2f)], 28),
-                _ => Meshes.RoundedBox(s, min * 0.18f, 2),
+                _ => Meshes.RoundedBox(s, min * 0.3f, 4),
             };
             if (part.Paint) r.Material = paint;
             else
