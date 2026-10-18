@@ -46,7 +46,7 @@ public sealed class DayNightCycle
             if (Sky(g) is { } m)
             {
                 Float3 toSun = -g.Sun.Transform.Forward;
-                Color zen = Lerp(new Color(0.008f, 0.012f, 0.035f, 1f), Lerp(new Color(0.2f, 0.42f, 0.88f, 1f), new Color(0.13f, 0.17f, 0.42f, 1f), warm), day);
+                Color zen = Lerp(new Color(0.008f, 0.012f, 0.035f, 1f), Lerp(new Color(0.13f, 0.34f, 0.86f, 1f), new Color(0.13f, 0.17f, 0.42f, 1f), warm), day);
                 m.SetColor("_Zenith", zen);
                 m.SetColor("_Horizon", fog);
                 m.SetColor("_Glow", new Color(1f, 0.48f, 0.22f, 1f));
