@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.0 — 2026-10-18
+- Police NPCs wear peaked caps: navy crown flaring over a black band, glossy two-sided visor and a gold cap badge, sized to the oval skull (screens/s11-police-d-c.png vs s11-police.png)
+
 ## v0.16.10 — 2026-10-18
 - Jeep: spare rim/cap in painted steel tones, tail lamps get a rubber bezel and trim ring with a deeper red lens; removed duplicate hood latches added in 0.15.3 (screens/s11-jeep-back3-c.png)
 

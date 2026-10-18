@@ -101,6 +101,28 @@ public sealed class Ragdoll
             rd.Limbs.Add(p);
         }
 
+        // Police peaked cap: navy crown flaring over a black band, glossy visor and a gold cap badge (scaled to the
+        // skull's oval so it sits on the hair instead of floating as a round tin).
+        if (team == NpcTeam.Police && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Head")) is { } head)
+        {
+            var cap = new GameObject("PoliceCap");
+            cap.SetParent(head.Go, false);
+            cap.Transform.LocalPosition = new Float3(0f, 0.0f, -0.004f);
+            cap.Transform.LocalScale = new Float3(1f, 1f, 1.1f);
+            var navy = Mats.New(g.Shader); navy.SetColor("_MainColor", new Color(0.07f, 0.09f, 0.17f, 1f));
+            var black = Mats.New(g.Shader); black.SetColor("_MainColor", new Color(0.03f, 0.03f, 0.035f, 1f));
+            var gold = Mats.New(g.Shader); gold.SetColor("_MainColor", new Color(0.78f, 0.6f, 0.2f, 1f));
+            if (!Application.IsHeadless) try { black.SetTexture("_SurfaceTex", ProcTex.Surface(0.25f, 0.1f)); gold.SetTexture("_SurfaceTex", ProcTex.Surface(0.3f, 0.9f)); } catch { }
+            void Part(string n, Prowl.Runtime.Resources.Mesh m, Material mt, Float3 p, Float3 e)
+            {
+                var o = new GameObject(n); o.SetParent(cap, false); o.Transform.LocalPosition = p; o.Transform.LocalEulerAngles = e;
+                MeshRenderer mr = o.AddComponent<MeshRenderer>(); mr.Mesh = m; mr.Material = mt;
+            }
+            Part("CapBand", Meshes.Lathe("capband", [(0.1135f, 0.05f), (0.1175f, 0.054f), (0.1185f, 0.092f), (0.115f, 0.097f)], 32), black, Float3.Zero, Float3.Zero);
+            Part("CapCrown", Meshes.Lathe("capcrown", [(0.114f, 0.094f), (0.12f, 0.11f), (0.134f, 0.15f), (0.136f, 0.16f), (0.128f, 0.167f), (0.0001f, 0.168f)], 32), navy, Float3.Zero, Float3.Zero);
+            Part("CapVisor", Meshes.Faces([new Float3(-0.095f, 0f, -0.01f), new Float3(-0.065f, 0f, 0.06f), new Float3(0.065f, 0f, 0.06f), new Float3(0.095f, 0f, -0.01f)], [new Float3(0.095f, -0.004f, -0.01f), new Float3(0.065f, -0.004f, 0.06f), new Float3(-0.065f, -0.004f, 0.06f), new Float3(-0.095f, -0.004f, -0.01f)]), black, new Float3(0f, 0.056f, 0.112f), new Float3(16f, 0f, 0f));
+            Part("CapBadge", Meshes.Lathe("capbadge", [(0.0001f, 0.006f), (0.012f, 0.004f), (0.014f, 0f), (0.0001f, 0f)], 12), gold, new Float3(0f, 0.12f, 0.124f), new Float3(80f, 0f, 0f));
+        }
         // Police carry their kit on the duty belt: holstered pistol on the right hip, baton on the left.
         if (team == NpcTeam.Police && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Pelvis")) is { } hips)
         {
