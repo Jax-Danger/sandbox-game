@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.8 — 2026-10-18
+- Hostile walkers carry a red crowbar (claw hook and steel chisel end) in the right hand.
+
 ## v0.9.7 — 2026-10-18
 - Town materials pass: garage roller shutter and frame toned from glaring white to galvanised grey (grimier bottom slats), darker concrete apron, sidewalks toned down, and building paths are five concrete flags with dark joints on a gravel bed.
 

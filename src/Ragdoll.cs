@@ -146,6 +146,26 @@ public sealed class Ragdoll
             }
         }
 
+        // Hostile walkers carry a crowbar in the right hand, hanging down along the forearm (hook forward).
+        if (team == NpcTeam.Hostile && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Lower arm R")) is { } fore && !Application.IsHeadless)
+        {
+            var bar = new GameObject("Crowbar"); bar.SetParent(fore.Go, false);
+            bar.Transform.LocalPosition = new Float3(0.0f, -0.2f, 0.035f);
+            bar.Transform.LocalEulerAngles = new Float3(-12f, 0f, 0f);
+            var red = Mats.New(g.Shader); red.SetColor("_MainColor", new Color(0.62f, 0.08f, 0.07f, 1f));
+            var stl = Mats.New(g.Shader); stl.SetColor("_MainColor", new Color(0.5f, 0.51f, 0.53f, 1f));
+            MeshRenderer br = bar.AddComponent<MeshRenderer>();
+            // Shaft from the fist down to the hooked claw (hook curls forward, +Z), chisel end above the fist.
+            br.Mesh = Meshes.Sweep([new Meshes.Sec(new Float3(0f, 0.08f, 0f), 0.011f, 0.011f, 2.4f), new Meshes.Sec(new Float3(0f, -0.5f, 0f), 0.011f, 0.011f, 2.4f),
+                new Meshes.Sec(new Float3(0f, -0.55f, 0.01f), 0.0108f, 0.0105f, 2.6f), new Meshes.Sec(new Float3(0f, -0.575f, 0.04f), 0.0104f, 0.009f, 3f),
+                new Meshes.Sec(new Float3(0f, -0.565f, 0.075f), 0.0098f, 0.006f, 3.4f), new Meshes.Sec(new Float3(0f, -0.54f, 0.09f), 0.0085f, 0.0025f, 4f)], Float3.UnitX, 14, 0.4f);
+            br.Material = red;
+            var tip = new GameObject("CrowbarChisel"); tip.SetParent(bar, false);
+            MeshRenderer tr = tip.AddComponent<MeshRenderer>();
+            tr.Mesh = Meshes.Sweep([new Meshes.Sec(new Float3(0f, 0.079f, 0f), 0.0112f, 0.0112f, 2.4f), new Meshes.Sec(new Float3(0f, 0.11f, -0.006f), 0.0115f, 0.007f, 3f), new Meshes.Sec(new Float3(0f, 0.135f, -0.016f), 0.012f, 0.0022f, 4f)], Float3.UnitX, 12, 0.3f);
+            tr.Material = stl;
+        }
+
         // Joints: socket on the child at the joint point, then a cone around the limb's long axis.
         for (int i = 0; i < Defs.Length; i++)
         {
