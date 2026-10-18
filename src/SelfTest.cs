@@ -68,6 +68,7 @@ public sealed class SelfTest
     }
 
     private float _jumpY0, _jumpPeak;
+    private Prop? _cone;
     public void Step(SandboxGame g)
     {
         if (Soak is not null) { Soak.Step(g); return; }
@@ -87,6 +88,9 @@ public sealed class SelfTest
                 break;
             case 120:
                 _ragdoll = Ragdoll.Spawn(g, new Float3(-10f, 0.3f, 6f), 0f, recordUndo: false);
+                // Ballasted traffic cone tipped past a plain box's balance point (27°) must rock back upright.
+                _cone = ModelProps.Spawn(g, ModelProps.All.First(d => d.Id == "cone"), new Float3(14f, 0.4f, 14f), 0f, recordUndo: false);
+                _cone.Go.Transform.LocalEulerAngles = new Float3(32f, 0f, 0f);
                 Console.WriteLine("Self-test: props settled");
                 foreach ((string name, Prop p) in _p)
                     Check(Y(p) < 2.5f && Y(p) > -0.5f, $"{name} fell and rests on the floor (y {Y(p):0.00})");
@@ -121,6 +125,7 @@ public sealed class SelfTest
             }
 
             case 260:
+                if (_cone is not null) { float up = Float3.Dot(_cone.Go.Transform.Up, Float3.UnitY); Check(up > 0.97f, $"tipped traffic cone rights itself (up {up:0.00})"); }
                 Check(MathF.Abs(Y(cube) - _frozenY) < 0.05f, $"frozen cube stays in the air (y {Y(cube):0.00})");
                 Aim(g, cube.Go.Transform.Position);
                 g.PhysGun.Update(g.Player, true, true, false, 0f);

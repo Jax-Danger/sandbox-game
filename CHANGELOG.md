@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.4 — 2026-10-18
+- Traffic cones are bottom-heavy (ModelDef.Ballast lowers the body origin/centre of mass 0.24 m below the geometric centre) and rock back upright instead of toppling; self-test tips one 32 degrees and checks it recovers
+
 ## v0.11.3 — 2026-10-18
 - Town sidewalks get a raised kerb, expansion joints every 1.5 m and sloped dropped-kerb ends onto the plaza and the grass instead of blunt slab ends (screens/s7-walkend-c.png, s7-walkend-e.png; before s7-walkend-a/b.png)
 

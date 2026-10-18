@@ -11,7 +11,7 @@ public sealed record Part(char Shape, Float3 Size, Float3 Offset, Color Color, b
 
 /// <summary>A multi-part placeholder model with one box (or cylinder) collider. Real assets can replace it via the manifest id.</summary>
 public sealed record ModelDef(string Id, string Name, string Category, Float3 Collider, float Mass, string Surface, Part[] Parts,
-    bool Seat = false, bool Round = false, Float3 Center = default)
+    bool Seat = false, bool Round = false, Float3 Center = default, float Ballast = 0f)
 {
     public string Entity => "mdl_" + Id;
     public float HalfHeight => Collider.Y / 2f;
@@ -100,7 +100,7 @@ public static partial class ModelProps
         new("barrier", "Concrete Barrier", "Construction", new(2.0f, 0.8f, 0.6f), 400f, "Concrete",
             BarrierParts()),
         new("cone", "Traffic Cone", "Construction", new(0.36f, 0.7f, 0.36f), 2f, "Rubber",
-            [M(PropMeshes.ConeBase(), 0, 0, 0, Orange, true), M(PropMeshes.Cone(), 0, 0, 0, Orange, true), M(PropMeshes.ConeBand(0.02f, 0.097f), 0, 0, 0, White), M(PropMeshes.ConeBand(-0.15f, 0.142f), 0, 0, 0, White)], Round: false),
+            [M(PropMeshes.ConeBase(), 0, 0, 0, Orange, true), M(PropMeshes.Cone(), 0, 0, 0, Orange, true), M(PropMeshes.ConeBand(0.02f, 0.097f), 0, 0, 0, White), M(PropMeshes.ConeBand(-0.15f, 0.142f), 0, 0, 0, White)], Round: false, Ballast: 0.24f),
         new("pallet", "Wooden Pallet", "Construction", new(1.2f, 0.15f, 1.0f), 15f, "Wood",
             PalletParts()),
         new("ibeam", "I-Beam", "Construction", new(4.0f, 0.3f, 0.2f), 120f, "Metal",
@@ -164,7 +164,7 @@ public static partial class ModelProps
 
     public static Prop Spawn(SandboxGame g, ModelDef def, Float3 pos, float yaw, bool recordUndo = true)
     {
-        Prop p = g.Props.Spawn(PropKind.Cube, pos, yaw, recordUndo);
+        Prop p = g.Props.Spawn(PropKind.Cube, pos - new Float3(0f, def.Ballast, 0f), yaw, recordUndo);
         Apply(g, p, def);
         return p;
     }
@@ -189,14 +189,19 @@ public static partial class ModelProps
                 if (side) cyl.Rotation = new Float3(0f, 0f, 90f);
                 cyl.Enabled = true;
             }
-            else { box.Enabled = false; box.Size = def.Collider; box.Enabled = true; }
+            else { box.Enabled = false; box.Size = def.Collider; box.Center = new Float3(0f, def.Ballast, 0f); box.Enabled = true; }
         }
         p.Body.Mass = def.Mass;
         p.SetSurface(SurfaceMaterial.Get(def.Surface));
         // Paint parts use the prop's own material: pick the first paint colour as the prop colour.
         if (def.Parts.FirstOrDefault(x => x.Paint) is { } paint) p.SetColor(paint.Color);
         if (p.Go.GetComponent<MeshRenderer>() is { } root) root.Enabled = false;
+        int before = p.Go.Children.Count;
         BuildParts(p.Go, def, g.Shader, p.Material);
+        // Ballast: the body origin (= centre of mass in Jitter) sits below the geometric centre, so bottom-heavy
+        // props like traffic cones stand back up instead of toppling at a nudge. Geometry and collider ride up.
+        if (def.Ballast != 0f)
+            for (int i = before; i < p.Go.Children.Count; i++) p.Go.Children[i].Transform.LocalPosition += new Float3(0f, def.Ballast, 0f);
         if (def.Seat) p.Go.AddComponent<Seat>().Def = def;
     }
 
