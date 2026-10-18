@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.4 — 2026-10-18
+- Plaza paving gets sandstone flag texture aligned to the 1.5 m joint grid; asphalt now tiles at a true 6 m (RoundedBox UVs are in metres) with toned-down tar cracks.
+
 ## v0.14.3 — 2026-10-18
 - Roads get a procedural asphalt texture (aggregate speckle, wear mottling, tar-sealed cracks, a repair patch) tiled square along the road; previously the concrete texture was stretched 6:1 across town avenues, showing as streaks.
 

@@ -106,8 +106,18 @@ public static class ProcTex
         float h = Hash(x, y, 23);
         if (h > 0.93f) v += 0.14f; else if (h < 0.06f) v -= 0.12f;
         float crack = MathF.Abs(Fbm(x / 40f, y / 40f, 24) - 0.5f);
-        if (crack < 0.012f) v *= 0.62f;
+        if (crack < 0.005f) v *= 0.8f;
         return (B(v), B(v), B(v * 1.01f), 255);
+    });
+
+    /// <summary>Sandstone paving flag (one 1.5 m slab per tile): soft cloudy mottling, fine grit, faint bedding streaks and slightly
+    /// worn (lighter) centre so each slab reads as stone between the joint grid.</summary>
+    public static Texture2D Pavers() => Make("pavers", 256, 256, (x, y) =>
+    {
+        float cx = (x - 128f) / 128f, cy = (y - 128f) / 128f;
+        float t = 0.9f + 0.16f * Fbm(x / 22f, y / 22f, 31) + 0.04f * MathF.Sin(y / 9f + 3f * Fbm(x / 40f, y / 40f, 34)) + (Hash(x, y, 33) - 0.5f) * 0.1f;
+        t += 0.05f * (1f - MathF.Min(1f, cx * cx + cy * cy));
+        return (B(t * 0.6f), B(t * 0.58f), B(t * 0.55f), 255);
     });
 
     public static Texture2D Wood() => Make("wood", 128, 128, (x, y) =>
