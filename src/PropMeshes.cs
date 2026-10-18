@@ -102,6 +102,37 @@ public static class PropMeshes
         return Merge(parts[0], Sweep(secs, Float3.UnitY, 10, 0f, true, true));
     }
 
+    /// <summary>Agricultural steel wheel along Y: rolled rim barrel with bead flanges, a dished centre disc welded inside it,
+    /// a raised hub boss and a pressed stiffening ring. Painted part only; <see cref="TractorRimDark"/> adds holes and nuts.</summary>
+    public static Mesh TractorRim(float r, float w)
+    {
+        Mesh barrel = Lathe($"trim{r},{w}", [(r * 0.9f, -w / 2f), (r * 1.06f, -w / 2f), (r * 1.08f, -w / 2f + 0.02f), (r * 1.0f, -w / 2f + 0.05f), (r * 0.97f, -w * 0.2f),
+            (r * 0.97f, w * 0.2f), (r * 1.0f, w / 2f - 0.05f), (r * 1.08f, w / 2f - 0.02f), (r * 1.06f, w / 2f), (r * 0.9f, w / 2f), (r * 0.92f, -w / 2f + 0.01f)], 48);
+        float d = w * 0.38f; // disc face sits a little proud of centre, dished toward the hub
+        Mesh disc = Lathe($"tdisc{r},{w}", [(0.0001f, d + 0.06f), (r * 0.17f, d + 0.06f), (r * 0.2f, d + 0.045f), (r * 0.26f, d + 0.03f), (r * 0.4f, d + 0.015f),
+            (r * 0.44f, d + 0.03f), (r * 0.48f, d + 0.015f), (r * 0.78f, d - 0.02f), (r * 0.94f, d - 0.03f), (r * 0.94f, d - 0.05f), (r * 0.5f, d - 0.025f), (0.0001f, d), ], 48);
+        return Merge(barrel, disc);
+    }
+    /// <summary>Dark details for <see cref="TractorRim"/>: eight hand holes in the disc, a ring of wheel nuts and a hub cap.</summary>
+    public static Mesh TractorRimDark(float r, float w)
+    {
+        float d = w * 0.38f;
+        var ms = new List<Mesh>();
+        for (int i = 0; i < 8; i++)
+        {
+            float a = MathF.Tau * (i + 0.5f) / 8f, rr = r * 0.63f;
+            float y = d + 0.015f - (rr - r * 0.48f) / (r * 0.3f) * 0.035f + 0.004f;
+            ms.Add(VehicleModels.Off(RoundedCylinder(r * 0.12f, 0.006f, 0.002f, 20), MathF.Cos(a) * rr, y, MathF.Sin(a) * rr));
+        }
+        for (int i = 0; i < 10; i++)
+        {
+            float a = MathF.Tau * i / 10f, rr = r * 0.32f;
+            ms.Add(VehicleModels.Off(RoundedCylinder(0.016f, 0.03f, 0.005f, 6), MathF.Cos(a) * rr, d + 0.035f, MathF.Sin(a) * rr));
+        }
+        ms.Add(VehicleModels.Off(Lathe($"tcap{r}", [(0.0001f, 0f), (r * 0.13f, 0f), (r * 0.13f, 0.02f), (r * 0.1f, 0.04f), (0.0001f, 0.046f)], 28), 0f, d + 0.06f, 0f));
+        return Merge(ms.ToArray());
+    }
+
     /// <summary>Gear teeth ring + web along Y.</summary>
     public static Mesh GearTeeth(int n, float r, float tooth, float w)
     {

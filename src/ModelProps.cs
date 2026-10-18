@@ -142,7 +142,8 @@ public static partial class ModelProps
         new("wheel_car", "Car Wheel", "Wheels", new(0.7f, 0.25f, 0.7f), 18f, "Rubber",
             [Ty(0.35f, 0.25f, 0, 0, 0, Side), M(PropMeshes.Rim(0.2f, 0.27f, 5), 0, 0, 0, Steel, true, Side), new('c', new(0.08f, 0.27f, 0.08f), new(0, 0, 0), Dark, false, Side)], Round: true),
         new("wheel_tractor", "Tractor Wheel", "Wheels", new(1.4f, 0.45f, 1.4f), 70f, "Rubber",
-            [Ty(0.7f, 0.45f, 0, 0, 0, Side), M(PropMeshes.Rim(0.42f, 0.47f, 8), 0, 0, 0, Yellow, true, Side), new('c', new(0.2f, 0.5f, 0.2f), new(0, 0, 0), Dark, false, Side)], Round: true),
+            [Ty(0.7f, 0.45f, 0, 0, 0, Side), M(PropMeshes.TractorRim(0.4f, 0.45f), 0, 0, 0, Yellow, true, Side), M(PropMeshes.TractorRimDark(0.4f, 0.45f), 0, 0, 0, Dark, false, Side),
+             M(PropMeshes.TractorRim(0.4f, 0.45f), 0, 0, 0, Yellow, true, new(0f, 0f, -90f)), M(PropMeshes.TractorRimDark(0.4f, 0.45f), 0, 0, 0, Dark, false, new(0f, 0f, -90f))], Round: true),
         new("gear", "Gear", "Wheels", new(0.8f, 0.12f, 0.8f), 20f, "Metal",
             GearParts(), Round: true),
         // ---------------- Vehicle parts

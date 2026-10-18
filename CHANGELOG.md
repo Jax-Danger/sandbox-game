@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.2 — 2026-10-18
+- Tractor wheel gets a real agricultural steel rim: rolled barrel with bead flanges, dished centre disc with a pressed ring, eight hand holes, ten wheel nuts and a hub cap on both faces (replaces the thin star-spoke ring).
+
 ## v0.14.1 — 2026-10-18
 - Interiors: window reveals inside at every facade window (daylight glass, glazing bars, frame, sill) and the garage roller shutter's inside face with rails and drum box.
 
