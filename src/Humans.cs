@@ -78,14 +78,14 @@ public static class Humans
         // Waist → chest → shoulders, slightly forward-leaning chest, flatter back.
         Mesh body = Sw(2.4f, Float3.UnitX, 0.75f,
             (-0.26f, 0.158f, 0.098f, 0f), (-0.15f, 0.163f, 0.104f, 0.004f), (-0.02f, 0.18f, 0.114f, 0.008f), (0.10f, 0.2f, 0.12f, 0.006f),
-            (0.17f, 0.212f, 0.11f, 0f), (0.225f, 0.19f, 0.088f, -0.006f));
+            (0.17f, 0.214f, 0.11f, 0f), (0.215f, 0.198f, 0.092f, -0.004f), (0.235f, 0.16f, 0.07f, -0.006f));
         Mesh neck = LatheY("neck", [(0.052f, 0.22f), (0.050f, 0.26f), (0.047f, 0.31f)]);
         // Shoulder yokes: trapezius slopes from the neck out over each shoulder joint so arms hang from the body
         // instead of floating beside a flat-topped box.
         var parts = new List<Detail> { new(neck, Tint.Skin) };
         foreach (float sd in new[] { -1f, 1f })
-            parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.15f, 0.198f, -0.002f), 0.075f, 0.04f),
-                new Sec(V(sd * 0.225f, 0.178f, 0f), 0.064f, 0.05f), new Sec(V(sd * 0.265f, 0.155f, 0f), 0.052f, 0.048f), new Sec(V(sd * 0.28f, 0.13f, 0f), 0.034f, 0.034f)],
+            parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.14f, 0.192f, -0.002f), 0.07f, 0.04f),
+                new Sec(V(sd * 0.21f, 0.17f, 0f), 0.056f, 0.047f), new Sec(V(sd * 0.25f, 0.15f, 0f), 0.05f, 0.047f), new Sec(V(sd * 0.272f, 0.125f, 0f), 0.04f, 0.04f), new Sec(V(sd * 0.28f, 0.1f, 0f), 0.026f, 0.026f)],
                 Float3.UnitZ, 20, 0.85f), Tint.Main));
         return (body, parts.ToArray());
     }
@@ -123,11 +123,11 @@ public static class Humans
 
     private static (Mesh, Detail[]) UpperArm(float side)
     {
-        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.11f, 0.049f, 0.049f, 0.004f), (-0.165f, 0.047f, 0.047f, 0.004f));
-        Mesh delt = Sweep([new Sec(V(-side * 0.025f, 0.175f, 0f), 0.04f, 0.045f), new Sec(V(-side * 0.008f, 0.145f, 0f), 0.066f, 0.062f), new Sec(V(0f, 0.08f, 0f), 0.064f, 0.06f)], Float3.UnitZ, 20, 0.8f);
+        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.12f, 0.052f, 0.052f, 0f), (0.08f, 0.057f, 0.056f, 0f), (0.0f, 0.054f, 0.052f, 0f), (-0.11f, 0.049f, 0.049f, 0.004f), (-0.165f, 0.047f, 0.047f, 0.004f));
+        Mesh delt = Sweep([new Sec(V(-side * 0.02f, 0.13f, 0f), 0.03f, 0.036f), new Sec(V(-side * 0.006f, 0.105f, 0f), 0.054f, 0.054f), new Sec(V(0f, 0.05f, 0f), 0.057f, 0.055f)], Float3.UnitZ, 20, 0.8f);
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
         // Sleeve end rolls softly over the elbow (no hard rim cutting into the forearm when the arm bends).
-        Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.19f, 0.05f, 0.05f, 0.004f), (-0.205f, 0.043f, 0.043f, 0.004f));
+        Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.185f, 0.05f, 0.05f, 0.004f), (-0.2f, 0.045f, 0.045f, 0.004f), (-0.21f, 0.04f, 0.04f, 0.003f));
         return (arm, [new(delt, Tint.Main), new(roll, Tint.Cuff)]);
     }
 
@@ -144,7 +144,7 @@ public static class Humans
     }
 
     private static (Mesh, Detail[]) UpperLeg()
-        => (Sw(2.3f, Float3.UnitX, 0.9f, (0.25f, 0.08f, 0.078f, 0f), (0.12f, 0.08f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
+        => (Sw(2.3f, Float3.UnitX, 0.6f, (0.29f, 0.07f, 0.07f, 0f), (0.25f, 0.084f, 0.082f, 0f), (0.12f, 0.081f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
 
     private static Mesh? _thighFp;
     /// <summary>First-person thigh: only the knee half, so looking down shows trousers running into the knee instead of
