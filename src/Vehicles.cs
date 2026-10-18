@@ -104,7 +104,7 @@ public sealed class Buggy
             wc.SuspensionDampingRatio = 0.7f;
             wc.ForwardFriction = boat ? 0.04f : 2.5f;
             wc.SidewaysFriction = boat ? 0.35f : 1.6f;
-            wc.visualTransform = visual.Transform;
+            _visuals[wc] = visual.Transform; // synced by SyncWheels (exactly the physics steer frame)
             g.World.Add(wheel);
             (front ? Front : Rear).Add(wc);
         }
@@ -161,6 +161,27 @@ public sealed class Buggy
     }
 
     public float Thrust { get; private set; }
+    private readonly Dictionary<WheelCollider, Transform> _visuals = new();
+    /// <summary>Steering-wheel input in -1..1 after smoothing (drives the steering-wheel mesh and the driver's arms).</summary>
+    public float SteerInput => _steer;
+
+    /// <summary>Places each wheel visual at the suspension-resolved centre, steered about the mount's up axis with the
+    /// same convention the physics uses, and spun about the axle. Done in game code so the visuals can't drift or
+    /// steer the wrong way relative to the contact frame.</summary>
+    public void SyncWheels()
+    {
+        foreach (var (wc, vis) in _visuals)
+        {
+            if (!wc.GameObject.IsValid()) continue;
+            Transform mount = wc.Transform;
+            Float3 up = Float3.Normalize(mount.Up);
+            var m = Jitter2.LinearMath.JMatrix.CreateRotationMatrix(new Jitter2.LinearMath.JVector(up.X, up.Y, up.Z), wc.SteerAngle);
+            var f = Jitter2.LinearMath.JVector.Transform(new Jitter2.LinearMath.JVector(mount.Forward.X, mount.Forward.Y, mount.Forward.Z), m);
+            Float3 fwd = Float3.Normalize(new Float3(f.X, f.Y, f.Z));
+            vis.Position = wc.GetWheelCenter();
+            vis.Rotation = Quaternion.LookRotation(fwd, up) * Quaternion.AxisAngle(Float3.UnitX, wc.WheelRotation);
+        }
+    }
 
     private GameObject Detail(SandboxGame g, string name, Mesh mesh, Float3 lp, Color c, Float3 rot = default)
     {
@@ -184,13 +205,15 @@ public sealed class Buggy
         if (!Go.IsValid()) return;
         if (IsAirboat) { DriveBoat(steer, accel, decel, handbrake); return; }
         float fwd = Float3.Dot(Body.LinearVelocity, Go.Transform.Forward);
-        // Smooth steering that tightens at speed (less twitchy, GMod-jeep-like).
+        float dt = Math.Clamp(Time.DeltaTime, 0.0005f, 0.05f);
+        // Speed-sensitive steering: eases in, returns to centre faster than it turns in, and the lock shrinks with speed.
         float speedK = Math.Clamp(MathF.Abs(fwd) * 3.6f / TopSpeedKmh, 0f, 1f);
-        _steer += (steer - _steer) * 0.15f;
-        float steerRad = _steer * MaxSteerDeg * (1f - 0.55f * speedK) * MathF.PI / 180f;
+        float rate = (MathF.Abs(steer) < 0.01f || MathF.Sign(steer) != MathF.Sign(_steer)) ? 6f : 2.6f;
+        _steer += Math.Clamp(steer - _steer, -rate * dt, rate * dt);
+        float steerRad = _steer * MaxSteerDeg * (1f - 0.68f * speedK) * MathF.PI / 180f;
         foreach (WheelCollider w in Front) w.SteerAngle = steerRad;
-        // Handbrake lets the rear step out a bit for drifts.
-        foreach (WheelCollider w in Rear) w.SidewaysFriction = handbrake ? 0.8f : 1.6f;
+        foreach (WheelCollider w in Rear) w.SidewaysFriction = handbrake ? 1.0f : 2.2f;
+        Stabilise(fwd, steerRad, handbrake, dt);
         float throttle = 0f;
         bool braking = false;
         if (accel) { if (Gear < 1) Gear = 1; throttle = 1f; }
@@ -217,11 +240,48 @@ public sealed class Buggy
         if (Gear < 0 && -fwd * 3.6f > 25f) throttle = 0f;
         float torque = MaxEngineTorque * Math.Clamp(1f - 1.25f * (t - 0.6f) * (t - 0.6f), 0.2f, 1f) * throttle;
         float perWheel = Rear.Count > 0 ? torque * ratio * 0.9f / Rear.Count : 0f;
-        bool awd = Kind == "jeep";
-        if (awd) perWheel *= 0.5f;
+        bool awd = false; // rear-wheel drive for every car: predictable, no four-wheel-drive twitch
+        // Traction control: back off torque while the driven wheels spin much faster than the ground speed.
+        if (Rear.Count > 0 && throttle > 0f)
+        {
+            float slip = MathF.Abs(av) * Rear[0].Radius - MathF.Abs(fwd);
+            if (slip > 2.5f) perWheel *= Math.Clamp(1f - (slip - 2.5f) / 5f, 0.25f, 1f);
+        }
         foreach (WheelCollider w in Front) { w.MotorTorque = awd ? perWheel : 0f; w.BrakeTorque = braking ? BrakeTorque : 0f; }
         foreach (WheelCollider w in Rear) { w.MotorTorque = perWheel; w.BrakeTorque = (braking ? BrakeTorque : 0f) + (handbrake ? BrakeTorque : 0f); }
         if (accel || decel) Body.SetActive(true);
+    }
+
+    /// <summary>Arcade assists, applied as small per-frame velocity corrections (frame-rate independent):
+    /// anti-roll + a virtual low centre of mass, yaw-rate tracking so the car follows the wheels (no spinouts),
+    /// lateral grip assist and a little speed-squared downforce.</summary>
+    private void Stabilise(float fwd, float steerRad, bool handbrake, float dt)
+    {
+        bool grounded = Front.Concat(Rear).Count(w => w.IsGrounded) >= 3;
+        Float3 up = Go.Transform.Up, right = Go.Transform.Right, forward = Go.Transform.Forward;
+        Float3 av = Body.AngularVelocity, v = Body.LinearVelocity;
+        if (grounded)
+        {
+            // Roll and pitch: damp the rate and pull back toward the ground-plane (acts like anti-roll bars + low COM).
+            float roll = Float3.Dot(av, forward), pitch = Float3.Dot(av, right);
+            float rollAngle = MathF.Asin(Math.Clamp(Float3.Dot(right, Float3.UnitY), -1f, 1f));
+            float pitchAngle = MathF.Asin(Math.Clamp(Float3.Dot(forward, Float3.UnitY), -1f, 1f));
+            av -= forward * (roll * Math.Clamp(6f * dt, 0f, 1f) - rollAngle * 9f * dt);
+            av -= right * (pitch * Math.Clamp(3f * dt, 0f, 1f) + pitchAngle * 3f * dt);
+            // Yaw tracking: steer toward the yaw rate the front wheels ask for (bicycle model), never beyond it.
+            float wheelbase = 2f * MathF.Abs(Front.Count > 0 ? Front[0].Transform.LocalPosition.Z : 1.1f);
+            float wantYaw = fwd * MathF.Tan(steerRad) / MathF.Max(wheelbase, 0.5f);
+            float yaw = Float3.Dot(av, up);
+            float k = handbrake ? 1.5f : 7f;
+            av += up * ((wantYaw - yaw) * Math.Clamp(k * dt, 0f, 1f));
+            // Lateral grip assist: bleed sideways slide.
+            float lat = Float3.Dot(v, right);
+            v -= right * (lat * Math.Clamp((handbrake ? 0.6f : 3.5f) * dt, 0f, 1f));
+            // Downforce.
+            v -= up * (0.0025f * fwd * fwd * dt * 9.81f);
+            Body.AngularVelocity = av;
+            Body.LinearVelocity = v;
+        }
     }
 
     /// <summary>Airboat: a big fan pushes the hull; steering yaws it. Wheels are frictionless skids.</summary>
@@ -264,6 +324,8 @@ public sealed class VehicleSystem(SandboxGame game)
     public List<Buggy> All { get; } = [];
     public Buggy? Driving { get; private set; }
     public bool InVehicle => Driving is not null;
+    /// <summary>Scripted driving input (drive tests / screenshots); overrides the keyboard when set.</summary>
+    public (float Steer, bool Throttle, bool Brake, bool Handbrake)? ScriptInput;
     private float _orbitYaw, _orbitPitch = 12f;
     private AudioSource? _engine;
 
@@ -338,6 +400,7 @@ public sealed class VehicleSystem(SandboxGame game)
     public void Tick(float dt, bool allowInput)
     {
         foreach (Buggy b in All.ToArray()) if (!b.Go.IsValid() || b.Go.Scene == null) { if (ReferenceEquals(Driving, b)) Driving = null; All.Remove(b); }
+        foreach (Buggy b in All) b.SyncWheels();
         if (Driving is not { } car) return;
         float steer = 0f;
         bool w = false, s = false, space = false;
@@ -353,6 +416,7 @@ public sealed class VehicleSystem(SandboxGame game)
             _orbitYaw += md.X;
             _orbitPitch = Math.Clamp(_orbitPitch + md.Y, -10f, 60f);
         }
+        if (ScriptInput is { } si) { steer = si.Steer; w = si.Throttle; s = si.Brake; space = si.Handbrake; }
         car.Drive(steer, w, s, space);
         if (_engine is not null) { try { _engine.Pitch = 0.6f + car.Rpm / car.MaxRpm * 1.4f; } catch { } }
 

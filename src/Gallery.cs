@@ -34,6 +34,17 @@ public static class Gallery
                 g.Player.SetLook(0f, 22f);
                 break;
             }
+            case "drive":
+            {
+                // Scripted drive test: straight, hard right, hard left, let go. Logs to /tmp/drivetest-<kind>.log.
+                string kind = set.Contains("jeep") ? "jeep" : "buggy";
+                Buggy car = g.Vehicles.SpawnBuggy(new Float3(-40f, 1.2f, -40f), 0f, false, kind);
+                g.Vehicles.Enter(car);
+                var go = new GameObject("DriveTest");
+                go.AddComponent<DriveTest>().Init(g, car, kind);
+                g.World.Add(go);
+                break;
+            }
             case "tools":
             {
                 // Tool-gun attachments on frozen cubes: wheel, thruster, balloon, hoverball, light.
@@ -99,4 +110,32 @@ public static class Gallery
 
     /// <summary>Keeps the view model hidden while a gallery is on screen.</summary>
     public static void Hide(ViewModel? vm) { if (Active) vm?.SetVisible(false); }
+}
+
+/// <summary>Drives a car through a fixed input script and logs speed, yaw rate, roll and slip angle.</summary>
+public sealed class DriveTest : MonoBehaviour
+{
+    private SandboxGame _g = null!; private Buggy _car = null!; private float _t, _next; private string _path = "";
+    private float _maxRoll, _maxSlip; private readonly System.Text.StringBuilder _log = new();
+    public void Init(SandboxGame g, Buggy car, string kind) { _g = g; _car = car; _path = $"/tmp/drivetest-{kind}.log"; }
+    public override void Update()
+    {
+        if (_car is null || !_car.Go.IsValid()) return;
+        _t += Time.DeltaTime;
+        float steer = _t < 4f ? 0f : _t < 8f ? 1f : _t < 11f ? -1f : 0f;
+        bool thr = _t > 1f && _t < 13f;
+        _g.Vehicles.ScriptInput = (steer, thr, false, false);
+        if (_t >= _next)
+        {
+            _next += 0.25f;
+            Float3 v = _car.Body.LinearVelocity, f = _car.Go.Transform.Forward, r = _car.Go.Transform.Right;
+            float spd = Float3.Length(new Float3(v.X, 0f, v.Z));
+            float slip = spd > 2f ? MathF.Atan2(Float3.Dot(v, r), MathF.Max(0.1f, Float3.Dot(v, f))) * 180f / MathF.PI : 0f;
+            float roll = MathF.Asin(Math.Clamp(Float3.Dot(r, Float3.UnitY), -1f, 1f)) * 180f / MathF.PI;
+            float yaw = Float3.Dot(_car.Body.AngularVelocity, _car.Go.Transform.Up);
+            if (_t > 1.5f) { _maxRoll = MathF.Max(_maxRoll, MathF.Abs(roll)); _maxSlip = MathF.Max(_maxSlip, MathF.Abs(slip)); }
+            _log.AppendLine($"t={_t:0.00} steerIn={steer:0} steer={_car.SteerInput:0.00} kmh={_car.SpeedKmh:0.0} yaw={yaw:0.00} roll={roll:0.0} slip={slip:0.0} up={_car.Go.Transform.Up.Y:0.00}");
+            try { System.IO.File.WriteAllText(_path, _log + $"MAX roll={_maxRoll:0.0} slip={_maxSlip:0.0}\n"); } catch { }
+        }
+    }
 }
