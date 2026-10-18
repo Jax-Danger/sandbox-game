@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.10 — 2026-10-18
+- Floor lamp uses a box collider so it stands on its base instead of tipping over on spawn.
+
 ## v0.10.9 — 2026-10-18
 - Bed throw is cream knit with two deep-red stripes that stand proud of it (the old grey throw z-fought into a road-like dashed line).
 

@@ -85,7 +85,7 @@ public static partial class ModelProps
         new("tv", "TV", "Furniture", new(1.2f, 0.75f, 0.25f), 15f, "Plastic",
             TvParts()),
         new("lamp", "Floor Lamp", "Furniture", new(0.4f, 1.7f, 0.4f), 6f, "Metal",
-            LampParts(), Round: true),
+            LampParts()), // box collider: the tall cylinder tipped over on spawn
         new("bench", "Park Bench", "Furniture", new(1.8f, 0.85f, 0.6f), 30f, "Wood",
             [B(1.8f, 0.05f, 0.14f, 0, 0.02f, 0.2f, Wood, true), B(1.8f, 0.05f, 0.14f, 0, 0.02f, 0.03f, Wood, true), B(1.8f, 0.05f, 0.14f, 0, 0.02f, -0.14f, Wood, true),
              B(1.8f, 0.12f, 0.04f, 0, 0.3f, -0.26f, Wood, true), B(1.8f, 0.12f, 0.04f, 0, 0.18f, -0.26f, Wood, true),
