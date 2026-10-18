@@ -280,6 +280,28 @@ public static class EntityCatalog
         MeshRenderer br = b.AddComponent<MeshRenderer>();
         br.Mesh = Meshes.Lathe("entlightbase", [(0.0001f, -0.3f), (0.27f, -0.3f), (0.29f, -0.27f), (0.27f, -0.2f), (0.22f, -0.16f), (0.21f, -0.11f), (0.0001f, -0.11f)], 36);
         var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Prowl.Vector.Color(0.12f, 0.12f, 0.13f, 1f)); br.Material = m;
+        if (Application.IsHeadless || p.Go.Transform.Find("LightCage") is not null) return;
+        // Frosted globe (plain white, not the crate's wood texture) inside a steel wire cage with a screw collar.
+        try { p.Go.GetComponent<MeshRenderer>()?.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+        var wire = Mats.New(g.Shader); wire.SetColor("_MainColor", new Prowl.Vector.Color(0.2f, 0.2f, 0.22f, 1f));
+        var cage = new GameObject("LightCage"); cage.SetParent(p.Go, false);
+        var meshes = new List<Mesh>();
+        (float R, float Y)[] prof = [(0.215f, -0.11f), (0.278f, 0f), (0.268f, 0.12f), (0.198f, 0.245f), (0.1f, 0.305f), (0.02f, 0.322f)];
+        for (int i = 0; i < 6; i++)
+        {
+            float a = i * MathF.PI / 3f;
+            meshes.Add(VehicleModels.BentPipe(0.007f, 0.04f, Prowl.Vector.Float3.UnitY, prof.Select(q => new Prowl.Vector.Float3(MathF.Cos(a) * q.R, q.Y, MathF.Sin(a) * q.R)).ToArray()));
+        }
+        foreach (var (rr, yy) in new[] { (0.28f, 0.0f), (0.25f, 0.16f) })
+            meshes.Add(Meshes.Lathe($"cagering{rr}", [(rr - 0.007f, yy - 0.007f), (rr + 0.007f, yy - 0.007f), (rr + 0.007f, yy + 0.007f), (rr - 0.007f, yy + 0.007f), (rr - 0.007f, yy - 0.007f)], 36));
+        MeshRenderer cr = cage.AddComponent<MeshRenderer>(); cr.Mesh = Meshes.Merge(meshes.ToArray()); cr.Material = wire;
+        var collar = new GameObject("LightCollar"); collar.SetParent(p.Go, false);
+        MeshRenderer co = collar.AddComponent<MeshRenderer>();
+        var cl = new List<(float, float)> { (0.0001f, -0.13f) };
+        for (int i = 0; i <= 6; i++) cl.Add((0.205f + (i % 2) * 0.008f, -0.13f + i * 0.007f));
+        cl.Add((0.0001f, -0.086f));
+        co.Mesh = Meshes.Lathe("lightcollar", cl.ToArray(), 36);
+        var brass = Mats.New(g.Shader); brass.SetColor("_MainColor", new Prowl.Vector.Color(0.62f, 0.5f, 0.3f, 1f)); co.Material = brass;
     }
 
     public static Prop SpawnLight(SandboxGame g, Prowl.Vector.Float3 pos)

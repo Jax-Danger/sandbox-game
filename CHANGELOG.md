@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.6 — 2026-10-18
+- Light entity: frosted white globe (was showing the crate wood texture) inside a six-rib steel wire cage with two hoops and a ribbed brass screw collar.
+
 ## v0.9.5 — 2026-10-18
 - Camera entity: carry handle, knurled focus and zoom rings, red tally LED, flip-out side monitor, rear battery with latch, tripod plate, lens ring and glint; deeper, dimmer lens glass; no crate wood texture.
 
