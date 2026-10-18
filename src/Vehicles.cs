@@ -311,12 +311,14 @@ public sealed class Buggy
         Detail(g, "TailSeam", VehicleModels.BentPipe(0.005f, 0.05f, Float3.UnitY, new Float3(-0.74f, -0.18f, -1.695f), new Float3(-0.74f, 0.2f, -1.695f), new Float3(0.74f, 0.2f, -1.695f), new Float3(0.74f, -0.18f, -1.695f)), Float3.Zero, seam);
         // Flat steel channel bumper in body paint (was a round black pipe) with angled end returns, carriage bolts and
         // a pair of tow shackles.
-        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.8f, 0.14f, 0.08f), 0.012f), new Float3(0f, 0.05f, 1.8f), paint * 0.85f);
+        // Bumper in dark satin chassis paint so it separates from the olive body (body paint blended into the grille/fenders).
+        var bumperPaint = new Color(0.075f, 0.08f, 0.07f, 1f);
+        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.8f, 0.14f, 0.08f), 0.012f), new Float3(0f, 0.05f, 1.8f), bumperPaint);
         foreach (float x in new[] { -1f, 1f })
         {
-            Detail(g, "BumperEnd", Meshes.RoundedBox(new Float3(0.16f, 0.14f, 0.08f), 0.012f), new Float3(x * 0.95f, 0.05f, 1.75f), paint * 0.85f, new Float3(0f, x * -35f, 0f));
+            Detail(g, "BumperEnd", Meshes.RoundedBox(new Float3(0.16f, 0.14f, 0.08f), 0.012f), new Float3(x * 0.95f, 0.05f, 1.75f), bumperPaint, new Float3(0f, x * -35f, 0f));
             foreach (float bx in new[] { 0.62f, 0.78f })
-                Detail(g, "BumperBolt", Meshes.LatheZ([(0.0001f, 0.012f), (0.013f, 0.009f), (0.016f, 0f), (0.0001f, 0f)], 12), new Float3(x * bx, 0.05f, 1.84f), new Color(0.2f, 0.21f, 0.2f, 1f));
+                Detail(g, "BumperBolt", Meshes.LatheZ([(0.0001f, 0.012f), (0.013f, 0.009f), (0.016f, 0f), (0.0001f, 0f)], 12), new Float3(x * bx, 0.05f, 1.84f), new Color(0.32f, 0.33f, 0.31f, 1f));
             Detail(g, "Shackle", VehicleModels.BentPipe(0.012f, 0.04f, Float3.UnitX, new Float3(x * 0.42f - 0.04f, 0.0f, 1.84f), new Float3(x * 0.42f - 0.04f, -0.02f, 1.9f), new Float3(x * 0.42f + 0.04f, -0.02f, 1.9f), new Float3(x * 0.42f + 0.04f, 0.0f, 1.84f)), Float3.Zero, new Color(0.62f, 0.12f, 0.08f, 1f));
         }
     }
