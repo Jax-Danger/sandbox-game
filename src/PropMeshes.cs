@@ -53,4 +53,12 @@ public static class PropMeshes
         }
         return Sweep(parts, Float3.UnitX, 32, 0.25f);
     }
+
+    /// <summary>Cast-iron bench side: back foot up the backrest, seat rail forward, curled armrest.</summary>
+    public static Mesh BenchSide() => Sweep([
+        new Sec(V(0f, -0.42f, -0.26f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.05f, -0.24f), 0.028f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, 0.2f, -0.28f), 0.026f, 0.02f, 3f, Float3.UnitX),
+        new Sec(V(0f, 0.4f, -0.3f), 0.024f, 0.018f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f);
+    public static Mesh BenchLeg() => Sweep([
+        new Sec(V(0f, -0.42f, 0.25f), 0.03f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, -0.03f, 0.22f), 0.026f, 0.02f, 3f, Float3.UnitX), new Sec(V(0f, -0.01f, 0.05f), 0.024f, 0.022f, 3f, Float3.UnitX),
+        new Sec(V(0f, -0.01f, -0.24f), 0.024f, 0.022f, 3f, Float3.UnitX), new Sec(V(0f, 0.18f, 0.22f), 0.02f, 0.016f, 3f, Float3.UnitX), new Sec(V(0f, 0.2f, 0.28f), 0.022f, 0.02f, 3f, Float3.UnitX)], Float3.UnitX, 12, 0.6f);
 }

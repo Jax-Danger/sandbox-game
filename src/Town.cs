@@ -172,8 +172,15 @@ public static partial class MapBuilder
         Shape(scene, shader, "Fountain column", Meshes.Lathe("fcol", [(0.0001f, -0.7f), (0.4f, -0.7f), (0.3f, -0.55f), (0.22f, -0.2f), (0.2f, 0.4f), (0.55f, 0.55f), (0.6f, 0.62f), (0.5f, 0.66f), (0.12f, 0.7f), (0.0001f, 0.72f)], 32), new Float3(0f, 1.3f, 4f), stone, new Float3(0.6f, 1.4f, 0.6f));
         foreach (var (x, z, yaw) in new[] { (-7f, 4f, 90f), (7f, 4f, 90f), (-4f, -12f, 0f), (4f, -12f, 0f) })
         {
-            Box(scene, shader, "Bench seat", new Float3(x, 0.45f, z), yaw == 0f ? new Float3(2.2f, 0.12f, 0.6f) : new Float3(0.6f, 0.12f, 2.2f), Float3.Zero, new Color(0.55f, 0.38f, 0.22f, 1f));
-            Box(scene, shader, "~Bench legs", new Float3(x, 0.2f, z), yaw == 0f ? new Float3(1.9f, 0.4f, 0.4f) : new Float3(0.4f, 0.4f, 1.9f), Float3.Zero, new Color(0.15f, 0.15f, 0.16f, 1f));
+            // Park bench model (slats, backrest, cast-iron sides) facing the fountain; one box collider.
+            ModelDef bench = ModelProps.All.First(m => m.Id == "bench");
+            GameObject bgo = new("Bench");
+            bgo.Transform.Position = new Float3(x, bench.Collider.Y / 2f, z);
+            bgo.Transform.LocalEulerAngles = new Float3(0f, yaw == 0f ? (z < 0f ? 0f : 180f) : (x < 0f ? 90f : -90f), 0f);
+            bgo.AddComponent<BoxCollider>().Size = bench.Collider;
+            var bmat = Mats.New(shader); bmat.SetColor("_MainColor", new Color(0.55f, 0.38f, 0.22f, 1f));
+            ModelProps.BuildParts(bgo, bench, shader, bmat);
+            Add(scene, bgo);
         }
         foreach (var (x, z) in new[] { (-14f, -14f), (14f, -14f), (-14f, 14f), (14f, 14f) })
         {

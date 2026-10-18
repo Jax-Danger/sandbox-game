@@ -74,7 +74,7 @@ public static class ModelProps
         new("bench", "Park Bench", "Furniture", new(1.8f, 0.85f, 0.6f), 30f, "Wood",
             [B(1.8f, 0.05f, 0.14f, 0, 0.02f, 0.2f, Wood, true), B(1.8f, 0.05f, 0.14f, 0, 0.02f, 0.03f, Wood, true), B(1.8f, 0.05f, 0.14f, 0, 0.02f, -0.14f, Wood, true),
              B(1.8f, 0.12f, 0.04f, 0, 0.3f, -0.26f, Wood, true), B(1.8f, 0.12f, 0.04f, 0, 0.18f, -0.26f, Wood, true),
-             B(0.06f, 0.85f, 0.55f, -0.8f, 0, 0, Dark), B(0.06f, 0.85f, 0.55f, 0.8f, 0, 0, Dark)], Seat: true),
+             M(PropMeshes.BenchSide(), -0.8f, 0, 0, Dark), M(PropMeshes.BenchSide(), 0.8f, 0, 0, Dark), M(PropMeshes.BenchLeg(), -0.8f, 0, 0, Dark), M(PropMeshes.BenchLeg(), 0.8f, 0, 0, Dark)], Seat: true),
         new("trash_can", "Trash Can", "Furniture", new(0.5f, 0.8f, 0.5f), 8f, "Metal",
             [M(PropMeshes.TrashCan(), 0, 0f, 0, Green, true), M(PropMeshes.BinLid(), 0, 0.38f, 0, C(0.15f, 0.42f, 0.2f))], Round: true),
         new("plant", "Potted Plant", "Furniture", new(0.5f, 1.0f, 0.5f), 10f, "Concrete",
