@@ -269,6 +269,8 @@ public sealed class Buggy
         foreach (float x in new[] { -0.4f, 0.4f })
             Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
+        // Stencilled vehicle number on the rear panel, below the spare (the tub back was bare).
+        Detail(g, "Stencil", Glyphs.Text("20431-S", 0.055f, -0.003f, 0f), new Float3(0f, 0.06f, -1.712f), new Color(0.78f, 0.78f, 0.7f, 1f));
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
         // Spare wheel rim (was an empty tyre): dished steel disc with a hub cap and five lug nuts, facing rearward.
         // Domed steel wheel (the old dished profile read as a pale hollow disc): flat outer disc, raised bead ring, a hub

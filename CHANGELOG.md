@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.32 — 2026-10-18
+- Jeep: stencilled vehicle number '20431-S' on the rear panel below the spare
+
 ## v0.17.31 — 2026-10-18
 - Buggy: rear number plate now carries embossed 'SBX 017' characters and a blue top band (was a blank blue bar)
 
