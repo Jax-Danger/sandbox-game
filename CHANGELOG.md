@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.11 — 2026-10-18
+- Town buildings get services: front downpipes with brackets and kick-out shoes, a caged wall lantern beside every door, and AC condensers with fan grilles and refrigerant lines on commercial side walls.
+
 ## v0.13.10 — 2026-10-18
 - NPC skin tones capped below ~0.85 albedo so the palest preset no longer blows out to a white mask in full sun.
 

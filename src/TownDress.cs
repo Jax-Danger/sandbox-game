@@ -224,6 +224,34 @@ public static partial class MapBuilder
                 }
             }
         }
+        // Services on every building: front downpipes with wall brackets and a kick-out shoe, a wall lantern beside the
+        // door (dark cage, warm glass), and on commercial buildings an AC condenser with a fan grille on one side wall.
+        {
+            Color pipe = house ? new Color(0.92f, 0.92f, 0.9f, 1f) : new Color(0.3f, 0.31f, 0.33f, 1f), metal = new(0.12f, 0.12f, 0.13f, 1f), warm = new(1f, 0.85f, 0.55f, 1f);
+            float zf = -hd - face - (house ? 0.09f : 0.12f);
+            foreach (float sx in new[] { -1f, 1f })
+            {
+                float px = sx * (hw + face - (house ? 0.32f : 0.5f));
+                b.Add(pipe, Xf(Meshes.Lathe(house ? "dpipeh" : "dpipe", [(0.05f, 0.25f), (0.05f, house ? h - 0.5f : h - 0.15f)], 12), 0f, L3(px, 0f, zf)));
+                b.Add(pipe, VehicleModels.Pipe(0.05f, Float3.UnitX, L3(px, 0.3f, zf), L3(px, 0.16f, zf - 0.08f), L3(px, 0.12f, zf - 0.22f)));
+                for (float by = 1.2f; by < h - 0.4f; by += 1.6f) b.Add(metal, Bx(0.14f, 0.04f, 0.1f, px, by, zf + 0.04f, 0.008f));
+            }
+            float lx = -(dw / 2f + 0.5f), ly = dh - 0.55f; // beside the upper door frame, clear of canopies
+            b.Add(metal, Bx(0.08f, 0.16f, 0.06f, lx, ly + 0.02f, -hd - face - 0.04f, 0.01f));
+            b.Add(metal, Bx(0.2f, 0.03f, 0.2f, lx, ly + 0.2f, -hd - face - 0.14f, 0.008f));
+            b.Add(warm, Bx(0.15f, 0.2f, 0.15f, lx, ly + 0.08f, -hd - face - 0.14f, 0.01f));
+            foreach (float sx in new[] { -1f, 1f }) foreach (float sz in new[] { -1f, 1f })
+                b.Add(metal, Bx(0.018f, 0.22f, 0.018f, lx + sx * 0.085f, ly + 0.08f, -hd - face - 0.14f + sz * 0.085f, 0.004f));
+            if (!house)
+            {
+                float ax = hw + face + 0.42f, az = hd * 0.3f;
+                b.Add(new Color(0.82f, 0.83f, 0.82f, 1f), Bx(0.75f, 0.8f, 0.9f, ax, 0.55f, az, 0.04f));
+                b.Add(metal, Xf(Meshes.Lathe("acgrille", [(0.0001f, 0f), (0.3f, 0f), (0.3f, 0.01f), (0.0001f, 0.01f)], 24), 0f, Float3.Zero) is { } gr ? Xf(new Mesh { IndexFormat = gr.IndexFormat, Vertices = gr.Vertices.Select(v => L3(v.Y, v.X, v.Z)).ToArray(), Normals = gr.Normals.Select(v => L3(v.Y, v.X, v.Z)).ToArray(), UV = gr.UV, Indices = gr.Indices }, 0f, L3(ax + 0.375f, 0.6f, az)) : null!);
+                for (int i = -2; i <= 2; i++) b.Add(new Color(0.55f, 0.56f, 0.57f, 1f), Bx(0.02f, 0.012f, 0.6f, ax + 0.39f, 0.6f + i * 0.11f, az, 0.004f));
+                b.Add(new Color(0.4f, 0.41f, 0.42f, 1f), Bx(0.9f, 0.1f, 1.05f, ax, 0.1f, az, 0.02f));
+                b.Add(metal, VehicleModels.Pipe(0.025f, Float3.UnitY, L3(ax - 0.375f, 0.7f, az + 0.3f), L3(hw + face + 0.02f, 0.7f, az + 0.3f)));
+            }
+        }
         Float3 eul = new(0f, yaw, 0f);
         int k = 0;
         foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
