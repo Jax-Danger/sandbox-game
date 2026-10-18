@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.19 — 2026-10-18
+- View model: saturated paints toned down by chroma so close VM lighting no longer makes them glow (screens/vm/r2/s10b.png vs s10a.png)
+
 ## v0.14.18 — 2026-10-18
 - Grenade view model body darkened to a proper military olive (was rendering lime-bright).
 

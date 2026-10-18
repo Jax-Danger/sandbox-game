@@ -145,6 +145,16 @@ public readonly record struct VmInput(Float2 Mouse, float Speed, Float2 Move = d
 /// </summary>
 public sealed class ViewModel
 {
+    /// <summary>The close, brightly lit view model makes saturated paints glow; pull saturation and value down in proportion to chroma.</summary>
+    static Color VmTone(Color c)
+    {
+        float mx = MathF.Max(c.R, MathF.Max(c.G, c.B)), mn = MathF.Min(c.R, MathF.Min(c.G, c.B));
+        float sat = mx > 1e-4f ? (mx - mn) / mx : 0f;
+        float l = c.R * 0.2126f + c.G * 0.7152f + c.B * 0.0722f;
+        float ks = 1f - 0.22f * sat, kv = 1f - 0.2f * sat;
+        return new Color((l + (c.R - l) * ks) * kv, (l + (c.G - l) * ks) * kv, (l + (c.B - l) * ks) * kv, c.A);
+    }
+
     public ViewModelDef Def { get; }
     public GameObject Root { get; }
     public Dictionary<string, GameObject> Bones { get; } = [];
@@ -254,7 +264,7 @@ public sealed class ViewModel
                     _ => Meshes.RoundedBox(part.Size * ps, MathF.Min(part.Size.X, MathF.Min(part.Size.Y, part.Size.Z)) * ps * 0.18f, 2),
                 };
                 var m = Mats.New(shader);
-                m.SetColor("_MainColor", part.Color);
+                m.SetColor("_MainColor", part.Emissive ? part.Color : VmTone(part.Color));
                 if (!Application.IsHeadless)
                     try
                     {
