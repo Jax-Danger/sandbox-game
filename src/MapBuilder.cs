@@ -267,9 +267,9 @@ public static partial class MapBuilder
             float y = HillsHeight(x, z), tk = 0.8f + (i % 5) * 0.12f;
             Shape(scene, shader, "Tree trunk", Meshes.Lathe("htrunk", [(0.0001f, -0.3f), (0.3f, -0.3f), (0.22f, 0f), (0.17f, 1.6f), (0.12f, 2.6f), (0.0001f, 2.7f)], 16), new Float3(x, y, z), bark, new Float3(0.36f, 5.4f, 0.36f));
             int sd = i % 9;
-            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.5f * tk, sd), new Float3(x, y + 3.6f * tk, z), new Color(0.24f, 0.46f, 0.22f, 1f));
-            Shape(scene, shader, "~Tree crown b", Meshes.Blob(1.05f * tk, sd + 1), new Float3(x + 0.9f * tk, y + 3.0f * tk, z - 0.4f), new Color(0.2f, 0.4f, 0.18f, 1f));
-            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.95f * tk, sd + 2), new Float3(x - 0.8f * tk, y + 3.2f * tk, z + 0.6f), new Color(0.3f, 0.52f, 0.25f, 1f));
+            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.5f * tk, sd), new Float3(x, y + 3.6f * tk, z), new Color(0.2f, 0.34f, 0.16f, 1f));
+            Shape(scene, shader, "~Tree crown b", Meshes.Blob(1.05f * tk, sd + 1), new Float3(x + 0.9f * tk, y + 3.0f * tk, z - 0.4f), new Color(0.16f, 0.29f, 0.13f, 1f));
+            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.95f * tk, sd + 2), new Float3(x - 0.8f * tk, y + 3.2f * tk, z + 0.6f), new Color(0.26f, 0.4f, 0.18f, 1f));
             Shape(scene, shader, "~Tree branches", Meshes.Merge(PropMeshes.Rod(new Float3(0f, 1.9f * tk, 0f), new Float3(0.85f * tk, 2.9f * tk, -0.35f), 0.1f, 0.04f), PropMeshes.Rod(new Float3(0f, 2.1f * tk, 0f), new Float3(-0.75f * tk, 3.0f * tk, 0.5f), 0.09f, 0.035f), PropMeshes.Rod(new Float3(0f, 2.4f * tk, 0f), new Float3(0.1f, 3.4f * tk, 0.15f), 0.08f, 0.035f)), new Float3(x, y, z), bark);
         }
         {

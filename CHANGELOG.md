@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.25 — 2026-10-18
+- Hills tree crowns use deeper, less saturated leaf greens to sit with the toned-down turf
+
 ## v0.8.24 — 2026-10-18
 - Rolling Hills turf toned down from neon green to a natural meadow green
 
