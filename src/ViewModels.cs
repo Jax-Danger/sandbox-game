@@ -96,8 +96,14 @@ public static partial class ViewModels
                 for (int i = 0; i <= 14; i++)
                 {
                     float sl = -0.008f + (L + 0.008f) * i / 14f;
-                    float th = s.ThK + s.Dir * sl / R * 180f / MathF.PI;
-                    pts.Add(F.P(th, s.H[k], r * (1.02f - 0.18f * Math.Clamp(sl / L, 0f, 1f))));
+                    float tt = Math.Clamp(sl / L, 0f, 1f);
+                    // Open (relaxed) hands: fingers fan apart toward the tips and curl progressively more toward the pinky,
+                    // so they read as four separate digits instead of a mitten.
+                    bool open = F.Ra >= 0.045f;
+                    float fan = open ? (s.H[k] - 0.0f) * 0.32f * tt : 0f;
+                    float curl = open ? 1f + 0.09f * (s.Dir > 0 ? k : 3 - k) * 0.5f : 1f;
+                    float th = s.ThK + s.Dir * sl / R * 180f / MathF.PI * curl;
+                    pts.Add(F.P(th, s.H[k] + fan, r * (1.02f - 0.18f * tt)));
                 }
                 Finger(bone, pts.ToArray(), r, F.A);
             }
@@ -156,7 +162,7 @@ public static partial class ViewModels
                 float G(float c, float w) => MathF.Exp(-MathF.Pow((t - c) / w, 2f));
                 // Knuckle bumps at the joints with soft creases either side, so each finger reads as segments, not a mitten.
                 float bump = 0.13f * G(0.5f, 0.055f) + 0.1f * G(0.76f, 0.045f) - 0.07f * G(0.62f, 0.035f) - 0.06f * G(0.88f, 0.03f);
-                float rr = r * 0.94f * (1.04f - 0.2f * t + bump);
+                float rr = r * 0.9f * (1.04f - 0.26f * t + bump);
                 secs.Add(new Sec(pts[i], rr, rr * 0.9f, 2.2f));
             }
             Add(bone, Sweep(secs, side ?? Float3.UnitY, 14, 0.9f), GloveC, Finish.Leather);
@@ -222,7 +228,7 @@ public static partial class ViewModels
         HandSpec Fist(Float3 a, Float3 d0, float r, Float3 wrist, float len = 0.95f) => new(new GripFrame(Float3.Zero, a, d0, r, r),
             -22f, -1, [0.029f, 0.0105f, -0.008f, -0.026f], 86f, wrist, 70f, 195f, 0.03f, 0.042f, null, len);
         HandSpec Relaxed(int side) => new(new GripFrame(V(0f, -0.045f, 0f), V(side, 0f, 0f), -Float3.UnitY, 0.05f, 0.05f),
-            side > 0 ? 178f : 182f, side, [-0.027f, -0.009f, 0.009f, 0.026f], 42f, V(0.004f * side, 0.0f, -0.075f),
+            side > 0 ? 178f : 182f, side, [-0.0285f, -0.0095f, 0.0095f, 0.0275f], 42f, V(0.004f * side, 0.0f, -0.075f),
             side > 0 ? 150f : 210f, side > 0 ? 222f : 138f, -0.04f, -0.05f, null, 1f);
 
         Float3 armR = V(0.085f, -0.135f, 0.25f);

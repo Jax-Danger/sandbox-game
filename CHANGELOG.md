@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.5.4 — 2026-10-17
+- View-model hands: open-hand fingers fan apart toward the tips, curl progressively toward the pinky, slimmer tapered digits — four real fingers instead of a mitten.
+
 ## v0.5.3 — 2026-10-17
 - Flatgrass ramps are solid: the painted deck now sits on an inset concrete wedge down to the ground (no more floating planks).
 
