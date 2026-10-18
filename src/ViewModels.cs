@@ -621,6 +621,41 @@ public static partial class ViewModels
                 d.Weight = 0.5f;
                 break;
             }
+            case "medkit":
+            {
+                // Medic's first-aid case carried by its top handle: white moulded shell, grey seam band and corner
+                // bumpers, red cross on both faces, two latches. (Was the frag-grenade view model.)
+                Float3 s = Nz(V(0.08f, 0f, 1f));
+                Std(V(0.17f, -0.095f, 0.45f), -28f, 4f);
+                Bone("muzzle", "weapon", V(0f, -0.1f, 0.1f));
+                Color shell = new(0.7f, 0.7f, 0.68f, 1f), band = new(0.36f, 0.38f, 0.4f, 1f), cross = new(0.78f, 0.1f, 0.08f, 1f);
+                const float cy = -0.118f, hw = 0.036f, hh = 0.085f, hl = 0.13f;
+                k.Add("weapon", Meshes.RoundedBox(V(hw * 2f, hh * 2f, hl * 2f), 0.012f), shell, Finish.Polymer, V(0f, cy, 0f));
+                k.Add("weapon", Meshes.RoundedBox(V(hw * 2f + 0.004f, 0.012f, hl * 2f + 0.004f), 0.004f), band, Finish.Rubber, V(0f, cy + 0.01f, 0f));
+                foreach (float sz in new[] { -1f, 1f })
+                    foreach (float sy in new[] { -1f, 1f })
+                        k.Add("weapon", Meshes.RoundedBox(V(hw * 2f + 0.006f, 0.03f, 0.03f), 0.008f), band, Finish.Rubber, V(0f, cy + sy * (hh - 0.012f), sz * (hl - 0.012f)));
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    float x = sx * (hw + 0.0012f);
+                    k.Add("weapon", Meshes.RoundedBox(V(0.003f, 0.026f, 0.08f), 0.0012f), cross, Finish.Paint, V(x, cy - 0.012f, 0f));
+                    k.Add("weapon", Meshes.RoundedBox(V(0.003f, 0.08f, 0.026f), 0.0012f), cross, Finish.Paint, V(x, cy - 0.012f, 0f));
+                }
+                foreach (float lz in new[] { -0.07f, 0.07f })
+                {
+                    k.Add("weapon", Meshes.RoundedBox(V(0.014f, 0.022f, 0.026f), 0.004f), band, Finish.Metal, V(-hw - 0.003f, cy + 0.01f, lz));
+                    k.Add("weapon", Meshes.RoundedBox(V(0.018f, 0.006f, 0.03f), 0.002f), Steel, Finish.Metal, V(0f, cy + hh + 0.002f, lz * 0.9f));
+                }
+                // Handle: rubber grip on two posts, swept along the hand's grip axis.
+                k.Bar("weapon", band, Finish.Metal, s * -0.058f + V(0f, cy + hh, 0f), s * -0.058f, 0.006f, 0.008f, 4f, 0.6f);
+                k.Bar("weapon", band, Finish.Metal, s * 0.058f + V(0f, cy + hh, 0f), s * 0.058f, 0.006f, 0.008f, 4f, 0.6f);
+                k.Sw("weapon", Black, Finish.Rubber, Float3.UnitY, 0.9f, new Sec(s * -0.064f, 0.0105f, 0.0105f, 2.2f), new Sec(s * 0.064f, 0.0105f, 0.0105f, 2.2f));
+                Float3 d0 = Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
+                right = Fist(s, d0, 0.0108f, V(0.03f, -0.045f, -0.06f));
+                freeLeft = false;
+                d.Weight = 0.8f;
+                break;
+            }
             case "crowbar":
             {
                 static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));

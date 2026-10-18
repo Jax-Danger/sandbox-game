@@ -631,7 +631,7 @@ public sealed class MedkitWeapon : Weapon
     public override string Name => "Medkit";
     public override int Slot => 5;
     public override Icon Icon => Icon.Heart;
-    public override string? ViewModelId => "grenade";
+    public override string? ViewModelId => "medkit";
     public override bool Available(SandboxGame g) => g.Roleplay.Active && g.Roleplay.Job.Id == "medic";
     public override void Tick(SandboxGame g, WeaponInput i, float dt)
     {

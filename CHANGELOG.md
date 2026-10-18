@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.20 — 2026-10-18
+- Medkit: own view model (white first-aid case carried by its handle, red crosses, latches, corner bumpers) instead of the frag grenade; vm_ shot states can show job-only weapons
+
 ## v0.17.19 — 2026-10-18
 - Shotgun ADS: front bead and rear sight now on one line (new 'bead' bone, self-test checks it), gun pushed out so the receiver sits below the crosshair instead of covering it
 

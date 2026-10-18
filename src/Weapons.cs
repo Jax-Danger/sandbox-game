@@ -98,7 +98,7 @@ public sealed class WeaponSystem
     public void Select(SandboxGame g, Weapon w)
     {
         if (ReferenceEquals(w, Current)) return;
-        if (Current is not null && !w.Available(g)) return;
+        if (Current is not null && !w.Available(g) && g.ShotState?.StartsWith("vm_") != true) return;
         if (Current is not null)
         {
             Current.Holster(g);
@@ -123,7 +123,7 @@ public sealed class WeaponSystem
     /// <summary>Drops back to the physgun if the current weapon stopped being available (job change).</summary>
     public void RefreshAvailability(SandboxGame g)
     {
-        if (Current is not null && !Current.Available(g)) Select(g, _all.OfType<PhysGunWeapon>().First());
+        if (Current is not null && !Current.Available(g) && g.ShotState?.StartsWith("vm_") != true) Select(g, _all.OfType<PhysGunWeapon>().First());
     }
 
     public void SelectSlot(SandboxGame g, int slot)
