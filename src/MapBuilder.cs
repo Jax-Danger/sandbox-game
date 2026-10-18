@@ -232,4 +232,32 @@ public static partial class MapBuilder
         Add(scene, go);
         return go;
     }
+
+    /// <summary>Visual-only smooth mesh (swept/lathed map detail); optional box collider.</summary>
+    private static GameObject Shape(Scene scene, Shader shader, string name, Mesh mesh, Float3 position, Color color, Float3? collider = null, Float3 euler = default)
+    {
+        GameObject go = new(name);
+        go.Transform.Position = position;
+        go.Transform.LocalEulerAngles = euler;
+        MeshRenderer renderer = go.AddComponent<MeshRenderer>();
+        renderer.Mesh = mesh;
+        var material = Mats.New(shader);
+        material.SetColor("_MainColor", color);
+        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
+            try
+            {
+                if (name.StartsWith("~")) material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f));
+                else material.SetTexture("_MainTex", ProcTex.Concrete());
+            }
+            catch { }
+        renderer.Material = material;
+        if (collider is { } c) go.AddComponent<BoxCollider>().Size = c;
+        Add(scene, go);
+        return go;
+    }
+
+    /// <summary>Soft leafy crown: a few overlapping lumpy blobs.</summary>
+    private static Mesh Crown(int seed) => Meshes.Sweep([
+        new Meshes.Sec(new Float3(0f, -0.9f, 0f), 0.9f, 0.85f, 2f), new Meshes.Sec(new Float3(0.1f, -0.3f, 0.05f), 1.45f, 1.4f, 2f),
+        new Meshes.Sec(new Float3(-0.05f, 0.4f, -0.05f), 1.35f, 1.3f, 2f), new Meshes.Sec(new Float3(0f, 1.0f, 0f), 0.8f, 0.85f, 2f)], Float3.UnitX, 28, 0.9f);
 }

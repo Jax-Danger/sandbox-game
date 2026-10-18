@@ -167,9 +167,9 @@ public static partial class MapBuilder
 
         // Plaza furniture: fountain, benches, lamps, trees, laws board, ATM.
         var stone = new Color(0.78f, 0.76f, 0.72f, 1f);
-        Box(scene, shader, "Fountain base", new Float3(0f, 0.35f, 4f), new Float3(5f, 0.7f, 5f), Float3.Zero, stone);
-        Box(scene, shader, "~Fountain water", new Float3(0f, 0.72f, 4f), new Float3(4.4f, 0.04f, 4.4f), Float3.Zero, new Color(0.12f, 0.32f, 0.48f, 1f), collide: false);
-        Box(scene, shader, "Fountain column", new Float3(0f, 1.3f, 4f), new Float3(0.6f, 1.4f, 0.6f), Float3.Zero, stone);
+        Shape(scene, shader, "Fountain base", Meshes.Lathe("fbasin", [(0.0001f, -0.35f), (2.6f, -0.35f), (2.62f, 0.2f), (2.75f, 0.28f), (2.72f, 0.36f), (2.45f, 0.38f), (2.4f, 0.3f), (0.0001f, 0.3f)], 48), new Float3(0f, 0.35f, 4f), stone, new Float3(5f, 0.7f, 5f));
+        Shape(scene, shader, "~Fountain water", Meshes.RoundedCylinder(2.4f, 0.04f, 0.01f, 48), new Float3(0f, 0.67f, 4f), new Color(0.12f, 0.32f, 0.48f, 1f));
+        Shape(scene, shader, "Fountain column", Meshes.Lathe("fcol", [(0.0001f, -0.7f), (0.4f, -0.7f), (0.3f, -0.55f), (0.22f, -0.2f), (0.2f, 0.4f), (0.55f, 0.55f), (0.6f, 0.62f), (0.5f, 0.66f), (0.12f, 0.7f), (0.0001f, 0.72f)], 32), new Float3(0f, 1.3f, 4f), stone, new Float3(0.6f, 1.4f, 0.6f));
         foreach (var (x, z, yaw) in new[] { (-7f, 4f, 90f), (7f, 4f, 90f), (-4f, -12f, 0f), (4f, -12f, 0f) })
         {
             Box(scene, shader, "Bench seat", new Float3(x, 0.45f, z), yaw == 0f ? new Float3(2.2f, 0.12f, 0.6f) : new Float3(0.6f, 0.12f, 2.2f), Float3.Zero, new Color(0.55f, 0.38f, 0.22f, 1f));
@@ -177,10 +177,13 @@ public static partial class MapBuilder
         }
         foreach (var (x, z) in new[] { (-14f, -14f), (14f, -14f), (-14f, 14f), (14f, 14f) })
         {
-            Box(scene, shader, "Tree trunk", new Float3(x, 1.2f, z), new Float3(0.4f, 2.4f, 0.4f), Float3.Zero, new Color(0.40f, 0.28f, 0.18f, 1f));
-            Box(scene, shader, "~Tree crown", new Float3(x, 3.2f, z), new Float3(2.6f, 2.2f, 2.6f), new Float3(0f, 45f, 0f), new Color(0.28f, 0.52f, 0.26f, 1f), collide: false);
-            Box(scene, shader, "Lamp post", new Float3(x * 0.7f, 2f, z * 0.7f), new Float3(0.14f, 4f, 0.14f), Float3.Zero, new Color(0.12f, 0.12f, 0.13f, 1f));
-            Box(scene, shader, "~Lamp head", new Float3(x * 0.7f, 4.05f, z * 0.7f), new Float3(0.5f, 0.18f, 0.5f), Float3.Zero, new Color(1f, 0.92f, 0.70f, 1f), collide: false);
+            Shape(scene, shader, "Tree trunk", Meshes.Lathe("trunk", [(0.0001f, -1.2f), (0.34f, -1.2f), (0.24f, -0.9f), (0.2f, 0f), (0.17f, 1.0f), (0.12f, 1.4f), (0.0001f, 1.45f)], 20), new Float3(x, 1.2f, z), new Color(0.40f, 0.28f, 0.18f, 1f), new Float3(0.4f, 2.4f, 0.4f));
+            Shape(scene, shader, "~Tree crown", Crown(0), new Float3(x, 3.4f, z), new Color(0.28f, 0.52f, 0.26f, 1f));
+            Shape(scene, shader, "~Tree crown b", Meshes.Sphere(0.85f), new Float3(x + 0.8f, 3.0f, z - 0.5f), new Color(0.24f, 0.47f, 0.23f, 1f));
+            Shape(scene, shader, "~Tree crown c", Meshes.Sphere(0.75f), new Float3(x - 0.7f, 3.1f, z + 0.6f), new Color(0.31f, 0.56f, 0.28f, 1f));
+            Shape(scene, shader, "Lamp post", PropMeshes.Post(0.07f, 4f), new Float3(x * 0.7f, 2f, z * 0.7f), new Color(0.12f, 0.12f, 0.13f, 1f), new Float3(0.14f, 4f, 0.14f));
+            Shape(scene, shader, "~Lamp head", Meshes.Lathe("lantern", [(0.05f, -0.2f), (0.2f, -0.12f), (0.22f, 0.02f), (0.3f, 0.06f), (0.26f, 0.12f), (0.08f, 0.2f), (0.0001f, 0.24f)], 8), new Float3(x * 0.7f, 4.15f, z * 0.7f), new Color(0.15f, 0.15f, 0.16f, 1f));
+            Shape(scene, shader, "~Lamp glass", Meshes.Sphere(0.15f), new Float3(x * 0.7f, 4.12f, z * 0.7f), new Color(1f, 0.92f, 0.70f, 1f));
         }
         // Laws board (north edge of the plaza, facing spawn).
         Box(scene, shader, "Board posts", new Float3(0f, 1.1f, 12.5f), new Float3(4.4f, 2.2f, 0.18f), Float3.Zero, new Color(0.30f, 0.22f, 0.15f, 1f));
