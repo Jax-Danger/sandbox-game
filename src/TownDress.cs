@@ -86,11 +86,16 @@ public static partial class MapBuilder
         if (house)
         {
             // Lap siding: overlapping boards on all four faces (front boards stop at the doorway), white corner boards, stone plinth.
-            Color siding = new(wall.R * 0.96f, wall.G * 0.96f, wall.B * 0.96f, 1f);
+            Color siding = new(wall.R * 0.96f, wall.G * 0.96f, wall.B * 0.96f, 1f); Color drip = new(wall.R * 0.88f, wall.G * 0.88f, wall.B * 0.88f, 1f); // soft shadow line under each board
             for (float y = 0.55f; y < h - 0.05f; y += 0.2f)
             {
-                Mesh Board(float len) => Xf(Meshes.RoundedBox(L3(len, 0.19f, 0.025f), 0.006f), 0f, Float3.Zero);
-                void Run(float a, Float3 o, float len) => b.Add(siding, Xf(Xf(Board(len), 0f, L3(0, 0, 0)), a, o));
+                // Wedge clapboard (thin top tucked under the board above, thick drip edge below) with flat faces and no
+                // bevel: the old rounded boards' 6 mm highlight edges and wall-coloured gaps aliased into moiré at range.
+                Mesh Board(float len) { float L = len / 2f, t = 0.11f, bt = -0.1f, zt = 0.006f, zb = -0.016f, zw = 0.012f;
+                    return Meshes.Faces([L3(-L, t, zt), L3(L, t, zt), L3(L, bt, zb), L3(-L, bt, zb)]); }
+                Mesh Drip(float len) { float L = len / 2f, bt = -0.1f, zb = -0.016f, zw = 0.012f;
+                    return Meshes.Faces([L3(-L, bt + 0.045f, zb + 0.0047f), L3(L, bt + 0.045f, zb + 0.0047f), L3(L, bt, zb), L3(-L, bt, zb)], [L3(-L, bt, zb), L3(L, bt, zb), L3(L, bt, zw), L3(-L, bt, zw)]); }
+                void Run(float a, Float3 o, float len) { b.Add(siding, Xf(Board(len), a, o)); b.Add(drip, Xf(Drip(len), a, o)); }
                 if (y < dh + 0.1f) { float side = hw - dw / 2f - 0.12f; Run(0f, L3(-hw + side / 2f, y, -hd - face - 0.012f), side); Run(0f, L3(hw - side / 2f, y, -hd - face - 0.012f), side); }
                 else Run(0f, L3(0, y, -hd - face - 0.012f), s.X);
                 Run(180f, L3(0, y, hd + face + 0.012f), s.X);
