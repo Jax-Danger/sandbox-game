@@ -311,12 +311,12 @@ public sealed class Buggy
 
     private void BoatDetails(SandboxGame g, Color dark)
     {
-        var white = new Color(0.86f, 0.87f, 0.88f, 1f);
+        var white = new Color(0.66f, 0.67f, 0.68f, 1f); // 0.86 clipped to a glowing outline under full sun
         foreach (float x in new[] { -0.9f, 0.9f })
             Detail(g, "Rail", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitY, new Float3(x * 0.98f, 0.2f, -1.78f), new Float3(x, 0.215f, -1.4f), new Float3(x, 0.215f, 1.1f), new Float3(x * 0.88f, 0.27f, 1.7f), new Float3(x * 0.62f, 0.33f, 2.06f)), Float3.Zero, white);
         // Deck: aluminium diamond treadplate over the hull top, a hinged bow hatch, mooring cleats and a dark rub strake
         // along the gunwale, so the deck reads as a working boat instead of a flat blue slab.
-        var alu = new Color(0.52f, 0.54f, 0.56f, 1f);
+        var alu = new Color(0.42f, 0.44f, 0.46f, 1f);
         Detail(g, "Deck", VehicleModels.TreadPlate(1.62f, 2.7f, 0.176f), new Float3(0f, 0f, -0.25f), alu);
         Detail(g, "Hatch", Meshes.RoundedBox(new Float3(0.9f, 0.02f, 0.42f), 0.01f), new Float3(0f, 0.2f, 1.42f), alu * 0.92f, new Float3(-6f, 0f, 0f));
         Detail(g, "HatchSeam", Meshes.RoundedBox(new Float3(0.94f, 0.012f, 0.46f), 0.006f), new Float3(0f, 0.192f, 1.42f), new Color(0.12f, 0.13f, 0.14f, 1f), new Float3(-6f, 0f, 0f));

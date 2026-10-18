@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.3 — 2026-10-18
+- Airboat: gunwale rail and treadplate deck toned down (clipped to a glowing white outline/deck under full sun) (screens/s10-boat-bc.png right=new)
+
 ## v0.16.2 — 2026-10-18
 - Rendering: engine spheres (Mesh.CreateSphere) had zero pole normals (pistol/slide VM parts, door knobs, board finials) - sanitized; self-test now scans every world mesh for zero/NaN normals so no HDR black-frame source can creep back
 
