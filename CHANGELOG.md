@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.5.3 — 2026-10-17
+- Flatgrass ramps are solid: the painted deck now sits on an inset concrete wedge down to the ground (no more floating planks).
+
 ## v0.5.2 — 2026-10-17
 - RPG view model: optic rebuilt as a lathed scope (eyecup, coated eyepiece, turret ring, reticle with chevron), wide mount plate instead of a thin stalk; tube rear is a rolled lip into a sooty recessed bore instead of a flat cap.
 

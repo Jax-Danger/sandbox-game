@@ -96,9 +96,9 @@ public static partial class MapBuilder
         Box(scene, shader, "Wall S", new Float3(0f, h / 2f, -half), new Float3(120f, h, 1f), Float3.Zero, concrete);
         Box(scene, shader, "Wall E", new Float3(half, h / 2f, 0f), new Float3(1f, h, 120f), Float3.Zero, concrete);
         Box(scene, shader, "Wall W", new Float3(-half, h / 2f, 0f), new Float3(1f, h, 120f), Float3.Zero, concrete);
-        Box(scene, shader, "Ramp gentle", new Float3(-14f, 1.2f, 10f), new Float3(5f, 0.4f, 10f), new Float3(-14f, 0f, 0f), accent);
-        Box(scene, shader, "Ramp steep", new Float3(14f, 2.2f, 10f), new Float3(5f, 0.4f, 10f), new Float3(-28f, 0f, 0f), accent);
-        Box(scene, shader, "Ramp side", new Float3(0f, 1.5f, 24f), new Float3(10f, 0.4f, 5f), new Float3(0f, 0f, 18f), accent);
+        Ramp(scene, shader, "Ramp gentle", new Float3(-14f, 1.2f, 10f), new Float3(5f, 0.4f, 10f), new Float3(-14f, 0f, 0f), accent);
+        Ramp(scene, shader, "Ramp steep", new Float3(14f, 2.2f, 10f), new Float3(5f, 0.4f, 10f), new Float3(-28f, 0f, 0f), accent);
+        Ramp(scene, shader, "Ramp side", new Float3(0f, 1.5f, 24f), new Float3(10f, 0.4f, 5f), new Float3(0f, 0f, 18f), accent);
         Box(scene, shader, "Platform", new Float3(-14f, 2.2f, 19f), new Float3(8f, 0.6f, 8f), Float3.Zero, concrete);
         Box(scene, shader, "Wall mid", new Float3(10f, 1.5f, -12f), new Float3(12f, 3f, 0.6f), Float3.Zero, concrete);
         Box(scene, shader, "Step 1", new Float3(-10f, 0.25f, -12f), new Float3(3f, 0.5f, 3f), Float3.Zero, concrete);
@@ -306,6 +306,27 @@ public static partial class MapBuilder
         if (collide) go.AddComponent<BoxCollider>().Size = size;
         Add(scene, go);
         return go;
+    }
+
+    /// <summary>A ramp: the painted deck (rounded slab, collides) on a solid concrete wedge down to the ground, inset so the
+    /// deck reads as an overhanging lip, with a dark kick plate at the low edge. No more floating planks.</summary>
+    private static void Ramp(Scene scene, Shader shader, string name, Float3 position, Float3 size, Float3 euler, Color color)
+    {
+        GameObject deck = Box(scene, shader, name, position, size, euler, color);
+        float hx = size.X / 2f - 0.12f, hz = size.Z / 2f - 0.12f, hy = -size.Y / 2f;
+        Float3 W(float x, float z) => deck.Transform.TransformPoint(new Float3(x, hy, z));
+        Float3[] top = [W(-hx, -hz), W(hx, -hz), W(hx, hz), W(-hx, hz)];
+        Float3 G(Float3 p) => new(p.X, 0f, p.Y < 0.05f ? p.Z : p.Z);
+        var faces = new List<Float3[]>();
+        // Underside of the deck (facing down) is hidden; build the walls from each deck-bottom edge to the ground.
+        for (int i = 0; i < 4; i++)
+        {
+            Float3 a = top[i], b = top[(i + 1) % 4];
+            if (a.Y < 0.02f && b.Y < 0.02f) continue; // edge already on the ground
+            faces.Add([a, G(a), G(b), b]);
+        }
+        foreach (var f in faces) { Float3 c = (f[0] + f[2]) * 0.5f, ctr = (top[0] + top[2]) * 0.5f; if (Float3.Dot(Float3.Cross(f[1] - f[0], f[2] - f[0]), c - ctr) < 0f) Array.Reverse(f); }
+        Shape(scene, shader, name + " base", Meshes.Faces(faces.ToArray()), Float3.Zero, new Color(0.6f, 0.6f, 0.58f, 1f));
     }
 
     /// <summary>Visual-only smooth mesh (swept/lathed map detail); optional box collider.</summary>

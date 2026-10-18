@@ -320,6 +320,21 @@ public static class Meshes
         return Build(v, n, uv, idx);
     }
 
+    /// <summary>Flat-shaded mesh from convex polygons (each wound counter-clockwise seen from outside). UVs are planar in metres.</summary>
+    public static Mesh Faces(params Float3[][] polys)
+    {
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        foreach (Float3[] f in polys)
+        {
+            Float3 nn = SafeN(Float3.Cross(f[1] - f[0], f[2] - f[0]));
+            bool yUp = MathF.Abs(nn.Y) > 0.7f, xSide = MathF.Abs(nn.X) > MathF.Abs(nn.Z);
+            uint b = (uint)v.Count;
+            foreach (Float3 p in f) { v.Add(p); n.Add(nn); uv.Add(yUp ? new Float2(p.X, p.Z) : xSide ? new Float2(p.Z, p.Y) : new Float2(p.X, p.Y)); }
+            for (int k = 1; k + 1 < f.Length; k++) { idx.Add(b); idx.Add(b + (uint)k); idx.Add(b + (uint)k + 1); }
+        }
+        return Build(v, n, uv, idx);
+    }
+
     private static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
