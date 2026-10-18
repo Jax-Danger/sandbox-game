@@ -104,7 +104,7 @@ public static class Humans
         }
         foreach (float sd in new[] { -1f, 1f })
             parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.14f, 0.192f, -0.002f), 0.07f, 0.04f),
-                new Sec(V(sd * 0.21f, 0.17f, 0f), 0.056f, 0.047f), new Sec(V(sd * 0.25f, 0.15f, 0f), 0.05f, 0.047f), new Sec(V(sd * 0.272f, 0.125f, 0f), 0.04f, 0.04f), new Sec(V(sd * 0.28f, 0.1f, 0f), 0.026f, 0.026f)],
+                new Sec(V(sd * 0.21f, 0.17f, 0f), 0.056f, 0.047f), new Sec(V(sd * 0.245f, 0.15f, 0f), 0.05f, 0.047f), new Sec(V(sd * 0.258f, 0.132f, 0f), 0.036f, 0.036f), new Sec(V(sd * 0.262f, 0.12f, 0f), 0.02f, 0.02f)],
                 Float3.UnitZ, 20, 0.85f), Tint.Main));
         return (body, parts.ToArray());
     }
@@ -199,11 +199,10 @@ public static class Humans
     private static (Mesh, Detail[]) UpperArm(float side)
     {
         Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.12f, 0.052f, 0.052f, 0f), (0.08f, 0.057f, 0.056f, 0f), (0.0f, 0.054f, 0.052f, 0f), (-0.11f, 0.049f, 0.049f, 0.004f), (-0.165f, 0.047f, 0.047f, 0.004f));
-        Mesh delt = Sweep([new Sec(V(-side * 0.02f, 0.13f, 0f), 0.03f, 0.036f), new Sec(V(-side * 0.006f, 0.105f, 0f), 0.054f, 0.054f), new Sec(V(0f, 0.05f, 0f), 0.057f, 0.055f)], Float3.UnitZ, 20, 0.8f);
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
         // Sleeve end rolls softly over the elbow (no hard rim cutting into the forearm when the arm bends).
         Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.185f, 0.05f, 0.05f, 0.004f), (-0.2f, 0.045f, 0.045f, 0.004f), (-0.21f, 0.04f, 0.04f, 0.003f));
-        return (arm, [new(delt, Tint.Main), new(roll, Tint.Cuff)]);
+        return (arm, [new(roll, Tint.Cuff)]);
     }
 
     private static (Mesh, Detail[]) LowerArm(float side, bool grip = false)
