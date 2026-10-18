@@ -226,7 +226,7 @@ public static partial class MapBuilder
             {
                 var shore = new Mesh { IndexFormat = IndexFormat.UInt32, Vertices = sv.ToArray(), UV = su.ToArray(), Indices = si.ToArray() };
                 shore.RecalculateNormals(); shore.RecalculateBounds();
-                Shape(scene, shader, "~Shore", shore, Float3.Zero, new Color(0.4f, 0.36f, 0.27f, 1f));
+                Shape(scene, shader, "~Shore", shore, Float3.Zero, new Color(0.31f, 0.28f, 0.2f, 1f));
             }
             var reeds = new List<Mesh>(); var heads = new List<Mesh>();
             for (int i = 0; i < 160; i++)

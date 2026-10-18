@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.12 — 2026-10-18
+- Lake water shifted from saturated pool-blue to a deeper teal, and the shore band to a darker damp sand.
+
 ## v0.14.11 — 2026-10-18
 - Hills boulders get ragged moss/lichen caps on their upward facets (Meshes.RockMoss).
 

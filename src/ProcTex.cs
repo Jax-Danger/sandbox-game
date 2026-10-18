@@ -80,7 +80,7 @@ public static class ProcTex
         float rip = Fbm(x / 6f, y / 18f, 21), broad = Fbm(x / 30f, y / 30f, 22);
         float v = 0.82f + 0.22f * rip + 0.12f * broad;
         float glint = MathF.Max(0f, rip - 0.72f) * 3.5f;
-        return (B(v * 0.135f + glint * 0.35f), B(v * 0.33f + glint * 0.4f), B(v * 0.44f + glint * 0.42f), 255);
+        return (B(v * 0.11f + glint * 0.35f), B(v * 0.27f + glint * 0.4f), B(v * 0.32f + glint * 0.42f), 255);
     });
 
     public static Texture2D Grass() => Make("grass", 128, 128, (x, y) =>
