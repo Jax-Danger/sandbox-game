@@ -200,8 +200,26 @@ public static partial class MapBuilder
         // Plaza furniture: fountain, benches, lamps, trees, laws board, ATM.
         var stone = new Color(0.78f, 0.76f, 0.72f, 1f);
         Shape(scene, shader, "Fountain base", Meshes.Lathe("fbasin", [(0.0001f, -0.35f), (2.6f, -0.35f), (2.62f, 0.2f), (2.75f, 0.28f), (2.72f, 0.36f), (2.45f, 0.38f), (2.4f, 0.3f), (0.0001f, 0.3f)], 48), new Float3(0f, 0.35f, 4f), stone, new Float3(5f, 0.7f, 5f));
-        Shape(scene, shader, "~Fountain water", Meshes.RoundedCylinder(2.4f, 0.04f, 0.01f, 48), new Float3(0f, 0.67f, 4f), new Color(0.12f, 0.32f, 0.48f, 1f));
+        Shape(scene, shader, "~Fountain water", Meshes.RoundedCylinder(2.4f, 0.04f, 0.01f, 48), new Float3(0f, 0.67f, 4f), new Color(0.07f, 0.24f, 0.32f, 1f));
         Shape(scene, shader, "Fountain column", Meshes.Lathe("fcol", [(0.0001f, -0.7f), (0.4f, -0.7f), (0.3f, -0.55f), (0.22f, -0.2f), (0.2f, 0.4f), (0.55f, 0.55f), (0.6f, 0.62f), (0.5f, 0.66f), (0.12f, 0.7f), (0.0001f, 0.72f)], 32), new Float3(0f, 1.3f, 4f), stone, new Float3(0.6f, 1.4f, 0.6f));
+        {
+            // Upper tier: a slim stem, small bowl and pineapple finial; water spilling from the lower bowl in eight sheets,
+            // a pool in the bowl, and ripple rings where the sheets land.
+            Float3 fc = new(0f, 0f, 4f);
+            Shape(scene, shader, "~Fountain upper", Meshes.Lathe("fupper", [(0.0001f, 0f), (0.14f, 0f), (0.1f, 0.08f), (0.08f, 0.4f), (0.3f, 0.5f), (0.32f, 0.55f), (0.26f, 0.57f), (0.06f, 0.6f), (0.06f, 0.72f), (0.1f, 0.8f), (0.07f, 0.9f), (0.0001f, 0.95f)], 28), fc + new Float3(0f, 2.0f, 0f), stone);
+            var pale = new Color(0.62f, 0.8f, 0.86f, 1f);
+            Shape(scene, shader, "~Fountain bowl water", Meshes.Merge(Off(Meshes.RoundedCylinder(0.5f, 0.02f, 0.005f, 32), 0f, 1.975f, 0f), Off(Meshes.RoundedCylinder(0.25f, 0.02f, 0.005f, 24), 0f, 2.545f, 0f)), fc, new Color(0.1f, 0.3f, 0.38f, 1f));
+            var sheets = new List<Mesh>(); var ripples = new List<Mesh>();
+            for (int i = 0; i < 8; i++)
+            {
+                float a = i * MathF.Tau / 8f, cx = MathF.Cos(a), cz = MathF.Sin(a);
+                Float3 P(float r, float y) => new(cx * r, y, cz * r);
+                sheets.Add(Meshes.Sweep([new Meshes.Sec(P(0.6f, 1.96f), 0.07f, 0.008f, 2f, Float3.UnitY), new Meshes.Sec(P(0.68f, 1.85f), 0.06f, 0.01f, 2f, Float3.UnitY), new Meshes.Sec(P(0.76f, 1.4f), 0.05f, 0.012f, 2f, Float3.UnitY), new Meshes.Sec(P(0.8f, 0.7f), 0.06f, 0.015f, 2f, Float3.UnitY)], new Float3(-cz, 0f, cx), 8, 0.6f));
+                ripples.Add(Off(Meshes.Lathe("fripple", [(0.06f, 0f), (0.1f, 0.006f), (0.14f, 0f)], 16), cx * 0.8f, 0.69f, cz * 0.8f));
+            }
+            Shape(scene, shader, "~Fountain sheets", Meshes.Merge(sheets.ToArray()), fc, pale);
+            Shape(scene, shader, "~Fountain ripples", Meshes.Merge(ripples.Concat([Meshes.Lathe("fripple2", [(1.2f, 0f), (1.25f, 0.005f), (1.3f, 0f)], 48) is var rr ? Off(rr, 0f, 0.69f, 0f) : null!]).ToArray()), fc, new Color(0.3f, 0.5f, 0.58f, 1f));
+        }
         foreach (var (x, z, yaw) in new[] { (-7f, 4f, 90f), (7f, 4f, 90f), (-4f, -12f, 0f), (4f, -12f, 0f) })
         {
             // Park bench model (slats, backrest, cast-iron sides) facing the fountain; one box collider.

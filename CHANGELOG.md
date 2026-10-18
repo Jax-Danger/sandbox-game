@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.15 — 2026-10-18
+- Plaza fountain: upper tier with a slim stem, small bowl and finial, eight water sheets spilling from the bowl, pools in both bowls, ripple rings and deeper water colour
+
 ## v0.8.14 — 2026-10-18
 - House roofs get shingle courses: a shadow line every course up both slopes with staggered butt joints
 
