@@ -246,7 +246,7 @@ public sealed partial class SandboxGame : Game
             case "create": Menus.RefreshWorlds(); Menus.Go(Screen.Worlds); Menus.Go(Screen.CreateWorld); break;
             case "loading": HoldLoaderAt = 0.62f; EnterSession(SeedDemoWorlds()[0]); break;
             case "tutorial": Settings.TutorialStep = 1; EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode != "Roleplay")); break;
-            case "rp" or "jobs" or "shop" or "town" or "towndoor" or "townair" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
+            case "rp" or "jobs" or "shop" or "town" or "towndoor" or "townair" or "townatm" or "townboard" or "jail" or "bank": EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
             case "hills" or "lake": EnterSession(SeedDemoWorlds().First(x => x.Meta.Map == "hills")); break;
             case "smg":
                 Menus.Go(Screen.Playing);

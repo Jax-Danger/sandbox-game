@@ -203,7 +203,16 @@ public static partial class MapBuilder
             Shape(scene, shader, "~Lamp glass", Meshes.Sphere(0.15f), new Float3(x * 0.7f, 4.12f, z * 0.7f), new Color(1f, 0.92f, 0.70f, 1f));
         }
         // Laws board (north edge of the plaza, facing spawn).
-        Box(scene, shader, "Board posts", new Float3(0f, 1.1f, 12.5f), new Float3(4.4f, 2.2f, 0.18f), Float3.Zero, new Color(0.30f, 0.22f, 0.15f, 1f));
+        Box(scene, shader, "Board posts", new Float3(0f, 1.1f, 12.5f), new Float3(4.4f, 2.2f, 0.18f), Float3.Zero, new Color(0.30f, 0.22f, 0.15f, 1f)).GetComponent<MeshRenderer>()!.Enabled = false;
+        // Visible: two turned posts with ball finials, a framed back panel and a little roof over the notice.
+        var post = new Color(0.30f, 0.22f, 0.15f, 1f);
+        foreach (float px in new[] { -2.2f, 2.2f })
+        {
+            Shape(scene, shader, "~Board post", Meshes.Lathe("bpost", [(0.0001f, 0f), (0.14f, 0f), (0.14f, 0.12f), (0.1f, 0.2f), (0.09f, 3.3f), (0.12f, 3.36f), (0.12f, 3.42f), (0.0001f, 3.44f)], 20), new Float3(px, 0f, 12.5f), post);
+            Shape(scene, shader, "~Board finial", Meshes.Sphere(0.1f), new Float3(px, 3.55f, 12.5f), post);
+        }
+        Shape(scene, shader, "~Board back", PropMeshes.InsetPanel(4.3f, 2.6f, 0.12f, 0.12f), new Float3(0f, 2.05f, 12.48f), post, euler: new Float3(0f, 180f, 0f));
+        Shape(scene, shader, "~Board roof", Meshes.Sweep([new Meshes.Sec(new Float3(0f, 3.5f, 12.15f), 2.5f, 0.04f, 4f), new Meshes.Sec(new Float3(0f, 3.7f, 12.6f), 2.5f, 0.04f, 4f), new Meshes.Sec(new Float3(0f, 3.5f, 12.95f), 2.5f, 0.04f, 4f)], Float3.UnitX, 12, 0.3f), Float3.Zero, new Color(0.36f, 0.22f, 0.18f, 1f));
         GameObject board = Box(scene, shader, "~Laws board", new Float3(0f, 2.0f, 12.38f), new Float3(4f, 2.2f, 0.06f), Float3.Zero, new Color(0.10f, 0.13f, 0.17f, 1f));
         board.AddComponent<LawsBoard>();
         Town.Interactive.Add((board, new Float3(4f, 2.2f, 0.06f)));
@@ -211,6 +220,17 @@ public static partial class MapBuilder
         Box(scene, shader, "~Board header", new Float3(0f, 3.25f, 12.36f), new Float3(4f, 0.3f, 0.06f), Float3.Zero, new Color(0.78f, 0.22f, 0.22f, 1f), collide: false);
         // ATM (east edge of the plaza).
         GameObject atm = Box(scene, shader, "ATM", new Float3(15.6f, 1.0f, -4f), new Float3(0.8f, 2.0f, 0.9f), Float3.Zero, new Color(0.24f, 0.30f, 0.40f, 1f));
+        atm.GetComponent<MeshRenderer>()!.Mesh = Meshes.RoundedBox(new Float3(0.8f, 2.0f, 0.9f), 0.12f, 4);
+        // Kiosk detail: recessed screen bezel, keypad, card slot, cash slot and a hood over the screen.
+        var kdark = new Color(0.1f, 0.12f, 0.15f, 1f);
+        Shape(scene, shader, "~ATM bezel", PropMeshes.InsetPanel(0.72f, 0.62f, 0.05f, 0.06f), new Float3(15.2f, 1.35f, -4f), kdark, euler: new Float3(0f, -90f, 0f));
+        Shape(scene, shader, "~ATM hood", Meshes.RoundedBox(new Float3(0.28f, 0.04f, 0.78f), 0.015f), new Float3(15.08f, 1.72f, -4f), kdark, euler: new Float3(0f, 0f, 14f));
+        Shape(scene, shader, "~ATM shelf", Meshes.RoundedBox(new Float3(0.3f, 0.05f, 0.7f), 0.02f), new Float3(15.08f, 0.98f, -4f), new Color(0.6f, 0.62f, 0.65f, 1f), euler: new Float3(0f, 0f, -12f));
+        for (int ky = 0; ky < 4; ky++)
+            for (int kx = 0; kx < 3; kx++)
+                Shape(scene, shader, "~ATM key", Meshes.RoundedBox(new Float3(0.03f, 0.03f, 0.05f), 0.01f), new Float3(15.02f + ky * 0.02f, 1.02f + ky * 0.005f, -4.06f + kx * 0.06f), new Color(0.75f, 0.76f, 0.78f, 1f), euler: new Float3(0f, 0f, -12f));
+        Shape(scene, shader, "~ATM card", Meshes.RoundedBox(new Float3(0.02f, 0.03f, 0.12f), 0.008f), new Float3(15.19f, 1.05f, -3.75f), new Color(0.2f, 0.85f, 0.4f, 1f));
+        Shape(scene, shader, "~ATM cash", Meshes.RoundedBox(new Float3(0.02f, 0.04f, 0.3f), 0.01f), new Float3(15.19f, 0.8f, -4f), kdark);
         atm.AddComponent<AtmMachine>();
         Town.Interactive.Add((atm, new Float3(0.8f, 2.0f, 0.9f)));
         Town.Atm = atm;

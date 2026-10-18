@@ -169,6 +169,8 @@ public sealed partial class SandboxGame
             switch (ShotState)
             {
                 case "town": Player.Teleport(new Float3(-3f, 0.2f, 2.5f)); Player.SetLook(8f, 2f); break;
+                case "townatm": Player.Teleport(new Float3(12.6f, 0.2f, -5.2f)); Player.SetLook(70f, 8f); break;
+                case "townboard": Player.Teleport(new Float3(-1f, 0.2f, 6f)); Player.SetLook(5f, -6f); break;
                 case "towndoor": Roleplay.Earn(0); Player.Teleport(new Float3(-26.3f, 0.2f, 18.6f)); Player.SetLook(0f, 8f); break;
                 case "townair": if (!Player.Noclip) Player.ToggleNoclip(); Player.Teleport(new Float3(-30f, 34f, -52f)); Player.SetLook(28f, 34f); break;
                 case "jail": Roleplay.Arrest("Arrested for the screenshot"); Player.SetLook(200f, 6f); break;
