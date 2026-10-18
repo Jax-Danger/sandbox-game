@@ -68,7 +68,7 @@ public sealed partial class Menus
     {
         float slide = (1f - Ui.Alpha) * Theme.S(30);
         float x = Theme.S(96) - slide, y = h * 0.26f;
-        Ui.Text(paper, "mn_kicker", x, y - Theme.S(26), w, Theme.S(18), paused ? "PAUSED" : "PROWL ENGINE · PHYSICS SANDBOX",
+        Ui.Text(paper, "mn_kicker", x, y - Theme.S(26), w, Theme.S(18), paused ? "PAUSED" : $"PROWL ENGINE · PHYSICS SANDBOX · v{GameVersion.Text}",
             Theme.Micro, Theme.Accent, Theme.Bold);
         float logo = Theme.S(64);
         DrawLogo(paper, x, y + Theme.S(6), logo, "mn_logo", (float)Prowl.Runtime.Time.UnscaledTotalTime);
@@ -218,4 +218,9 @@ public sealed partial class Menus
         Ui.Button(paper, "st_back", x + pw - pad - bw, y + ph - pad - bh, bw, bh, "Done", () => Back(g), selected: true, icon: Icon.Check, radius: bh / 2f);
         Ui.Button(paper, "st_reset", x + pad - Theme.S(14), y + ph - pad - bh, Theme.S(120), bh, "Reset", () => g.ResetSettings(), ghost: true, icon: Icon.Undo, radius: bh / 2f);
     }
+}
+
+public static class GameVersion
+{
+    public static readonly string Text = typeof(GameVersion).Assembly.GetName().Version is { } v ? $"{v.Major}.{v.Minor}.{v.Build}" : "?";
 }

@@ -137,6 +137,10 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 - **Save fix**: a rope and an elastic band on the same two props no longer turn into an extra rope on every save/load (found by the soak, seed 7).
 - **Kill plane**: anything that falls through the world is removed (whole ragdoll), fixing the soak's "Limb fell out of the world".
 
+## New in v0.5.1
+
+- **Door keys** (Roleplay): press **K** on your door to give the nearest NPC a key, **Shift+K** to take keys back. Full history in [CHANGELOG.md](CHANGELOG.md).
+
 ## New in v0.5.0
 
 - **Console** (`` ` ``): `help`, `noclip`, `give <weapon>`, `time <0-24>`, `gravity <m/s²>`, `timescale`, `cleanup`, `spawn <prop> [n]`, `tp x y z`, `pos`, `heal`, `kill`, `weather <preset>`, `achievements`, `hints reset`, `photo`, `screenshot`. Anything that isn't a command is chat. ↑/↓ for history, mouse wheel or PgUp/PgDn to scroll, Esc to close.
