@@ -34,6 +34,24 @@ public static class Gallery
                 g.Player.SetLook(0f, 22f);
                 break;
             }
+            case "tools":
+            {
+                // Tool-gun attachments on frozen cubes: wheel, thruster, balloon, hoverball, light.
+                ToolMode[] modes = [ToolMode.Wheel, ToolMode.Thruster, ToolMode.Balloon, ToolMode.Hoverball, ToolMode.Light];
+                for (int i = 0; i < modes.Length; i++)
+                {
+                    Float3 at = new(-3.2f + i * 1.6f, 0.9f, 4f);
+                    Prop c = g.Props.Spawn(PropKind.Cube, at, 0f, false);
+                    c.Body.MotionType = Jitter2.Dynamics.MotionType.Static;
+                    Float3 n = modes[i] == ToolMode.Wheel || modes[i] == ToolMode.Thruster ? -Float3.UnitX : Float3.UnitY;
+                    if (modes[i] == ToolMode.Thruster) n = -Float3.UnitZ;
+                    g.ToolGun.SetHit(c, at + n * 0.5f, n);
+                    ToolMode old = g.ToolGun.Mode; g.ToolGun.Mode = modes[i]; g.ToolGun.Apply(c); g.ToolGun.Mode = old;
+                }
+                g.Player.Teleport(new Float3(0f, 0.05f, -0.5f));
+                g.Player.SetLook(0f, 12f);
+                break;
+            }
             case "basic":
             {
                 var kinds = PropManager.AllKinds;

@@ -182,7 +182,7 @@ public sealed partial class ToolGun
         l.Intensity = 4f;
         l.CastShadows = false;
         MeshRenderer r = go.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateSphere(0.08f, 8, 10);
+        r.Mesh = Meshes.Sphere(0.08f);
         var mat = Mats.New(props.Shader);
         mat.SetColor("_MainColor", color);
         try { mat.SetTexture("_EmissionTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
@@ -229,7 +229,12 @@ public sealed partial class ToolGun
         // Cylinder's long axis is Y: point it along the surface normal (the wheel's axle).
         go.Transform.Up = normal;
         MeshRenderer r = go.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateCylinder(radius, width, 20);
+        r.Mesh = Meshes.Tyre(radius, width);
+        var hub = new GameObject("Rim");
+        hub.SetParent(go, false);
+        MeshRenderer hr = hub.AddComponent<MeshRenderer>();
+        hr.Mesh = PropMeshes.Rim(radius * 0.55f, width + 0.02f, 5);
+        var hm = Mats.New(props.Shader); hm.SetColor("_MainColor", new Color(0.6f, 0.62f, 0.65f, 1f)); hr.Material = hm;
         var mat = Mats.New(props.Shader);
         var c = new Color(0.12f, 0.12f, 0.13f, 1f);
         mat.SetColor("_MainColor", c);
@@ -345,7 +350,7 @@ public sealed class Thruster : MonoBehaviour
         v.Transform.Position = point + normal * 0.1f;
         v.Transform.Up = normal;
         MeshRenderer r = v.AddComponent<MeshRenderer>();
-        r.Mesh = Mesh.CreateCylinder(0.1f, 0.2f, 12);
+        r.Mesh = Meshes.Lathe("thruster", [(0.0001f, -0.1f), (0.07f, -0.1f), (0.09f, -0.08f), (0.09f, 0.0f), (0.06f, 0.04f), (0.07f, 0.08f), (0.11f, 0.11f), (0.1f, 0.12f), (0.05f, 0.09f), (0.0001f, 0.08f)], 28);
         var m = Mats.New(props.Shader);
         m.SetColor("_MainColor", new Color(0.3f, 0.32f, 0.36f, 1f));
         r.Material = m;

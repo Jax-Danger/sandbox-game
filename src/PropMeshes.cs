@@ -65,7 +65,9 @@ public static class PropMeshes
     public static Mesh SignFoot() => Sweep([new Sec(V(0f, -0.02f, -0.2f), 0.28f, 0.02f, 4f), new Sec(V(0f, 0.01f, 0f), 0.3f, 0.03f, 4f), new Sec(V(0f, -0.02f, 0.2f), 0.28f, 0.02f, 4f)], Float3.UnitX, 20, 0.6f);
 
     /// <summary>Wheel rim along Y: dished lathe with a hub and n swept spokes (spokes along the disc).</summary>
-    public static Mesh Rim(float r, float w, int spokes)
+    private static readonly Dictionary<string, Mesh> _rims = new();
+    public static Mesh Rim(float r, float w, int spokes) => _rims.TryGetValue($"{r},{w},{spokes}", out Mesh? m) ? m : _rims[$"{r},{w},{spokes}"] = BuildRim(r, w, spokes);
+    private static Mesh BuildRim(float r, float w, int spokes)
     {
         var parts = new List<Mesh> { Lathe($"rim{r},{w}", [(r * 0.8f, -w / 2f), (r, -w / 2f), (r * 1.02f, -w / 2f + 0.01f), (r * 1.02f, w / 2f - 0.01f), (r, w / 2f), (r * 0.82f, w / 2f), (r * 0.86f, 0f), (r * 0.8f, -w / 2f)], 36) };
         _ = parts;

@@ -195,7 +195,7 @@ public sealed class Balloon : MonoBehaviour
 
         GameObject visual = new("Balloon");
         MeshRenderer r = visual.AddComponent<MeshRenderer>();
-        r.Mesh = Prowl.Runtime.Resources.Mesh.CreateSphere(0.35f, 12, 16);
+        r.Mesh = Meshes.Lathe("balloon", [(0.0001f, -0.4f), (0.025f, -0.4f), (0.03f, -0.37f), (0.02f, -0.35f), (0.08f, -0.31f), (0.22f, -0.2f), (0.33f, -0.02f), (0.35f, 0.1f), (0.3f, 0.25f), (0.17f, 0.34f), (0.0001f, 0.36f)], 32);
         var m = new Prowl.Runtime.Resources.Material(props.Shader);
         m.SetColor("_MainColor", new Color(0.95f, 0.15f, 0.2f, 1f));
         r.Material = m;
