@@ -150,6 +150,24 @@ public static partial class MapBuilder
             b.Add(plate, Bx(sw, 0.5f, 0.08f, 0, sy, -hd - face - 0.05f));
             b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy + 0.27f, -hd - face - 0.05f)); b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy - 0.27f, -hd - face - 0.05f));
             b.Add(frame, Xf(Glyphs.Text(word, 0.3f, -hd - face - 0.12f, -hd - face - 0.09f, mirror: false), 0f, L3(0, sy, 0)));
+            if (title == "Apartment")
+            {
+                // Upper floor centre bay: a French door onto a little balcony (slab, railing on turned balusters),
+                // and flower boxes under the upper side windows.
+                float z0 = -hd - face;
+                Window(b, 0f, L3(0f, 5.0f, z0), 1.2f, 1.9f, false, frame, lintel, glass, shutter);
+                b.Add(stone, Bx(1.9f, 0.12f, 0.38f, 0f, 4.0f, z0 - 0.19f, 0.02f));
+                foreach (float bz in new[] { 0.0f }) b.Add(stone, Bx(1.95f, 0.06f, 0.07f, 0f, 4.89f, z0 - 0.34f + bz));
+                foreach (float sx in new[] { -0.95f, 0.95f }) b.Add(stone, Bx(0.07f, 0.06f, 0.36f, sx, 4.89f, z0 - 0.18f));
+                Mesh bal = Meshes.Lathe("baluster", [(0.0001f, 0f), (0.035f, 0f), (0.035f, 0.06f), (0.025f, 0.12f), (0.045f, 0.4f), (0.022f, 0.68f), (0.035f, 0.78f), (0.035f, 0.85f), (0.0001f, 0.85f)], 10);
+                for (float x = -0.88f; x <= 0.89f; x += 0.16f) b.Add(frame, Xf(bal, 0f, L3(x, 4.04f, z0 - 0.33f)));
+                for (float zz = z0 - 0.2f; zz < z0 - 0.05f; zz += 0.14f) foreach (float sx in new[] { -0.93f, 0.93f }) b.Add(frame, Xf(bal, 0f, L3(sx, 4.04f, zz)));
+                foreach (float x in Span(hw, true))
+                {
+                    b.Add(new Color(0.45f, 0.28f, 0.18f, 1f), Bx(ww + 0.1f, 0.22f, 0.26f, x, 3.78f, z0 - 0.16f, 0.02f));
+                    for (int i = 0; i < 6; i++) b.Add(i % 2 == 0 ? new Color(0.85f, 0.25f, 0.35f, 1f) : new Color(0.25f, 0.45f, 0.2f, 1f), Xf(Meshes.Blob(0.11f, 60 + i, 0.2f), 0f, L3(x - ww / 2f + 0.12f + i * (ww - 0.15f) / 5f, 3.95f, z0 - 0.17f)));
+                }
+            }
             if (title == "General Store")
             {
                 // Striped canvas awnings over each shop window (sloped, with a scalloped valance) and a produce stand by the door.

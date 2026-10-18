@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.7 — 2026-10-18
+- Apartments: French door with a Juliet balcony on turned balusters in the upper centre bay, and flower boxes under the upper windows.
+
 ## v0.10.6 — 2026-10-18
 - General Store gets striped canvas awnings with scalloped valances over each window and a fruit stand by the door.
 
