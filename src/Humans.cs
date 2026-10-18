@@ -82,20 +82,24 @@ public static class Humans
             new Sec(V(0f, 0.0f, -0.035f), 0.12f, 0.122f), new Sec(V(0f, 0.06f, -0.01f), 0.123f, 0.14f), new Sec(V(0f, 0.105f, -0.01f), 0.106f, 0.124f),
             new Sec(V(0f, 0.14f, -0.014f), 0.054f, 0.07f)], Float3.UnitX, 26, 0.3f, flatStart: true);
         var d = new List<Detail> { new(nose, Tint.Skin), new(Sweep([new Sec(V(-0.026f, -0.062f, 0.105f), 0.004f, 0.003f), new Sec(V(0f, -0.066f, 0.112f), 0.004f, 0.003f), new Sec(V(0.026f, -0.062f, 0.105f), 0.004f, 0.003f)], Float3.UnitY, 8, 0.9f), Tint.Eye), new(hair, Tint.Hair), new(eyeL, Tint.Eye, V(-0.04f, 0.018f, 0.104f)), new(eyeL, Tint.Eye, V(0.04f, 0.018f, 0.104f)) };
+        foreach (float sx in new[] { -1f, 1f })
+            d.Add(new(Sweep([new Sec(V(sx * 0.018f, 0.044f, 0.112f), 0.006f, 0.004f), new Sec(V(sx * 0.042f, 0.05f, 0.108f), 0.007f, 0.0045f), new Sec(V(sx * 0.064f, 0.044f, 0.098f), 0.005f, 0.0035f)], Float3.UnitY, 8, 0.8f), Tint.Hair));
+        d.Add(new(Sphere(0.004f), Tint.Skin, V(-0.04f, 0.018f, 0.1155f))); // (eye glints stay dark; keeps cache keys distinct)
         d.AddRange(ears);
         return (skull, d.ToArray());
     }
 
     private static (Mesh, Detail[]) UpperArm(float side)
     {
-        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.13f, 0.048f, 0.048f, 0.004f), (-0.17f, 0.046f, 0.046f, 0.004f));
+        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.13f, 0.048f, 0.048f, 0.004f), (-0.2f, 0.045f, 0.045f, 0.004f));
+        Mesh delt = Sweep([new Sec(V(-side * 0.025f, 0.175f, 0f), 0.04f, 0.045f), new Sec(V(-side * 0.008f, 0.145f, 0f), 0.066f, 0.062f), new Sec(V(0f, 0.08f, 0f), 0.064f, 0.06f)], Float3.UnitZ, 20, 0.8f);
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
-        return (arm, [new(hem, Tint.Cuff)]);
+        return (arm, [new(hem, Tint.Cuff), new(delt, Tint.Main)]);
     }
 
     private static (Mesh, Detail[]) LowerArm(float side)
     {
-        Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
+        Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.2f, 0.042f, 0.042f, 0f), (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
         // Relaxed hand: palm, grouped fingers curling in, thumb.
         Mesh palm = Sweep([new Sec(V(0f, -0.13f, 0f), 0.03f, 0.018f, 2.6f, Float3.UnitZ), new Sec(V(0f, -0.17f, 0.003f), 0.042f, 0.017f, 2.8f, Float3.UnitZ), new Sec(V(0f, -0.21f, 0.004f), 0.044f, 0.015f, 3f, Float3.UnitZ)], Float3.UnitZ, 16, 0.7f);
         var fingers = new List<Sec>();
@@ -106,11 +110,11 @@ public static class Humans
     }
 
     private static (Mesh, Detail[]) UpperLeg()
-        => (Sw(2.3f, Float3.UnitX, 0.9f, (0.22f, 0.084f, 0.08f, 0f), (0.12f, 0.08f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
+        => (Sw(2.3f, Float3.UnitX, 0.9f, (0.25f, 0.08f, 0.078f, 0f), (0.12f, 0.08f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
 
     private static (Mesh, Detail[]) LowerLeg()
     {
-        Mesh calf = Sw(2.2f, Float3.UnitX, 0.9f, (0.23f, 0.058f, 0.058f, 0f), (0.14f, 0.06f, 0.064f, -0.008f), (0.0f, 0.052f, 0.052f, -0.004f), (-0.16f, 0.04f, 0.04f, 0f), (-0.2f, 0.04f, 0.04f, 0f));
+        Mesh calf = Sw(2.2f, Float3.UnitX, 0.9f, (0.26f, 0.054f, 0.054f, 0f), (0.14f, 0.06f, 0.064f, -0.008f), (0.0f, 0.052f, 0.052f, -0.004f), (-0.16f, 0.04f, 0.04f, 0f), (-0.2f, 0.04f, 0.04f, 0f));
         Mesh cuff = Sw(2.2f, Float3.UnitX, 0.3f, (-0.155f, 0.046f, 0.046f, 0f), (-0.19f, 0.046f, 0.046f, 0f));
         // Shoe swept heel → toe with a sole.
         Mesh shoe = Sweep([new Sec(V(0f, -0.2f, -0.06f), 0.042f, 0.035f, 3f), new Sec(V(0f, -0.205f, -0.02f), 0.046f, 0.038f, 3f), new Sec(V(0f, -0.212f, 0.05f), 0.05f, 0.03f, 3f),
