@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.9 — 2026-10-18
+- Red button dome is a smooth glossy cap (white albedo instead of the patterned default texture; lathe poles now use the axis normal everywhere, removing star-shaped specks on domes and nose cones).
+
 ## v0.12.8 — 2026-10-18
 - Smoother gloves: Catmull-Rom densified finger paths, softer knuckle bumps, tapered knuckle pads; rolled sleeve hem with rounded lips and low-frequency folds (no jagged sleeve end).
 

@@ -386,9 +386,11 @@ public static class EntityCatalog
         bz.Mesh = Meshes.Lathe("btnbezel", [(0.17f, -0.01f), (0.24f, -0.01f), (0.245f, 0.01f), (0.23f, 0.035f), (0.2f, 0.04f), (0.185f, 0.02f)], 40);
         var bzm = Mats.New(g.Shader); bzm.SetColor("_MainColor", new Prowl.Vector.Color(0.75f, 0.76f, 0.78f, 1f)); bz.Material = bzm;
         MeshRenderer r = cap.AddComponent<MeshRenderer>();
-        r.Mesh = Meshes.Lathe("btncap", [(0.0001f, 0f), (0.175f, 0f), (0.18f, 0.03f), (0.17f, 0.06f), (0.12f, 0.085f), (0.0001f, 0.09f)], 40);
+        r.Mesh = Meshes.Lathe("btncap2", [(0.0001f, 0f), (0.175f, 0f), (0.18f, 0.02f), (0.178f, 0.04f), (0.165f, 0.062f), (0.14f, 0.077f), (0.105f, 0.086f), (0.06f, 0.0905f), (0.0001f, 0.092f)], 48);
         var m = new Prowl.Runtime.Resources.Material(g.Shader);
         m.SetColor("_MainColor", new Prowl.Vector.Color(0.9f, 0.25f, 0.2f, 1f));
+        // Plain white albedo: the default texture's pattern showed through the glossy dome as dark specks.
+        if (!Application.IsHeadless) try { m.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         r.Material = m;
         SandboxButton b = p.Go.AddComponent<SandboxButton>();
         b.Cap = m;

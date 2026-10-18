@@ -85,6 +85,9 @@ public static class Meshes
         {
             Float2 t = i == 0 ? Dir(0, 1) : i == pn - 1 ? Dir(pn - 2, pn - 1) : Float2.Normalize(Dir(i - 1, i) + Dir(i, i + 1));
             pnorm[i] = new Float2(t.Y, -t.X); // rotate tangent → outward normal (profile goes bottom→top)
+            // Points on the axis are poles: the normal must be the axis itself, otherwise every slice gets a different tilt and
+            // the pole shades as a star of dark specks (button domes, lens caps, nose cones).
+            if (profile[i].R < 0.002f) pnorm[i] = new Float2(0f, pnorm[i].Y >= 0f ? 1f : -1f);
         }
         Float2 Dir(int a, int b) { Float2 d = new(profile[b].R - profile[a].R, profile[b].Y - profile[a].Y); float l = Float2.Length(d); return l > 1e-6f ? d / l : new Float2(0, 1); }
         float vlen = 0f; var vacc = new float[pn];
