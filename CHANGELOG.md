@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.2 — 2026-10-18
+- Country roads continue the town avenues seamlessly: same 10 m width, height and asphalt material, overlapping the avenue end (no pale narrower slab / visible road joint); they also collide now.
+
 ## v0.13.1 — 2026-10-18
 - Sidewalk ramps have real sloped collision (plaza and out-of-town ends) so players and vehicles roll up/down instead of hitting a hidden 16 cm step; new self-test.
 

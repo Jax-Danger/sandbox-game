@@ -164,9 +164,11 @@ public static partial class MapBuilder
             {
                 bool ax = dir < 2; float sg = dir % 2 == 0 ? 1f : -1f;
                 Float3 At(float along, float y) => ax ? new Float3(sg * along, y, 0f) : new Float3(0f, y, sg * along);
-                Shape(scene, shader, "~Country road", Mesh.CreateCube(ax ? new Float3(360f, 0.04f, 8f) : new Float3(8f, 0.04f, 360f)), At(83f + 180f, 0.0f), new Color(0.33f, 0.33f, 0.34f, 1f));
+                // Same width, height and asphalt material as the town avenue, overlapping its end by 0.6 m so there is no
+                // pale, narrower, lower slab butting against it (the old visible road joint).
+                Box(scene, shader, $"Country road {dir}", At(82.4f + 180f, 0.0195f), ax ? new Float3(360f, 0.039f, 10f) : new Float3(10f, 0.039f, 360f), Float3.Zero, new Color(0.20f, 0.21f, 0.23f, 1f));
                 var dash = new List<Mesh>();
-                for (float t = 86f; t < 300f; t += 6f) dash.Add(Off(Meshes.RoundedBox(ax ? new Float3(2.6f, 0.01f, 0.18f) : new Float3(0.18f, 0.01f, 2.6f), 0.003f), ax ? sg * t : 0f, 0.025f, ax ? 0f : sg * t));
+                for (float t = 86f + 0f; t < 300f; t += 6f) dash.Add(Off(Meshes.RoundedBox(ax ? new Float3(2.6f, 0.01f, 0.18f) : new Float3(0.18f, 0.01f, 2.6f), 0.003f), ax ? sg * t : 0f, 0.044f, ax ? 0f : sg * t));
                 Shape(scene, shader, "~Country road line", Meshes.Merge(dash.ToArray()), Float3.Zero, new Color(0.92f, 0.82f, 0.36f, 1f));
             }
             for (int i = 0; i < 14; i++)
