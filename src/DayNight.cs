@@ -57,7 +57,7 @@ public sealed class DayNightCycle
             }
         }
         w.Ambient.GroundColor = L4(new Float4(0.12f, 0.12f, 0.16f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
-        w.Ambient.Strength = 0.8f + 0.1f * day;
+        w.Ambient.Strength = 0.8f + 0.25f * day; // ACES deepens shadow sides; lift sky fill a little
         // Town lamps: glass glows and a warm point light fades in as the sun goes down.
         float lit = Math.Clamp(1f - day * 1.6f, 0f, 1f);
         foreach (var (glass, light) in Town.NightLamps)

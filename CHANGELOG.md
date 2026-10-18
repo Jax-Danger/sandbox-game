@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.9 — 2026-10-18
+- Lighting: daytime sky fill 0.9 -> 1.05 so shadow sides (boulders, vehicle flanks) keep detail under ACES (screens/s11-amb.png right=new)
+
 ## v0.16.8 — 2026-10-18
 - Sky: deeper day zenith blue so the ACES sky no longer reads hazy grey (screens/s11-sky.png right=new)
 
