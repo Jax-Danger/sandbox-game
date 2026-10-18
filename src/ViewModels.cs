@@ -416,27 +416,27 @@ public static partial class ViewModels
             {
                 Std(V(0.125f, -0.19f, 0.34f), -4f);
                 Bone("muzzle", "weapon", V(0f, 0.088f, 0.37f));
-                k.Lz("weapon", new Color(0.32f, 0.34f, 0.37f, 1f), Finish.Metal, V(0, 0.088f, -0.11f),
-                    (0f, 0f), (0.014f, 0.002f), (0.026f, 0.018f), (0.032f, 0.05f), (0.034f, 0.1f), (0.034f, 0.2f), (0.031f, 0.27f), (0.027f, 0.3f), (0.026f, 0.32f), (0f, 0.32f));
-                for (int i = 0; i < 4; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.088f, -0.02f + i * 0.04f), (0.0342f, 0f), (0.0366f, 0.004f), (0.0366f, 0.016f), (0.0342f, 0.02f));
-                k.Lz("weapon", Steel, Finish.Metal, V(0, 0.088f, 0.2f), (0.03f, 0f), (0.038f, 0.01f), (0.04f, 0.04f), (0.036f, 0.05f), (0.022f, 0.052f), (0.02f, 0.04f), (0f, 0.04f));
-                k.Add("weapon", Sphere(0.019f), Accent, Finish.Gloss, V(0, 0.088f, 0.25f), true, 'L');
-                k.Sw("weapon", Accent, Finish.Gloss, Float3.UnitX, 0.8f, new Sec(V(0, 0.1225f, -0.04f), 0.005f, 0.003f, 4f), new Sec(V(0, 0.1235f, 0.08f), 0.005f, 0.003f, 4f), new Sec(V(0, 0.12f, 0.17f), 0.005f, 0.003f, 4f));
+                k.Lz("weapon", new Color(0.32f, 0.34f, 0.37f, 1f), Finish.Metal, V(0, 0.088f, -0.05f),
+                    (0f, 0f), (0.009f, 0.001f), (0.017f, 0.008f), (0.023f, 0.025f), (0.0262f, 0.06f), (0.0262f, 0.15f), (0.024f, 0.21f), (0.0215f, 0.24f), (0.0205f, 0.26f), (0f, 0.26f));
+                for (int i = 0; i < 4; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.088f, -0.02f + i * 0.04f), (0.0266f, 0f), (0.0284f, 0.003f), (0.0284f, 0.013f), (0.0266f, 0.016f));
+                k.Lz("weapon", Steel, Finish.Metal, V(0, 0.088f, 0.2f), (0.023f, 0f), (0.029f, 0.008f), (0.0305f, 0.04f), (0.0275f, 0.05f), (0.017f, 0.052f), (0.0155f, 0.04f), (0f, 0.04f));
+                k.Add("weapon", Sphere(0.0145f), Accent, Finish.Gloss, V(0, 0.088f, 0.25f), true, 'L');
+                k.Sw("weapon", Accent, Finish.Gloss, Float3.UnitX, 0.8f, new Sec(V(0, 0.1145f, -0.04f), 0.004f, 0.0025f, 4f), new Sec(V(0, 0.1152f, 0.08f), 0.004f, 0.0025f, 4f), new Sec(V(0, 0.1125f, 0.17f), 0.005f, 0.003f, 4f));
                 d.Parts[^1] = d.Parts[^1] with { Emissive = true };
                 for (int i = 0; i < 3; i++)
                 {
                     float a = Rad(i * 120f + 60f);
                     Float3 rd = V(MathF.Sin(a), MathF.Cos(a), 0f);
-                    Float3 b0 = V(0, 0.088f, 0.225f) + rd * 0.036f;
-                    k.Pipe("weapon", Gunmetal, Finish.Metal, [0.0065f, 0.006f, 0.0048f, 0.0035f], b0, b0 + rd * 0.012f + V(0, 0, 0.04f), b0 + rd * 0.016f + V(0, 0, 0.08f), b0 + rd * 0.008f + V(0, 0, 0.115f));
+                    Float3 b0 = V(0, 0.088f, 0.225f) + rd * 0.0275f;
+                    k.Pipe("weapon", Gunmetal, Finish.Metal, [0.0052f, 0.0048f, 0.0038f, 0.0028f], b0, b0 + rd * 0.01f + V(0, 0, 0.04f), b0 + rd * 0.013f + V(0, 0, 0.08f), b0 + rd * 0.006f + V(0, 0, 0.115f));
                 }
                 foreach (int sx in new[] { -1, 1 })
-                    k.Pipe("weapon", Black, Finish.Rubber, [0.0045f], V(sx * 0.026f, 0.064f, -0.06f), V(sx * 0.037f, 0.068f, 0.02f), V(sx * 0.038f, 0.072f, 0.12f), V(sx * 0.031f, 0.076f, 0.2f));
+                    k.Pipe("weapon", Black, Finish.Rubber, [0.0036f], V(sx * 0.011f, 0.076f, -0.03f), V(sx * 0.0285f, 0.071f, 0.02f), V(sx * 0.0292f, 0.074f, 0.12f), V(sx * 0.024f, 0.078f, 0.2f));
                 k.GripBody("weapon", pistolA, -0.058f, 0.062f, 0.016f, 0.025f, Polymer, Black);
                 k.Guard("weapon", Polymer, 0.052f, 0.072f, 0.0185f, 0.02f, 0.041f);
                 right = RightPistol(0.016f, 0.025f, 0.012f, Trig(0.034f, 0.045f));
                 leftParent = "weapon"; leftPos = V(0f, 0.088f, 0.13f);
-                left = Under(0.034f, 0.034f, 0.62f);
+                left = Under(0.027f, 0.027f, 0.62f);
                 d.Weight = 1.5f; d.RecoilKick = 0.3f;
                 break;
             }

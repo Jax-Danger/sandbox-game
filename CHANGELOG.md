@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.28 — 2026-10-18
+- Physics gun is slimmer: body, rings, collar, prongs, hoses and grip hand ~23% narrower and the bulbous rear dome shortened, so it no longer fills the lower right of the screen.
+
 ## v0.8.27 — 2026-10-18
 - Arrow sign stands on a galvanised post with cap, clamps, back rails and a weighted foot (collider now 0.9 x 2.2 x 0.4) instead of a loose panel that fell flat.
 
