@@ -815,6 +815,13 @@ public sealed class SelfTest
             Check(maxY - minY < 0.05f && MathF.Abs(maxY) < 0.3f && g.Health.Hp >= hp0 && g.Player.IsGrounded,
                 $"player stands still on the town grass (y {minY:0.000}..{maxY:0.000}, hp {hp0:0}->{g.Health.Hp:0})");
         }
+        {
+            // Sidewalk ramps are real slopes: a ray down the middle of the out-of-town ramp lands on the slope, not the grass.
+            bool hitR = g.World.Physics.Raycast(new Float3(84.1f, 2f, 6.5f), new Float3(0f, -1f, 0f), 4f, out RaycastHit rh);
+            bool hitP = g.World.Physics.Raycast(new Float3(16.2f, 2f, -6.5f), new Float3(0f, -1f, 0f), 4f, out RaycastHit ph);
+            Check(hitR && MathF.Abs(rh.Point.Y - 0.08f) < 0.03f && hitP && MathF.Abs(ph.Point.Y - 0.1225f) < 0.03f,
+                $"sidewalk ramps have sloped collision (out {(hitR ? rh.Point.Y : -1f):0.000}, plaza {(hitP ? ph.Point.Y : -1f):0.000})");
+        }
         Door house = Town.Find("door_house1")!;
         Float3 c = house.Transform.Position;
         bool Blocked() => g.World.Physics.Raycast(new Float3(c.X, 1.2f, c.Z - 2f), new Float3(0f, 0f, 1f), 4f, out RaycastHit h) && Town.DoorFrom(h) == house;

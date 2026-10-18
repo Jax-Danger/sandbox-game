@@ -229,6 +229,22 @@ public static partial class MapBuilder
                 }
             }
         }
+        // Ramp colliders (render-less, built headless too): the sloped sidewalk ends are walkable/drivable slopes, not a
+        // 16 cm step hidden under a visual wedge. Each is a thin box whose top face is the ramp surface.
+        foreach (float ang in new[] { 0f, 180f, -90f, 90f })
+            foreach (float l in new[] { -1f, 1f })
+                foreach (var (x0, h0, x1, h1) in new[] { (83.0f, 0.16f, 85.2f, 0.0f), (15.4f, 0.085f, 17.0f, 0.16f) })
+                {
+                    float dx = x1 - x0, dh = h1 - h0, len = MathF.Sqrt(dx * dx + dh * dh), th = 0.2f;
+                    float nx = -dh / len, ny = dx / len; // up-facing normal of the slope in the X/Y plane
+                    float cx = (x0 + x1) / 2f - nx * th / 2f, cy = (h0 + h1) / 2f - ny * th / 2f, cz = l * 5.8f;
+                    float r = ang * MathF.PI / 180f, c = MathF.Cos(r), sn = MathF.Sin(r);
+                    var rc = new GameObject("~Sidewalk ramp collider");
+                    rc.Transform.Position = new Float3(cx * c + cz * sn, cy, -cx * sn + cz * c);
+                    rc.Transform.LocalEulerAngles = new Float3(0f, ang, MathF.Atan2(dh, dx) * 180f / MathF.PI);
+                    rc.AddComponent<BoxCollider>().Size = new Float3(len, th, 4.4f); // covers kerb + sidewalk width
+                    Add(scene, rc);
+                }
         // Sidewalk dressing: a raised granite kerb on the road side, expansion joints every 1.5 m, and sloped
         // ends (dropped kerbs) down to the plaza paving and, out of town, to the grass — no blunt slab ends.
         {
