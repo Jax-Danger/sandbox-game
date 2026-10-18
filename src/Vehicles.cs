@@ -214,6 +214,10 @@ public sealed class Buggy
             Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
+        // Spare wheel rim (was an empty tyre): dished steel disc with a hub cap and five lug nuts, facing rearward.
+        Detail(g, "SpareRim", Meshes.LatheZ([(0.0001f, -0.07f), (0.08f, -0.07f), (0.1f, -0.05f), (0.2f, -0.04f), (0.255f, -0.07f), (0.27f, -0.1f), (0.27f, 0.08f), (0.0001f, 0.08f)], 32), new Float3(0f, 0.55f, -1.82f), new Color(0.72f, 0.72f, 0.66f, 1f), new Float3(0f, 180f, 0f));
+        Detail(g, "SpareCap", VehicleModels.Hub(0.12f), new Float3(0f, 0.55f, -1.95f), new Color(0.6f, 0.61f, 0.63f, 1f), new Float3(0f, 180f, 0f));
+        for (int i = 0; i < 5; i++) { float a = i * MathF.Tau / 5f; Detail(g, "SpareLug", Meshes.Sphere(0.014f), new Float3(MathF.Cos(a) * 0.15f, 0.55f + MathF.Sin(a) * 0.15f, -1.905f), new Color(0.3f, 0.3f, 0.32f, 1f)); }
         // Classic seven-slot grille, side mirrors on stalks, tail lamps, hood latches and a jerrycan on the tailgate.
         for (int i = 0; i < 7; i++)
             Detail(g, "GrilleSlot", Meshes.RoundedBox(new Float3(0.07f, 0.3f, 0.02f), 0.03f), new Float3(-0.36f + i * 0.12f, 0.3f, 1.745f), new Color(0.03f, 0.03f, 0.03f, 1f));
@@ -237,6 +241,21 @@ public sealed class Buggy
                 Detail(g, "Hinge", Meshes.RoundedBox(new Float3(0.03f, 0.06f, 0.1f), 0.01f), new Float3(x * 0.92f, y, 0.3f), dark);
         }
         Detail(g, "FuelCap", Meshes.Lathe("jfuel", [(0.0001f, 0.02f), (0.05f, 0.02f), (0.055f, 0f), (0.05f, -0.02f), (0.0001f, -0.02f)], 20), new Float3(-0.92f, 0.12f, -1.25f), new Color(0.6f, 0.6f, 0.62f, 1f), new Float3(0f, 0f, 90f));
+        // Body panels: hood shut lines and a raised centre spine, hood-side louvres, a pressed character line along the
+        // rear quarters, rivet rows on the tub rim, and a tailgate shut line with its chain stays.
+        var seam = new Color(0.07f, 0.075f, 0.06f, 1f);
+        foreach (float x in new[] { -1f, 1f })
+        {
+            Detail(g, "HoodSeam", VehicleModels.Pipe(0.0055f, Float3.UnitY, new Float3(x * 0.62f, 0.531f, 0.62f), new Float3(x * 0.62f, 0.529f, 1.62f)), Float3.Zero, seam);
+            for (int i = 0; i < 4; i++)
+                Detail(g, "Louvre", Meshes.RoundedBox(new Float3(0.02f, 0.035f, 0.11f), 0.008f), new Float3(x * 0.815f, 0.46f, 0.95f + i * 0.13f), seam, new Float3(0f, 0f, x * -18f));
+            Detail(g, "Character", VehicleModels.Pipe(0.011f, Float3.UnitY, new Float3(x * 0.9f, 0.13f, -1.62f), new Float3(x * 0.905f, 0.13f, -0.98f)), Float3.Zero, paint * 1.08f);
+            Detail(g, "Rivets", VehicleModels.Rivets(new Float3(x * 0.885f, 0.262f, -1.6f), new Float3(x * 0.885f, 0.262f, -0.98f), 7, 0.009f), Float3.Zero, paint * 0.95f);
+            Detail(g, "Rivets", VehicleModels.Rivets(new Float3(x * 0.885f, 0.262f, 0.25f), new Float3(x * 0.885f, 0.262f, 0.45f), 3, 0.009f), Float3.Zero, paint * 0.95f);
+            Detail(g, "TailStay", VehicleModels.Pipe(0.005f, Float3.UnitX, new Float3(x * 0.8f, 0.27f, -1.69f), new Float3(x * 0.84f, 0.12f, -1.72f)), Float3.Zero, new Color(0.45f, 0.46f, 0.48f, 1f));
+        }
+        Detail(g, "HoodSpine", Meshes.RoundedBox(new Float3(0.14f, 0.02f, 1.0f), 0.009f), new Float3(0f, 0.535f, 1.1f), paint * 1.05f);
+        Detail(g, "TailSeam", VehicleModels.BentPipe(0.005f, 0.05f, Float3.UnitY, new Float3(-0.74f, -0.18f, -1.695f), new Float3(-0.74f, 0.2f, -1.695f), new Float3(0.74f, 0.2f, -1.695f), new Float3(0.74f, -0.18f, -1.695f)), Float3.Zero, seam);
         Detail(g, "Bumper", VehicleModels.BentPipe(0.07f, 0.12f, Float3.UnitY, new Float3(-0.95f, 0.05f, 1.72f), new Float3(-0.9f, 0.05f, 1.8f), new Float3(0.9f, 0.05f, 1.8f), new Float3(0.95f, 0.05f, 1.72f)), Float3.Zero, dark);
     }
 

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.5 — 2026-10-18
+- Jeep body panels: hood shut lines and raised spine, hood-side louvres, rear-quarter character line, rivet rows, tailgate shut line with chain stays; spare wheel now has a steel rim, hub cap and lug nuts.
+
 ## v0.13.4 — 2026-10-18
 - Airboat deck: aluminium diamond treadplate, hinged bow hatch with seam and handle, four mooring cleats and a dark rub strake along the gunwale.
 

@@ -142,11 +142,15 @@ public static class VehicleModels
         return Merge(parts.ToArray());
     });
 
-    private static Mesh Off(Mesh m, float x, float y, float z)
+    public static Mesh Off(Mesh m, float x, float y, float z)
         => new() { IndexFormat = m.IndexFormat, Vertices = m.Vertices!.Select(v => V(v.X + x, v.Y + y, v.Z + z)).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
 
     /// <summary>Mooring cleat: a low horn bar on two feet.</summary>
     public static Mesh Cleat() => C("cleat", () => Merge(
         Sweep([new Sec(V(-0.08f, 0.035f, 0f), 0.006f, 0.008f), new Sec(V(-0.05f, 0.045f, 0f), 0.011f, 0.012f), new Sec(V(0.05f, 0.045f, 0f), 0.011f, 0.012f), new Sec(V(0.08f, 0.035f, 0f), 0.006f, 0.008f)], Float3.UnitZ, 10, 0.8f),
         Off(RoundedBox(V(0.03f, 0.04f, 0.022f), 0.006f), -0.03f, 0.02f, 0f), Off(RoundedBox(V(0.03f, 0.04f, 0.022f), 0.006f), 0.03f, 0.02f, 0f)));
+
+    /// <summary>Row of dome-head rivets from a to b (merged into one mesh).</summary>
+    public static Mesh Rivets(Float3 a, Float3 b, int n, float r) => C($"rivets{a}{b}{n}{r}", () =>
+        Merge(Enumerable.Range(0, n).Select(i => { Float3 p = a + (b - a) * (n == 1 ? 0.5f : i / (float)(n - 1)); return Off(Meshes.Sphere(r), p.X, p.Y, p.Z); }).ToArray()));
 }
