@@ -38,6 +38,27 @@ public static class PropMeshes
     public static Mesh Post(float r, float h) => Lathe($"post{r},{h}", [(0.0001f, -h / 2f), (r * 1.9f, -h / 2f), (r * 1.9f, -h / 2f + 0.12f), (r * 1.3f, -h / 2f + 0.25f), (r, -h / 2f + 0.5f), (r * 0.8f, h / 2f), (0.0001f, h / 2f)], 28);
     public static Mesh Handle(float len) => Sweep([new Sec(V(0f, -len / 2f, -0.03f), 0.013f, 0.013f), new Sec(V(0f, -len / 2f + 0.02f, 0f), 0.014f, 0.014f), new Sec(V(0f, len / 2f - 0.02f, 0f), 0.014f, 0.014f), new Sec(V(0f, len / 2f, -0.03f), 0.013f, 0.013f)], Float3.UnitX, 12, 0.5f);
 
+    /// <summary>Round rod a→b (radius r), softly capped. Cached by endpoints.</summary>
+    public static Mesh Rod(Float3 a, Float3 b, float r, float r1 = -1f)
+    {
+        float rb = r1 < 0f ? r : r1;
+        Float3 d = b - a; Float3 side = MathF.Abs(d.Y) > MathF.Abs(d.X) + MathF.Abs(d.Z) ? Float3.UnitX : Float3.UnitY;
+        return Sweep([new Sec(a, r, r, 2f), new Sec((a + b) * 0.5f, (r + rb) / 2f, (r + rb) / 2f, 2f), new Sec(b, rb, rb, 2f)], side, 14, 0.5f);
+    }
+
+    /// <summary>Panel with a raised border and recessed field (w × h, depth t), facing +Z. Reads as a moulded / pressed panel.</summary>
+    public static Mesh InsetPanel(float w, float h, float t, float border)
+    {
+        var frame = new List<Mesh>
+        {
+            RoundedBox(V(w, border, t), MathF.Min(0.008f, t * 0.4f)), RoundedBox(V(w, border, t), MathF.Min(0.008f, t * 0.4f)),
+            RoundedBox(V(border, h, t), MathF.Min(0.008f, t * 0.4f)), RoundedBox(V(border, h, t), MathF.Min(0.008f, t * 0.4f)),
+        };
+        Mesh Off(Mesh m, Float3 o) { var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + o).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices }; mm.RecalculateBounds(); return mm; }
+        return Merge(Off(frame[0], V(0, h / 2f - border / 2f, 0)), Off(frame[1], V(0, -h / 2f + border / 2f, 0)), Off(frame[2], V(-w / 2f + border / 2f, 0, 0)), Off(frame[3], V(w / 2f - border / 2f, 0, 0)),
+            Off(RoundedBox(V(w - border * 1.6f, h - border * 1.6f, t * 0.45f), MathF.Min(0.006f, t * 0.2f)), V(0, 0, -t * 0.25f)));
+    }
+
     /// <summary>Jersey barrier: a 2D profile (z, y) extruded along X with softened ends.</summary>
     public static Mesh Jersey()
     {
