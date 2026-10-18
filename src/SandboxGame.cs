@@ -45,6 +45,9 @@ public sealed partial class SandboxGame : Game
     public Shader Shader { get; private set; } = null!;
     public DirectionalLight Sun { get; private set; } = null!;
     private GameObject? _horizon;
+    private Material? _horizonMat;
+    /// <summary>Keeps the horizon skirt the same colour as fog and sky horizon (no seam at dusk/night).</summary>
+    public void HorizonColor(Color c) => _horizonMat?.SetColor("_MainColor", c);
 
     private readonly Hud _hud = new();
     public Hud Hud => _hud;
@@ -95,7 +98,7 @@ public sealed partial class SandboxGame : Game
             var hr = _horizon.AddComponent<MeshRenderer>();
             (float, float)[] prof = [(290f, -260f), (290f, 5f)]; // top rides just above eye level
             hr.Mesh = Meshes.Merge(Meshes.Lathe("horizonA", prof, 48), Meshes.Lathe("horizonB", prof.Reverse().ToArray(), 48));
-            var hm = Mats.New(Shader); hm.SetColor("_MainColor", World.Fog.Color); hr.Material = hm;
+            var hm = Mats.New(Shader); hm.SetColor("_MainColor", World.Fog.Color); hr.Material = hm; _horizonMat = hm;
             World.Add(_horizon);
         }
         Props = new PropManager(World, Shader);
@@ -105,6 +108,7 @@ public sealed partial class SandboxGame : Game
         DummyBrain.Game = this;
         Player = new Player(World, new Float3(0f, 0.1f, -10f), 0f);
         if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1") Player.Camera.ClearFlags = CameraClearFlags.Skybox;
+        DayNight.Apply(this);
         PhysGun = new PhysGun(Props);
         ToolGun = new ToolGun(Props);
         Vehicles = new VehicleSystem(this);
@@ -246,6 +250,7 @@ public sealed partial class SandboxGame : Game
                 _spawnMenu.ShowUserList("Living room"); break;
             case "utilities": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Utilities; break;
             case "dusk": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); break;
+            case "dusksun": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.755f; DayNight.Apply(this); { Float3 ts = -Sun.Transform.Forward; Player.SetLook(MathF.Atan2(ts.X, ts.Z) * 57.3f, -5f); } break;
             case "props": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Spawnlists; break;
             case "keybinds": Menus.Go(Screen.Settings); Menus.SettingsTab = 3; KeyCapture.Begin("st_kbk_use", _ => { }); break;
             case "thruster": Menus.Go(Screen.Playing); _spawnMenu.Open = true; _spawnMenu.Tab = MenuTab.Tools; SelectTool(ToolMode.Wheel); break;

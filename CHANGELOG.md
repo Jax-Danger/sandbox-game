@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.0 — 2026-10-18
+- Custom sky shader replaces the engine's procedural sky: blue zenith to fog-matched horizon (no greenish dusk, no horizon seam), orange sun glow at dawn/dusk, stars and a moon at night; horizon skirt follows the fog colour (screens/s7-night-d.png, s7-dusksun-e.png)
+
 ## v0.10.14 — 2026-10-18
 - Shipment world models measure every vertex and re-fit once, so the RPG warhead now sits fully inside the lid (screens/s7-ship-top.png)
 

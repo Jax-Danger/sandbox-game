@@ -1,0 +1,95 @@
+Shader "Sandbox/Sky"
+
+Properties
+{
+}
+
+Pass "SandboxSky"
+{
+    Tags { "RenderOrder" = "Opaque" }
+    Cull Front
+    ZWrite Off
+    ZTest LEqual
+
+    GLSLPROGRAM
+
+        Vertex
+        {
+            #include "ProwlCG"
+            #include "VertexAttributes"
+
+            out vec3 vDirection;
+
+            void main()
+            {
+                mat4 v = PROWL_MATRIX_V;
+                v[3][0] = 0.0; v[3][1] = 0.0; v[3][2] = 0.0;
+                vec4 pos = PROWL_MATRIX_P * v * vec4(vertexPosition, 1.0);
+                gl_Position = pos.xyww;
+                vDirection = vertexPosition;
+            }
+        }
+
+        Fragment
+        {
+            #include "ProwlCG"
+
+            layout (location = 0) out vec4 fragColor;
+            in vec3 vDirection;
+
+            uniform vec4 _Zenith;
+            uniform vec4 _Horizon;
+            uniform vec4 _Glow;
+            uniform vec4 _SunDir;
+            uniform vec4 _MoonDir;
+            uniform float _Night;
+            uniform float _GlowAmt;
+
+            float hash(vec3 p) { p = fract(p * 0.3183099 + 0.1); p *= 17.0; return fract(p.x * p.y * p.z * (p.x + p.y + p.z)); }
+
+            void main()
+            {
+                vec3 d = normalize(vDirection);
+                float h = max(d.y, 0.0);
+                // Horizon colour == fog colour, so the fogged world and the horizon skirt meet it without a seam.
+                vec3 col = mix(_Horizon.rgb, _Zenith.rgb, pow(h, 0.55));
+                vec3 s = normalize(_SunDir.xyz);
+                float sd = max(dot(d, s), 0.0);
+                // Warm glow hugging the horizon around the sun at dawn/dusk, then the sun disc + halo.
+                float band = exp(-h * 7.0);
+                col += _Glow.rgb * _GlowAmt * band * pow(sd, 4.0) * 1.6;
+                col += _Glow.rgb * _GlowAmt * band * 0.3;
+                float up = smoothstep(-0.06, 0.02, s.y);
+                col += mix(_Glow.rgb, vec3(1.0, 0.97, 0.9), 1.0 - _GlowAmt) * (pow(sd, 900.0) * 3.0 + pow(sd, 60.0) * 0.25) * up;
+                // Stars: one jittered point per 3D cell on the sphere, faded out near the horizon haze.
+                if (_Night > 0.001)
+                {
+                    float stars = 0.0;
+                    for (int k = 0; k < 2; k++)
+                    {
+                        float sc = k == 0 ? 140.0 : 260.0;
+                        vec3 c = floor(d * sc);
+                        float r = hash(c + float(k) * 37.0);
+                        if (r > (k == 0 ? 0.994 : 0.988))
+                        {
+                            vec3 j = vec3(hash(c + 1.7), hash(c + 5.3), hash(c + 9.1));
+                            vec3 sp = normalize(c + 0.25 + j * 0.5);
+                            float dist = length(d * sc - sp * sc);
+                            float tw = (r - 0.988) * 60.0;
+                            stars += smoothstep(0.32, 0.0, dist) * (k == 0 ? 1.0 : 0.45) * (0.5 + tw);
+                        }
+                    }
+                    col += vec3(0.85, 0.9, 1.0) * stars * _Night * smoothstep(0.02, 0.25, h);
+                    // Moon
+                    vec3 m = normalize(_MoonDir.xyz);
+                    float md = dot(d, m);
+                    float disc = smoothstep(0.99955, 0.9997, md);
+                    vec3 crater = vec3(0.86, 0.88, 0.92) - 0.12 * hash(floor(d * 900.0));
+                    col = mix(col, crater, disc * _Night);
+                    col += vec3(0.5, 0.6, 0.8) * pow(max(md, 0.0), 200.0) * 0.25 * _Night;
+                }
+                fragColor = vec4(col, 1.0);
+            }
+        }
+    ENDGLSL
+}
