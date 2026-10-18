@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.8 — 2026-10-18
+- NPC shirt colour mismatch fixed (aim highlight now tints the whole NPC/model, not just the root mesh; gallery shots never highlight; limbs use matte cloth instead of rubber albedo); pointed fold-down collar flaps.
+
 ## v0.6.7 — 2026-10-18
 - NPCs/avatar: four separate curled fingers on each hand (was a mitten slab), shirt collar, button placket and chest pocket.
 

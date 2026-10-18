@@ -92,6 +92,9 @@ public sealed class Ragdoll
             g.World.Add(go);
             Prop p = g.Props.Adopt(go, body, mat, col, PropKind.Limb, d.Size.Y / 2f);
             p.SetSurface(SurfaceMaterial.Get("Rubber"));
+            // Rubber's albedo/sheen made the torso read tealer than the sleeves (details use plain matte cloth):
+            // keep rubber physics but give the limb the same matte cloth look as its detail parts.
+            if (!Application.IsHeadless) { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); mat.SetTexture("_SurfaceTex", ProcTex.Surface(0.75f, 0f)); }
             rd.Limbs.Add(p);
         }
 

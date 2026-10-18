@@ -559,6 +559,7 @@ public sealed partial class SandboxGame : Game
     private void UpdateHighlight(Prop? p)
     {
         if (!ReferenceEquals(p, _lastHighlight) && _lastHighlight is { Alive: true } old) old.SetHighlight(0f);
+        if (Gallery.Active) p = null; // gallery screenshots show true colours
         _lastHighlight = p;
         p?.SetHighlight(Context.Open && ReferenceEquals(p, Context.Selected) ? 0.9f : 0.45f);
     }

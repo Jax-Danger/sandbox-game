@@ -84,7 +84,11 @@ public static class Humans
         // instead of floating beside a flat-topped box.
         var parts = new List<Detail> { new(neck, Tint.Skin) };
         // Shirt collar ring, button placket and a chest pocket.
-        parts.Add(new(LatheY("collar", [(0.064f, 0.205f), (0.068f, 0.215f), (0.062f, 0.24f), (0.056f, 0.245f)]), Tint.Cuff));
+        // Collar: a stand band hugging the neck plus two pointed fold-down flaps lying on the chest.
+        parts.Add(new(LatheY("collar2", [(0.06f, 0.2f), (0.07f, 0.206f), (0.066f, 0.235f), (0.058f, 0.252f), (0.053f, 0.254f)]), Tint.Cuff));
+        foreach (float sd in new[] { -1f, 1f })
+            parts.Add(new(Sweep([new Sec(V(sd * 0.03f, 0.24f, 0.058f), 0.022f, 0.006f, 4f), new Sec(V(sd * 0.05f, 0.215f, 0.092f), 0.03f, 0.006f, 4f),
+                new Sec(V(sd * 0.068f, 0.188f, 0.11f), 0.018f, 0.005f, 4f), new Sec(V(sd * 0.078f, 0.172f, 0.115f), 0.004f, 0.004f, 4f)], Float3.UnitX, 8, 0.5f), Tint.Cuff));
         parts.Add(new(Sweep([new Sec(V(0f, -0.24f, 0.106f), 0.012f, 0.003f, 4f), new Sec(V(0f, -0.02f, 0.124f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.1f, 0.13f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.2f, 0.104f), 0.012f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         parts.Add(new(Sweep([new Sec(V(-0.09f, 0.06f, 0.123f), 0.035f, 0.003f, 4f), new Sec(V(-0.09f, 0.11f, 0.12f), 0.035f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         foreach (float sd in new[] { -1f, 1f })

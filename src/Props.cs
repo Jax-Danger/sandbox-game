@@ -40,8 +40,20 @@ public sealed class Prop
     {
         Color c = Frozen ? new Color(0.35f, 0.75f, 1f, 1f) : BaseColor;
         float k = Math.Clamp(_highlight, 0f, 1f) * 0.5f;
-        Material.SetColor("_MainColor", new Color(c.R + (0.75f - c.R) * k, c.G + (0.88f - c.G) * k, c.B + (1f - c.B) * k, 1f));
+        Material.SetColor("_MainColor", Lift(c, k));
+        // Tint the detail/part renderers too, so a hovered NPC or model highlights as a whole instead of only its
+        // root mesh (the aimed torso used to turn teal while sleeves, collar and hands kept their colour).
+        if (_partBase is null && k <= 0f) return;
+        if (_partBase is null)
+        {
+            _partBase = [];
+            foreach (MeshRenderer r in Go.GetComponentsInChildren<MeshRenderer>())
+                if (r.GameObject != Go && r.Material.Res is { } m && !ReferenceEquals(m, Material) && m._properties.HasColor("_MainColor")) _partBase.Add((m, m._properties.GetColor("_MainColor")));
+        }
+        foreach (var (m, bc) in _partBase) m.SetColor("_MainColor", Frozen ? bc : Lift(bc, k));
     }
+    private List<(Material, Color)>? _partBase;
+    private static Color Lift(Color c, float k) => new(c.R + (0.75f - c.R) * k, c.G + (0.88f - c.G) * k, c.B + (1f - c.B) * k, 1f);
 
     public void SetMass(float mass)
     {
