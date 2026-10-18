@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.31 — 2026-10-18
+- Buggy: rear number plate now carries embossed 'SBX 017' characters and a blue top band (was a blank blue bar)
+
 ## v0.17.30 — 2026-10-18
 - Bed: linen, pillows and throw toned down (they bloomed white in sunlight), deeper duvet red
 

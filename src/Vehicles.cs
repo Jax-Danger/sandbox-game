@@ -128,7 +128,9 @@ public sealed class Buggy
         Detail(g, "Plate", Meshes.RoundedBox(new Float3(0.34f, 0.12f, 0.015f), 0.01f), new Float3(0.15f, 0.14f, -1.42f), new Color(0.92f, 0.9f, 0.8f, 1f));
         foreach (float x in new[] { -0.42f, 0.42f })
             Detail(g, "Tail", VehicleModels.Lamp(0.045f), new Float3(x, 0.14f, -1.4f), new Color(0.8f, 0.08f, 0.06f, 1f), new Float3(0f, 180f, 0f));
-        Detail(g, "PlateText", Meshes.RoundedBox(new Float3(0.26f, 0.05f, 0.004f), 0.002f), new Float3(0.15f, 0.14f, -1.43f), new Color(0.15f, 0.2f, 0.45f, 1f));
+        // Embossed registration characters (was a plain blue bar) with a thin blue border strip along the top.
+        Detail(g, "PlateText", Glyphs.Text("SBX 017", 0.048f, -0.004f, 0f, mirror: false), new Float3(0.15f, 0.13f, -1.4275f), new Color(0.12f, 0.16f, 0.4f, 1f));
+        Detail(g, "PlateBand", Meshes.RoundedBox(new Float3(0.3f, 0.012f, 0.003f), 0.001f), new Float3(0.15f, 0.183f, -1.428f), new Color(0.12f, 0.16f, 0.4f, 1f));
         }
         float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? 0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.2f : 0.42f;
 
