@@ -150,6 +150,21 @@ public static partial class ViewModels
 
         private void Finger(string bone, Float3[] pts, float r, Float3? side = null)
         {
+            // Densify with Catmull-Rom first (3 sub-steps per span) so the swept tube and its knuckle bumps stay smooth.
+            {
+                var dense = new List<Float3>();
+                for (int i = 0; i < pts.Length - 1; i++)
+                {
+                    Float3 p0 = pts[Math.Max(i - 1, 0)], p1 = pts[i], p2 = pts[i + 1], p3 = pts[Math.Min(i + 2, pts.Length - 1)];
+                    for (int q = 0; q < 3; q++)
+                    {
+                        float u = q / 3f, u2 = u * u, u3 = u2 * u;
+                        dense.Add((p1 * 2f + (p2 - p0) * u + (p0 * 2f - p1 * 5f + p2 * 4f - p3) * u2 + (p1 * 3f - p0 - p2 * 3f + p3) * u3) * 0.5f);
+                    }
+                }
+                dense.Add(pts[^1]);
+                pts = dense.ToArray();
+            }
             // Resample by arc length so the knuckle bumps land at the joints.
             float total = 0f;
             for (int i = 1; i < pts.Length; i++) total += Float3.Length(pts[i] - pts[i - 1]);
@@ -161,15 +176,17 @@ public static partial class ViewModels
                 float t = acc / MathF.Max(total, 1e-5f);
                 float G(float c, float w) => MathF.Exp(-MathF.Pow((t - c) / w, 2f));
                 // Knuckle bumps at the joints with soft creases either side, so each finger reads as segments, not a mitten.
-                float bump = 0.13f * G(0.5f, 0.055f) + 0.1f * G(0.76f, 0.045f) - 0.07f * G(0.62f, 0.035f) - 0.06f * G(0.88f, 0.03f);
+                float bump = 0.09f * G(0.5f, 0.07f) + 0.07f * G(0.76f, 0.06f) - 0.04f * G(0.63f, 0.05f) - 0.035f * G(0.88f, 0.045f);
                 float rr = r * 0.9f * (1.04f - 0.26f * t + bump);
                 secs.Add(new Sec(pts[i], rr, rr * 0.9f, 2.2f));
             }
-            Add(bone, Sweep(secs, side ?? Float3.UnitY, 14, 0.9f), GloveC, Finish.Leather);
+            Add(bone, Sweep(secs, side ?? Float3.UnitY, 18, 0.9f), GloveC, Finish.Leather);
             // Rubber knuckle pad over the first joint (tactical-glove detail).
             int j = Math.Clamp((int)(pts.Length * 0.5f), 1, pts.Length - 2);
             Float3 dir = Float3.Normalize(pts[j + 1] - pts[j - 1]);
-            Add(bone, Sweep([new Sec(pts[j] - dir * 0.006f, r * 1.02f, r * 1.0f, 2.4f), new Sec(pts[j] + dir * 0.006f, r * 1.02f, r * 1.0f, 2.4f)], side ?? Float3.UnitY, 12, 0.8f), PadC, Finish.Rubber);
+            // Tapered four-section pad so it reads as a moulded patch, not a bead threaded on the finger.
+            Add(bone, Sweep([new Sec(pts[j] - dir * 0.0075f, r * 0.93f, r * 0.9f, 2.4f), new Sec(pts[j] - dir * 0.004f, r * 1.0f, r * 0.97f, 2.4f),
+                new Sec(pts[j] + dir * 0.004f, r * 1.0f, r * 0.97f, 2.4f), new Sec(pts[j] + dir * 0.0075f, r * 0.93f, r * 0.9f, 2.4f)], side ?? Float3.UnitY, 16, 0.8f), PadC, Finish.Rubber);
         }
 
         /// <summary>Forearm on its IK bone: glove gauntlet, strap, sleeve hem and a sleeve with soft folds (local +Z = toward the elbow).</summary>
@@ -178,15 +195,19 @@ public static partial class ViewModels
             Sw(bone, GloveC, Finish.Leather, Float3.UnitX, 0f,
                 new Sec(V(0, 0, -0.012f), 0.0265f, 0.0205f, 2.4f), new Sec(V(0, 0, 0.02f), 0.029f, 0.0235f, 2.3f), new Sec(V(0, 0, 0.058f), 0.0325f, 0.028f, 2.2f));
             Sw(bone, PadC, Finish.Rubber, Float3.UnitX, 0.5f, new Sec(V(0, 0, 0.036f), 0.0318f, 0.0268f, 2.3f), new Sec(V(0, 0, 0.05f), 0.0322f, 0.0272f, 2.3f));
-            Sw(bone, HemC, Finish.Fabric, Float3.UnitX, 0.5f, new Sec(V(0, 0, 0.055f), 0.0372f, 0.0332f, 2.2f), new Sec(V(0, 0, 0.072f), 0.0378f, 0.0338f, 2.2f));
+            // Hem: rolled cuff with a rounded lip at both edges (was a flat-ended band that read as a jagged step).
+            Sw(bone, HemC, Finish.Fabric, Float3.UnitX, 0.5f,
+                new Sec(V(0, 0, 0.053f), 0.0345f, 0.0305f, 2.2f), new Sec(V(0, 0, 0.0555f), 0.0366f, 0.0326f, 2.2f), new Sec(V(0, 0, 0.059f), 0.0376f, 0.0336f, 2.2f),
+                new Sec(V(0, 0, 0.069f), 0.0379f, 0.0339f, 2.2f), new Sec(V(0, 0, 0.0725f), 0.0372f, 0.0332f, 2.2f), new Sec(V(0, 0, 0.075f), 0.0356f, 0.0318f, 2.2f));
             var s = new List<Sec>();
-            for (int i = 0; i <= 18; i++)
+            for (int i = 0; i <= 36; i++)
             {
-                float z = 0.068f + 0.36f * i / 18f;
-                float fold = 0.0022f * MathF.Sin(i * 1.9f) * MathF.Exp(-i / 7f);
-                s.Add(new Sec(V(0.0006f * MathF.Sin(i * 2.3f), 0, z), 0.0365f + 0.012f * i / 18f + fold, 0.0325f + 0.010f * i / 18f - fold * 0.5f, 2.2f));
+                float t = i / 36f, z = 0.07f + 0.36f * t;
+                // Two soft, low-frequency folds that fade toward the elbow (was a per-ring zigzag that made the edge jagged).
+                float fold = 0.0016f * MathF.Sin(t * 13f) * MathF.Exp(-t * 2.5f);
+                s.Add(new Sec(V(0.0005f * MathF.Sin(t * 7f), 0, z), 0.0362f + 0.012f * t + fold, 0.0322f + 0.010f * t - fold * 0.5f, 2.2f));
             }
-            Add(bone, Sweep(s, Float3.UnitX, 24, 0f, true, true), SleeveC, Finish.Fabric);
+            Add(bone, Sweep(s, Float3.UnitX, 28, 0f, true, true), SleeveC, Finish.Fabric);
         }
 
         /// <summary>Trigger guard + trigger (side view path in the YZ plane).</summary>

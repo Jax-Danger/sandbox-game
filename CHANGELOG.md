@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.8 — 2026-10-18
+- Smoother gloves: Catmull-Rom densified finger paths, softer knuckle bumps, tapered knuckle pads; rolled sleeve hem with rounded lips and low-frequency folds (no jagged sleeve end).
+
 ## v0.12.7 — 2026-10-18
 - RPG aim centres the optic eyepiece on the crosshair (dropped the fixed shoulder shift; sight bone compensates for rig pitch).
 
