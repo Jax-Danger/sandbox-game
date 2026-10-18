@@ -590,7 +590,7 @@ public sealed class SelfTest
                     // View models: every rig builds with finite parts, firearms aim their sight onto the screen centre,
                     // springs survive a hitch, and clips/variants exist.
                     bool finite = true, aimOk = true, stable = true; string worst = "";
-                    foreach (string id in new[] { "hands", "physgun", "toolgun", "pistol", "smg", "shotgun", "rpg", "grenade", "crowbar", "medkit", "baton", "lockpick" })
+                    foreach (string id in new[] { "hands", "physgun", "toolgun", "pistol", "smg", "shotgun", "rpg", "grenade", "crowbar", "medkit", "baton", "lockpick", "spawngun" })
                     {
                         ViewModelDef def = ViewModels.Create(id);
                         finite &= def.Parts.All(pt => float.IsFinite(pt.Size.X + pt.Size.Y + pt.Size.Z + pt.Offset.X + pt.Offset.Y + pt.Offset.Z)) && def.Parts.Count > 20;

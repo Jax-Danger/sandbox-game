@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.25 — 2026-10-18
+- Spawn gun: own view model (orange body with bumpers, hazard stripes, fabricator ring with a glowing cube, rear screen) instead of empty hands
+
 ## v0.17.24 — 2026-10-18
 - Plank prop: three chamfered boards with staggered ends on two cleats (was a single rounded slab); same collider
 

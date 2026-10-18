@@ -711,6 +711,40 @@ public static partial class ViewModels
                 d.Weight = 0.4f;
                 break;
             }
+            case "spawngun":
+            {
+                // Spawn gun: chunky safety-orange body with black bumpers, a wide fabricator ring up front and a small
+                // glowing cube "printing" inside it. (Was the empty-hands rig: nothing was held.)
+                Std(V(0.12f, -0.175f, 0.36f), -4f);
+                Bone("muzzle", "weapon", V(0f, 0.082f, 0.23f));
+                Color orange = new(0.85f, 0.42f, 0.08f, 1f), glow = new(0.45f, 0.85f, 1f, 1f);
+                k.Sw("weapon", orange, Finish.Paint, Float3.UnitX, 0.25f,
+                    new Sec(V(0, 0.08f, -0.08f), 0.022f, 0.026f, 4.5f), new Sec(V(0, 0.082f, -0.05f), 0.026f, 0.03f, 5f), new Sec(V(0, 0.083f, 0.08f), 0.026f, 0.031f, 5f),
+                    new Sec(V(0, 0.082f, 0.12f), 0.022f, 0.026f, 4.5f));
+                // Black rubber bumpers fore and aft, and a top carry rib.
+                foreach (float z in new[] { -0.075f, 0.11f })
+                    k.Sw("weapon", Black, Finish.Rubber, Float3.UnitX, 0.3f, new Sec(V(0, 0.082f, z - 0.007f), 0.0275f, 0.0325f, 5f), new Sec(V(0, 0.082f, z + 0.007f), 0.0275f, 0.0325f, 5f));
+                k.Bar("weapon", Black, Finish.Polymer, V(0, 0.116f, -0.06f), V(0, 0.116f, 0.09f), 0.006f, 0.004f, 4f, 0.5f);
+                // Side hazard stripes.
+                foreach (float sx in new[] { -1f, 1f })
+                    for (int i = 0; i < 4; i++)
+                        k.Bar("weapon", Black, Finish.Paint, V(sx * 0.0262f, 0.07f, -0.03f + i * 0.026f), V(sx * 0.0262f, 0.096f, -0.018f + i * 0.026f), 0.0006f, 0.0045f, 4f, 0.2f, Float3.UnitX);
+                // Fabricator ring with glowing inner lip, on a short neck.
+                k.Lz("weapon", Black, Finish.Metal, V(0, 0.082f, 0.118f), (0.016f, 0f), (0.016f, 0.02f), (0f, 0.02f));
+                k.Lz("weapon", new Color(0.2f, 0.21f, 0.23f, 1f), Finish.Metal, V(0, 0.082f, 0.135f),
+                    (0.025f, 0f), (0.04f, 0.004f), (0.042f, 0.014f), (0.04f, 0.022f), (0.034f, 0.024f), (0.032f, 0.012f), (0.025f, 0.008f));
+                k.Lz("weapon", glow, Finish.Gloss, V(0, 0.082f, 0.152f), (0.0322f, 0f), (0.0335f, 0.003f), (0.0322f, 0.006f));
+                // Hovering cube being printed, plus a dark rear status screen.
+                d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(0, 0.082f, 0.19f), glow, V(35f, 45f, 0f), true, Finish.Gloss, null, Meshes.RoundedBox(V(0.022f, 0.022f, 0.022f), 0.002f)));
+                k.Bar("weapon", Black, Finish.Polymer, V(0, 0.104f, -0.077f), V(0, 0.082f, -0.083f), 0.02f, 0.0035f, 5f, 0.4f);
+                k.Bar("weapon", new Color(0.05f, 0.12f, 0.16f, 1f), Finish.Gloss, V(0, 0.102f, -0.081f), V(0, 0.085f, -0.086f), 0.016f, 0.0008f, 6f, 0.2f, null, true);
+                k.GripBody("weapon", pistolA, -0.058f, 0.062f, 0.015f, 0.024f, Black, Polymer);
+                k.Guard("weapon", Black, 0.052f, 0.072f, 0.0185f, 0.02f, 0.041f);
+                right = RightPistol(0.015f, 0.024f, 0.012f, Trig(0.034f, 0.045f));
+                freeLeft = false;
+                d.Weight = 0.9f;
+                break;
+            }
             case "crowbar":
             {
                 static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
