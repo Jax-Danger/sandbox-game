@@ -188,15 +188,21 @@ public static partial class ModelProps
     {
         Color blue = C(0.08f, 0.3f, 0.7f), white = C(0.96f, 0.96f, 0.95f);
         Float2[] shaft = Rect(-0.33f, -0.055f, 0.08f, 0.055f), head = [new(0.06f, -0.14f), new(0.34f, 0f), new(0.06f, 0.14f)];
+        const float y = 0.82f; // panel height on the post
         return
         [
-            M(Plate(0.44f, 0.2f, 0.01f, 7f), 0, 0, -0.004f, C(0.7f, 0.71f, 0.73f)),
-            M(Plate(0.435f, 0.195f, 0.004f, 7f), 0, 0, 0.002f, white),
-            M(Plate(0.415f, 0.175f, 0.003f, 7f), 0, 0, 0.004f, blue, true),
-            M(Merge(Slab(shaft, 0.0055f, 0.0068f), Slab(head, 0.0055f, 0.0068f)), 0, 0, 0, white),
-            // Rivets in the corners and two rail brackets on the back.
-            M(Bake(new[] { (-0.38f, 0.14f), (0.38f, 0.14f), (-0.38f, -0.14f), (0.38f, -0.14f) }.Select(p => (Rot90X(RoundedCylinder(0.009f, 0.004f, 0.0015f, 12)), P3(p.Item1, p.Item2, 0.007f)))), 0, 0, 0, Galv),
-            RB(0.06f, 0.36f, 0.025f, 0.006f, -0.25f, 0, -0.02f, Galv), RB(0.06f, 0.36f, 0.025f, 0.006f, 0.25f, 0, -0.02f, Galv),
+            M(Plate(0.44f, 0.2f, 0.01f, 7f), 0, y, -0.004f, C(0.7f, 0.71f, 0.73f)),
+            M(Plate(0.435f, 0.195f, 0.004f, 7f), 0, y, 0.002f, white),
+            M(Plate(0.415f, 0.175f, 0.003f, 7f), 0, y, 0.004f, blue, true),
+            M(Merge(Slab(shaft, 0.0055f, 0.0068f), Slab(head, 0.0055f, 0.0068f)), 0, y, 0, white),
+            // Rivets in the corners, a horizontal back rail, and two U-bolt clamps round the post.
+            M(Bake(new[] { (-0.38f, 0.14f), (0.38f, 0.14f), (-0.38f, -0.14f), (0.38f, -0.14f) }.Select(p => (Rot90X(RoundedCylinder(0.009f, 0.004f, 0.0015f, 12)), P3(p.Item1, p.Item2, 0.007f)))), 0, y, 0, Galv),
+            RB(0.7f, 0.05f, 0.02f, 0.006f, 0, y + 0.09f, -0.018f, Galv), RB(0.7f, 0.05f, 0.02f, 0.006f, 0, y - 0.09f, -0.018f, Galv),
+            RB(0.075f, 0.03f, 0.075f, 0.01f, 0, y + 0.09f, -0.055f, Galv), RB(0.075f, 0.03f, 0.075f, 0.01f, 0, y - 0.09f, -0.055f, Galv),
+            // Round galvanised post with a cap, a mid band, and the weighted rubber foot.
+            Cy(0.026f, 2.02f, 0, -0.05f, -0.055f, Galv), M(RoundedCylinder(0.03f, 0.025f, 0.008f, 16), 0, 0.98f, -0.055f, Galv),
+            RB(0.07f, 0.03f, 0.07f, 0.01f, 0, -0.2f, -0.055f, Galv),
+            M(PropMeshes.SignFoot(), 0, -1.08f, -0.055f, Dark), RB(0.12f, 0.05f, 0.12f, 0.012f, 0, -1.06f, -0.055f, Dark),
         ];
     }
 

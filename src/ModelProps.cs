@@ -128,7 +128,7 @@ public static partial class ModelProps
         // ---------------- Signs & street
         new("stop_sign", "Stop Sign", "Signs", new(0.7f, 2.4f, 0.1f), 12f, "Metal",
             StopSignParts()),
-        new("arrow_sign", "Arrow Sign", "Signs", new(0.9f, 0.5f, 0.06f), 4f, "Metal",
+        new("arrow_sign", "Arrow Sign", "Signs", new(0.9f, 2.2f, 0.4f), 7f, "Metal",
             ArrowSignParts()),
         new("warning_sign", "Warning Sign", "Signs", new(0.7f, 1.4f, 0.4f), 6f, "Metal",
             WarningSignParts()),

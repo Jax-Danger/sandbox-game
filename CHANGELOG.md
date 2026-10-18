@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.27 — 2026-10-18
+- Arrow sign stands on a galvanised post with cap, clamps, back rails and a weighted foot (collider now 0.9 x 2.2 x 0.4) instead of a loose panel that fell flat.
+
 ## v0.8.26 — 2026-10-18
 - Icons frame on the view-axis silhouette radius (bouncy ball no longer clipped into a faceted square); bouncy ball icon gets a seam band and valve; explosive barrel label faces the camera.
 
