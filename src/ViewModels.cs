@@ -321,6 +321,33 @@ public static partial class ViewModels
                 k.Bar("weapon", Black, Finish.Metal, V(-0.0182f, 0.084f, 0.13f), V(-0.0182f, 0.084f, 0.19f), 0.0016f, 0.0028f, 4f, 0.5f);
                 k.Sw("charge", Black, Finish.Metal, Float3.UnitZ, 0.6f, new Sec(V(-0.018f, 0.084f, 0.182f), 0.003f, 0.003f), new Sec(V(-0.032f, 0.086f, 0.18f), 0.0045f, 0.004f), new Sec(V(-0.04f, 0.087f, 0.172f), 0.005f, 0.0045f));
                 k.Bar("weapon", Steel, Finish.Metal, V(-0.0175f, 0.055f, -0.02f), V(-0.0175f, 0.058f, -0.006f), 0.0015f, 0.0032f, 3f, 0.6f);
+                // Receiver detail: upper/lower seam, takedown pins, ejection port with the bolt face showing, forward assist bump.
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    k.Bar("weapon", Dark, Finish.Metal, V(sx * 0.0176f, 0.0572f, -0.072f), V(sx * 0.0176f, 0.0572f, 0.168f), 0.0012f, 0.0009f, 3f, 0.5f);
+                    foreach (float pz in new[] { -0.045f, 0.135f })
+                    {
+                        k.Bar("weapon", Steel, Finish.Metal, V(sx * 0.0168f, 0.049f, pz), V(sx * 0.0182f, 0.049f, pz), 0.0026f, 0.0026f, 2f, 0.9f, Float3.UnitZ);
+                        k.Bar("weapon", Dark, Finish.Metal, V(sx * 0.0181f, 0.049f, pz), V(sx * 0.0184f, 0.049f, pz), 0.0011f, 0.0011f, 2f, 0.9f, Float3.UnitZ);
+                    }
+                }
+                k.Bar("weapon", Dark, Finish.Metal, V(0.0172f, 0.079f, 0.028f), V(0.0172f, 0.079f, 0.078f), 0.0028f, 0.0068f, 5f, 0.3f);
+                k.Bar("weapon", Steel, Finish.Metal, V(0.0164f, 0.079f, 0.034f), V(0.0164f, 0.079f, 0.07f), 0.002f, 0.0052f, 4f, 0.5f);
+                k.Bar("weapon", Gunmetal, Finish.Metal, V(0.0188f, 0.072f, -0.035f), V(0.0188f, 0.072f, -0.012f), 0.0035f, 0.006f, 3f, 0.8f);
+                // Collapsed stock: two steel rods out of the end cap to a rubber butt pad, with a sling loop on the cap.
+                foreach (float sx in new[] { -1f, 1f })
+                    k.Bar("weapon", Gunmetal, Finish.Metal, V(sx * 0.0115f, 0.064f, -0.08f), V(sx * 0.0115f, 0.064f, -0.135f), 0.0026f, 0.0026f, 2f, 0.9f, Float3.UnitY);
+                // Skeletal butt: a thin bent-wire loop joining the rod ends, with a small rubber cap on the bottom bar.
+                foreach (float sx in new[] { -1f, 1f })
+                    k.Bar("weapon", Gunmetal, Finish.Metal, V(sx * 0.0115f, 0.087f, -0.138f), V(sx * 0.0115f, 0.033f, -0.142f), 0.0026f, 0.0026f, 2f, 0.9f);
+                k.Bar("weapon", Gunmetal, Finish.Metal, V(-0.0135f, 0.087f, -0.138f), V(0.0135f, 0.087f, -0.138f), 0.0026f, 0.0026f, 2f, 0.9f, Float3.UnitY);
+                k.Bar("weapon", Dark, Finish.Polymer, V(-0.0145f, 0.034f, -0.142f), V(0.0145f, 0.034f, -0.142f), 0.0045f, 0.0045f, 2.4f, 0.8f, Float3.UnitY);
+                // Red dot: rear lens rim, windage turret on the right, crossbolt knob on the left of the mount.
+                k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.019f), (0.0166f, 0f), (0.0166f, 0.004f), (0.0128f, 0.004f), (0.0128f, 0.001f), (0f, 0.001f));
+                k.Add("weapon", LatheZ([(0f, 0f), (0.0129f, 0f), (0.0129f, 0.001f), (0f, 0.001f)]), new Color(0.12f, 0.16f, 0.2f, 1f), Finish.Gloss, V(0, 0.1235f, 0.0205f));
+                k.Bar("weapon", Black, Finish.Metal, V(0.0158f, 0.1235f, 0.043f), V(0.0215f, 0.1235f, 0.043f), 0.0055f, 0.0055f, 2f, 0.9f, Float3.UnitZ);
+                for (int i = 0; i < 6; i++) { float an = i * MathF.PI / 3f; k.Bar("weapon", Gunmetal, Finish.Metal, V(0.0175f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), V(0.0215f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), 0.0008f, 0.0008f, 2f, 0.9f, Float3.UnitZ); }
+                k.Bar("weapon", Gunmetal, Finish.Metal, V(-0.0095f, 0.1045f, 0.042f), V(-0.016f, 0.1045f, 0.042f), 0.0042f, 0.0042f, 2f, 0.9f, Float3.UnitZ);
                 right = RightPistol(0.0155f, 0.0235f, 0.004f, Trig(0.026f, 0.042f)) with { F = new GripFrame(Float3.Zero, ga, Float3.UnitX, 0.0155f, 0.0235f) };
                 leftParent = "weapon"; leftPos = V(0f, 0.067f, 0.245f);
                 left = Under(0.0225f, 0.0189f);

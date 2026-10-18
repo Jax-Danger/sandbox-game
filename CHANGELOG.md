@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.5 — 2026-10-18
+- SMG view model: receiver seam, takedown pins, ejection port with bolt face, forward-assist bump, collapsed wire stock with rubber butt, red dot rear lens, windage turret and crossbolt (screens/vm/r2/raw/s7d-smg-c.png; before s7a-smg-c.png)
+
 ## v0.11.4 — 2026-10-18
 - Traffic cones are bottom-heavy (ModelDef.Ballast lowers the body origin/centre of mass 0.24 m below the geometric centre) and rock back upright instead of toppling; self-test tips one 32 degrees and checks it recovers
 
