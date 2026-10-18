@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.10 — 2026-10-18
+- NPC skin tones capped below ~0.85 albedo so the palest preset no longer blows out to a white mask in full sun.
+
 ## v0.13.9 — 2026-10-18
 - Basic cube has a raised picture-frame border on every face (dev-cube look); 2x2 panels get a framed edge on both faces (new Meshes.FramedBox).
 

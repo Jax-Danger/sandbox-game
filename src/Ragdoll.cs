@@ -43,7 +43,8 @@ public sealed class Ragdoll
         float c = MathF.Cos(yaw), s = MathF.Sin(yaw);
         Float3 Rot(Float3 v) => new(v.X * c + v.Z * s, v.Y, -v.X * s + v.Z * c);
 
-        Color[] skins = [new(0.85f, 0.68f, 0.55f, 1f), new(0.62f, 0.45f, 0.34f, 1f), new(0.95f, 0.80f, 0.68f, 1f), new(0.42f, 0.30f, 0.22f, 1f)];
+        // Tones kept below ~0.85 albedo: the full sun (1.5) plus bloom turned the palest preset into a white mask.
+        Color[] skins = [new(0.78f, 0.6f, 0.48f, 1f), new(0.58f, 0.42f, 0.31f, 1f), new(0.84f, 0.66f, 0.54f, 1f), new(0.4f, 0.28f, 0.2f, 1f)];
         var skin = skins[_counter % skins.Length];
         Color[] citizenShirts = [new(0.30f, 0.45f, 0.70f, 1f), new(0.75f, 0.35f, 0.30f, 1f), new(0.35f, 0.60f, 0.40f, 1f), new(0.85f, 0.75f, 0.40f, 1f), new(0.55f, 0.40f, 0.65f, 1f)];
         var shirt = team switch
