@@ -80,7 +80,14 @@ public static class Humans
             (-0.26f, 0.158f, 0.098f, 0f), (-0.15f, 0.163f, 0.104f, 0.004f), (-0.02f, 0.18f, 0.114f, 0.008f), (0.10f, 0.2f, 0.12f, 0.006f),
             (0.17f, 0.212f, 0.11f, 0f), (0.225f, 0.19f, 0.088f, -0.006f));
         Mesh neck = LatheY("neck", [(0.052f, 0.22f), (0.050f, 0.26f), (0.047f, 0.31f)]);
-        return (body, [new(neck, Tint.Skin)]);
+        // Shoulder yokes: trapezius slopes from the neck out over each shoulder joint so arms hang from the body
+        // instead of floating beside a flat-topped box.
+        var parts = new List<Detail> { new(neck, Tint.Skin) };
+        foreach (float sd in new[] { -1f, 1f })
+            parts.Add(new(Sweep([new Sec(V(sd * 0.06f, 0.212f, -0.004f), 0.06f, 0.028f), new Sec(V(sd * 0.15f, 0.198f, -0.002f), 0.075f, 0.04f),
+                new Sec(V(sd * 0.225f, 0.178f, 0f), 0.064f, 0.05f), new Sec(V(sd * 0.265f, 0.155f, 0f), 0.052f, 0.048f), new Sec(V(sd * 0.28f, 0.13f, 0f), 0.034f, 0.034f)],
+                Float3.UnitZ, 20, 0.85f), Tint.Main));
+        return (body, parts.ToArray());
     }
 
     private static Sec[] Ring(float y, float rx, float rz, float z)
@@ -121,7 +128,7 @@ public static class Humans
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
         // Sleeve end rolls softly over the elbow (no hard rim cutting into the forearm when the arm bends).
         Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.19f, 0.05f, 0.05f, 0.004f), (-0.205f, 0.043f, 0.043f, 0.004f));
-        return (arm, [new(hem, Tint.Cuff), new(delt, Tint.Main), new(roll, Tint.Cuff)]);
+        return (arm, [new(delt, Tint.Main), new(roll, Tint.Cuff)]);
     }
 
     private static (Mesh, Detail[]) LowerArm(float side)
