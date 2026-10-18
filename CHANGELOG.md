@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.14 — 2026-10-18
+- House roofs get shingle courses: a shadow line every course up both slopes with staggered butt joints
+
 ## v0.8.13 — 2026-10-18
 - Houses: the porch canopy is a solid shingled slab with a white fascia and soffit on braced brackets (the old one-sided quad was invisible, leaving bare brackets), plus a front step and door mat
 

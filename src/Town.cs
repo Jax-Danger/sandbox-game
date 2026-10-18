@@ -355,6 +355,22 @@ public static partial class MapBuilder
                 [L(rx, ry - 0.12f, rz), L(-rx, ry - 0.12f, rz), L(-rx, ry, rz), L(rx, ry, rz)]);
             var shingle = new Color(0.36f, 0.22f, 0.18f, 1f);
             Shape(scene, shader, $"~{tag} pitched roof", roof, c, shingle, euler: eul);
+            {
+                // Shingle courses: a shadow line every ~30 cm up both slopes, with staggered butt joints on alternate rows.
+                var courses = new List<Mesh>();
+                int nk = 9;
+                for (int k = 1; k < nk; k++)
+                {
+                    float tk = k / (float)nk, yy = ry + rise * tk + 0.012f, zz = rz * (1f - tk);
+                    foreach (float sg in new[] { -1f, 1f })
+                    {
+                        courses.Add(Off(Meshes.RoundedBox(new Float3(rx * 2f, 0.03f, 0.05f), 0.01f), 0f, yy, sg * zz));
+                        for (float jx = -rx + (k % 2 == 0 ? 0.45f : 0.9f); jx < rx; jx += 0.9f)
+                            courses.Add(Off(Meshes.RoundedBox(new Float3(0.025f, 0.02f, rz / nk * 1.05f), 0.006f), jx, yy - rise / nk * 0.5f + 0.004f, sg * (zz + rz / nk * 0.5f)));
+                    }
+                }
+                Shape(scene, shader, $"~{tag} shingle courses", Meshes.Merge(courses.ToArray()), c, new Color(0.28f, 0.17f, 0.14f, 1f), euler: eul);
+            }
             var gable = Meshes.Faces([L(-hw, ry, -hd + 0.05f), L(-hw, ry, hd - 0.05f), L(-hw, ry + rise * (1f - ov / rz) , 0f)], [L(hw, ry, hd - 0.05f), L(hw, ry, -hd + 0.05f), L(hw, ry + rise * (1f - ov / rz), 0f)]);
             Shape(scene, shader, $"~{tag} gables", gable, c, wall, euler: eul);
             Shape(scene, shader, $"~{tag} ridge", Meshes.Sweep([new Meshes.Sec(L(-rx - 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY), new Meshes.Sec(L(rx + 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY)], Float3.UnitY, 12, 0.5f), c, trim, euler: eul);
