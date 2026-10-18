@@ -270,6 +270,7 @@ public static partial class MapBuilder
             Shape(scene, shader, "~Tree crown", Meshes.Blob(1.5f * tk, sd), new Float3(x, y + 3.6f * tk, z), new Color(0.24f, 0.46f, 0.22f, 1f));
             Shape(scene, shader, "~Tree crown b", Meshes.Blob(1.05f * tk, sd + 1), new Float3(x + 0.9f * tk, y + 3.0f * tk, z - 0.4f), new Color(0.2f, 0.4f, 0.18f, 1f));
             Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.95f * tk, sd + 2), new Float3(x - 0.8f * tk, y + 3.2f * tk, z + 0.6f), new Color(0.3f, 0.52f, 0.25f, 1f));
+            Shape(scene, shader, "~Tree branches", Meshes.Merge(PropMeshes.Rod(new Float3(0f, 1.9f * tk, 0f), new Float3(0.85f * tk, 2.9f * tk, -0.35f), 0.1f, 0.04f), PropMeshes.Rod(new Float3(0f, 2.1f * tk, 0f), new Float3(-0.75f * tk, 3.0f * tk, 0.5f), 0.09f, 0.035f), PropMeshes.Rod(new Float3(0f, 2.4f * tk, 0f), new Float3(0.1f, 3.4f * tk, 0.15f), 0.08f, 0.035f)), new Float3(x, y, z), bark);
         }
         {
             // Deck near spawn: gapped boards on joists, rim boards and corner posts (one box collider).

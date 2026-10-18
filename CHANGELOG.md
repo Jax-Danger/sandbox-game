@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.19 — 2026-10-18
+- Rolling Hills trees get three forked branches running up into the crown
+
 ## v0.8.18 — 2026-10-18
 - Rolling Hills: grass tufts scattered over the hills, the spawn deck is gapped boards on a rim frame with corner posts, darker boulders
 
