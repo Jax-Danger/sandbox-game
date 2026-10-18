@@ -22,7 +22,8 @@ public abstract class Weapon
     /// <summary>The live view model for this weapon (created by WeaponSystem on first equip).</summary>
     public ViewModel? Vm { get; set; }
     /// <summary>False hides the weapon from the switcher (e.g. job-only roleplay tools).</summary>
-    public virtual bool Available(SandboxGame g) => true;
+    /// <summary>Usable right now (Roleplay limits you to the build tools, your job loadout and bought weapons).</summary>
+    public virtual bool Available(SandboxGame g) => g.Roleplay?.Allows(this) ?? true;
     public virtual void Equip(SandboxGame g) { }
     public virtual void Holster(SandboxGame g) { }
     public abstract void Tick(SandboxGame g, WeaponInput input, float dt);
@@ -97,6 +98,7 @@ public sealed class WeaponSystem
     public void Select(SandboxGame g, Weapon w)
     {
         if (ReferenceEquals(w, Current)) return;
+        if (Current is not null && !w.Available(g)) return;
         if (Current is not null)
         {
             Current.Holster(g);

@@ -46,6 +46,7 @@ public sealed class Player
     public float VerticalVelocity => _verticalVelocity;
     private bool _wasGrounded = true;
     private float _jumpBuffer, _coyote, _jumpLock;
+    private bool _justJumped;
     /// <summary>Programmatic jump (self-test); consumed on the next grounded update.</summary>
     public bool JumpRequested;
     public int Jumps { get; private set; }
@@ -157,7 +158,7 @@ public sealed class Player
         _jumpBuffer -= dt; _coyote = groundedNow ? 0.1f : _coyote - dt; _jumpLock -= dt;
         if ((_jumpBuffer > 0f || JumpRequested) && _coyote > 0f && _jumpLock <= 0f)
         {
-            _verticalVelocity = JumpSpeed; _jumpBuffer = 0f; _coyote = 0f; _jumpLock = 0.25f; JumpRequested = false; Jumps++;
+            _verticalVelocity = JumpSpeed; _jumpBuffer = 0f; _coyote = 0f; _jumpLock = 0.25f; JumpRequested = false; Jumps++; _justJumped = true;
         }
         else if (_controller.IsGrounded && _jumpLock <= 0f)
         {
@@ -165,13 +166,15 @@ public sealed class Player
         }
         else
         {
+            _justJumped = false;
             _verticalVelocity -= Gravity * dt;
         }
 
         if (!float.IsFinite(_verticalVelocity) || !float.IsFinite(Gravity)) _verticalVelocity = 0f;
         // While grounded the controller's ground snap keeps us on slopes; pushing down into the floor every frame only
         // sinks the capsule past its skin width (which then trips the engine's bad depenetration below).
-        float vy = _controller.IsGrounded && _verticalVelocity < 0f ? 0f : _verticalVelocity;
+        float vy = _controller.IsGrounded && _verticalVelocity < 0f && _jumpLock <= 0f ? 0f
+            : _verticalVelocity + (_justJumped ? 0f : Gravity * dt * 0.5f); // midpoint: same arc at any FPS
         var motion = new Float3(wish.X, vy, wish.Z) * dt;
         if (!IsFinite(_body.Transform.Position)) RecoverFromNaN();
         else if (IsFinite(motion))

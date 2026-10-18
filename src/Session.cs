@@ -192,7 +192,7 @@ public sealed partial class SandboxGame
         Weather.Set(WeatherSystem.Parse(meta.Modifiers.Weather), this, instant: true);
         Health.FallDamage = meta.Modifiers.FallDamage;
         DayNight.Enabled = meta.Modifiers.DayNight;
-        Roleplay.Reset(meta);
+        Roleplay.Reset(meta); Weapons.RefreshAvailability(this);
     }
 
     public void RestorePlayer(PlayerSave? p, SessionMeta meta)

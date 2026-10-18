@@ -54,6 +54,7 @@ public sealed class HealthSystem
             {
                 g.Player.Teleport(MapBuilder.NextSpawn());
                 Hp = MaxHp; Armor = 0f; _flash = 0f;
+                g.Roleplay.OwnedWeapons.Clear(); g.Weapons.RefreshAvailability(g);
                 g.Notify("Respawned");
             }
             return;

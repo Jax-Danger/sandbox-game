@@ -523,6 +523,7 @@ public sealed class SelfTest
                 }
                 Check(_ballMaxY > 0.9f, $"bouncy ball bounces (peak {_ballMaxY:0.00} m after landing)");
                 WorldsRoundTrip(g);
+                JumpArcTest(g);
                 TownTest(g);
                 RegressionTests(g);
                 ConsoleTest(g);
@@ -747,6 +748,41 @@ public sealed class SelfTest
     }
 
     /// <summary>RP town: doors (open/buy/lock/pick), ATM bank, arrest → jail cell → jailbreak, and door state save.</summary>
+
+    /// <summary>Jump arcs on Flatgrass and the town at 30 and 144 FPS: smooth rise/fall, no snaps, clean landing.</summary>
+    private void JumpArcTest(SandboxGame g)
+    {
+        foreach (string map in new[] { "flatgrass", "town" })
+        {
+            g.ClearMap(notify: false);
+            MapBuilder.Load(g.World, g.Shader, map, null);
+            foreach (int fps in new[] { 30, 144 })
+            {
+                float dt = 1f / fps;
+                g.Player.Teleport(map == "town" ? new Float3(-32f, 0.05f, 12f) : new Float3(-4f, 0.05f, -20f));
+                for (int i = 0; i < fps / 2; i++) { g.World.Physics.Update(); g.Player.Update(dt, false); }
+                float y0 = g.Player.FeetPosition.Y, peak = y0, maxStep = 0f, prev = y0; int landedAt = -1, reversals = 0; float lastDy = 0f;
+                g.Player.JumpRequested = true;
+                for (int i = 0; i < fps * 2; i++)
+                {
+                    g.World.Physics.Update(); g.Player.Update(dt, false);
+                    float y = g.Player.FeetPosition.Y, dy = y - prev; prev = y;
+                    maxStep = MathF.Max(maxStep, MathF.Abs(dy));
+                    if (dy * lastDy < 0f && MathF.Abs(dy) > 1e-4f) reversals++;
+                    if (MathF.Abs(dy) > 1e-4f) lastDy = dy;
+                    peak = MathF.Max(peak, y);
+                    if (landedAt < 0 && i > 3 && g.Player.IsGrounded && y - y0 < 0.05f) landedAt = i;
+                }
+                float yEnd = g.Player.FeetPosition.Y;
+                // A 6.5 m/s jump can't move more than ~6.5*dt per frame; reversals: one at the apex only.
+                Check(peak - y0 > 0.9f && peak - y0 < 1.3f && maxStep < 7f * dt + 0.02f && reversals <= 1 && landedAt > 0 && MathF.Abs(yEnd - y0) < 0.03f,
+                    $"smooth jump on {map} at {fps} fps (peak {peak - y0:0.00} m, max step {maxStep:0.000}, reversals {reversals}, landed frame {landedAt}, end dy {yEnd - y0:0.000})");
+            }
+        }
+        g.ClearMap(notify: false);
+        MapBuilder.Load(g.World, g.Shader, "flatgrass", null);
+    }
+
     private void TownTest(SandboxGame g)
     {
         g.ClearMap(notify: false);
@@ -792,6 +828,21 @@ public sealed class SelfTest
         Check(g.Roleplay.BuyOrSellDoor(store).Contains("isn't for sale") && g.Roleplay.ToggleLock(store).Contains("keys"), "city doors can't be bought or locked");
         Door cell = Town.Find("door_cell")!;
         Check(cell.Locked && g.Roleplay.UseDoor(cell).Contains("locked"), "jail cell is locked to citizens");
+        {
+            string Kit() => string.Join(",", g.Weapons.All.Where(w => w.Available(g)).Select(w => w.Id.Replace("weapon_", "")).OrderBy(x => x));
+            string citizen = Kit();
+            g.Roleplay.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "police"));
+            string police = Kit();
+            g.Roleplay.SetJob(RoleplaySystem.Jobs[0]);
+            g.Weapons.Select(g, g.Weapons.Get<SmgWeapon>());
+            bool blocked = g.Weapons.Current is not SmgWeapon;
+            Prop ship = g.Roleplay.SpawnShipment(new Float3(-30f, 0.5f, 12f), "weapon_shotgun");
+            g.Roleplay.Use(ship);
+            bool bought = g.Weapons.Get<ShotgunWeapon>().Available(g) && g.Weapons.Current is ShotgunWeapon;
+            Check(citizen == "hands,physgun,toolgun" && police == "baton,hands,physgun,pistol,toolgun" && blocked && bought,
+                $"RP loadout: citizen [{citizen}], police [{police}], SMG blocked {blocked}, shipment shotgun {bought}");
+            g.Roleplay.OwnedWeapons.Clear(); g.Weapons.Select(g, g.Weapons.Get<PhysGunWeapon>());
+        }
         g.Roleplay.SetJob(RoleplaySystem.Jobs.First(j => j.Id == "police"));
         Check(g.Roleplay.CanUnlock(cell) && !g.Roleplay.CanUnlock(Town.Find("door_house2")!), "police hold keys to the station doors, not to for-sale houses");
         g.Roleplay.SetJob(RoleplaySystem.Jobs[0]);

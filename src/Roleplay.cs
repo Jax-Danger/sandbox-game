@@ -122,6 +122,10 @@ public sealed class RoleplaySystem(SandboxGame g)
     public float WantedTimer { get; private set; }
     public bool Wanted => Active && WantedTimer > 0f;
     public void ClearWanted() => WantedTimer = 0f;
+    /// <summary>Weapons bought from shipments this life (RP); the job loadout and the build tools are always allowed.</summary>
+    public readonly HashSet<string> OwnedWeapons = [];
+    public static readonly string[] BaseKit = ["weapon_physgun", "weapon_toolgun", "weapon_hands"];
+    public bool Allows(Weapon w) => !Active || BaseKit.Contains(w.Id) || Job.Loadout.Contains(w.Id) || OwnedWeapons.Contains(w.Id);
     public float PayTimer { get; private set; } = PayInterval;
     public float JailTimer { get; private set; }
     public int Bank { get; private set; }
@@ -140,7 +144,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         Laws.Clear();
         if (Active) Laws.AddRange(["Do not steal.", "No weapons in public.", "Printers are illegal."]);
         WantedTimer = 0f; JailTimer = 0f; PayTimer = PayInterval; Bank = 0; Arrests = 0; AtAtm = false;
-        Hunger = 100f; _starve = StarveInterval;
+        Hunger = 100f; _starve = StarveInterval; OwnedWeapons.Clear();
         LotteryTimer = 0f; LotteryPot = 0; MyTickets = 0; TownTickets = 0; LastLottery = null;
     }
 
@@ -389,6 +393,7 @@ public sealed class RoleplaySystem(SandboxGame g)
             case "rp_shipment":
                 if (g.Weapons.All.FirstOrDefault(w => w.Id == p.EntityData) is { } wpn)
                 {
+                    OwnedWeapons.Add(wpn.Id);
                     g.Weapons.Select(g, wpn);
                     if (wpn is Firearm f) f.Refill();
                     g.Props.Remove(p);
