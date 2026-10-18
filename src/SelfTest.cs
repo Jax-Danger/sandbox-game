@@ -582,7 +582,7 @@ public sealed class SelfTest
                         var vm = new ViewModel(def, g.Player.CameraObject, g.Shader);
                         vm.SetVisible(true); vm.SetFov(75f, 75f);
                         for (int f = 0; f < 90; f++) vm.Update(1f / 60f, new VmInput(Float2.Zero, 0f, Aim: true));
-                        if (def.CanAim)
+                        if (def.CanAim && def.AimShift is null)
                         {
                             Float3 sp = g.Player.CameraObject.Transform.InverseTransformPoint(vm.Bones["sight"].Transform.Position);
                             if (MathF.Abs(sp.X) > 0.006f || MathF.Abs(sp.Y) > 0.006f || sp.Z < 0.05f) { aimOk = false; worst = $"{id} sight {sp.X:0.000},{sp.Y:0.000},{sp.Z:0.000}"; }

@@ -179,6 +179,107 @@ public static class Meshes
 
     public static Mesh Sphere(float radius) => _cache.TryGetValue($"sph{radius:0.###}", out Mesh? m) ? m : _cache[$"sph{radius:0.###}"] = Mesh.CreateSphere(radius, 24, 32);
 
+
+    /// <summary>One cross-section of a <see cref="Sweep"/>: centre, half-width (along the side axis), half-height,
+    /// superellipse exponent (2 = ellipse, 4+ = rounded rectangle) and an optional per-section side axis.</summary>
+    public readonly record struct Sec(Float3 P, float W, float H, float N = 2f, Float3? Side = null);
+
+    /// <summary>
+    /// Sweeps superellipse cross-sections along a path (smooth normals, capped ends). The section's width axis is
+    /// <paramref name="side"/> projected perpendicular to the path, its height axis is tangent × side. This is the
+    /// workhorse for organic and machined shapes: fingers, palms, forearms, slides, stocks, grips.
+    /// <paramref name="round"/> adds rounded ends of that radius (fraction of the smaller half-size, 0..1).
+    /// </summary>
+    public static Mesh Sweep(IList<Sec> input, Float3 side, int slices = 18, float round = 0.6f, bool flatStart = false, bool flatEnd = false)
+    {
+        var secs = new List<Sec>(input);
+        Float3 Tan(List<Sec> l, int i) => SafeN(l[Math.Min(i + 1, l.Count - 1)].P - l[Math.Max(i - 1, 0)].P);
+        if (round > 0f)
+        {
+            Sec Shrink(Sec s, Float3 t, float r, float k) // k in 0..1 along the quarter circle
+            {
+                float a = k * MathF.PI / 2f, cut = r * (1f - MathF.Cos(a));
+                return s with { P = s.P + t * (r * MathF.Sin(a)), W = MathF.Max(0.0004f, s.W - cut), H = MathF.Max(0.0004f, s.H - cut) };
+            }
+            int n0 = secs.Count;
+            if (!flatEnd)
+            {
+                Sec e = secs[n0 - 1]; Float3 t = Tan(secs, n0 - 1); float r = MathF.Min(e.W, e.H) * round;
+                secs[n0 - 1] = Shrink(e, t, r, 0f) with { P = e.P - t * r };
+                for (int k = 1; k <= 4; k++) secs.Add(Shrink(e with { P = e.P - t * r }, t, r, k / 4f));
+            }
+            if (!flatStart)
+            {
+                Sec b = secs[0]; Float3 t = -Tan(secs, 0); float r = MathF.Min(b.W, b.H) * round;
+                secs[0] = b with { P = b.P - t * r };
+                for (int k = 1; k <= 4; k++) secs.Insert(0, Shrink(b with { P = b.P - t * r }, t, r, k / 4f));
+            }
+        }
+        int m = secs.Count;
+        var v = new List<Float3>(); var nrm = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        var cen = new List<Float3>();
+        float acc = 0f;
+        for (int i = 0; i < m; i++)
+        {
+            Sec s = secs[i];
+            Float3 t = Tan(secs, i);
+            Float3 sd = s.Side ?? side;
+            Float3 x = sd - t * Float3.Dot(sd, t);
+            x = Float3.Length(x) < 1e-5f ? SafeN(Float3.Cross(t, MathF.Abs(t.Y) < 0.9f ? Float3.UnitY : Float3.UnitX)) : SafeN(x);
+            Float3 y = SafeN(Float3.Cross(t, x));
+            if (i > 0) acc += Float3.Length(s.P - secs[i - 1].P);
+            float e = 2f / MathF.Max(0.5f, s.N);
+            for (int k = 0; k <= slices; k++)
+            {
+                float a = k * MathF.Tau / slices, c = MathF.Cos(a), sn = MathF.Sin(a);
+                float cx = MathF.Sign(c) * MathF.Pow(MathF.Abs(c), e), cy = MathF.Sign(sn) * MathF.Pow(MathF.Abs(sn), e);
+                v.Add(s.P + x * (s.W * cx) + y * (s.H * cy));
+                nrm.Add(Float3.Zero); uv.Add(new Float2((float)k / slices, acc * 8f));
+                cen.Add(s.P);
+            }
+        }
+        int w = slices + 1;
+        void Tri(uint a, uint b, uint c, Float3 outward)
+        {
+            Float3 cr = Float3.Cross(v[(int)b] - v[(int)a], v[(int)c] - v[(int)a]);
+            if (Float3.Dot(cr, outward) < 0f) (b, c) = (c, b);
+            idx.Add(a); idx.Add(b); idx.Add(c);
+            Float3 fn = Float3.Cross(v[(int)b] - v[(int)a], v[(int)c] - v[(int)a]);
+            nrm[(int)a] += fn; nrm[(int)b] += fn; nrm[(int)c] += fn;
+        }
+        for (int i = 0; i < m - 1; i++)
+            for (int k = 0; k < slices; k++)
+            {
+                uint a = (uint)(i * w + k), b = a + 1, c = (uint)((i + 1) * w + k), d = c + 1;
+                Float3 o = v[(int)a] + v[(int)d] - cen[(int)a] - cen[(int)d];
+                Tri(a, b, d, o); Tri(a, d, c, o);
+            }
+        // Merge seam normals (k = 0 and k = slices share a position).
+        for (int i = 0; i < m; i++) { int a = i * w, b = a + slices; Float3 sum = nrm[a] + nrm[b]; nrm[a] = sum; nrm[b] = sum; }
+        int body = v.Count;
+        void Cap(int ring, Float3 outward)
+        {
+            uint c0 = (uint)v.Count; v.Add(secs[ring].P); nrm.Add(outward); uv.Add(new Float2(0.5f, 0.5f));
+            uint st = (uint)v.Count;
+            for (int k = 0; k <= slices; k++) { v.Add(v[ring * w + k]); nrm.Add(outward); uv.Add(uv[ring * w + k]); }
+            for (int k = 0; k < slices; k++)
+            {
+                uint a = st + (uint)k, b = a + 1;
+                Float3 cr = Float3.Cross(v[(int)a] - v[(int)c0], v[(int)b] - v[(int)c0]);
+                if (Float3.Dot(cr, outward) >= 0f) { idx.Add(c0); idx.Add(a); idx.Add(b); } else { idx.Add(c0); idx.Add(b); idx.Add(a); }
+            }
+        }
+        for (int i = 0; i < body; i++) nrm[i] = SafeN(nrm[i]);
+        Cap(0, -Tan(secs, 0));
+        Cap(m - 1, Tan(secs, m - 1));
+        return Build(v, nrm, uv, idx);
+    }
+
+    private static Float3 SafeN(Float3 a) { float l = Float3.Length(a); return l > 1e-7f ? a / l : Float3.UnitZ; }
+
+    /// <summary>Lathe along +Z from (radius, z) pairs with caps closed where the radius is 0 (not cached).</summary>
+    public static Mesh LatheZ((float R, float Z)[] profile, int slices = 28) => Lathe($"lz{string.Join(',', profile.Select(p => $"{p.R:0.####}/{p.Z:0.####}"))}", profile, slices, alongZ: true);
+
     private static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };

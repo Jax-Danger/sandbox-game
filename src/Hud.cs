@@ -147,7 +147,7 @@ public sealed class Hud
 
     private static void DrawCrosshair(Paper paper, float cx, float cy, SandboxGame game)
     {
-        if (game.Weapons.Current?.Vm is { AimBlend: > 0.55f }) return; // the sights take over while aiming
+        if (game.Weapons.Current?.Vm is { AimBlend: > 0.55f, Def.AimShift: null }) return; // the sights take over while aiming
         float t = Ui.SpringTo("xh", game.AimingAtProp ? 1f : 0f);
         Color c = Theme.WithAlpha(Color.White, 0.9f);
         float d = Theme.S(3 + 1.5f * t);

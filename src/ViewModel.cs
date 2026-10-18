@@ -92,7 +92,7 @@ public sealed class ClipBuilder
 // ───────────────────────────── Rig definition ─────────────────────────────
 
 /// <summary>Surface finish of a primitive part (roughness / metallic for the PBR surface texture).</summary>
-public enum Finish { Polymer, Metal, Fabric, Leather, Wood, Rubber }
+public enum Finish { Polymer, Metal, Fabric, Leather, Wood, Rubber, Paint, Gloss }
 
 /// <summary>
 /// A primitive mesh attached to a bone (used when no user model is installed). Shapes: 'b' rounded box, 'c' rounded
@@ -100,7 +100,7 @@ public enum Finish { Polymer, Metal, Fabric, Leather, Wood, Rubber }
 /// (Size = r0, r1, length). <paramref name="Q"/> overrides <paramref name="Rot"/> when set.
 /// </summary>
 public sealed record VmPart(string Bone, char Shape, Float3 Size, Float3 Offset, Color Color, Float3 Rot = default, bool Emissive = false,
-    Finish Finish = Finish.Polymer, Quaternion? Q = null);
+    Finish Finish = Finish.Polymer, Quaternion? Q = null, Mesh? M = null);
 
 /// <summary>Describes a first-person view model: bone rest poses, primitive parts, clips and handling feel.</summary>
 public sealed class ViewModelDef
@@ -117,8 +117,15 @@ public sealed class ViewModelDef
     public bool CanAim;
     /// <summary>Camera zoom while aiming (FOV is divided by this).</summary>
     public float AimZoom = 1.15f;
+    /// <summary>When set, aiming shifts the rig by this (a shoulder raise) instead of centring the sight; the crosshair stays.
+    /// Used by long launchers whose tube would otherwise run through the middle of the view.</summary>
+    public Float3? AimShift;
     /// <summary>Extra vm_root offset while sprinting (gun lowered and angled).</summary>
-    public BonePose SprintPose = new(new Float3(0.03f, -0.05f, -0.03f), new Float3(18f, -28f, 14f));
+    public BonePose SprintPose = new(new Float3(0.035f, -0.015f, -0.03f), new Float3(9f, -22f, 12f));
+
+    /// <summary>Forearm "look-at" IK: the forearm bone sits at the wrist bone and points at a fixed elbow (vm_root space),
+    /// so arms never swing into the camera when a hand travels (reloads, slide racks).</summary>
+    public List<(string Forearm, string Wrist, Float3 Elbow, Float3 Up)> Ik = [];
 
     public static readonly string[] StandardBones = ["vm_root", "arm_r", "hand_r", "weapon", "muzzle", "arm_l", "hand_l"];
 }
@@ -144,7 +151,7 @@ public sealed class ViewModel
     private readonly Dictionary<string, (Float3 Pos, Float3 Rot)> _rest = [];
     public bool UsingUserModel { get; }
     /// <summary>Primitive parts are authored at roughly real-world size and shrunk to sit nicely on screen.</summary>
-    public const float PartScale = 0.6f;
+    public const float PartScale = 1f;
 
     private string? _oneShot;
     private float _oneShotTime, _oneShotWeight;
@@ -238,7 +245,7 @@ public sealed class ViewModel
                 if (part.Shape == 'e') go.Transform.LocalScale = part.Size * PartScale;
                 MeshRenderer r = go.AddComponent<MeshRenderer>();
                 float ps = PartScale;
-                r.Mesh = part.Shape switch
+                r.Mesh = part.M ?? part.Shape switch
                 {
                     's' => Meshes.Sphere(part.Size.X / 2f * ps),
                     'e' => Meshes.Sphere(0.5f),
@@ -254,7 +261,7 @@ public sealed class ViewModel
                         var (rough, metal) = part.Finish switch
                         {
                             Finish.Metal => (0.32f, 0.9f), Finish.Fabric => (0.95f, 0f), Finish.Leather => (0.55f, 0f),
-                            Finish.Wood => (0.62f, 0f), Finish.Rubber => (0.85f, 0f), _ => (0.5f, 0.05f),
+                            Finish.Wood => (0.62f, 0f), Finish.Rubber => (0.85f, 0f), Finish.Paint => (0.45f, 0.3f), Finish.Gloss => (0.22f, 0.05f), _ => (0.5f, 0.05f),
                         };
                         m.SetTexture("_SurfaceTex", ProcTex.Surface(rough, metal));
                     }
@@ -263,7 +270,7 @@ public sealed class ViewModel
                 {
                     m.SetTexture("_EmissionTex", ProcTex.Solid((byte)(part.Color.R * 255), (byte)(part.Color.G * 255), (byte)(part.Color.B * 255)));
                     m.SetFloat("_EmissionIntensity", 1.2f);
-                    if (def.Id == "physgun" && part.Shape == 'c' && go.GetComponent<PointLight>() is null)
+                    if (part.Shape == 'L' && go.GetComponent<PointLight>() is null)
                     {
                         PointLight glow = go.AddComponent<PointLight>();
                         glow.Color = part.Color; glow.Range = 0.6f; glow.Intensity = 0.5f; glow.CastShadows = false;
@@ -273,7 +280,8 @@ public sealed class ViewModel
             }
 
         // Aim offset: move vm_root so the sight sits on the screen centre line, slightly closer to the eye.
-        if (def.CanAim && Bones.TryGetValue("sight", out GameObject? sight))
+        if (def.AimShift is { } shift) AimOffset = shift;
+        else if (def.CanAim && Bones.TryGetValue("sight", out GameObject? sight))
         {
             Float3 s = Root.Transform.InverseTransformPoint(sight.Transform.Position); // rest pose (bones were just placed)
             AimOffset = new Float3(-s.X, -s.Y, -MathF.Max(0f, s.Z - 0.16f) * 0.35f);
@@ -430,6 +438,16 @@ public sealed class ViewModel
             bone.Transform.LocalPosition = rest.Pos + pose.Pos;
             bone.Transform.LocalEulerAngles = rest.Rot + pose.Rot;
         }
+        if (!UsingUserModel)
+            foreach (var (fa, wr, elbow, up) in Def.Ik)
+                if (Bones.TryGetValue(fa, out GameObject? fb) && Bones.TryGetValue(wr, out GameObject? wb))
+                {
+                    Float3 wl = Root.Transform.InverseTransformPoint(wb.Transform.Position);
+                    Float3 dir = elbow - wl;
+                    if (Float3.Length(dir) < 1e-4f) continue;
+                    fb.Transform.LocalPosition = wl;
+                    fb.Transform.LocalRotation = Quaternion.LookRotation(Float3.Normalize(dir), up);
+                }
         // A user model's own clip (same name as the playing one-shot) drives its skeleton directly; the skinned
         // mesh follows its bone transforms. Procedural layers still move vm_root on top.
         if (_oneShot is not null && _embedded.TryGetValue(_oneShot, out AnimationClip? emb)) ApplyEmbedded(emb, _oneShotTime);

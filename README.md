@@ -9,7 +9,7 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 | ![Console](docs/console.png) | ![First-time hint](docs/hints.png) |
 | ![Rain](docs/weather-rain.png) | ![Fog](docs/weather-fog.png) |
 | ![Kill feed and damage numbers](docs/combat.png) | ![RP shop: cars and lottery](docs/rp-shop.png) |
-| ![View models](docs/vm-after.png) | ![Aiming down sights](docs/vm-aim.png) |
+| ![View models](docs/vm-r2-after.png) | ![Aiming down sights](docs/vm-r2-aim.png) |
 | ![RP town](docs/r7-townair.png) | ![Laws board](docs/r7-town.png) |
 | ![Buy a door](docs/r7-towndoor.png) | ![Jail cell](docs/r7-jail.png) |
 | ![Vehicles](docs/r7-garage.png) | ![Model props](docs/r6-models.png) |
@@ -284,9 +284,11 @@ Prowl's importer (glTF/GLB, FBX, OBJ) brings in skinned meshes (`SkinnedMeshRend
 
 All procedural layers are sub-stepped springs, so they behave the same at any frame rate: weight-based mouse sway with lag (heavier guns swing slower and further), strafe tilt, walk bob locked to the footstep sounds, jump lift and a landing dip, a lowered/angled sprint pose, a crouch tuck, aim-down-sights on the right mouse button (pistol, SMG, shotgun, RPG; slight zoom, crosshair hides), recoil with a little random yaw/roll, and an idle fidget after standing still. Interrupted clips crossfade instead of snapping. **View model FOV** (Settings → Video) draws the arms at their own FOV, independent of the world FOV.
 
-| Before | After | Aiming |
+The built-in view models are generated from swept and lathed meshes with smooth normals: every finger is one smooth tube that wraps the grip it holds, palms follow the grip surface, thumbs close from the other side and trigger fingers run along the frame. Forearms are separate bones that point at a fixed elbow below the screen, so a hand that travels during a reload never drags the sleeve into the camera. The RPG aims with a shoulder raise instead of centring its side optic, so the tube stays out of the middle of the view.
+
+| Before (v0.6 primitives) | After (swept/lathed rebuild) | Aiming |
 |---|---|---|
-| ![](docs/vm-before.png) | ![](docs/vm-after.png) | ![](docs/vm-aim.png) |
+| ![](docs/vm-r2-before.png) | ![](docs/vm-r2-after.png) | ![](docs/vm-r2-aim.png) |
 
 Frame sequences (10 fps) of the pistol and shotgun reloads: [pistol](docs/vm-seq-pistol-reload.png), [shotgun](docs/vm-seq-shotgun-reload.png).
 
