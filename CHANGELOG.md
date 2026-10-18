@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.1 — 2026-10-18
+- Interiors: window reveals inside at every facade window (daylight glass, glazing bars, frame, sill) and the garage roller shutter's inside face with rails and drum box.
+
 ## v0.14.0 — 2026-10-18
 - Building interiors are finished rooms: plank floors (houses) or large floor tiles (shops) on a grout bed, plaster wall linings, skirting boards, an off-white ceiling with cove moulding and a pendant light (was bare exterior-coloured boxes).
 

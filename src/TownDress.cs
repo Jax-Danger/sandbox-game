@@ -259,9 +259,10 @@ public static partial class MapBuilder
 
     /// <summary>Interior finish (render only): plank floor with staggered butt joints, plaster wall linings, skirting boards,
     /// an off-white ceiling with a cove line and a pendant light. Local frame as DressBuilding (front wall at -Z, door at x = 0).</summary>
-    private static void DressInterior(Scene scene, Shader shader, string tag, Float3 c, Float3 s, float yaw, float dw, float dh, bool house)
+    private static void DressInterior(Scene scene, Shader shader, string tag, string title, Float3 c, Float3 s, float yaw, float dw, float dh)
     {
         var b = new Bucket();
+        bool house = title.StartsWith("House");
         const float t = 0.3f;
         float ix = s.X / 2f - t / 2f, iz = s.Z / 2f - t / 2f, h = s.Y;
         Color[] planks = house ? [new(0.56f, 0.4f, 0.26f, 1f), new(0.53f, 0.38f, 0.24f, 1f), new(0.59f, 0.43f, 0.28f, 1f)] : [new(0.6f, 0.6f, 0.58f, 1f), new(0.63f, 0.63f, 0.61f, 1f), new(0.58f, 0.58f, 0.56f, 1f)];
@@ -303,6 +304,41 @@ public static partial class MapBuilder
         b.Add(shade, Xf(Meshes.Lathe("pendrod", [(0.008f, 0f), (0.008f, h - ly)], 8), 0f, L3(0f, ly, 0f)));
         b.Add(shade, Xf(Meshes.Lathe("pendshade", [(0.2f, -0.18f), (0.19f, -0.17f), (0.08f, -0.02f), (0.02f, 0f), (0.0001f, 0.005f)], 24), 0f, L3(0f, ly, 0f)));
         b.Add(bulb, Xf(Meshes.Lathe("pendbulb", [(0.0001f, -0.17f), (0.05f, -0.15f), (0.06f, -0.11f), (0.03f, -0.06f), (0.0001f, -0.05f)], 16), 0f, L3(0f, ly, 0f)));
+        // Window reveals on the inside, at the same spots as the facade windows: daylight glass, glazing bars, a white
+        // frame and a sill, so rooms read as lit from outside instead of sealed boxes.
+        {
+            float ww = house ? 1.3f : 1.7f, wh2 = house ? 1.25f : 1.5f;
+            int floors = h > 6f ? 2 : 1;
+            Color sky = new(0.72f, 0.84f, 0.95f, 1f), frame = new(0.95f, 0.95f, 0.93f, 1f);
+            IEnumerable<float> Span(float half, bool door) { int n = Math.Max(1, (int)((half * 2f - 2f) / 3.4f)); for (int i = 0; i < n; i++) { float x = -half + 1.6f + (half * 2f - 3.2f) * (n == 1 ? 0.5f : i / (float)(n - 1)); if (!door || MathF.Abs(x) > dw / 2f + ww / 2f + (house ? 0.9f : 0.4f)) yield return x; } }
+            void Win(float a, float x, float y, float zIn)
+            {
+                // Built facing +Z (into the room) at the inner wall face, then turned by a about Y.
+                void P(Color col, float w, float hh, float d, float ox, float oy, float oz) => b.Add(col, Xf(Meshes.RoundedBox(L3(w, hh, d), 0.006f), a, Rot(L3(ox, oy, oz), a)));
+                P(sky, ww, wh2, 0.01f, x, y, zIn + 0.014f);
+                P(frame, ww + 0.16f, 0.08f, 0.04f, x, y + wh2 / 2f + 0.04f, zIn + 0.02f); P(frame, ww + 0.16f, 0.08f, 0.04f, x, y - wh2 / 2f - 0.04f, zIn + 0.02f);
+                P(frame, 0.08f, wh2, 0.04f, x - ww / 2f - 0.04f, y, zIn + 0.02f); P(frame, 0.08f, wh2, 0.04f, x + ww / 2f + 0.04f, y, zIn + 0.02f);
+                P(frame, 0.035f, wh2, 0.03f, x, y, zIn + 0.02f); P(frame, ww, 0.035f, 0.03f, x, y, zIn + 0.02f);
+                P(frame, ww + 0.3f, 0.04f, 0.16f, x, y - wh2 / 2f - 0.09f, zIn + 0.07f);
+            }
+            static Float3 Rot(Float3 v, float a) { float r = a * MathF.PI / 180f, cc = MathF.Cos(r), ss = MathF.Sin(r); return new Float3(v.X * cc + v.Z * ss, v.Y, -v.X * ss + v.Z * cc); }
+            if (title == "Garage")
+            {
+                // Inside face of the roller shutter: slats, guide rails and the drum box, matching the facade bay.
+                float gx = s.X / 4f + 0.35f, gw = 3.2f, gh = 3.0f;
+                Color slat = new(0.5f, 0.53f, 0.56f, 1f), rail = new(0.36f, 0.38f, 0.4f, 1f);
+                for (float y = 0.1f; y < gh - 0.05f; y += 0.16f) b.Add(slat, Bx(gw - 0.04f, 0.13f, 0.03f, gx, y + 0.065f, -iz + 0.03f, 0.015f));
+                foreach (float sx in new[] { -1f, 1f }) b.Add(rail, Bx(0.12f, gh + 0.1f, 0.1f, gx + sx * (gw / 2f + 0.06f), (gh + 0.1f) / 2f, -iz + 0.05f));
+                b.Add(rail, Bx(gw + 0.4f, 0.5f, 0.5f, gx, gh + 0.3f, -iz + 0.25f, 0.03f));
+            }
+            for (int f = 0; f < floors; f++)
+            {
+                float y = 1.65f + f * 3f;
+                foreach (float x in Span(s.X / 2f, true)) if (title != "Garage" || x < 0f || f > 0) Win(0f, x, y, -iz + 0.012f);
+                foreach (float x in Span(s.X / 2f, false)) Win(180f, -x, y, -iz + 0.012f);
+                foreach (float z in Span(s.Z / 2f, false)) { Win(-90f, z, y, -ix + 0.012f); Win(90f, -z, y, -ix + 0.012f); }
+            }
+        }
         Float3 eul = new(0f, yaw, 0f);
         int k = 0;
         foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} interior {k++}", Meshes.Merge(list.ToArray()), c, col, euler: eul);
