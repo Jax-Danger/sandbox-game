@@ -48,7 +48,7 @@ public sealed class Ragdoll
         Color[] citizenShirts = [new(0.30f, 0.45f, 0.70f, 1f), new(0.75f, 0.35f, 0.30f, 1f), new(0.35f, 0.60f, 0.40f, 1f), new(0.85f, 0.75f, 0.40f, 1f), new(0.55f, 0.40f, 0.65f, 1f)];
         var shirt = team switch
         {
-            NpcTeam.Police => new Color(0.12f, 0.20f, 0.42f, 1f),
+            NpcTeam.Police => new Color(0.15f, 0.21f, 0.36f, 1f),
             NpcTeam.Hostile => new Color(0.62f, 0.12f, 0.12f, 1f),
             NpcTeam.Friendly => new Color(0.25f, 0.62f, 0.45f, 1f),
             NpcTeam.Citizen => citizenShirts[_counter % citizenShirts.Length],
@@ -96,6 +96,54 @@ public sealed class Ragdoll
             // keep rubber physics but give the limb the same matte cloth look as its detail parts.
             if (!Application.IsHeadless) { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); mat.SetTexture("_SurfaceTex", ProcTex.Surface(0.75f, 0f)); }
             rd.Limbs.Add(p);
+        }
+
+        // Police carry their kit on the duty belt: holstered pistol on the right hip, baton on the left.
+        if (team == NpcTeam.Police && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Pelvis")) is { } hips)
+        {
+            WorldWeapons.Attach(g, hips.Go, "weapon_pistol", new Float3(0.175f, -0.06f, 0.01f), new Float3(95f, 0f, 0f));
+            var pouch = new GameObject("Holster");
+            pouch.SetParent(hips.Go, false);
+            pouch.Transform.LocalPosition = new Float3(0.172f, -0.1f, 0.01f);
+            MeshRenderer pr = pouch.AddComponent<MeshRenderer>();
+            pr.Mesh = Meshes.RoundedBox(new Float3(0.04f, 0.13f, 0.05f), 0.012f);
+            pr.Material = DetailMat(g, Humans.Tint.Belt, skin, shirt, pants);
+            // Side-handle baton hanging from a belt ring: rubber grip, slimmer shaft, rounded tip, short side handle.
+            var baton = new GameObject("Baton");
+            baton.SetParent(hips.Go, false);
+            baton.Transform.LocalPosition = new Float3(-0.175f, -0.2f, 0.02f);
+            baton.Transform.LocalEulerAngles = new Float3(-8f, 0f, -6f);
+            MeshRenderer br = baton.AddComponent<MeshRenderer>();
+            br.Mesh = Meshes.Lathe("npcbaton", [(0.0001f, 0.2f), (0.017f, 0.2f), (0.018f, 0.19f), (0.017f, 0.07f), (0.0135f, 0.064f), (0.012f, -0.31f), (0.0135f, -0.32f), (0.0001f, -0.328f)], 18);
+            br.Material = DetailMat(g, Humans.Tint.Belt, skin, shirt, pants);
+            var side = new GameObject("BatonHandle");
+            side.SetParent(baton, false);
+            side.Transform.LocalPosition = new Float3(0f, 0.05f, 0.045f);
+            side.Transform.LocalEulerAngles = new Float3(90f, 0f, 0f);
+            MeshRenderer sr = side.AddComponent<MeshRenderer>();
+            sr.Mesh = Meshes.RoundedCylinder(0.011f, 0.08f, 0.004f, 14);
+            sr.Material = br.Material;
+            var ring = new GameObject("BatonRing");
+            ring.SetParent(hips.Go, false);
+            ring.Transform.LocalPosition = new Float3(-0.175f, -0.06f, 0.025f);
+            MeshRenderer rr = ring.AddComponent<MeshRenderer>();
+            rr.Mesh = Meshes.RoundedBox(new Float3(0.03f, 0.05f, 0.03f), 0.008f);
+            rr.Material = DetailMat(g, Humans.Tint.Cuff, skin, shirt, pants);
+            if (rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Torso")) is { } chest)
+            {
+                // Gold shield badge above the right-hand pocket and a silver name bar over the left one.
+                var gold = Mats.New(g.Shader); gold.SetColor("_MainColor", new Color(0.86f, 0.68f, 0.26f, 1f));
+                var silver = Mats.New(g.Shader); silver.SetColor("_MainColor", new Color(0.78f, 0.8f, 0.83f, 1f));
+                void Bit(string n, Mesh m, Float3 at, Float3 eul, Material mt)
+                {
+                    var bg = new GameObject(n); bg.SetParent(chest.Go, false);
+                    bg.Transform.LocalPosition = at; bg.Transform.LocalEulerAngles = eul;
+                    MeshRenderer mr = bg.AddComponent<MeshRenderer>(); mr.Mesh = m; mr.Material = mt;
+                }
+                Bit("Badge", Meshes.Lathe("npcbadge", [(0.0001f, 0.004f), (0.017f, 0.004f), (0.022f, 0.002f), (0.022f, 0f), (0.0001f, 0f)], 7), new Float3(0.09f, 0.1f, 0.121f), new Float3(90f, 0f, 0f), gold);
+                Bit("BadgeBoss", Meshes.Lathe("npcbadge2", [(0.0001f, 0.002f), (0.008f, 0.0018f), (0.009f, 0f), (0.0001f, 0f)], 16), new Float3(0.09f, 0.1f, 0.125f), new Float3(90f, 0f, 0f), silver);
+                Bit("NameBar", Meshes.RoundedBox(new Float3(0.05f, 0.011f, 0.004f), 0.0015f), new Float3(-0.09f, 0.125f, 0.121f), Float3.Zero, silver);
+            }
         }
 
         // Joints: socket on the child at the joint point, then a cone around the limb's long axis.

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.1 — 2026-10-18
+- Police NPCs wear their kit: holstered pistol world model on the right hip, side-handle baton on a belt ring on the left, gold shield badge and silver name bar; police shirt toned to navy. Gallery state gal_police.
+
 ## v0.9.0 — 2026-10-18
 - Weapon world models: guns are built at real size from their sculpted view-model parts (WorldWeapons); RP weapon shipments now show the weapon strapped on the lid (long guns laid diagonally). Gallery state gal_ship / gal_ship_close.
 

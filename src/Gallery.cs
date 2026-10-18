@@ -162,11 +162,14 @@ public static class Gallery
             case "npcs":
             case "face":
             case "npcbody":
+            case "police":
             {
-                NpcTeam[] teams = [NpcTeam.Dummy, NpcTeam.Friendly, NpcTeam.Hostile];
+                bool cops = set == "police";
+                NpcTeam[] teams = cops ? [NpcTeam.Police, NpcTeam.Police, NpcTeam.Police] : [NpcTeam.Dummy, NpcTeam.Friendly, NpcTeam.Hostile];
+                float[] yaws = cops ? [120f, 180f, 240f] : [180f, 180f, 180f];
                 for (int i = 0; i < 3; i++)
                 {
-                    Ragdoll rd = EntityCatalog.SpawnDummy(g, new Float3(-1.5f + i * 1.2f, 0.05f, 2.2f), 180f, false, teams[i]);
+                    Ragdoll rd = EntityCatalog.SpawnDummy(g, new Float3(-1.5f + i * 1.2f, 0.05f, 2.2f), yaws[i], false, teams[i]);
                     foreach (Prop l in rd.Limbs) { if (l.Go.GetComponent<DummyBrain>() is { } b) b.Enabled = false; l.Body.MotionType = Jitter2.Dynamics.MotionType.Static; }
                 }
                 Ragdoll.Spawn(g, new Float3(2.4f, 0.6f, 2.6f), 140f, false);
@@ -174,6 +177,7 @@ public static class Gallery
                 g.Player.SetLook(0f, 10f);
                 if (set.StartsWith("face")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 1.45f)); g.Player.SetLook(0f, 4f); }
                 if (set.StartsWith("npcbody")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 0.2f)); g.Player.SetLook(0f, 14f); }
+                if (cops) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 0.6f)); g.Player.SetLook(0f, 22f); }
                 break;
             }
         }
