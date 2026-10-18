@@ -25,7 +25,7 @@ public sealed class SessionMeta
 {
     public const int CurrentVersion = 1;
     public int Version { get; set; } = CurrentVersion;
-    public string Name { get; set; } = "New World";
+    public string Name { get; set; } = "New Session";
     public DateTime Created { get; set; } = DateTime.Now;
     public DateTime LastPlayed { get; set; } = DateTime.Now;
     public string Mode { get; set; } = "Sandbox";          // Sandbox | Roleplay
@@ -91,7 +91,7 @@ public static class Worlds
                 SessionMeta? m = JsonSerializer.Deserialize<SessionMeta>(File.ReadAllText(meta));
                 if (m is not null) list.Add(new WorldEntry(dir, m));
             }
-            catch (Exception e) { Log.Warn($"Skipping broken world {dir}: {e.Message}"); }
+            catch (Exception e) { Log.Warn($"Skipping broken session {dir}: {e.Message}"); }
         }
         return list.OrderByDescending(w => w.Meta.LastPlayed).ToList();
     }

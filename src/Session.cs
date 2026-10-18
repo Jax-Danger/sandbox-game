@@ -252,7 +252,7 @@ public sealed partial class SandboxGame
             Worlds.WriteAtomic(Path.Combine(folder, "player.json"), JsonSerializer.Serialize(player, Worlds.Json));
             Worlds.WriteAtomic(Path.Combine(folder, "session.json"), metaJson);
         }
-        if (sync) { try { Write(); LastSaveError = null; } catch (Exception e) { LastSaveError = e.Message; Log.Warn($"Save failed: {e.Message}"); Notify($"Couldn't save the world: {e.Message}", ToastKind.Danger); } }
+        if (sync) { try { Write(); LastSaveError = null; } catch (Exception e) { LastSaveError = e.Message; Log.Warn($"Save failed: {e.Message}"); Notify($"Couldn't save the session: {e.Message}", ToastKind.Danger); } }
         else _saveTask = Task.Run(() => { try { Write(); LastSaveError = null; } catch (Exception e) { LastSaveError = e.Message; Log.Warn($"Autosave failed: {e.Message}"); Enqueue(() => Notify($"Autosave failed: {e.Message}", ToastKind.Danger)); } });
     }
 

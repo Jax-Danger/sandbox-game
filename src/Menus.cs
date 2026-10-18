@@ -74,7 +74,7 @@ public sealed partial class Menus
         DrawLogo(paper, x, y + Theme.S(6), logo, "mn_logo", (float)Prowl.Runtime.Time.UnscaledTotalTime);
         Ui.Text(paper, "mn_title", x + logo + Theme.S(16), y, w, Theme.S(76), "Sandbox", Theme.Display, Theme.Text, Theme.Bold);
         Ui.Text(paper, "mn_sub", x, y + Theme.S(76), w, Theme.S(22),
-            paused ? $"{g.Session?.Meta.Name ?? "World"} · {g.Props.Props.Count} props · physics paused" : "Build, break and mess around.",
+            paused ? $"{g.Session?.Meta.Name ?? "Session"} · {g.Props.Props.Count} props · physics paused" : "Build, break and mess around.",
             Theme.Label, Theme.TextMuted);
 
         float by = y + Theme.S(132), bw = Theme.S(280), bh = Theme.S(46), gap = Theme.S(10);
@@ -82,10 +82,10 @@ public sealed partial class Menus
             ?
             [
                 ("Resume", Icon.Play, () => g.Enqueue(() => Go(Screen.Playing))),
-                ("Save now", Icon.Save, () => g.Enqueue(() => { g.SaveSession(true, true); g.Notify("World saved"); })),
+                ("Save now", Icon.Save, () => g.Enqueue(() => { g.SaveSession(true, true); g.Notify("Session saved"); })),
                 ("Clear map", Icon.Trash, () => g.Enqueue(() => { g.ClearMap(); Go(Screen.Playing); })),
                 ("Settings", Icon.Gear, () => Go(Screen.Settings)),
-                ("Save & exit to Worlds", Icon.Back, () => g.Enqueue(() => { g.ExitSession(Screen.Worlds); RefreshWorlds(); })),
+                ("Save & exit to Sessions", Icon.Back, () => g.Enqueue(() => { g.ExitSession(Screen.Worlds); RefreshWorlds(); })),
             ]
             :
             [

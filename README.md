@@ -15,8 +15,8 @@ A small Garry's Mod-style physics sandbox in C# on the [Prowl](https://github.co
 | ![Vehicles](docs/r7-garage.png) | ![Model props](docs/r6-models.png) |
 | ![Dupes](docs/r7-dupes.png) | ![User spawnlist](docs/r7-myspawn.png) |
 | ![Tools](docs/r7-tools-scroll.png) | ![ATM bank](docs/r7-bank.png) |
-| ![Main menu](docs/r5-main.png) | ![Worlds](docs/r5-worlds.png) |
-| ![Create world](docs/r5-create.png) | ![Loading](docs/r5-loading.png) |
+| ![Main menu](docs/r5-main.png) | ![Sessions](docs/r5-worlds.png) |
+| ![Create session](docs/r5-create.png) | ![Loading](docs/r5-loading.png) |
 | ![Roleplay HUD](docs/r5-rp.png) | ![F4 jobs menu](docs/r5-jobs.png) |
 | ![Rolling Hills](docs/r5-hills.png) | ![Dusk](docs/r5-dusk.png) |
 | ![Utilities](docs/r5-utilities.png) | ![Video settings](docs/r5-video.png) |
@@ -74,17 +74,17 @@ Build macOS on a Mac when you can, because `build-all.sh` ad-hoc codesigns the `
 
 The first build downloads Prowl's NuGet dependencies, so it needs internet and takes a minute or two.
 
-## Worlds (Singleplayer)
+## Sessions (Singleplayer)
 
-**Main menu → Singleplayer** opens the Worlds list, which works like Minecraft's world list. Each row shows a thumbnail, name, when you last played it, the mode, the map, the prop count and how long you've played. The buttons are **Play Selected** (or double-click a row), **Create New**, **Edit** (rename), **Duplicate**, **Delete** (asks you to confirm) and **Open Folder**.
+**Main menu → Singleplayer** opens the Sessions list, which works like Minecraft's world list. Each row shows a thumbnail, name, when you last played it, the mode, the map, the prop count and how long you've played. The buttons are **Play Selected** (or double-click a row), **Create New**, **Edit** (rename), **Duplicate**, **Delete** (asks you to confirm) and **Open Folder**.
 
-**Create New World** asks for:
+**Create New Session** asks for:
 - a name
 - a mode: **Sandbox** or **Roleplay**
-- a map: **Flatgrass**, **Rolling Hills** (terrain plus a pond), or **Custom map**. A custom map is a `.glb/.gltf/.fbx/.obj/.vrm` file you pick with *Browse…* (uses zenity/kdialog on Linux) or paste a path to. The file is copied into the world folder and gets static mesh colliders.
-- modifiers: gravity, prop limit, fall damage, day/night cycle and NPCs. Roleplay worlds also have starting money and paid prop spawning.
+- a map: **Flatgrass**, **Rolling Hills** (terrain plus a pond), or **Custom map**. A custom map is a `.glb/.gltf/.fbx/.obj/.vrm` file you pick with *Browse…* (uses zenity/kdialog on Linux) or paste a path to. The file is copied into the session folder and gets static mesh colliders.
+- modifiers: gravity, prop limit, fall damage, day/night cycle and NPCs. Roleplay sessions also have starting money and paid prop spawning.
 
-Each world is a folder under `%AppData%/ProwlSandbox/saves/<name>/` (on Linux, `~/.config/ProwlSandbox/saves`):
+Each session is a folder under `%AppData%/ProwlSandbox/saves/<name>/` (on Linux, `~/.config/ProwlSandbox/saves`):
 
 | File | Contents |
 | --- | --- |
@@ -93,9 +93,9 @@ Each world is a folder under `%AppData%/ProwlSandbox/saves/<name>/` (on Linux, `
 | `player.json` | position, look, noclip, weapon, health and armor; roleplay money, job and laws |
 | `icon.png` | the thumbnail, captured from your view |
 
-The game autosaves every 5 seconds on a background thread. Each write goes to a temp file and is renamed into place, and the previous file is kept as `.bak`; if a file is corrupt, loading falls back to the `.bak`. The game also saves on **Save & exit to Worlds**, on Quit and when you close the window.
+The game autosaves every 5 seconds on a background thread. Each write goes to a temp file and is renamed into place, and the previous file is kept as `.bak`; if a file is corrupt, loading falls back to the `.bak`. The game also saves on **Save & exit to Sessions**, on Quit and when you close the window.
 
-**Loading** a world goes through a loading screen with real progress. It runs these stages: *Loading assets*, *Loading models*, *Loading shaders*, *Building physics*, *Spawning entities (n/N)*, *Restoring player*. File reading happens on a background task. Main-thread work runs in batches of 6 ms per frame, so the window keeps responding.
+**Loading** a session goes through a loading screen with real progress. It runs these stages: *Loading assets*, *Loading models*, *Loading shaders*, *Building physics*, *Spawning entities (n/N)*, *Restoring player*. File reading happens on a background task. Main-thread work runs in batches of 6 ms per frame, so the window keeps responding.
 
 ## Roleplay mode (DarkRP-style)
 
@@ -105,7 +105,7 @@ The HUD adds a wallet/job chip, a salary countdown, a WANTED or ARRESTED badge w
 - **Laws:** edited by the Mayor.
 - **Money:** drop cash; at an ATM, deposit and withdraw from your bank account (bank money is safe when you die).
 
-**RP Town map** (the default for Roleplay worlds): four avenues with sidewalks and crosswalks around a spawn plaza (fountain, benches, the laws board and an ATM), a police station with a jail cell, a general store, three houses, an apartment and a garage.
+**RP Town map** (the default for Roleplay sessions): four avenues with sidewalks and crosswalks around a spawn plaza (fountain, benches, the laws board and an ATM), a police station with a jail cell, a general store, three houses, an apartment and a garage.
 - **Doors:** E opens/closes. Doors marked *for sale* can be bought with **F2** (F2 again sells for half price); **L** locks/unlocks doors you own. Police can lock the station doors. Thieves can pick any locked door with the lockpick (police doors always make you wanted).
 - **Arrests:** police NPCs chase you while you're WANTED and arrest you on contact: a $200 fine and 30 s in the locked jail cell. Leaving early counts as a jailbreak (wanted again).
 - **Wanted:** assaulting citizens/police nearby, lockpicking, jailbreaks, and carrying a gun near police while the laws ban weapons (they warn you first).
@@ -133,7 +133,7 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 - **NPC health and combat**: NPCs take bullet (headshots ×2), crowbar and explosion damage; kill feed (top right) and optional damage numbers (Settings → Game).
 - **RP lottery**: the Mayor starts a 90 s lottery from the shop; anyone buys $50 tickets, townsfolk join in, the Mayor keeps 10%.
 - **Car Dealer** job and buyable **Buggy** / **Jeep** in the shop (dealers pay 60%).
-- **Getting started**: a five-step tutorial chip for new players in Sandbox worlds (spawn, grab, freeze, weld, drive). Steps complete from what you do; `tutorial reset|skip` in the console. ![](docs/tutorial.png)
+- **Getting started**: a five-step tutorial chip for new players in Sandbox sessions (spawn, grab, freeze, weld, drive). Steps complete from what you do; `tutorial reset|skip` in the console. ![](docs/tutorial.png)
 - **Save fix**: a rope and an elastic band on the same two props no longer turn into an extra rope on every save/load (found by the soak, seed 7).
 - **Kill plane**: anything that falls through the world is removed (whole ragdoll), fixing the soak's "Limb fell out of the world".
 
@@ -141,12 +141,12 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 - **Console** (`` ` ``): `help`, `noclip`, `give <weapon>`, `time <0-24>`, `gravity <m/s²>`, `timescale`, `cleanup`, `spawn <prop> [n]`, `tp x y z`, `pos`, `heal`, `kill`, `weather <preset>`, `achievements`, `hints reset`, `photo`, `screenshot`. Anything that isn't a command is chat. ↑/↓ for history, mouse wheel or PgUp/PgDn to scroll, Esc to close.
 - **Photo mode** (F1) hides the HUD. **F12** saves a PNG of the world (no HUD) to `<AppData>/ProwlSandbox/screenshots/`.
-- **Weather**: Clear, Overcast, Fog, Rain, Storm (with lightning). Pick it in Spawn menu → Utilities or with the console. It blends smoothly and is saved per world.
+- **Weather**: Clear, Overcast, Fog, Rain, Storm (with lightning). Pick it in Spawn menu → Utilities or with the console. It blends smoothly and is saved per session.
 - **Achievements**: 14, two of them Roleplay-only. They unlock with a toast and are saved to `achievements.json` next to `settings.json`.
 - **Recent spawnlist**: the last 12 things you spawned, at the top of the spawn menu's category list.
-- **RP hunger**: hunger drains over about 8 minutes, then you take starvation damage. Buy a Burger or Soda from the F4 shop. A thin bar in the RP chip shows hunger, and it's saved with the world.
+- **RP hunger**: hunger drains over about 8 minutes, then you take starvation damage. Buy a Burger or Soda from the F4 shop. A thin bar in the RP chip shows hunger, and it's saved with the session.
 - **First-time hints**: one small hint at a time, each shown once. Turn them off in Settings → Game, or replay them with `hints reset`.
-- **Stability**: a soak/fuzz harness (`--headless --soak <secs> <seed>`) drove fixes for NaN physics crashes, a ragdoll/no-collide memory leak, save/load mismatches, autosave races and unicode or reserved world names.
+- **Stability**: a soak/fuzz harness (`--headless --soak <secs> <seed>`) drove fixes for NaN physics crashes, a ragdoll/no-collide memory leak, save/load mismatches, autosave races and unicode or reserved session names.
 
 ## Controls
 
@@ -171,7 +171,7 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 | F2 / L | RP town: buy or sell the door you look at / lock or unlock it |
 | Z | Undo |
 | F3 | FPS counter |
-| Esc | Pause menu: Resume, Save now, Clear map, Settings, Save & exit to Worlds |
+| Esc | Pause menu: Resume, Save now, Clear map, Settings, Save & exit to Sessions |
 
 **Hands (1):** E picks up anything up to 15 kg and carries it in front of you. Left click throws it; E again drops it. With nothing held, left click gives a light shove.
 
@@ -194,7 +194,7 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 **Vehicles tab:** Buggy, Jeep (four-wheel drive) and Airboat (fan-driven hull on skids). Look at it and press E to drive: W/S throttle and brake, A/D steer, Space handbrake, mouse orbits the chase camera, R flips it upright, E gets out.
 
-**Health:** health and armor show bottom-left. Falls faster than about 13 m/s hurt (you can turn this off per world or in Utilities). When you die you respawn after 3 s.
+**Health:** health and armor show bottom-left. Falls faster than about 13 m/s hurt (you can turn this off per session or in Utilities). When you die you respawn after 3 s.
 
 **Utilities tab:** sky presets (Morning, Noon, Golden hour, Dusk, Night), a day/night cycle toggle, gravity and time-scale sliders, noclip, fall damage, heal and save.
 
@@ -207,7 +207,7 @@ The HUD is deliberately minimal (s&box-style): a small dot crosshair that gets a
 
 **Logs and crashes:** the game writes a log to `<app data>/ProwlSandbox/logs/latest.log` and keeps the previous run's log as `previous.log`. An unhandled error writes `crash-<time>.txt` and shows a dialog. If the window can't get an OpenGL 4.1 context, the dialog explains that and says what to update.
 
-**Legacy quicksave:** Utilities → Save map (shown when no world is loaded) writes `quicksave.json`. Everything is saved: props (colour, material, mass, frozen), welds, balloons, ropes, ball-sockets, thrusters, wheels, lights, buttons (with their keys), explosive barrels, bouncy balls, NPC dummies, ragdolls, cameras and buggies. Procedural textures are on by default; set `SANDBOX_PROCTEX=0` to use flat colours instead.
+**Legacy quicksave:** Utilities → Save map (shown when no session is loaded) writes `quicksave.json`. Everything is saved: props (colour, material, mass, frozen), welds, balloons, ropes, ball-sockets, thrusters, wheels, lights, buttons (with their keys), explosive barrels, bouncy balls, NPC dummies, ragdolls, cameras and buggies. Procedural textures are on by default; set `SANDBOX_PROCTEX=0` to use flat colours instead.
 
 ## Adding your own models and sounds
 
@@ -298,7 +298,7 @@ Frame sequences (10 fps) of the pistol and shotgun reloads: [pistol](docs/vm-seq
 dotnet run -- --headless
 ```
 
-This runs the game for about 25 seconds without a window. It scripts spawning, physgun, tools (including elastic pull and hoverball hold), vehicles (buggy, jeep, airboat), weapons, entities, dupes, spawnlists, worlds save/load, the roleplay economy and the RP town (doors, ATM, arrest/jail/jailbreak), prints PASS or FAIL for each, and exits 0 when everything passes. It doesn't test rendering or real mouse/keyboard input.
+This runs the game for about 25 seconds without a window. It scripts spawning, physgun, tools (including elastic pull and hoverball hold), vehicles (buggy, jeep, airboat), weapons, entities, dupes, spawnlists, sessions save/load, the roleplay economy and the RP town (doors, ATM, arrest/jail/jailbreak), prints PASS or FAIL for each, and exits 0 when everything passes. It doesn't test rendering or real mouse/keyboard input.
 
 Soak/fuzz test: `dotnet run -- --headless --soak 300 6` runs random actions for 300 s with seed 6. It checks for exceptions, NaNs, physics explosions, save/load round-trip mismatches and memory growth, prints a report, and exits non-zero if it finds problems.
 
@@ -311,7 +311,7 @@ Soak/fuzz test: `dotnet run -- --headless --soak 300 6` runs random actions for 
 | `src/MapBuilder.cs`, `src/Town.cs` | Maps (Flatgrass, Rolling Hills, RP Town, custom model import), doors/ATM/laws board |
 | `src/ModelProps.cs`, `src/IconRenderer.cs` | Placeholder model props (behind the asset manifest) and spawn-menu thumbnails |
 | `src/ToolsMore.cs`, `src/Dupes.cs`, `src/Vehicles.cs` | Extra tools, contraption dupes + user spawnlists, buggy/jeep/airboat |
-| `src/Worlds.cs`, `src/Session.cs`, `src/WorldsMenu.cs` | World folders, atomic saves, async loader, Worlds/Create/Loading/F4 screens |
+| `src/Worlds.cs`, `src/Session.cs`, `src/WorldsMenu.cs` | Session folders (same `saves/` layout and `world.json` file as before, so old saves load), atomic saves, async loader, Sessions/Create/Loading/F4 screens |
 | `src/Roleplay.cs` | Jobs, economy, printers, shipments, baton/lockpick/medkit |
 | `src/Health.cs`, `src/DayNight.cs` | Health/armor/fall damage/respawn; sky presets and day/night |
 | `src/Meshes.cs` | Procedural bevelled boxes, rounded cylinders, tyres, capsules (placeholders the asset manifest can replace) |

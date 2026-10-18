@@ -5,7 +5,7 @@ using Color = System.Drawing.Color;
 
 namespace Sandbox;
 
-/// <summary>Singleplayer → Worlds list, Create New World, the loading screen and the roleplay F4 menu.</summary>
+/// <summary>Singleplayer → Sessions list, Create New Session, the loading screen and the roleplay F4 menu.</summary>
 public sealed partial class Menus
 {
     private List<WorldEntry>? _worlds;
@@ -40,8 +40,8 @@ public sealed partial class Menus
         float x = mg, y = mg + (1f - Ui.Alpha) * Theme.S(20), pad = Theme.S(Theme.Lg);
         Ui.Glass(paper, "wl_panel", x, y, pw, ph, strong: true).IsNotInteractable();
         Ui.Text(paper, "wl_kick", x + pad, y + pad - Theme.S(4), pw, Theme.S(16), "SINGLEPLAYER", Theme.Micro, Theme.Accent, Theme.Bold);
-        Ui.Text(paper, "wl_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Worlds", Theme.Heading, Theme.Text, Theme.Bold);
-        Ui.Text(paper, "wl_count", x + pad, y + pad + Theme.S(12), pw - 2 * pad, Theme.S(34), $"{_worlds.Count} world{(_worlds.Count == 1 ? "" : "s")} · autosaves every {SandboxGame.AutosaveInterval:0} s",
+        Ui.Text(paper, "wl_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Sessions", Theme.Heading, Theme.Text, Theme.Bold);
+        Ui.Text(paper, "wl_count", x + pad, y + pad + Theme.S(12), pw - 2 * pad, Theme.S(34), $"{_worlds.Count} session{(_worlds.Count == 1 ? "" : "s")} · autosaves every {SandboxGame.AutosaveInterval:0} s",
             Theme.Caption, Theme.TextFaint, null, TextAlignment.MiddleRight);
 
         float bh = Theme.S(30), footer = bh + Theme.S(18);
@@ -55,7 +55,7 @@ public sealed partial class Menus
         if (_worlds.Count == 0)
         {
             Ui.Icon(paper, "wl_empty_ic", x + pad + lw / 2f - Theme.S(20), ly + lh / 2f - Theme.S(54), Theme.S(40), Icon.Globe, Theme.TextFaint);
-            Ui.Text(paper, "wl_empty", x + pad, ly + lh / 2f - Theme.S(6), lw, Theme.S(24), "No worlds yet", Theme.Title, Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
+            Ui.Text(paper, "wl_empty", x + pad, ly + lh / 2f - Theme.S(6), lw, Theme.S(24), "No sessions yet", Theme.Title, Theme.TextMuted, Theme.SemiBold, TextAlignment.MiddleCenter);
             Ui.Text(paper, "wl_empty2", x + pad, ly + lh / 2f + Theme.S(20), lw, Theme.S(20), "Create one to start building. It saves itself as you play.", Theme.Body, Theme.TextFaint, null, TextAlignment.MiddleCenter);
         }
         using (paper.Box("wl_list").PositionType(PositionType.SelfDirected).Position(x + pad, ly).Size(lw, lh).Clip()
@@ -157,8 +157,8 @@ public sealed partial class Menus
         float bh = Theme.S(38);
         if (_modal == "rename")
         {
-            Ui.Text(paper, "wm_t", mx + pad, my + pad, mw, Theme.S(26), "Rename world", Theme.Title, Theme.Text, Theme.Bold);
-            TextInput(paper, "wm_name", mx + pad, my + pad + Theme.S(40), mw - 2 * pad, Theme.S(40), _renameText, v => _renameText = v, "World name");
+            Ui.Text(paper, "wm_t", mx + pad, my + pad, mw, Theme.S(26), "Rename session", Theme.Title, Theme.Text, Theme.Bold);
+            TextInput(paper, "wm_name", mx + pad, my + pad + Theme.S(40), mw - 2 * pad, Theme.S(40), _renameText, v => _renameText = v, "Session name");
             Ui.Button(paper, "wm_ok", mx + mw - pad - Theme.S(110), my + mh - pad - bh, Theme.S(110), bh, "Save", () => g.Enqueue(() =>
             {
                 try { var r = Worlds.Rename(sel, _renameText); RefreshWorlds(); _selected = Math.Max(0, _worlds!.FindIndex(x => x.Folder == r.Folder)); }
@@ -168,7 +168,7 @@ public sealed partial class Menus
         }
         else
         {
-            Ui.Text(paper, "wm_t", mx + pad, my + pad, mw, Theme.S(26), "Delete world?", Theme.Title, Theme.Text, Theme.Bold);
+            Ui.Text(paper, "wm_t", mx + pad, my + pad, mw, Theme.S(26), "Delete session?", Theme.Title, Theme.Text, Theme.Bold);
             Ui.Paragraph(paper, "wm_p", mx + pad, my + pad + Theme.S(34), mw - 2 * pad, Theme.S(44), $"\"{sel.Meta.Name}\" and all of its saves will be permanently deleted. This can't be undone.", Theme.Body, Theme.TextMuted);
             Ui.Button(paper, "wm_ok", mx + mw - pad - Theme.S(120), my + mh - pad - bh, Theme.S(120), bh, "Delete", () => g.Enqueue(() =>
             {
@@ -188,12 +188,12 @@ public sealed partial class Menus
             .TextField(value, Theme.Regular, set, Theme.ToVector(Theme.Text), placeholder, Theme.ToVector(Theme.TextFaint));
     }
 
-    // ---------------------------------------------------------------- Create New World
+    // ---------------------------------------------------------------- Create New Session
 
     private void BeginCreate()
     {
         int n = (_worlds?.Count ?? 0) + 1;
-        _draft = new SessionMeta { Name = $"New World {n}" };
+        _draft = new SessionMeta { Name = $"New Session {n}" };
         _customPath = ""; _createError = null;
         Go(Screen.CreateWorld);
     }
@@ -204,15 +204,15 @@ public sealed partial class Menus
         float x = mg, y = mg + (1f - Ui.Alpha) * Theme.S(20), pad = Theme.S(Theme.Lg);
         Ui.Glass(paper, "cw_panel", x, y, pw, ph, strong: true).IsNotInteractable();
         Ui.Text(paper, "cw_kick", x + pad, y + pad - Theme.S(4), pw, Theme.S(16), "SINGLEPLAYER", Theme.Micro, Theme.Accent, Theme.Bold);
-        Ui.Text(paper, "cw_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Create New World", Theme.Heading, Theme.Text, Theme.Bold);
+        Ui.Text(paper, "cw_title", x + pad, y + pad + Theme.S(12), pw, Theme.S(34), "Create New Session", Theme.Heading, Theme.Text, Theme.Bold);
 
         float colW = (pw - 2 * pad - Theme.S(28)) / 2f, lx = x + pad, rx = lx + colW + Theme.S(28);
         float cy = y + pad + Theme.S(54);
         SessionMeta d = _draft; WorldModifiers m = d.Modifiers;
 
         void Label(string id, float px, float py, string t) => Ui.Text(paper, id, px, py, colW, Theme.S(18), t, Theme.Caption, Theme.TextMuted, Theme.SemiBold);
-        Label("cw_l_name", lx, cy, "World name");
-        TextInput(paper, "cw_name", lx, cy + Theme.S(20), colW, Theme.S(32), d.Name, v => d.Name = v, "My world");
+        Label("cw_l_name", lx, cy, "Session name");
+        TextInput(paper, "cw_name", lx, cy + Theme.S(20), colW, Theme.S(32), d.Name, v => d.Name = v, "My session");
         cy += Theme.S(64);
         Label("cw_l_mode", lx, cy, "Game mode");
         Ui.Segmented(paper, "cw_mode", lx, cy + Theme.S(20), colW, ["Sandbox", "Roleplay"], d.Mode == "Roleplay" ? 1 : 0, v => d.Mode = v == 1 ? "Roleplay" : "Sandbox");
@@ -231,7 +231,7 @@ public sealed partial class Menus
             Ui.Button(paper, "cw_browse", lx + colW - Theme.S(100), cy, Theme.S(100), Theme.S(40), _browsing ? "…" : "Browse…", () => Browse(g), icon: Icon.Folder, enabled: !_browsing);
             bool okExt = MapBuilder.ImportExtensions.Contains(Path.GetExtension(_customPath).ToLowerInvariant());
             Ui.Text(paper, "cw_path_h", lx, cy + Theme.S(46), colW, Theme.S(18),
-                _customPath.Length == 0 ? "glb, gltf, fbx, obj or vrm. It's copied into the world folder." : !File.Exists(_customPath) ? "File not found" : okExt ? "Ready to import (static mesh colliders are generated)" : "Unsupported file type",
+                _customPath.Length == 0 ? "glb, gltf, fbx, obj or vrm. It's copied into the session folder." : !File.Exists(_customPath) ? "File not found" : okExt ? "Ready to import (static mesh colliders are generated)" : "Unsupported file type",
                 Theme.Caption, _customPath.Length > 0 && (!File.Exists(_customPath) || !okExt) ? Theme.Danger : Theme.TextFaint);
         }
 
@@ -274,14 +274,14 @@ public sealed partial class Menus
         float bh = Theme.S(32), fy = y + ph - pad - bh;
         Ui.Rect(paper, "cw_footer_rule", x + pad, fy - Theme.S(10), pw - 2 * pad, 1f, Theme.Border);
         if (_createError is not null) Ui.Text(paper, "cw_err", x + pad, fy - Theme.S(28), pw - 2 * pad, Theme.S(20), _createError, Theme.Caption, Theme.Danger, Theme.SemiBold);
-        Ui.Button(paper, "cw_create", x + pw - pad - Theme.S(150), fy, Theme.S(150), bh, "Create World", () => g.Enqueue(() => Create(g)), selected: true, icon: Icon.Check, radius: bh / 2f);
+        Ui.Button(paper, "cw_create", x + pw - pad - Theme.S(150), fy, Theme.S(150), bh, "Create Session", () => g.Enqueue(() => Create(g)), selected: true, icon: Icon.Check, radius: bh / 2f);
         Ui.Button(paper, "cw_cancel", x + pw - pad - Theme.S(246), fy, Theme.S(90), bh, "Cancel", () => Go(Screen.Worlds), ghost: true, radius: bh / 2f);
     }
 
     private void Create(SandboxGame g)
     {
         _draft.Name = _draft.Name.Trim();
-        if (_draft.Name.Length == 0) { _createError = "Give the world a name."; return; }
+        if (_draft.Name.Length == 0) { _createError = "Give the session a name."; return; }
         string? src = null;
         if (_draft.Map == "custom")
         {
@@ -295,7 +295,7 @@ public sealed partial class Menus
             RefreshWorlds();
             g.EnterSession(we);
         }
-        catch (Exception e) { _createError = $"Couldn't create the world: {e.Message}"; }
+        catch (Exception e) { _createError = $"Couldn't create the session: {e.Message}"; }
     }
 
     /// <summary>Native file picker on a background task (zenity/kdialog on Linux, osascript on macOS, PowerShell on Windows).</summary>
@@ -346,7 +346,7 @@ public sealed partial class Menus
     [
         "Hold Q to open the spawn menu. Drag anything you spawn with the physics gun.",
         "Right-click with the physics gun to freeze a prop in place.",
-        "The world autosaves every few seconds. Your contraptions keep moving when you come back.",
+        "The session autosaves every few seconds. Your contraptions keep moving when you come back.",
         "Hold C on a prop to change its colour, material and mass.",
         "Press Z to undo your last spawn or weld.",
         "In Roleplay, press F4 to pick a job or buy a money printer.",
@@ -368,7 +368,7 @@ public sealed partial class Menus
 
         float cx = w / 2f, by = h * 0.62f, bw = MathF.Min(Theme.S(560), w * 0.7f);
         DrawLogo(paper, cx - Theme.S(32), h * 0.24f, Theme.S(64), "ld_logo", (float)(l?.Elapsed ?? 0f));
-        string name = g.Session?.Meta.Name ?? "World";
+        string name = g.Session?.Meta.Name ?? "Session";
         Ui.Text(paper, "ld_name", 0, h * 0.24f + Theme.S(80), w, Theme.S(40), name, Theme.Heading + 6, Theme.Text, Theme.Bold, TextAlignment.MiddleCenter);
         if (g.Session is { } s)
             Ui.Text(paper, "ld_sub", 0, h * 0.24f + Theme.S(122), w, Theme.S(20), $"{s.Meta.Mode} · {MapName(s.Meta)} · {s.Meta.PropCount} props", Theme.Body, Theme.TextMuted, null, TextAlignment.MiddleCenter);
