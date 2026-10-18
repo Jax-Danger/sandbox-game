@@ -123,4 +123,30 @@ public static class VehicleModels
     });
 
     public static Mesh Hub(float r) => C($"hub{r}", () => LatheZ([(0.0001f, 0.06f), (r * 0.5f, 0.055f), (r * 0.62f, 0.03f), (r * 0.62f, -0.03f), (0.0001f, -0.03f)]));
+
+    /// <summary>Aluminium diamond treadplate: a thin sheet with staggered raised lozenges (alternating ±45° pairs).</summary>
+    public static Mesh TreadPlate(float w, float l, float y) => C($"tread{w}{l}{y}", () =>
+    {
+        var parts = new List<Mesh> { Off(RoundedBox(V(w, 0.012f, l), 0.004f), 0f, y, 0f) };
+        float step = 0.085f;
+        int nx = (int)(w / step) - 1, nz = (int)(l / step) - 1;
+        for (int i = 0; i < nx; i++)
+            for (int k = 0; k < nz; k++)
+            {
+                float x = -w / 2f + step * (i + 1), z = -l / 2f + step * (k + 1);
+                float a = ((i + k) % 2 == 0 ? 0.785f : -0.785f), c = MathF.Cos(a), sn = MathF.Sin(a);
+                Mesh m = Mesh.CreateCube(V(0.008f, 0.004f, 0.034f));
+                parts.Add(new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices!.Select(v => V(v.X * c + v.Z * sn + x, v.Y + y + 0.008f, -v.X * sn + v.Z * c + z)).ToArray(),
+                    Normals = m.Normals!.Select(v => V(v.X * c + v.Z * sn, v.Y, -v.X * sn + v.Z * c)).ToArray(), UV = m.UV, Indices = m.Indices });
+            }
+        return Merge(parts.ToArray());
+    });
+
+    private static Mesh Off(Mesh m, float x, float y, float z)
+        => new() { IndexFormat = m.IndexFormat, Vertices = m.Vertices!.Select(v => V(v.X + x, v.Y + y, v.Z + z)).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+
+    /// <summary>Mooring cleat: a low horn bar on two feet.</summary>
+    public static Mesh Cleat() => C("cleat", () => Merge(
+        Sweep([new Sec(V(-0.08f, 0.035f, 0f), 0.006f, 0.008f), new Sec(V(-0.05f, 0.045f, 0f), 0.011f, 0.012f), new Sec(V(0.05f, 0.045f, 0f), 0.011f, 0.012f), new Sec(V(0.08f, 0.035f, 0f), 0.006f, 0.008f)], Float3.UnitZ, 10, 0.8f),
+        Off(RoundedBox(V(0.03f, 0.04f, 0.022f), 0.006f), -0.03f, 0.02f, 0f), Off(RoundedBox(V(0.03f, 0.04f, 0.022f), 0.006f), 0.03f, 0.02f, 0f)));
 }

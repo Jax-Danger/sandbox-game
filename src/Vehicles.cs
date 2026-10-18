@@ -245,6 +245,19 @@ public sealed class Buggy
         var white = new Color(0.86f, 0.87f, 0.88f, 1f);
         foreach (float x in new[] { -0.9f, 0.9f })
             Detail(g, "Rail", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitY, new Float3(x * 0.98f, 0.2f, -1.78f), new Float3(x, 0.215f, -1.4f), new Float3(x, 0.215f, 1.1f), new Float3(x * 0.88f, 0.27f, 1.7f), new Float3(x * 0.62f, 0.33f, 2.06f)), Float3.Zero, white);
+        // Deck: aluminium diamond treadplate over the hull top, a hinged bow hatch, mooring cleats and a dark rub strake
+        // along the gunwale, so the deck reads as a working boat instead of a flat blue slab.
+        var alu = new Color(0.52f, 0.54f, 0.56f, 1f);
+        Detail(g, "Deck", VehicleModels.TreadPlate(1.62f, 2.7f, 0.176f), new Float3(0f, 0f, -0.25f), alu);
+        Detail(g, "Hatch", Meshes.RoundedBox(new Float3(0.9f, 0.02f, 0.42f), 0.01f), new Float3(0f, 0.2f, 1.42f), alu * 0.92f, new Float3(-6f, 0f, 0f));
+        Detail(g, "HatchSeam", Meshes.RoundedBox(new Float3(0.94f, 0.012f, 0.46f), 0.006f), new Float3(0f, 0.192f, 1.42f), new Color(0.12f, 0.13f, 0.14f, 1f), new Float3(-6f, 0f, 0f));
+        foreach (float x in new[] { -0.3f, 0.3f })
+            Detail(g, "Hinge", VehicleModels.Pipe(0.012f, Float3.UnitY, new Float3(x - 0.06f, 0f, 0f), new Float3(x + 0.06f, 0f, 0f)), new Float3(0f, 0.2f, 1.2f), new Color(0.4f, 0.41f, 0.43f, 1f));
+        Detail(g, "Handle", VehicleModels.BentPipe(0.008f, 0.02f, Float3.UnitY, new Float3(-0.07f, 0f, 0f), new Float3(-0.06f, 0.025f, 0f), new Float3(0.06f, 0.025f, 0f), new Float3(0.07f, 0f, 0f)), new Float3(0f, 0.235f, 1.6f), new Color(0.4f, 0.41f, 0.43f, 1f));
+        foreach (var (cx, cz) in new[] { (-0.72f, 1.05f), (0.72f, 1.05f), (-0.78f, -1.62f), (0.78f, -1.62f) })
+            Detail(g, "Cleat", VehicleModels.Cleat(), new Float3(cx, 0.18f, cz), new Color(0.75f, 0.76f, 0.78f, 1f), new Float3(0f, 90f, 0f));
+        foreach (float x in new[] { -1f, 1f })
+            Detail(g, "Strake", VehicleModels.Pipe(0.022f, Float3.UnitY, new Float3(x * 0.95f, 0.1f, -1.78f), new Float3(x * 0.965f, 0.1f, -1.4f), new Float3(x * 0.965f, 0.1f, 1.1f), new Float3(x * 0.86f, 0.17f, 1.7f), new Float3(x * 0.6f, 0.26f, 2.1f)), Float3.Zero, new Color(0.1f, 0.11f, 0.12f, 1f));
         Detail(g, "Seat", VehicleModels.Seat(0.3f), new Float3(0f, 0.25f, -0.35f), dark);
         Detail(g, "Mast", VehicleModels.BentPipe(0.04f, 0.1f, Float3.UnitX, new Float3(-0.45f, 0.18f, -1.2f), new Float3(0f, 1.25f, -1.25f), new Float3(0.45f, 0.18f, -1.2f)), Float3.Zero, dark);
         Detail(g, "Cage", VehicleModels.Ring(0.85f, 0.035f), new Float3(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f));
