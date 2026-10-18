@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.5 — 2026-10-18
+- RPG: heat shield and grips use a deep low-chroma walnut (WoodRpg) instead of WoodC, which read orange on the tube (screens/vm/r2/s12rpg-cmp-crop.png left=before)
+
 ## v0.17.4 — 2026-10-18
 - Jeep spare wheel: domed steel disc with bead ring, raised hub and cap set flush with the tyre face, so the centre no longer reads as a pale hollow (screens/s12-spare-c-crop.png vs s12-spare-a-crop.png)
 

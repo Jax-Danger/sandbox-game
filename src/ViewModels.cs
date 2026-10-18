@@ -26,6 +26,8 @@ public static partial class ViewModels
     private static readonly Color Steel = new(0.55f, 0.56f, 0.58f, 1f);
     private static readonly Color Dark = new(0.035f, 0.035f, 0.04f, 1f);
     private static readonly Color WoodC = new(0.3f, 0.19f, 0.11f, 1f);
+    /// <summary>RPG furniture: deep, low-chroma walnut (WoodC under the grain texture and VM light read as orange on the tube).</summary>
+    private static readonly Color WoodRpg = new(0.17f, 0.115f, 0.08f, 1f);
     private static readonly Color Olive = new(0.22f, 0.25f, 0.15f, 1f);
     private static readonly Color Accent = new(0.30f, 0.66f, 1f, 1f);
     private static readonly Color Tritium = new(0.45f, 1f, 0.45f, 1f);
@@ -468,7 +470,7 @@ public static partial class ViewModels
                 k.Lz("weapon", new Color(0.04f, 0.04f, 0.035f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0f, 0.14f), (0.0291f, 0.14f), (0.0291f, 0.028f));
                 // Sooty bore liner: the lip's inner wall read as bright olive paint looking down the tube; blacken it, fading to the lip.
                 k.Lz("weapon", new Color(0.07f, 0.065f, 0.055f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0.0289f, 0.14f), (0.0289f, 0.012f), (0.0296f, 0.006f));
-                k.Lz("weapon", WoodC, Finish.Wood, V(0, 0.115f, 0.0f), (0.0368f, 0f), (0.0418f, 0.008f), (0.0425f, 0.2f), (0.0372f, 0.208f));
+                k.Lz("weapon", WoodRpg, Finish.Wood, V(0, 0.115f, 0.0f), (0.0368f, 0f), (0.0418f, 0.008f), (0.0425f, 0.2f), (0.0372f, 0.208f));
                 for (int i = 0; i < 3; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.115f, 0.03f + i * 0.08f), (0.0428f, 0f), (0.0432f, 0.003f), (0.0432f, 0.009f), (0.0428f, 0.012f));
                 // Warhead: classic double cone with a nose fuse, on the rocket bone.
                 k.Lz("rocket", Olive, Finish.Paint, V(0, 0.115f, 0.49f),
@@ -476,10 +478,10 @@ public static partial class ViewModels
                 k.Lz("rocket", Steel, Finish.Metal, V(0, 0.115f, 0.81f), (0.008f, 0f), (0.0075f, 0.02f), (0.004f, 0.03f), (0f, 0.032f));
                 // Pistol grip and receiver block, front grip.
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(0, 0.07f, -0.045f), V(0, 0.07f, 0.06f), 0.014f, 0.0115f, 4f, 0.4f);
-                k.GripBody("weapon", pistolA, -0.058f, 0.06f, 0.0148f, 0.0245f, WoodC, new Color(0.33f, 0.19f, 0.1f, 1f));
+                k.GripBody("weapon", pistolA, -0.058f, 0.06f, 0.0148f, 0.0245f, WoodRpg, new Color(0.2f, 0.135f, 0.09f, 1f));
                 k.Guard("weapon", Black, 0.0585f, 0.075f, 0.025f, 0.02f, 0.043f);
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(0, 0.075f, 0.17f), V(0, 0.075f, 0.24f), 0.012f, 0.008f, 4f, 0.4f);
-                k.GripBody("weapon", Nz(V(0f, 1f, 0.12f)), -0.05f, 0.06f, 0.0142f, 0.019f, WoodC, new Color(0.33f, 0.19f, 0.1f, 1f));
+                k.GripBody("weapon", Nz(V(0f, 1f, 0.12f)), -0.05f, 0.06f, 0.0142f, 0.019f, WoodRpg, new Color(0.2f, 0.135f, 0.09f, 1f));
                 // Side-mounted optic on the left so aiming keeps the tube out of the centre of the view.
                 k.Sw("weapon", Black, Finish.Metal, Float3.UnitX, 0.5f, new Sec(V(-0.034f, 0.13f, -0.02f), 0.016f, 0.0075f, 4f), new Sec(V(-0.08f, 0.18f, -0.02f), 0.024f, 0.007f, 4f));
                 k.Lz("weapon", new Color(0.16f, 0.18f, 0.13f, 1f), Finish.Paint, V(-0.09f, 0.19f, -0.065f),
