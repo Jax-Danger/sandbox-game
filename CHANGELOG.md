@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.28 — 2026-10-18
+- Fridge: softer off-white doors with a magnet-held shopping list and a child's drawing
+
 ## v0.17.27 — 2026-10-18
 - Desk: wood top and drawer fronts on a darker pedestal with a cable grommet (white grained laminate read as streaky birch)
 

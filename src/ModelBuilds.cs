@@ -350,7 +350,7 @@ public static partial class ModelProps
 
     private static Part[] FridgeParts()
     {
-        Color body = C(0.9f, 0.9f, 0.88f), gasket = C(0.1f, 0.1f, 0.11f), ss = C(0.72f, 0.74f, 0.76f);
+        Color body = C(0.82f, 0.82f, 0.8f), gasket = C(0.1f, 0.1f, 0.11f), ss = C(0.72f, 0.74f, 0.76f);
         var slats = new List<(Mesh, Float3)>(); Mesh slat = RoundedBox(P3(0.62f, 0.01f, 0.012f), 0.003f);
         for (int i = 0; i < 4; i++) slats.Add((slat, P3(0, -0.875f + i * 0.016f, 0.338f)));
         return
@@ -367,6 +367,12 @@ public static partial class ModelProps
             RB(0.7f, 0.08f, 0.02f, 0.006f, 0, -0.86f, 0.32f, gasket), M(Bake(slats), 0, 0, 0, C(0.25f, 0.25f, 0.27f)),
             // Tall vertical seam on the side so the cabinet doesn't read as a plain slab.
             RB(0.004f, 1.7f, 0.004f, 0.001f, 0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)), RB(0.004f, 1.7f, 0.004f, 0.001f, -0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)),
+            // A shopping list and a child's drawing held on by magnets: lived-in, and breaks up the big white doors.
+            RB(0.1f, 0.14f, 0.002f, 0.0008f, 0.04f, 0.6f, 0.354f, C(0.95f, 0.9f, 0.55f)), RB(0.07f, 0.004f, 0.001f, 0.0004f, 0.04f, 0.63f, 0.3555f, C(0.3f, 0.3f, 0.5f)),
+            RB(0.06f, 0.004f, 0.001f, 0.0004f, 0.035f, 0.61f, 0.3555f, C(0.3f, 0.3f, 0.5f)), RB(0.065f, 0.004f, 0.001f, 0.0004f, 0.038f, 0.59f, 0.3555f, C(0.3f, 0.3f, 0.5f)),
+            RB(0.16f, 0.12f, 0.002f, 0.0008f, 0.1f, 0.05f, 0.354f, C(0.97f, 0.97f, 0.95f)), RB(0.07f, 0.07f, 0.001f, 0.0004f, 0.07f, 0.04f, 0.3555f, C(0.95f, 0.75f, 0.15f)),
+            RB(0.12f, 0.025f, 0.001f, 0.0004f, 0.1f, 0.0f, 0.3555f, C(0.3f, 0.65f, 0.3f)), RB(0.04f, 0.04f, 0.001f, 0.0004f, 0.14f, 0.06f, 0.3556f, C(0.85f, 0.2f, 0.15f)),
+            M(Sphere(0.012f), 0.04f, 0.665f, 0.356f, C(0.85f, 0.15f, 0.12f)), M(Sphere(0.012f), 0.1f, 0.105f, 0.356f, C(0.15f, 0.35f, 0.85f)), M(Sphere(0.012f), 0.2f, 0.4f, 0.356f, C(0.95f, 0.75f, 0.1f)),
         ];
     }
 
