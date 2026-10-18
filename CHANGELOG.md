@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.19 — 2026-10-18
+- Sun shadow strength 0.82 so outdoor shadow cores keep some skylight instead of reading inked-in.
+
 ## v0.9.18 — 2026-10-18
 - Hemisphere ambient a little stronger and less blue so shadowed sides read neutral instead of navy.
 
