@@ -173,6 +173,18 @@ public sealed class Buggy
             Detail(g, "Latch", Meshes.RoundedBox(new Float3(0.04f, 0.1f, 0.06f), 0.015f), new Float3(x * 0.84f, 0.48f, 1.2f), dark);
         }
         Detail(g, "Jerrycan", Meshes.RoundedBox(new Float3(0.16f, 0.45f, 0.32f), 0.04f), new Float3(0.62f, 0.55f, -1.82f), paint * 0.8f);
+        // Jerrycan pressings (X ribs), triple handle; door cut-out trim, steps, hinge pegs, fuel filler.
+        foreach (float sg in new[] { -1f, 1f })
+            Detail(g, "CanRib", Meshes.RoundedBox(new Float3(0.02f, 0.5f, 0.02f), 0.008f), new Float3(0.62f, 0.55f, -1.98f), paint * 0.7f, new Float3(0f, 0f, sg * 30f));
+        Detail(g, "CanHandle", VehicleModels.BentPipe(0.012f, 0.03f, Float3.UnitX, new Float3(0.62f, 0.775f, -1.74f), new Float3(0.62f, 0.83f, -1.76f), new Float3(0.62f, 0.83f, -1.88f), new Float3(0.62f, 0.775f, -1.9f)), Float3.Zero, paint * 0.7f);
+        foreach (float x in new[] { -1f, 1f })
+        {
+            Detail(g, "DoorTrim", VehicleModels.BentPipe(0.02f, 0.12f, Float3.UnitX, new Float3(x * 0.905f, 0.28f, 0.2f), new Float3(x * 0.915f, 0.02f, 0.05f), new Float3(x * 0.915f, -0.02f, -0.75f), new Float3(x * 0.905f, 0.28f, -0.9f)), Float3.Zero, new Color(0.06f, 0.06f, 0.06f, 1f));
+            Detail(g, "Step", Meshes.RoundedBox(new Float3(0.14f, 0.025f, 0.32f), 0.008f), new Float3(x * 0.98f, -0.24f, -0.35f), dark);
+            foreach (float y in new[] { 0.36f, 0.12f })
+                Detail(g, "Hinge", Meshes.RoundedBox(new Float3(0.03f, 0.06f, 0.1f), 0.01f), new Float3(x * 0.92f, y, 0.3f), dark);
+        }
+        Detail(g, "FuelCap", Meshes.Lathe("jfuel", [(0.0001f, 0.02f), (0.05f, 0.02f), (0.055f, 0f), (0.05f, -0.02f), (0.0001f, -0.02f)], 20), new Float3(-0.92f, 0.12f, -1.25f), new Color(0.6f, 0.6f, 0.62f, 1f), new Float3(0f, 0f, 90f));
         Detail(g, "Bumper", VehicleModels.BentPipe(0.07f, 0.12f, Float3.UnitY, new Float3(-0.95f, 0.05f, 1.72f), new Float3(-0.9f, 0.05f, 1.8f), new Float3(0.9f, 0.05f, 1.8f), new Float3(0.95f, 0.05f, 1.72f)), Float3.Zero, dark);
     }
 
