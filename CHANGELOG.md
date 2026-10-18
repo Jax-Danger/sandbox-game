@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.4 — 2026-10-18
+- Crowbar paint is chipped and scuffed (new Finish.Worn with ProcTex.WornPaint, wear concentrated along two knocked edges) instead of a glossy tube (screens/vm/r2/raw/s7h-crow-c.png vs s7a-crow-c.png)
+
 ## v0.12.3 — 2026-10-18
 - Player avatar skin tone toned down so first-person driving arms no longer blow out to white in sunlight (screens/s7-seatfp-jeep-d.png)
 

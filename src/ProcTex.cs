@@ -131,6 +131,18 @@ public static class ProcTex
         return (B(v), B(v), B(v), 255);
     });
 
+    /// <summary>Hard-used paint for swept tool parts (u around, v along at 8/m): chips and long scuffs that darken the
+    /// tint (paint worn through to dark steel), concentrated on two "edges" of the bar where it gets knocked.</summary>
+    public static Texture2D WornPaint() => Make("wornpaint", 128, 256, (x, y) =>
+    {
+        float edge = MathF.Max(MathF.Exp(-MathF.Pow((x - 20) / 10f, 2f)), MathF.Exp(-MathF.Pow((x - 84) / 12f, 2f)));
+        float n = Fbm(x / 7f, y / 5f, 11);
+        float chip = n > 0.68f - 0.2f * edge ? 0.38f : 1f;
+        float scuff = (((x * 7 + y / 23) % 31) == 0 && Fbm(x / 3f, y / 40f, 4) > 0.5f) ? 0.7f : 1f;
+        float v = (0.93f + 0.07f * Fbm(x / 20f, y / 20f, 2)) * chip * scuff;
+        return (B(v), B(v), B(v), 255);
+    });
+
     /// <summary>Crate/prop panel: lighter border frame with noise, so props read well without the engine grid.</summary>
     public static Texture2D Panel() => Make("panel", 128, 128, (x, y) =>
     {

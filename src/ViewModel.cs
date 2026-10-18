@@ -92,7 +92,7 @@ public sealed class ClipBuilder
 // ───────────────────────────── Rig definition ─────────────────────────────
 
 /// <summary>Surface finish of a primitive part (roughness / metallic for the PBR surface texture).</summary>
-public enum Finish { Polymer, Metal, Fabric, Leather, Wood, Rubber, Paint, Gloss }
+public enum Finish { Polymer, Metal, Fabric, Leather, Wood, Rubber, Paint, Gloss, Worn }
 
 /// <summary>
 /// A primitive mesh attached to a bone (used when no user model is installed). Shapes: 'b' rounded box, 'c' rounded
@@ -261,11 +261,12 @@ public sealed class ViewModel
                         var (rough, metal) = part.Finish switch
                         {
                             Finish.Metal => (0.32f, 0.9f), Finish.Fabric => (0.95f, 0f), Finish.Leather => (0.55f, 0f),
-                            Finish.Wood => (0.62f, 0f), Finish.Rubber => (0.85f, 0f), Finish.Paint => (0.45f, 0.3f), Finish.Gloss => (0.22f, 0.05f), _ => (0.5f, 0.05f),
+                            Finish.Wood => (0.62f, 0f), Finish.Rubber => (0.85f, 0f), Finish.Paint => (0.45f, 0.3f), Finish.Worn => (0.5f, 0.35f), Finish.Gloss => (0.22f, 0.05f), _ => (0.5f, 0.05f),
                         };
                         m.SetTexture("_SurfaceTex", ProcTex.Surface(rough, metal));
                         if (part.Finish == Finish.Wood) m.SetTexture("_MainTex", ProcTex.WalnutGrain());
                         else if (part.Finish == Finish.Leather && part.M is not null) m.SetTexture("_MainTex", ProcTex.GloveKnit());
+                        else if (part.Finish == Finish.Worn) m.SetTexture("_MainTex", ProcTex.WornPaint());
                     }
                     catch { }
                 if (part.Emissive && !Application.IsHeadless)

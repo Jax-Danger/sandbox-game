@@ -551,7 +551,7 @@ public static partial class ViewModels
                 shaft.Add(new Sec(s * 0.494f + back * 0.052f, 0.0103f, 0.008f, 3f, back));
                 shaft.Add(new Sec(s * 0.472f + back * 0.076f, 0.0098f, 0.0055f, 3.4f, back));
                 shaft.Add(new Sec(s * 0.446f + back * 0.084f, 0.0085f, 0.0022f, 4f, back));
-                k.Add("weapon", Sweep(shaft, back, 16, 0.4f), RedPaint, Finish.Paint);
+                k.Add("weapon", Sweep(shaft, back, 16, 0.4f), RedPaint, Finish.Worn);
                 k.Sw("weapon", Steel, Finish.Metal, back, 0.3f,
                     new Sec(-s * 0.074f, 0.0112f, 0.0112f, 2.4f), new Sec(-s * 0.1f - back * 0.006f, 0.0115f, 0.007f, 3f), new Sec(-s * 0.125f - back * 0.018f, 0.012f, 0.0022f, 4f));
                 // Worn bare-steel band where the paint rubs off at the bend, the claw's nail slot, and a chisel-end bevel line.
