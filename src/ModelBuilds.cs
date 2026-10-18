@@ -436,8 +436,11 @@ public static partial class ModelProps
             l.Add(M(Lathe("cpip", [(0.003f, -0.42f), (0.006f, -0.41f), (0.006f, 0.41f), (0.003f, 0.42f)], 8), x, -0.03f, 0.4f, pip, false, P3(0, 0, 90)));
             l.Add(M(PropMeshes.Cushion(0.84f, 0.44f, 0.2f), x, 0.23f, -0.2f, fab2, false, P3(-12, 0, 0)));
         }
-        l.Add(M(PropMeshes.Cushion(0.34f, 0.34f, 0.12f), -0.66f, 0.17f, -0.02f, pil, false, P3(-15, 20, 35)));
-        l.Add(M(PropMeshes.Cushion(0.34f, 0.34f, 0.12f), 0.66f, 0.17f, -0.02f, pil, false, P3(-15, -20, -35)));
+        // Scatter pillows: a plump rounded-square sweep through their thickness (the old box cushion read as a hexagon).
+        Mesh pillow = Sweep([new Sec(P3(0, 0, -0.065f), 0.12f, 0.12f, 2.4f), new Sec(P3(0, 0, -0.04f), 0.165f, 0.165f, 2.8f), new Sec(P3(0, 0, 0f), 0.175f, 0.175f, 3f),
+            new Sec(P3(0, 0, 0.04f), 0.165f, 0.165f, 2.8f), new Sec(P3(0, 0, 0.065f), 0.12f, 0.12f, 2.4f)], Float3.UnitY, 28, 0.9f);
+        l.Add(M(pillow, -0.66f, 0.17f, -0.02f, pil, false, P3(-15, 20, 35)));
+        l.Add(M(pillow, 0.66f, 0.17f, -0.02f, pil, false, P3(-15, -20, -35)));
         return l.ToArray();
     }
 

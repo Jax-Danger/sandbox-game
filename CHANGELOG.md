@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.11 — 2026-10-18
+- Sofa scatter pillows are plump rounded-square sweeps instead of hexagon-looking box cushions.
+
 ## v0.10.10 — 2026-10-18
 - Floor lamp uses a box collider so it stands on its base instead of tipping over on spawn.
 
