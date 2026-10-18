@@ -13,7 +13,11 @@ namespace Sandbox;
 public static class Humans
 {
     public enum Tint { Main, Skin, Shoe, Hair, Eye, Belt, Cuff, Pants, Sclera, Lip }
-    public sealed record Detail(Mesh Mesh, Tint Tint, Float3 Offset = default);
+    public sealed record Detail(Mesh Mesh, Tint Tint, Float3 Offset = default)
+    {
+        // Pole/seam vertices of sculpted ears/hair came out with zero normals: NaN pixels that blacked out the HDR frame.
+        public Mesh Mesh { get; init; } = Meshes.Sanitize(Mesh);
+    }
 
     private static readonly Dictionary<string, (Mesh Main, Detail[] Details)> _cache = [];
     private static Float3 V(float x, float y, float z) => new(x, y, z);

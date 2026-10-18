@@ -606,7 +606,39 @@ public static class Meshes
         for (int sgi = 0; sgi < segs; sgi++) { idx.Add(top); idx.Add(Ix(rings - 1, sgi)); idx.Add(Ix(rings - 1, sgi + 1)); }
         var mesh = new Mesh { IndexFormat = IndexFormat.UInt16, Vertices = v.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
         mesh.RecalculateNormals(); mesh.RecalculateBounds(); mesh.RecalculateTangents();
-        return mesh;
+        return Sanitize(mesh);
+    }
+
+    /// <summary>Replaces non-finite or zero normals/tangents (degenerate pole/seam UVs) with a valid frame. A single NaN
+    /// tangent rendered black in LDR, but in the HDR target it poisoned bloom/AO and blacked out the whole frame.</summary>
+    public static Mesh Sanitize(Mesh m)
+    {
+        Float3[]? n = m.Normals; bool changed = false;
+        if (n is { Length: > 0 })
+            for (int i = 0; i < n.Length; i++)
+            {
+                float l = Float3.Length(n[i]);
+                if (!float.IsFinite(l) || l < 1e-4f) { n[i] = Float3.UnitY; changed = true; }
+                else if (MathF.Abs(l - 1f) > 0.01f) { n[i] /= l; changed = true; }
+            }
+        if (changed) m.Normals = n;
+        if (m.HasTangents && n is { Length: > 0 })
+        {
+            Float4[] t = m.Tangents; bool tc = false;
+            for (int i = 0; i < t.Length && i < n.Length; i++)
+            {
+                Float3 tv = new(t[i].X, t[i].Y, t[i].Z);
+                float l = Float3.Length(tv);
+                if (!float.IsFinite(l + t[i].W) || l < 1e-4f)
+                {
+                    Float3 a = MathF.Abs(n[i].Y) < 0.9f ? Float3.UnitY : Float3.UnitX;
+                    Float3 tt = Float3.Normalize(Float3.Cross(a, n[i]));
+                    t[i] = new Float4(tt.X, tt.Y, tt.Z, 1f); tc = true;
+                }
+            }
+            if (tc) m.Tangents = t;
+        }
+        return m;
     }
 
     /// <summary>Gaussian bump weight around direction c (unit d), sharpness k.</summary>
@@ -617,6 +649,6 @@ public static class Meshes
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
         mesh.RecalculateBounds();
         if (mesh.UV is { Length: > 0 }) mesh.RecalculateTangents();
-        return mesh;
+        return Sanitize(mesh);
     }
 }

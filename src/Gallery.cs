@@ -192,12 +192,23 @@ public static class Gallery
                 float[] yaws = cops ? [120f, 180f, 240f] : [180f, 180f, 180f];
                 for (int i = 0; i < 3; i++)
                 {
+                    if (Environment.GetEnvironmentVariable("SANDBOX_GALSKIP") is { } sk && sk.Contains(i.ToString())) continue;
                     Ragdoll rd = EntityCatalog.SpawnDummy(g, new Float3(-1.5f + i * 1.2f, 0.05f, 2.2f), yaws[i], false, teams[i]);
                     foreach (Prop l in rd.Limbs) { if (l.Go.GetComponent<DummyBrain>() is { } b) b.Enabled = false; l.Body.MotionType = Jitter2.Dynamics.MotionType.Static; }
                 }
                 Ragdoll.Spawn(g, new Float3(2.4f, 0.6f, 2.6f), 140f, false);
-                g.Player.Teleport(new Float3(0f, 0.05f, -1.5f));
-                g.Player.SetLook(0f, 10f);
+                if (Environment.GetEnvironmentVariable("SANDBOX_NANCHECK") == "1")
+                    foreach (Ragdoll rr in Ragdoll.All)
+                        foreach (Prop l in rr.Limbs)
+                            foreach (MeshRenderer mr in l.Go.GetComponentsInChildren<MeshRenderer>())
+                            {
+                                Prowl.Runtime.Resources.Mesh? me = mr.Mesh.Res; if (me is null) continue;
+                                bool bad = me.Vertices.Any(v => !float.IsFinite(v.X + v.Y + v.Z)) || (me.Normals?.Any(v => !float.IsFinite(v.X + v.Y + v.Z) || Float3.Length(v) < 0.5f) ?? false)
+                                    || (me.HasTangents && me.Tangents.Any(v => !float.IsFinite(v.X + v.Y + v.Z + v.W)));
+                                if (bad) Console.WriteLine($"[nan] {rr.Name} {l.Go.Name}/{mr.GameObject.Name} verts={me.Vertices.Length} v={me.Vertices.Count(v => !float.IsFinite(v.X + v.Y + v.Z))} n={me.Normals?.Count(v => !float.IsFinite(v.X + v.Y + v.Z))} nz={me.Normals?.Count(v => Float3.Length(v) < 0.5f)} nl={me.Normals?.Length} t={(me.HasTangents ? me.Tangents.Count(v => !float.IsFinite(v.X + v.Y + v.Z + v.W)) : -1)}");
+                            }
+                g.Player.Teleport(new Float3(float.TryParse(Environment.GetEnvironmentVariable("SANDBOX_GALX"), out float gx) ? gx : 0f, 0.05f, float.TryParse(Environment.GetEnvironmentVariable("SANDBOX_GALZ"), out float gz) ? gz : -1.5f));
+                g.Player.SetLook(0f, float.TryParse(Environment.GetEnvironmentVariable("SANDBOX_GALPITCH"), out float gp) ? gp : 10f);
                 if (set.StartsWith("face")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 1.45f)); g.Player.SetLook(0f, 4f); }
                 if (set.StartsWith("npcbody")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 0.2f)); g.Player.SetLook(0f, 14f); }
                 if (cops) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 0.6f)); g.Player.SetLook(0f, 22f); }

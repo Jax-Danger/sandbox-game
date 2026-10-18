@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.1 — 2026-10-18
+- Rendering: fixed whole-screen black frames under HDR whenever NPCs were in view - sculpted ear/hair details had zero-length pole normals (NaN pixels that poisoned the float target); Meshes.Sanitize repairs normals/tangents in Build/Sculpt and on every human detail, plus a self-test; gallery debug env knobs (SANDBOX_HDR=0, SANDBOX_NANCHECK=1, SANDBOX_GALPITCH/GALX/GALZ/GALSKIP). screens/s10-npcs-fix.png
+
 ## v0.16.0 — 2026-10-18
 - Rendering: ACES tonemapper replaces AgX (AgX rolled sunlit paints, skin and aluminium to desaturated white); brighter moonlight/night ambient to suit the ACES toe, deeper day zenith; SANDBOX_TONEMAP env override for comparisons (screens/s10-tm-sheet.png rows AgX/ACES/Uncharted2, s10-aces-cmp2.png, s10-night-cmp3.png)
 

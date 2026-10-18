@@ -822,6 +822,14 @@ public sealed class SelfTest
             Check(hitR && MathF.Abs(rh.Point.Y - 0.08f) < 0.03f && hitP && MathF.Abs(ph.Point.Y - 0.1225f) < 0.03f,
                 $"sidewalk ramps have sloped collision (out {(hitR ? rh.Point.Y : -1f):0.000}, plaza {(hitP ? ph.Point.Y : -1f):0.000})");
         }
+        {
+            // Zero/NaN normals on human details blacked out the whole HDR frame (v0.16.1).
+            int bad = 0;
+            foreach (string limb in new[] { "Head", "Torso", "Pelvis", "Upper Arm L", "Forearm R", "Thigh L", "Shin R" })
+                foreach (Humans.Detail d in Humans.Limb(limb).Details)
+                    bad += d.Mesh.Normals?.Count(n => !float.IsFinite(n.X + n.Y + n.Z) || Float3.Length(n) < 0.5f) ?? 0;
+            Check(bad == 0, $"human detail meshes have valid normals ({bad} bad)");
+        }
         Door house = Town.Find("door_house1")!;
         Float3 c = house.Transform.Position;
         bool Blocked() => g.World.Physics.Raycast(new Float3(c.X, 1.2f, c.Z - 2f), new Float3(0f, 0f, 1f), 4f, out RaycastHit h) && Town.DoorFrom(h) == house;

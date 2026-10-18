@@ -25,7 +25,7 @@ public static class Graphics
         {
             // 16-bit float scene target: the 8-bit default banded every dark gradient (night ground, flashlight falloff)
             // before the tonemapper ever saw it. Low keeps the cheap LDR path (no tonemapper there).
-            camera.HDR = q != GraphicsQuality.Low;
+            camera.HDR = q != GraphicsQuality.Low && Environment.GetEnvironmentVariable("SANDBOX_HDR") != "0";
             camera.Effects = q switch
             {
                 GraphicsQuality.Low => [],
