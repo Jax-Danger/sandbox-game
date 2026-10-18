@@ -71,7 +71,7 @@ public sealed class Buggy
         Detail(g, "CageX", VehicleModels.BentPipe(0.03f, 0.1f, Float3.UnitY, new Float3(-0.56f, 1.15f, 0.0f), new Float3(0.56f, 1.15f, 0.0f)), Float3.Zero, cage);
         Detail(g, "Bumper", VehicleModels.BentPipe(0.05f, 0.15f, Float3.UnitY, new Float3(-0.7f, 0.1f, 1.25f), new Float3(-0.55f, 0.02f, 1.52f), new Float3(0.55f, 0.02f, 1.52f), new Float3(0.7f, 0.1f, 1.25f)), Float3.Zero, cage);
         foreach (float x in new[] { -0.2f, 0.2f })
-            Detail(g, "Light", VehicleModels.Lamp(0.07f), new Float3(x, 0.36f, 1.18f), new Color(0.95f, 0.92f, 0.75f, 1f), new Float3(-8f, 0f, 0f));
+            HeadLamp(g, VehicleModels.Lamp(0.07f), 0.07f, new Float3(x, 0.36f, 1.18f), new Float3(-8f, 0f, 0f));
         // Dune-buggy body: raised fibreglass nose cowl with a scooped dash, rear wheel arches, side nerf bars,
         // rear engine with air filter and twin exhausts. (Was a flat plank with a cage on it.)
         Detail(g, "Nose", VehicleModels.BuggyNose(), Float3.Zero, paint);
@@ -148,6 +148,16 @@ public sealed class Buggy
         Prop = g.Props.Adopt(Go, Body, mat, paint, PropKind.Limb, 0.5f);
     }
 
+    /// <summary>Headlamp: lens dome, chrome bezel ring, and fresnel rings moulded into the glass.</summary>
+    private void HeadLamp(SandboxGame g, Mesh lamp, float r, Float3 at, Float3 eul)
+    {
+        Detail(g, "Light", lamp, at, new Color(0.74f, 0.73f, 0.64f, 1f), eul);
+        Detail(g, "LampReflector", Meshes.LatheZ([(0.0001f, 0.049f), (r * 0.18f, 0.0495f), (r * 0.2f, 0.051f), (0.0001f, 0.052f)], 20), at, new Color(0.9f, 0.88f, 0.7f, 1f), eul);
+        Detail(g, "LampBezel", Meshes.LatheZ([(r * 0.93f, 0.028f), (r * 1.08f, 0.02f), (r * 1.13f, 0.03f), (r * 1.08f, 0.043f), (r * 0.9f, 0.046f)], 28), at, new Color(0.78f, 0.79f, 0.81f, 1f), eul);
+        foreach (float k in new[] { 0.35f, 0.62f })
+            Detail(g, "LampFresnel", Meshes.LatheZ([(r * k, 0.0505f - k * k * 0.0045f), (r * k + 0.004f, 0.051f - k * k * 0.0045f), (r * k + 0.008f, 0.0505f - k * k * 0.0045f)], 28), at, new Color(0.5f, 0.49f, 0.42f, 1f), eul);
+    }
+
     private void JeepDetails(SandboxGame g, Color paint, Color dark)
     {
         Detail(g, "Hood", VehicleModels.JeepHood(), Float3.Zero, paint);
@@ -155,7 +165,7 @@ public sealed class Buggy
             Detail(g, "Fender", VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
         Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
         foreach (float x in new[] { -0.6f, 0.6f })
-            Detail(g, "Light", VehicleModels.Lamp(0.12f), new Float3(x, 0.4f, 1.72f), new Color(0.95f, 0.92f, 0.75f, 1f));
+            HeadLamp(g, VehicleModels.Lamp(0.12f), 0.12f, new Float3(x, 0.4f, 1.72f), Float3.Zero);
         Detail(g, "Windshield", VehicleModels.Windshield(), new Float3(0f, 0.85f, 0.5f), new Color(0.16f, 0.23f, 0.29f, 1f), new Float3(-12f, 0f, 0f));
         // Glass sheen streaks, split-screen centre post and two parked wiper arms with rubber blades.
         foreach (float sx in new[] { -0.42f, 0.36f })

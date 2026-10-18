@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.10 — 2026-10-18
+- Jeep and buggy headlamps: chrome bezel ring, fresnel rings moulded in the lens and a bulb reflector; lens no longer blows out to flat white.
+
 ## v0.9.9 — 2026-10-18
 - Jeep windshield is tinted glass with two sheen streaks, a split-screen centre post and parked wiper arms (was an opaque light-blue slab).
 
