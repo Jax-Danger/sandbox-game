@@ -88,7 +88,7 @@ public static class Humans
         parts.Add(new(LatheY("collar2", [(0.06f, 0.2f), (0.07f, 0.206f), (0.066f, 0.235f), (0.058f, 0.252f), (0.053f, 0.254f)]), Tint.Cuff));
         foreach (float sd in new[] { -1f, 1f })
             parts.Add(new(Sweep([new Sec(V(sd * 0.03f, 0.238f, 0.06f), 0.016f, 0.005f, 4f), new Sec(V(sd * 0.045f, 0.218f, 0.09f), 0.021f, 0.005f, 4f),
-                new Sec(V(sd * 0.058f, 0.198f, 0.106f), 0.012f, 0.004f, 4f), new Sec(V(sd * 0.065f, 0.188f, 0.11f), 0.003f, 0.003f, 4f)], Float3.UnitX, 8, 0.5f), Tint.Cuff));
+                new Sec(V(sd * 0.058f, 0.198f, 0.106f), 0.012f, 0.004f, 4f), new Sec(V(sd * 0.065f, 0.188f, 0.11f), 0.003f, 0.003f, 4f)], Float3.UnitX, 8, 0.5f), Tint.Main));
         parts.Add(new(Sweep([new Sec(V(0f, -0.24f, 0.106f), 0.012f, 0.003f, 4f), new Sec(V(0f, -0.02f, 0.124f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.1f, 0.13f), 0.012f, 0.003f, 4f), new Sec(V(0f, 0.2f, 0.104f), 0.012f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         parts.Add(new(Sweep([new Sec(V(-0.09f, 0.06f, 0.123f), 0.035f, 0.003f, 4f), new Sec(V(-0.09f, 0.11f, 0.12f), 0.035f, 0.003f, 4f)], Float3.UnitX, 8, 0.4f), Tint.Cuff));
         // Shirt buttons down the placket (following its curve), a pocket flap with its own button.

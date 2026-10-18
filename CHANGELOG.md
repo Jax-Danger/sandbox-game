@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.14 — 2026-10-18
+- NPC shirt collar points use the shirt fabric colour (were the darker cuff tone, reading as a bandana).
+
 ## v0.14.13 — 2026-10-18
 - NPC shoulders: removed the separate deltoid cap whose end cap poked through the sleeve as a triangle-and-bumps artifact; the yoke and sleeve now form a clean rounded shoulder.
 
