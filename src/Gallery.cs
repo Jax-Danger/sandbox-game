@@ -10,7 +10,7 @@ namespace Sandbox;
 /// </summary>
 public static class Gallery
 {
-    public static bool Active { get; private set; }
+    public static bool Active { get; set; }
     /// <summary>Player-body showcase sets keep the local avatar visible.</summary>
     public static bool ShowAvatar { get; private set; }
 

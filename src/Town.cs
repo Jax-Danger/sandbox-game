@@ -288,40 +288,12 @@ public static partial class MapBuilder
         Box(scene, shader, $"~{tag} floor", W(0f, 0.04f, 0f), Sz(s.X - 0.2f, 0.08f, s.Z - 0.2f), Float3.Zero, new Color(0.55f, 0.42f, 0.30f, 1f));
         Box(scene, shader, $"{tag} roof", W(0f, h + 0.1f, 0f), Sz(s.X + 0.6f, 0.2f, s.Z + 0.6f), Float3.Zero, trim);
         Box(scene, shader, $"~{tag} parapet", W(0f, h + 0.35f, -hd - 0.2f), Sz(s.X + 0.6f, 0.3f, 0.2f), Float3.Zero, trim, collide: false);
-        Box(scene, shader, $"~{tag} base", W(0f, 0.2f, -hd - 0.17f), Sz(s.X, 0.4f, 0.06f), Float3.Zero, trim, collide: false);
-        // Windows on the front and sides.
-        int floors = h > 6f ? 2 : 1;
-        for (int f = 0; f < floors; f++)
-        {
-            float wy = 1.6f + f * 3f;
-            foreach (float wx in new[] { -hw * 0.6f, hw * 0.6f })
-            {
-                Box(scene, shader, $"~{tag} window", W(wx, wy, -hd - 0.16f), Sz(1.6f, 1.1f, 0.04f), Float3.Zero, glass, collide: false);
-                // Frame, mullion and a sill so windows read as windows, not flat decals.
-                Box(scene, shader, $"~{tag} wframe t", W(wx, wy + 0.6f, -hd - 0.18f), Sz(1.8f, 0.1f, 0.08f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} wframe b", W(wx, wy - 0.6f, -hd - 0.18f), Sz(1.8f, 0.1f, 0.08f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} wframe l", W(wx - 0.85f, wy, -hd - 0.18f), Sz(0.1f, 1.3f, 0.08f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} wframe r", W(wx + 0.85f, wy, -hd - 0.18f), Sz(0.1f, 1.3f, 0.08f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} mullion", W(wx, wy, -hd - 0.18f), Sz(0.05f, 1.1f, 0.05f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} sill", W(wx, wy - 0.68f, -hd - 0.24f), Sz(1.95f, 0.08f, 0.2f), Float3.Zero, trim, collide: false);
-            }
-            foreach (float sx in new[] { -hw - 0.16f, hw + 0.16f })
-            {
-                Box(scene, shader, $"~{tag} side window", W(sx, wy, 0f), Sz(0.04f, 1.1f, 1.6f), Float3.Zero, glass, collide: false);
-                float fx = sx + MathF.Sign(sx) * 0.02f;
-                Box(scene, shader, $"~{tag} sframe t", W(fx, wy + 0.6f, 0f), Sz(0.08f, 0.1f, 1.8f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} sframe b", W(fx, wy - 0.6f, 0f), Sz(0.08f, 0.1f, 1.8f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} sframe l", W(fx, wy, -0.85f), Sz(0.08f, 1.3f, 0.1f), Float3.Zero, Color.White, collide: false);
-                Box(scene, shader, $"~{tag} sframe r", W(fx, wy, 0.85f), Sz(0.08f, 1.3f, 0.1f), Float3.Zero, Color.White, collide: false);
-            }
-        }
-        // Sign plate over the door (the colour tells the building's role).
         Color plate = owner switch { "police" => new Color(0.20f, 0.36f, 0.85f, 1f), "city" => new Color(0.85f, 0.45f, 0.18f, 1f), _ => new Color(0.18f, 0.62f, 0.40f, 1f) };
-        Box(scene, shader, $"~{tag} sign", W(0f, dh + 0.45f, -hd - 0.18f), Sz(2.4f, 0.5f, 0.05f), Float3.Zero, plate, collide: false);
+        DressBuilding(scene, shader, tag, title, c, s, yaw, wall, trim, plate, dw, dh);
         if (owner == "police")
         {
-            Box(scene, shader, $"~{tag} light R", W(-1.2f, dh + 0.9f, -hd - 0.2f), Sz(0.3f, 0.2f, 0.1f), Float3.Zero, new Color(0.95f, 0.2f, 0.2f, 1f), collide: false);
-            Box(scene, shader, $"~{tag} light B", W(1.2f, dh + 0.9f, -hd - 0.2f), Sz(0.3f, 0.2f, 0.1f), Float3.Zero, new Color(0.2f, 0.4f, 1f, 1f), collide: false);
+            Box(scene, shader, $"~{tag} light R", W(-2.0f, dh + 1.35f, -hd - 0.24f), Sz(0.22f, 0.4f, 0.14f), Float3.Zero, new Color(0.95f, 0.2f, 0.2f, 1f), collide: false);
+            Box(scene, shader, $"~{tag} light B", W(2.0f, dh + 1.35f, -hd - 0.24f), Sz(0.22f, 0.4f, 0.14f), Float3.Zero, new Color(0.2f, 0.4f, 1f, 1f), collide: false);
         }
         // Door casing and a cornice band under the roof.
         Box(scene, shader, $"~{tag} casing l", W(-dw / 2f - 0.07f, dh / 2f, -hd - 0.17f), Sz(0.14f, dh + 0.1f, 0.06f), Float3.Zero, Color.White, collide: false);
@@ -363,8 +335,7 @@ public static partial class MapBuilder
             foreach (var (px, pz, sx, sz) in new[] { (0f, hd + 0.2f, s.X + 0.6f, 0.2f), (-hw - 0.2f, 0f, 0.2f, s.Z + 0.6f), (hw + 0.2f, 0f, 0.2f, s.Z + 0.6f) })
                 Box(scene, shader, $"~{tag} parapet", W(px, h + 0.35f, pz), Sz(sx, 0.3f, sz), Float3.Zero, trim, collide: false);
             Shape(scene, shader, $"~{tag} coping", Meshes.Sweep([new Meshes.Sec(new Float3(-hw - 0.35f, h + 0.52f, -hd - 0.35f), 0.03f, 0.05f, 2.4f), new Meshes.Sec(new Float3(hw + 0.35f, h + 0.52f, -hd - 0.35f), 0.03f, 0.05f, 2.4f)], Float3.UnitY, 10, 0.5f), c, new Color(0.85f, 0.85f, 0.82f, 1f), euler: eul);
-            Box(scene, shader, $"~{tag} band", W(0f, 3.0f, -hd - 0.18f), Sz(s.X + 0.06f, 0.14f, 0.08f), Float3.Zero, trim, collide: false);
-            Shape(scene, shader, $"~{tag} ac", Meshes.RoundedBox(new Float3(1.6f, 0.9f, 1.1f), 0.08f), W(hw * 0.4f, h + 0.65f, hd * 0.3f), new Color(0.72f, 0.73f, 0.74f, 1f), euler: eul);
+                Shape(scene, shader, $"~{tag} ac", Meshes.RoundedBox(new Float3(1.6f, 0.9f, 1.1f), 0.08f), W(hw * 0.4f, h + 0.65f, hd * 0.3f), new Color(0.72f, 0.73f, 0.74f, 1f), euler: eul);
             Shape(scene, shader, $"~{tag} ac fan", Meshes.Lathe("acfan", [(0.0001f, 0f), (0.36f, 0f), (0.38f, 0.03f), (0.36f, 0.05f), (0.0001f, 0.05f)], 28), W(hw * 0.4f, h + 1.1f, hd * 0.3f), new Color(0.25f, 0.26f, 0.27f, 1f), euler: eul);
             foreach (float vx in new[] { -hw * 0.5f, -hw * 0.3f })
                 Shape(scene, shader, $"~{tag} vent", Meshes.Lathe("vent", [(0.0001f, 0f), (0.14f, 0f), (0.14f, 0.5f), (0.2f, 0.55f), (0.2f, 0.62f), (0.0001f, 0.66f)], 20), W(vx, h + 0.2f, -hd * 0.2f), new Color(0.6f, 0.6f, 0.62f, 1f), euler: eul);

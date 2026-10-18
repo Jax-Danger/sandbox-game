@@ -286,6 +286,7 @@ public sealed partial class SandboxGame : Game
                 Context.Open = true;
                 Context.Selected = Props.Props[1];
                 break;
+            case { } ta when ta.StartsWith("townat_"): EnterSession(SeedDemoWorlds().First(x => x.Meta.Mode == "Roleplay")); break;
             case { } gal when gal.StartsWith("gal_"):
                 Menus.Go(Screen.Playing);
                 try { Gallery.Show(this, gal[4..]); } catch (Exception e) { Console.WriteLine("[gallery] " + e); }
