@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.20 — 2026-10-18
+- NPCs: skin presets capped at ~0.72 albedo and fully matte so sun-facing foreheads keep their skin tone instead of clipping to near-white (screens/s10-face-d-c.png vs s10-face-a-c.png)
+
 ## v0.14.19 — 2026-10-18
 - View model: saturated paints toned down by chroma so close VM lighting no longer makes them glow (screens/vm/r2/s10b.png vs s10a.png)
 
