@@ -80,7 +80,6 @@ public sealed class Buggy
         {
             Detail(g, "Arch", VehicleModels.BuggyArch(x, -1.05f, 0.42f), Float3.Zero, paint * 0.9f);
             Detail(g, "Nerf", VehicleModels.BentPipe(0.035f, 0.12f, Float3.UnitY, new Float3(x * 0.8f, 0.12f, 0.55f), new Float3(x * 0.98f, 0.0f, 0.35f), new Float3(x * 0.98f, 0.0f, -0.55f), new Float3(x * 0.8f, 0.12f, -0.72f)), Float3.Zero, cage);
-            Detail(g, "Shock", VehicleModels.Pipe(0.03f, Float3.UnitX, new Float3(x * 0.55f, 0.15f, 1.0f), new Float3(x * 0.8f, -0.12f, 1.05f)), Float3.Zero, new Color(0.85f, 0.2f, 0.1f, 1f));
         }
         var metal = new Color(0.55f, 0.56f, 0.58f, 1f);
         Detail(g, "Engine", VehicleModels.BuggyEngine(), new Float3(0f, 0.3f, -1.15f), new Color(0.28f, 0.29f, 0.3f, 1f));
@@ -92,7 +91,7 @@ public sealed class Buggy
             Detail(g, "Tail", VehicleModels.Lamp(0.045f), new Float3(x, 0.14f, -1.4f), new Color(0.8f, 0.08f, 0.06f, 1f), new Float3(0f, 180f, 0f));
         Detail(g, "PlateText", Meshes.RoundedBox(new Float3(0.26f, 0.05f, 0.004f), 0.002f), new Float3(0.15f, 0.14f, -1.43f), new Color(0.15f, 0.2f, 0.45f, 1f));
         }
-        float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? -0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.25f : 0.42f;
+        float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? 0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.2f : 0.42f;
 
         foreach (var (name, lp, front) in new[]
         {
@@ -134,7 +133,7 @@ public sealed class Buggy
             WheelCollider wc = wheel.AddComponent<WheelCollider>();
             wc.Radius = rad;
             wc.Width = jeep ? 0.38f : 0.32f;
-            wc.SuspensionDistance = 0.3f;
+            wc.SuspensionDistance = boat ? 0.12f : 0.3f;
             wc.SuspensionFrequency = 2.2f;
             wc.SuspensionDampingRatio = 0.7f;
             wc.ForwardFriction = boat ? 0.04f : 2.5f;
