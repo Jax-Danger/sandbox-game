@@ -433,6 +433,47 @@ public static class Meshes
         return _cache[key] = Build(v, n, uv, idx);
     }
 
+    /// <summary>Chiselled boulder: a sphere cut by random planes, flat shaded so facets read crisply.</summary>
+    public static Mesh Rock(float r, int seed)
+    {
+        string key = $"rock{r:0.###},{seed}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        var rng = new Random(seed * 7919 + 13);
+        int k = 11;
+        var pn = new Float3[k]; var ph = new float[k];
+        for (int i = 0; i < k; i++)
+        {
+            Float3 d = new((float)rng.NextDouble() * 2 - 1, (float)rng.NextDouble() * 2 - 1, (float)rng.NextDouble() * 2 - 1);
+            if (i == 0) d = new Float3(0, -1, 0);
+            pn[i] = SafeN(d); ph[i] = i == 0 ? 0.45f : 0.55f + 0.17f * (float)rng.NextDouble();
+        }
+        Float3 P(float th, float fi)
+        {
+            Float3 d = new(MathF.Sin(th) * MathF.Cos(fi), MathF.Cos(th), MathF.Sin(th) * MathF.Sin(fi));
+            float t = 1f;
+            for (int i = 0; i < k; i++) { float c = Float3.Dot(d, pn[i]); if (c > 0.01f) t = MathF.Min(t, ph[i] / c); }
+            return d * r * t * 1.45f;
+        }
+        const int la = 14, lo = 22;
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        void Tri(Float3 a, Float3 b, Float3 c)
+        {
+            Float3 nn = Float3.Cross(b - a, c - a);
+            if (Float3.Length(nn) < 1e-7f) return;
+            if (Float3.Dot(nn, a + b + c) < 0f) { (b, c) = (c, b); nn = -nn; }
+            nn = SafeN(nn);
+            foreach (var q in new[] { a, b, c }) { idx.Add((uint)v.Count); v.Add(q); n.Add(nn); uv.Add(new Float2(q.X + q.Z, q.Y)); }
+        }
+        for (int i = 0; i < la; i++)
+            for (int j = 0; j < lo; j++)
+            {
+                float t0 = MathF.PI * i / la, t1 = MathF.PI * (i + 1) / la, f0 = MathF.Tau * j / lo, f1 = MathF.Tau * (j + 1) / lo;
+                Float3 a = P(t0, f0), b = P(t0, f1), c = P(t1, f0), d = P(t1, f1);
+                Tri(a, b, c); Tri(b, d, c);
+            }
+        return _cache[key] = Build(v, n, uv, idx);
+    }
+
     /// <summary>Flat-shaded mesh from convex polygons (each wound counter-clockwise seen from outside). UVs are planar in metres.</summary>
     public static Mesh Faces(params Float3[][] polys)
     {

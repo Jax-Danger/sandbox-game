@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.14 — 2026-10-18
+- Rolling Hills boulders are chiselled, flat-shaded plane-cut rocks instead of smooth blobs; trees no longer spawn inside boulders.
+
 ## v0.9.13 — 2026-10-18
 - Billboard poster: two-step sky gradient, rolling hills behind the meadow and two puffy clouds.
 
