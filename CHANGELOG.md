@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.3 — 2026-10-18
+- Pole spawn icon lies diagonally so it fills its tile instead of reading as a hairline.
+
 ## v0.10.2 — 2026-10-18
 - Houses get a front garden: white picket fence with a gate gap on the path and round shrubs along the facade.
 
