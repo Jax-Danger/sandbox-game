@@ -153,9 +153,17 @@ public static class IconSubjects
         "ent_barrel" => M(id, new(0.7f, 1.0f, 0.7f),
         [
             M(Meshes.Barrel(0.4f, 1.1f), new Color(0.80f, 0.16f, 0.12f, 1f)),
-            new('b', new(0.3f, 0.3f, 0.02f), new(0f, 0.05f, 0.39f), new Color(0.95f, 0.80f, 0.20f, 1f)),
+            new('b', new(0.28f, 0.3f, 0.02f), new(0.34f, 0.05f, -0.2f), new Color(0.95f, 0.80f, 0.20f, 1f), false, new(0f, 120f, 0f)),
+            new('b', new(0.2f, 0.035f, 0.022f), new(0.34f, 0.12f, -0.2f), new Color(0.08f, 0.08f, 0.09f, 1f), false, new(0f, 120f, 0f)),
+            new('b', new(0.2f, 0.035f, 0.022f), new(0.34f, -0.02f, -0.2f), new Color(0.08f, 0.08f, 0.09f, 1f), false, new(0f, 120f, 0f)),
         ]),
-        "ent_ball" => M(id, new(0.8f, 0.8f, 0.8f), [new('s', new(0.8f, 0.8f, 0.8f), Float3.Zero, new Color(0.95f, 0.30f, 0.55f, 1f))]),
+        // Smooth high-res rubber ball with a contrasting moulded seam band and a small valve dimple.
+        "ent_ball" => M(id, new(1.05f, 1.05f, 1.05f),
+        [
+            M(Meshes.Sphere(0.4f), new Color(0.95f, 0.30f, 0.55f, 1f)),
+            M(Meshes.Lathe("icballband", [(0.396f, -0.05f), (0.404f, -0.045f), (0.405f, 0f), (0.404f, 0.045f), (0.396f, 0.05f)], 64), new Color(0.98f, 0.86f, 0.30f, 1f), new(20f, 0f, -25f)),
+            M(Meshes.Lathe("icballvalve", [(0.0001f, 0.406f), (0.03f, 0.404f), (0.035f, 0.398f)], 20), new Color(0.75f, 0.2f, 0.42f, 1f), new(-35f, 0f, 30f)),
+        ]),
         "ent_camera" => M(id, new(0.6f, 0.5f, 0.7f),
         [
             new('b', new(0.36f, 0.28f, 0.50f), new(0f, 0.08f, 0f), Dark),

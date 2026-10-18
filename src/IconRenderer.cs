@@ -104,6 +104,7 @@ public sealed class IconRenderer
 
         scene.Enable();
 
+        Float3 dir = Float3.Normalize(weapon ? new Float3(0.45f, 0.35f, 1f) : new Float3(1f, 0.75f, -1.2f));
         // Tight framing: bounding sphere of the actual rendered vertices (thin weapons and tall props fill the tile),
         // re-centred on the origin.
         try
@@ -117,13 +118,14 @@ public sealed class IconRenderer
                 Float3 lo = pts[0], hi = pts[0];
                 foreach (Float3 q in pts) { lo = new Float3(MathF.Min(lo.X, q.X), MathF.Min(lo.Y, q.Y), MathF.Min(lo.Z, q.Z)); hi = new Float3(MathF.Max(hi.X, q.X), MathF.Max(hi.Y, q.Y), MathF.Max(hi.Z, q.Z)); }
                 Float3 ctr = (lo + hi) * 0.5f;
-                float rr = 0f; foreach (Float3 q in pts) rr = MathF.Max(rr, Float3.Length(q - ctr));
-                if (rr > 0.01f && float.IsFinite(rr)) { subject.Transform.Position = subject.Transform.Position - ctr; extent = rr * 0.86f; }
+                // Radius of the silhouette as seen along the view axis (not the 3D bounding sphere, which over-shrank
+                // thin subjects and clipped round ones like the bouncy ball).
+                float rr = 0f; foreach (Float3 q in pts) { Float3 d = q - ctr; rr = MathF.Max(rr, Float3.Length(d - dir * Float3.Dot(d, dir))); }
+                if (rr > 0.01f && float.IsFinite(rr)) { subject.Transform.Position = subject.Transform.Position - ctr; extent = rr * 0.98f; }
             }
         }
         catch { }
 
-        Float3 dir = Float3.Normalize(weapon ? new Float3(0.45f, 0.35f, 1f) : new Float3(1f, 0.75f, -1.2f));
         float dist = extent / MathF.Tan(15f * MathF.PI / 180f) * 1.08f;
         camGo.Transform.Position = dir * dist;
         camGo.Transform.Rotation = Quaternion.LookRotation(-dir, Float3.UnitY);

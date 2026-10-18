@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.26 — 2026-10-18
+- Icons frame on the view-axis silhouette radius (bouncy ball no longer clipped into a faceted square); bouncy ball icon gets a seam band and valve; explosive barrel label faces the camera.
+
 ## v0.8.25 — 2026-10-18
 - Hills tree crowns use deeper, less saturated leaf greens to sit with the toned-down turf
 
