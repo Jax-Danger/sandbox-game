@@ -25,8 +25,8 @@ public static partial class ViewModels
     private static readonly Color Polymer = new(0.11f, 0.115f, 0.12f, 1f);
     private static readonly Color Steel = new(0.55f, 0.56f, 0.58f, 1f);
     private static readonly Color Dark = new(0.035f, 0.035f, 0.04f, 1f);
-    private static readonly Color WoodC = new(0.34f, 0.21f, 0.12f, 1f);
-    private static readonly Color Olive = new(0.29f, 0.33f, 0.22f, 1f);
+    private static readonly Color WoodC = new(0.3f, 0.19f, 0.11f, 1f);
+    private static readonly Color Olive = new(0.22f, 0.25f, 0.15f, 1f);
     private static readonly Color Accent = new(0.30f, 0.66f, 1f, 1f);
     private static readonly Color Tritium = new(0.45f, 1f, 0.45f, 1f);
     private static readonly Color RedPaint = new(0.62f, 0.10f, 0.08f, 1f);
@@ -455,7 +455,9 @@ public static partial class ViewModels
                     (0.0385f, 0.36f), (0.0395f, 0.364f), (0.0372f, 0.374f), (0.0365f, 0.384f), (0.0365f, 0.4f), (0.0365f, 0.72f), (0.0395f, 0.73f), (0.0395f, 0.85f), (0.0345f, 0.86f), (0.031f, 0.86f), (0.031f, 0.84f), (0f, 0.84f));
                 // Rear: rolled lip into a sooty recessed bore instead of a flat cap.
                 k.Lz("weapon", Olive, Finish.Paint, V(0, 0.115f, 0.0f), (0.0292f, 0.03f), (0.03f, 0.008f), (0.034f, 0.0f), (0.0385f, 0.002f), (0.0385f, 0.015f));
-                k.Lz("weapon", new Color(0.04f, 0.04f, 0.035f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0f, 0.06f), (0.0293f, 0.06f), (0.0293f, 0.028f));
+                k.Lz("weapon", new Color(0.04f, 0.04f, 0.035f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0f, 0.14f), (0.0291f, 0.14f), (0.0291f, 0.028f));
+                // Sooty bore liner: the lip's inner wall read as bright olive paint looking down the tube; blacken it, fading to the lip.
+                k.Lz("weapon", new Color(0.07f, 0.065f, 0.055f, 1f), Finish.Rubber, V(0, 0.115f, 0.0f), (0.0289f, 0.14f), (0.0289f, 0.012f), (0.0296f, 0.006f));
                 k.Lz("weapon", WoodC, Finish.Wood, V(0, 0.115f, 0.0f), (0.0368f, 0f), (0.0418f, 0.008f), (0.0425f, 0.2f), (0.0372f, 0.208f));
                 for (int i = 0; i < 3; i++) k.Lz("weapon", Black, Finish.Metal, V(0, 0.115f, 0.03f + i * 0.08f), (0.0428f, 0f), (0.0432f, 0.003f), (0.0432f, 0.009f), (0.0428f, 0.012f));
                 // Warhead: classic double cone with a nose fuse, on the rocket bone.

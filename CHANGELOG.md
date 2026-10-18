@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.15.4 — 2026-10-18
+- RPG view model: sooty bore liner so the rear of the tube reads as a dark bore instead of bright olive paint; VM olive/walnut base tones deepened (screens/s10-rpg-g.png vs vm/r2/raw/s10e-vm_rpg.png)
+
 ## v0.15.3 — 2026-10-18
 - Jeep: deeper military olive (read lime under the sun) + stencilled hood star and hood latches (screens/s10-jeep-e-c.png, s10-jeep-d.png vs s10-jeep-c.png)
 
