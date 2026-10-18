@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.17 — 2026-10-18
+- Town: street trees line the lawns behind each sidewalk (lathe trunk with collision, three-blob crowns), skipping building paths.
+
 ## v0.14.16 — 2026-10-18
 - Houses get a kerbside mailbox (timber post, rounded steel box, red flag) beside the path end.
 

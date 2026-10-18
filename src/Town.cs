@@ -338,6 +338,25 @@ public static partial class MapBuilder
             ModelProps.BuildParts(bgo, bench, shader, bmat);
             Add(scene, bgo);
         }
+        // Street trees: a row on the lawn just behind each sidewalk (smaller than the plaza trees), skipping building paths.
+        {
+            float[] paths = [30f, -26f, -46f, -48f, 54f];
+            int n = 0;
+            foreach (float sgn in new[] { -1f, 1f })
+                foreach (float side in new[] { -1f, 1f })
+                    for (float t = 25f; t < 82f; t += 11f)
+                        foreach (bool alongX in new[] { true, false })
+                        {
+                            float x = alongX ? sgn * t : side * 9.6f, z = alongX ? side * 9.6f : sgn * t;
+                            if (alongX && paths.Any(p => MathF.Abs(p - x) < 3.5f)) continue;
+                            int sd = n++ % 9;
+                            float k = 0.75f + (sd % 3) * 0.08f;
+                            Shape(scene, shader, "Street tree trunk", Meshes.Lathe("strunk", [(0.0001f, -1f), (0.24f, -1f), (0.17f, -0.8f), (0.14f, 0f), (0.11f, 0.9f), (0.0001f, 1.0f)], 16), new Float3(x, 1f, z), new Color(0.38f, 0.27f, 0.18f, 1f), new Float3(0.3f, 2f, 0.3f));
+                            Shape(scene, shader, "~Street tree crown", Meshes.Blob(1.15f * k, sd), new Float3(x, 2.9f, z), new Color(0.29f, 0.39f, 0.22f, 1f));
+                            Shape(scene, shader, "~Street tree crown b", Meshes.Blob(0.8f * k, sd + 1), new Float3(x + 0.6f, 2.5f, z - 0.3f), new Color(0.25f, 0.35f, 0.2f, 1f));
+                            Shape(scene, shader, "~Street tree crown c", Meshes.Blob(0.7f * k, sd + 2), new Float3(x - 0.3f, 3.6f, z + 0.3f), new Color(0.33f, 0.43f, 0.24f, 1f));
+                        }
+        }
         foreach (var (x, z) in new[] { (-14f, -14f), (14f, -14f), (-14f, 14f), (14f, 14f) })
         {
             Shape(scene, shader, "Tree trunk", Meshes.Lathe("trunk", [(0.0001f, -1.2f), (0.34f, -1.2f), (0.24f, -0.9f), (0.2f, 0f), (0.17f, 1.0f), (0.12f, 1.4f), (0.0001f, 1.45f)], 20), new Float3(x, 1.2f, z), new Color(0.40f, 0.28f, 0.18f, 1f), new Float3(0.4f, 2.4f, 0.4f));
