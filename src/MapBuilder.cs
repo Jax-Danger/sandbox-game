@@ -411,7 +411,7 @@ public static partial class MapBuilder
                 try
                 {
                     if (key.Item5 == "detail") bm.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f));
-                    else bm.SetTexture("_MainTex", key.Item5 == "floor" ? ProcTex.DevFloor() : ProcTex.Concrete());
+                    else bm.SetTexture("_MainTex", key.Item5 == "floor" ? ProcTex.DevFloor() : key.Item5 == "asphalt" ? ProcTex.Asphalt() : ProcTex.Concrete());
                 }
                 catch { }
             br.Material = bm;
@@ -432,15 +432,16 @@ public static partial class MapBuilder
         material.SetColor("_MainColor", color);
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {
-            bool floor = name == "Floor";
+            bool floor = name == "Floor", road = name.StartsWith("Road ") || name.StartsWith("Country road");
             if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); Batchable(go, color, "detail", Float2.One); return go; }
-            Float2 tiling = floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f));
-            material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
+            // RoundedBox top-face UVs run U = Z, V = X, so roads (long, thin) tile (Z, X) to keep the asphalt grain square.
+            Float2 tiling = road ? new Float2(size.Z / 6f, size.X / 6f) : floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f));
+            material.SetTexture("_MainTex", road ? ProcTex.Asphalt() : floor ? ProcTex.DevFloor() : ProcTex.Concrete());
             material.SetVector("_Tiling", tiling);
             renderer.Material = material;
             if (collide) go.AddComponent<BoxCollider>().Size = size;
             Add(scene, go);
-            Batchable(go, color, floor ? "floor" : "concrete", tiling);
+            Batchable(go, color, road ? "asphalt" : floor ? "floor" : "concrete", tiling);
             return go;
         }
         renderer.Material = material;

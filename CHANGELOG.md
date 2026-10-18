@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.3 — 2026-10-18
+- Roads get a procedural asphalt texture (aggregate speckle, wear mottling, tar-sealed cracks, a repair patch) tiled square along the road; previously the concrete texture was stretched 6:1 across town avenues, showing as streaks.
+
 ## v0.14.2 — 2026-10-18
 - Tractor wheel gets a real agricultural steel rim: rolled barrel with bead flanges, dished centre disc with a pressed ring, eight hand holes, ten wheel nuts and a hub cap on both faces (replaces the thin star-spoke ring).
 

@@ -96,6 +96,20 @@ public static class ProcTex
         return (B(v), B(v), B(v), 255);
     });
 
+    /// <summary>Asphalt: fine light/dark aggregate speckle over soft wear patches and the odd dark tar-sealed crack (avg ~0.58,
+    /// so the road colour still reads the same as before).</summary>
+    public static Texture2D Asphalt() => Make("asphalt", 256, 256, (x, y) =>
+    {
+        float v = 0.5f + 0.16f * Fbm(x / 34f, y / 34f, 21) + 0.06f * Fbm(x / 6f, y / 6f, 22);
+        // A darker, smoother rectangular repair patch in one of the four quadrants.
+        if (x is > 140 and < 236 && y is > 30 and < 92) v = v * 0.86f + 0.02f;
+        float h = Hash(x, y, 23);
+        if (h > 0.93f) v += 0.14f; else if (h < 0.06f) v -= 0.12f;
+        float crack = MathF.Abs(Fbm(x / 40f, y / 40f, 24) - 0.5f);
+        if (crack < 0.012f) v *= 0.62f;
+        return (B(v), B(v), B(v * 1.01f), 255);
+    });
+
     public static Texture2D Wood() => Make("wood", 128, 128, (x, y) =>
     {
         float grain = MathF.Sin((y + Fbm(x / 30f, y / 6f, 5) * 18f) * 0.55f) * 0.5f + 0.5f;
