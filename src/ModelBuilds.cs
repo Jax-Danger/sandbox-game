@@ -298,4 +298,148 @@ public static partial class ModelProps
             RB(0.004f, 1.7f, 0.004f, 0.001f, 0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)), RB(0.004f, 1.7f, 0.004f, 0.001f, -0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)),
         ];
     }
+
+    private static Color Stone => C(0.86f, 0.85f, 0.8f);
+
+    private static Part[] CinderParts()
+    {
+        Color c = C(0.7f, 0.69f, 0.66f);
+        // Hollow block: two face shells and three webs, so the two cores are really open.
+        return
+        [
+            RB(0.4f, 0.2f, 0.034f, 0.006f, 0, 0, 0.083f, c, true), RB(0.4f, 0.2f, 0.034f, 0.006f, 0, 0, -0.083f, c, true),
+            RB(0.034f, 0.2f, 0.14f, 0.006f, -0.183f, 0, 0, c, true), RB(0.03f, 0.2f, 0.14f, 0.006f, 0, 0, 0, c, true), RB(0.034f, 0.2f, 0.14f, 0.006f, 0.183f, 0, 0, c, true),
+            RB(0.31f, 0.012f, 0.13f, 0.004f, 0, -0.094f, 0, C(0.5f, 0.49f, 0.47f)),
+        ];
+    }
+
+    private static Part[] BarrierParts()
+    {
+        var l = new List<Part> { M(PropMeshes.Jersey(), 0, 0, 0, Stone, true) };
+        // Fork-lift slots through the foot, reflectors on both slopes, steel connector loops at the ends, a stencil.
+        foreach (float x in new[] { -0.5f, 0.5f }) l.Add(RB(0.28f, 0.09f, 0.62f, 0.01f, x, -0.355f, 0, C(0.12f, 0.12f, 0.12f)));
+        foreach (float x in new[] { -0.65f, 0f, 0.65f }) foreach (float sd in new[] { -1f, 1f })
+                l.Add(RB(0.09f, 0.09f, 0.012f, 0.003f, x, 0.2f, sd * 0.133f, C(0.98f, 0.78f, 0.1f), false, P3(-sd * 10f, 0, 0)));
+        foreach (float x in new[] { -1f, 1f })
+            l.Add(M(VehicleModels.BentPipe(0.016f, 0.04f, Float3.UnitY, P3(x * 0.98f, 0.18f, -0.06f), P3(x * 1.04f, 0.18f, -0.05f), P3(x * 1.04f, 0.18f, 0.05f), P3(x * 0.98f, 0.18f, 0.06f)), 0, 0, 0, C(0.45f, 0.35f, 0.25f)));
+        l.Add(M(Glyphs.Text("CITY-07", 0.07f, 0f, 0.002f, mirror: true), 0.55f, -0.22f, 0.2f, C(0.2f, 0.2f, 0.2f), false, P3(-27, 0, 0)));
+        return l.ToArray();
+    }
+
+    private static Part[] PipeParts()
+    {
+        Color mill = C(0.6f, 0.58f, 0.55f), dark = C(0.32f, 0.33f, 0.35f);
+        var threads = new List<(Mesh, Float3)>();
+        Mesh ring = Lathe("pthread", [(0.1f, -0.004f), (0.106f, 0f), (0.1f, 0.004f)], 24);
+        for (int i = 0; i < 7; i++) { threads.Add((ring, P3(0, 1.3f - i * 0.012f, 0))); threads.Add((ring, P3(0, -1.3f + i * 0.012f, 0))); }
+        return
+        [
+            Cy(0.1f, 2.86f, 0, 0, 0, mill, true), M(Bake(threads), 0, 0, 0, dark),
+            // Coupling with hex flats on one end, plastic thread protector cap on the other, a weld seam and a stencil band.
+            M(Meshes.Prism(6, 0.128f, 0.16f), 0, 1.42f, 0, dark), M(Lathe("pcoupring", [(0.122f, -0.08f), (0.13f, -0.075f), (0.13f, 0.075f), (0.122f, 0.08f)], 24), 0, 1.42f, 0, C(0.45f, 0.46f, 0.48f)),
+            M(Lathe("pcap", [(0.0001f, 0.06f), (0.1f, 0.06f), (0.112f, 0.05f), (0.112f, -0.06f), (0.104f, -0.065f)], 24), 0, -1.43f, 0, C(0.85f, 0.65f, 0.1f)),
+            RB(0.006f, 2.6f, 0.006f, 0.002f, 0, 0, 0.1f, C(0.5f, 0.48f, 0.45f)),
+            M(Lathe("pband", [(0.1015f, -0.08f), (0.1015f, 0.08f)], 24), 0, 0.5f, 0, C(0.15f, 0.35f, 0.7f)),
+        ];
+    }
+
+    private static Part[] SofaParts()
+    {
+        Color fab = C(0.36f, 0.42f, 0.5f), fab2 = C(0.4f, 0.46f, 0.54f), pip = C(0.28f, 0.33f, 0.4f), leg = C(0.25f, 0.16f, 0.1f), pil = C(0.85f, 0.65f, 0.25f);
+        var l = new List<Part>
+        {
+            // Plinth frame and back frame, rolled arms with front panels, tapered wooden feet.
+            RB(1.9f, 0.2f, 0.8f, 0.04f, 0, -0.22f, 0.02f, fab, true), RB(1.94f, 0.52f, 0.18f, 0.06f, 0, 0.12f, -0.34f, fab, true),
+        };
+        foreach (float x in new[] { -0.91f, 0.91f })
+        {
+            l.Add(RB(0.18f, 0.36f, 0.84f, 0.05f, x, -0.08f, 0.02f, fab, true));
+            l.Add(M(Sweep([new Sec(P3(x, 0.1f, -0.38f), 0.11f, 0.08f, 2.2f, Float3.UnitX), new Sec(P3(x, 0.1f, 0.4f), 0.11f, 0.08f, 2.2f, Float3.UnitX)], Float3.UnitX, 20, 0.5f), 0, 0, 0, fab2));
+            l.Add(M(Plate(0.1f, 0.13f, 0.02f, 3f), x, 0.02f, 0.44f, pip));
+            foreach (float z in new[] { -0.33f, 0.37f }) l.Add(M(PropMeshes.Leg(0.025f, 0.1f), x * 0.97f, -0.375f, z, leg));
+        }
+        foreach (float x in new[] { -0.425f, 0.425f })
+        {
+            // Seat cushions with piping, back cushions leaning back.
+            l.Add(M(PropMeshes.Cushion(0.84f, 0.17f, 0.64f), x, -0.03f, 0.08f, fab2, false));
+            l.Add(M(Lathe("cpip", [(0.003f, -0.42f), (0.006f, -0.41f), (0.006f, 0.41f), (0.003f, 0.42f)], 8), x, -0.03f, 0.4f, pip, false, P3(0, 0, 90)));
+            l.Add(M(PropMeshes.Cushion(0.84f, 0.44f, 0.2f), x, 0.23f, -0.2f, fab2, false, P3(-12, 0, 0)));
+        }
+        l.Add(M(PropMeshes.Cushion(0.34f, 0.34f, 0.12f), -0.66f, 0.17f, -0.02f, pil, false, P3(-15, 20, 35)));
+        l.Add(M(PropMeshes.Cushion(0.34f, 0.34f, 0.12f), 0.66f, 0.17f, -0.02f, pil, false, P3(-15, -20, -35)));
+        return l.ToArray();
+    }
+
+    private static Part[] OfficeChairParts()
+    {
+        Color blk = C(0.1f, 0.1f, 0.11f), mesh = C(0.2f, 0.21f, 0.23f), chrome = C(0.75f, 0.76f, 0.78f);
+        var l = new List<Part>
+        {
+            M(Sweep([new Sec(P3(0, -0.07f, -0.24f), 0.25f, 0.05f, 3f, Float3.UnitX), new Sec(P3(0, -0.06f, 0f), 0.26f, 0.06f, 3f, Float3.UnitX), new Sec(P3(0, -0.07f, 0.23f), 0.25f, 0.05f, 3f, Float3.UnitX)], Float3.UnitX, 24, 0.7f), 0, 0, 0, blk, true),
+            RB(0.22f, 0.04f, 0.24f, 0.01f, 0, -0.14f, 0, C(0.18f, 0.18f, 0.2f)),
+            Cy(0.024f, 0.26f, 0, -0.29f, 0, chrome), M(Lathe("ocover", [(0.035f, 0.12f), (0.04f, 0.04f), (0.045f, -0.04f), (0.05f, -0.12f)], 18), 0, -0.36f, 0, blk),
+            // Contoured back frame with a mesh panel and lumbar pad, carried on a spine from the seat.
+            M(Sweep([new Sec(P3(0, 0.04f, -0.27f), 0.22f, 0.03f, 4f, Float3.UnitX), new Sec(P3(0, 0.18f, -0.25f), 0.235f, 0.03f, 4f, Float3.UnitX), new Sec(P3(0, 0.36f, -0.28f), 0.23f, 0.03f, 4f, Float3.UnitX), new Sec(P3(0, 0.48f, -0.31f), 0.2f, 0.03f, 4f, Float3.UnitX)], Float3.UnitX, 24, 0.5f), 0, 0, 0, blk, true),
+            M(Sweep([new Sec(P3(0, 0.07f, -0.25f), 0.19f, 0.012f, 4f, Float3.UnitX), new Sec(P3(0, 0.18f, -0.23f), 0.205f, 0.012f, 4f, Float3.UnitX), new Sec(P3(0, 0.36f, -0.26f), 0.2f, 0.012f, 4f, Float3.UnitX), new Sec(P3(0, 0.45f, -0.285f), 0.17f, 0.012f, 4f, Float3.UnitX)], Float3.UnitX, 24, 0.5f), 0, 0, 0, mesh),
+            M(PropMeshes.Cushion(0.3f, 0.07f, 0.03f), 0, 0.15f, -0.225f, C(0.16f, 0.16f, 0.18f)),
+            M(Sweep([new Sec(P3(0, -0.12f, -0.12f), 0.03f, 0.012f, 3f), new Sec(P3(0, -0.11f, -0.27f), 0.03f, 0.014f, 3f), new Sec(P3(0, 0.08f, -0.3f), 0.03f, 0.014f, 3f)], Float3.UnitX, 12, 0.5f), 0, 0, 0, C(0.18f, 0.18f, 0.2f)),
+        };
+        // Five-star base with twin-wheel casters.
+        for (int i = 0; i < 5; i++)
+        {
+            float a = i * MathF.Tau / 5f + 0.3f, cx = MathF.Cos(a), cz = MathF.Sin(a);
+            l.Add(M(Sweep([new Sec(P3(cx * 0.03f, -0.44f, cz * 0.03f), 0.03f, 0.025f, 3f), new Sec(P3(cx * 0.27f, -0.47f, cz * 0.27f), 0.02f, 0.018f, 3f)], Float3.UnitY, 12, 0.6f), 0, 0, 0, blk));
+            l.Add(M(Rot90X(RoundedCylinder(0.026f, 0.034f, 0.008f, 14)), cx * 0.27f, -0.497f, cz * 0.27f, C(0.15f, 0.15f, 0.16f), false, P3(0, -a * 180f / MathF.PI, 0)));
+        }
+        // Armrests: post + pad.
+        foreach (float x in new[] { -0.27f, 0.27f })
+        {
+            l.Add(M(Sweep([new Sec(P3(x * 0.8f, -0.1f, -0.02f), 0.02f, 0.03f, 3f), new Sec(P3(x, -0.08f, -0.02f), 0.02f, 0.03f, 3f), new Sec(P3(x, 0.12f, -0.03f), 0.02f, 0.03f, 3f)], Float3.UnitZ, 12, 0.5f), 0, 0, 0, blk));
+            l.Add(M(PropMeshes.Cushion(0.07f, 0.035f, 0.24f), x, 0.14f, -0.02f, C(0.16f, 0.16f, 0.18f)));
+        }
+        return l.ToArray();
+    }
+
+    private static Part[] LampParts()
+    {
+        Color brass = C(0.72f, 0.56f, 0.3f), shade = C(0.93f, 0.88f, 0.76f);
+        return
+        [
+            M(Lathe("lampbase2", [(0.0001f, -0.04f), (0.18f, -0.04f), (0.19f, -0.025f), (0.17f, 0f), (0.08f, 0.025f), (0.04f, 0.04f), (0.03f, 0.07f), (0.0001f, 0.07f)], 36), 0, -0.81f, 0, brass, true),
+            Cy(0.014f, 1.3f, 0, -0.1f, 0, brass), M(Lathe("lampknuckle", [(0.0001f, -0.03f), (0.022f, -0.03f), (0.026f, 0f), (0.022f, 0.03f), (0.0001f, 0.03f)], 18), 0, 0.15f, 0, brass),
+            M(Lathe("lampsock", [(0.0001f, -0.05f), (0.03f, -0.05f), (0.032f, 0.04f), (0.025f, 0.05f), (0.0001f, 0.05f)], 18), 0, 0.56f, 0, brass),
+            // Drum shade: open-ended cylinder with rolled rims, bulb glowing inside.
+            M(Lathe("lampdrum", [(0.19f, -0.13f), (0.195f, -0.125f), (0.165f, 0.13f), (0.16f, 0.135f), (0.155f, 0.13f), (0.185f, -0.125f)], 40), 0, 0.7f, 0, shade),
+            M(Lathe("lamprimB", [(0.19f, -0.008f), (0.2f, 0f), (0.19f, 0.008f)], 40), 0, 0.575f, 0, brass), M(Lathe("lamprimT", [(0.16f, -0.007f), (0.17f, 0f), (0.16f, 0.007f)], 40), 0, 0.835f, 0, brass),
+            M(Sphere(0.05f), 0, 0.66f, 0, C(1f, 0.95f, 0.8f)) with { Glow = true },
+            M(Sweep([new Sec(P3(0.04f, 0.6f, 0f), 0.003f, 0.003f), new Sec(P3(0.05f, 0.5f, 0.01f), 0.003f, 0.003f)], Float3.UnitX, 6, 0.5f), 0, 0, 0, brass),
+            M(Sphere(0.008f), 0.05f, 0.495f, 0.01f, brass),
+        ];
+    }
+
+    private static Part[] BillboardParts()
+    {
+        Color frame = C(0.25f, 0.27f, 0.3f), sky = C(0.18f, 0.42f, 0.78f), white = C(0.97f, 0.97f, 0.96f);
+        var l = new List<Part>
+        {
+            M(RoundedBox(P3(3.0f, 1.5f, 0.08f), 0.03f), 0, 0.75f, -0.02f, frame, true), M(PropMeshes.InsetPanel(2.96f, 1.46f, 0.06f, 0.06f), 0, 0.75f, 0.04f, C(0.85f, 0.85f, 0.83f)),
+            M(RoundedBox(P3(2.82f, 1.32f, 0.01f), 0.004f), 0, 0.75f, 0.06f, sky),
+            // Poster: horizon band, sun, big headline and a tagline.
+            M(Slab(Rect(-1.41f, -0.66f, 1.41f, -0.25f), 0.0655f, 0.067f), 0, 0.75f, 0, C(0.2f, 0.55f, 0.3f)),
+            M(Slab(NGon(32, 0.2f), 0.0655f, 0.067f), -1.08f, 1.12f, 0, C(1f, 0.82f, 0.3f)),
+            M(Glyphs.Text("SANDBOX", 0.36f, 0.067f, 0.075f, mirror: true), 0.12f, 0.95f, 0, white),
+            M(Glyphs.Text("BUILD ANYTHING!", 0.13f, 0.067f, 0.073f, mirror: true), 0.12f, 0.62f, 0, C(1f, 0.85f, 0.25f)),
+            // Posts with base plates, cross bracing, catwalk with railing, and two gooseneck flood lights.
+            M(PropMeshes.Post(0.065f, 1.7f), -1.0f, -0.75f, -0.02f, Dark), M(PropMeshes.Post(0.065f, 1.7f), 1.0f, -0.75f, -0.02f, Dark),
+            M(PropMeshes.Rod(P3(-1f, -1.4f, -0.08f), P3(1f, -0.2f, -0.08f), 0.02f), 0, 0, 0, Dark), M(PropMeshes.Rod(P3(1f, -1.4f, -0.08f), P3(-1f, -0.2f, -0.08f), 0.02f), 0, 0, 0, Dark),
+            RB(3.0f, 0.03f, 0.22f, 0.006f, 0, -0.05f, 0.12f, C(0.4f, 0.42f, 0.44f)),
+        };
+        foreach (float x in new[] { -1.3f, -0.4f, 0.5f, 1.4f }) l.Add(RB(0.03f, 0.03f, 0.22f, 0.006f, x, -0.08f, 0.12f, Dark));
+        foreach (float x in new[] { -0.9f, 0.9f })
+        {
+            l.Add(M(VehicleModels.BentPipe(0.022f, 0.12f, Float3.UnitX, P3(x, 1.5f, -0.04f), P3(x, 1.68f, 0.05f), P3(x, 1.66f, 0.35f)), 0, 0, 0, Dark));
+            l.Add(M(VehicleModels.Lamp(0.08f), x, 1.62f, 0.4f, C(0.95f, 0.93f, 0.8f), false, P3(150, 0, 0)));
+        }
+        return l.ToArray();
+    }
 }

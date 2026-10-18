@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.2 — 2026-10-18
+- Remodelled cinder block (open cores), Jersey barrier (light concrete, fork slots, reflectors, connector loops, stencil), steel pipe (threads, hex coupling, cap, seam, band), sofa (frame, rolled arms, piped cushions, feet, pillows), office chair (contoured mesh back, lumbar, spine, star base with casters, arm pads), floor lamp (drum shade, rims, glowing bulb, pull chain), billboard (lettered poster, catwalk, flood lights, bracing).
+
 ## v0.8.1 — 2026-10-18
 - Tyres get real tread: staggered blocks + centre rib on car/buggy/jeep/small wheels, chevron lugs on the tractor wheel (was a smooth lathe).
 
