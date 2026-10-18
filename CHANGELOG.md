@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.4 — 2026-10-18
+- ATM kiosk back and sides: service door with lock, wraparound brand stripe, louvre vents and a steel plinth.
+
 ## v0.10.3 — 2026-10-18
 - Pole spawn icon lies diagonally so it fills its tile instead of reading as a hairline.
 

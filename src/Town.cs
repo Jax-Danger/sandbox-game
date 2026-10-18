@@ -326,6 +326,15 @@ public static partial class MapBuilder
                 Shape(scene, shader, "~ATM key", Meshes.RoundedBox(new Float3(0.03f, 0.03f, 0.05f), 0.01f), new Float3(15.02f + ky * 0.02f, 1.02f + ky * 0.005f, -4.06f + kx * 0.06f), new Color(0.75f, 0.76f, 0.78f, 1f), euler: new Float3(0f, 0f, -12f));
         Shape(scene, shader, "~ATM card", Meshes.RoundedBox(new Float3(0.02f, 0.03f, 0.12f), 0.008f), new Float3(15.19f, 1.05f, -3.75f), new Color(0.2f, 0.85f, 0.4f, 1f));
         Shape(scene, shader, "~ATM cash", Meshes.RoundedBox(new Float3(0.02f, 0.04f, 0.3f), 0.01f), new Float3(15.19f, 0.8f, -4f), kdark);
+        // Back and sides: service door with a lock, a brand stripe wrapping round, louvre vents and a steel plinth.
+        Shape(scene, shader, "~ATM service door", PropMeshes.InsetPanel(0.62f, 1.3f, 0.03f, 0.05f), new Float3(16.0f, 0.95f, -4f), new Color(0.2f, 0.25f, 0.33f, 1f), euler: new Float3(0f, 90f, 0f));
+        Shape(scene, shader, "~ATM lock", Meshes.LatheZ([(0.0001f, 0f), (0.025f, 0f), (0.025f, 0.02f), (0.0001f, 0.022f)], 14), new Float3(16.01f, 1.15f, -3.78f), new Color(0.75f, 0.76f, 0.78f, 1f), euler: new Float3(0f, 90f, 0f));
+        Shape(scene, shader, "~ATM stripe", Meshes.RoundedBox(new Float3(0.83f, 0.08f, 0.93f), 0.02f), new Float3(15.6f, 1.86f, -4f), new Color(0.3f, 0.65f, 0.95f, 1f));
+        var louv = new List<Mesh>();
+        foreach (float sz in new[] { -1f, 1f })
+            for (int i = 0; i < 6; i++) louv.Add(Off(Meshes.RoundedBox(new Float3(0.5f, 0.025f, 0.02f), 0.006f), 15.6f, 0.45f + i * 0.06f, -4f + sz * 0.455f));
+        Shape(scene, shader, "~ATM vents", Meshes.Merge(louv.ToArray()), Float3.Zero, new Color(0.12f, 0.14f, 0.18f, 1f));
+        Shape(scene, shader, "~ATM plinth", Meshes.RoundedBox(new Float3(0.9f, 0.1f, 1.0f), 0.02f), new Float3(15.6f, 0.05f, -4f), new Color(0.55f, 0.57f, 0.6f, 1f));
         atm.AddComponent<AtmMachine>();
         Town.Interactive.Add((atm, new Float3(0.8f, 2.0f, 0.9f)));
         Town.Atm = atm;
