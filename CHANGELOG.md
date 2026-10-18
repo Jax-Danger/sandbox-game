@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.10.14 — 2026-10-18
+- Shipment world models measure every vertex and re-fit once, so the RPG warhead now sits fully inside the lid (screens/s7-ship-top.png)
+
 ## v0.10.13 — 2026-10-18
 - Flatgrass perimeter walls read as poured panels: pilasters every 12 m, formwork joints, dark skirting and an orange shoulder band.
 

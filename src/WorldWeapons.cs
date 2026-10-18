@@ -43,7 +43,7 @@ public static class WorldWeapons
         Float3 lo = new(1e9f), hi = new(-1e9f);
         foreach (var mr in gun.GetComponentsInChildren<MeshRenderer>())
             if (mr.Mesh.Res?.Vertices is { } vs)
-                for (int i = 0; i < vs.Length; i += Math.Max(1, vs.Length / 300))
+                for (int i = 0; i < vs.Length; i++)
                 {
                     Float3 q = crate.Transform.InverseTransformPoint(mr.GameObject.Transform.TransformPoint(vs[i]));
                     lo = new Float3(MathF.Min(lo.X, q.X), MathF.Min(lo.Y, q.Y), MathF.Min(lo.Z, q.Z)); hi = new Float3(MathF.Max(hi.X, q.X), MathF.Max(hi.Y, q.Y), MathF.Max(hi.Z, q.Z));

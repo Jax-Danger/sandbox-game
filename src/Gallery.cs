@@ -157,6 +157,7 @@ public static class Gallery
                 string[] ws = ["weapon_pistol", "weapon_smg", "weapon_shotgun", "weapon_rpg"];
                 for (int i = 0; i < ws.Length; i++) Freeze(g.Roleplay.SpawnShipment(new Float3(-1.5f + i * 1.0f, 0.31f, 1.6f), ws[i]));
                 bool close = set.Contains("close");
+                if (set.Contains("top")) { g.Player.Teleport(new Float3(1.5f, 0.05f, 0.75f)); g.Player.SetLook(0f, 60f); break; }
                 g.Player.Teleport(close ? new Float3(-0.5f, 0.05f, 0.7f) : new Float3(0f, 0.05f, -0.4f));
                 g.Player.SetLook(close ? 25f : 0f, close ? 50f : 38f);
                 break;
