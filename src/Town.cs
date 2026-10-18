@@ -137,6 +137,47 @@ public static partial class MapBuilder
         ground.AddComponent<BoxCollider>().Size = new Float3(200f, 1f, 200f);
         Add(scene, ground);
 
+        // Outskirts (render only): farmland past the 200 m play square, a ragged tree line and low hills fading into
+        // the fog, so the map edge no longer drops off into the sky.
+        if (!Application.IsHeadless)
+        {
+            var outer = Shape(scene, shader, "~Outskirts", Mesh.CreateCube(new Float3(1400f, 0.02f, 1400f)), new Float3(0f, -0.04f, 0f), new Color(0.4f, 0.46f, 0.31f, 1f));
+            if (outer.GetComponent<MeshRenderer>() is { } om && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
+            { om.Material.Res?.SetTexture("_MainTex", ProcTex.Grass()); om.Material.Res?.SetVector("_Tiling", new Float2(350f, 350f)); }
+            var rng = new Random(77);
+            var crowns = new[] { new List<Mesh>(), new List<Mesh>(), new List<Mesh>() }; var trunks = new List<Mesh>(); // merged: 4 draws, not 300
+            for (int i = 0; i < 150; i++)
+            {
+                float a = i / 150f * MathF.Tau + (float)rng.NextDouble() * 0.03f, r = 118f + (float)rng.NextDouble() * 22f;
+                float cx = MathF.Cos(a), cz = MathF.Sin(a), sq = MathF.Max(MathF.Abs(cx), MathF.Abs(cz));
+                float x = cx / sq * r * 0.9f, z = cz / sq * r * 0.9f; // follows the square edge, ~6-26 m outside it
+                if (MathF.Abs(x) < 9f || MathF.Abs(z) < 9f) continue; // keep the country roads clear
+                float k = 0.9f + (float)rng.NextDouble() * 0.9f;
+                crowns[i % 3].Add(Off(Meshes.Blob(2.4f * k, i % 9), x, 3.4f * k, z));
+                trunks.Add(Off(Mesh.CreateCube(new Float3(0.45f, 3.2f * k, 0.45f)), x, 1.4f * k, z));
+            }
+            Color[] cc = [new(0.24f, 0.34f, 0.18f, 1f), new(0.28f, 0.38f, 0.2f, 1f), new(0.2f, 0.3f, 0.16f, 1f)];
+            for (int c = 0; c < 3; c++) Shape(scene, shader, "~Far trees", Meshes.Merge(crowns[c].ToArray()), Float3.Zero, cc[c]);
+            Shape(scene, shader, "~Far trunks", Meshes.Merge(trunks.ToArray()), Float3.Zero, new Color(0.3f, 0.22f, 0.15f, 1f));
+            // Country roads carry each avenue on out of town (no kerbs), with a dashed centre line that fades into the fog.
+            for (int dir = 0; dir < 4; dir++)
+            {
+                bool ax = dir < 2; float sg = dir % 2 == 0 ? 1f : -1f;
+                Float3 At(float along, float y) => ax ? new Float3(sg * along, y, 0f) : new Float3(0f, y, sg * along);
+                Shape(scene, shader, "~Country road", Mesh.CreateCube(ax ? new Float3(360f, 0.04f, 8f) : new Float3(8f, 0.04f, 360f)), At(83f + 180f, 0.0f), new Color(0.33f, 0.33f, 0.34f, 1f));
+                var dash = new List<Mesh>();
+                for (float t = 86f; t < 300f; t += 6f) dash.Add(Off(Meshes.RoundedBox(ax ? new Float3(2.6f, 0.01f, 0.18f) : new Float3(0.18f, 0.01f, 2.6f), 0.003f), ax ? sg * t : 0f, 0.025f, ax ? 0f : sg * t));
+                Shape(scene, shader, "~Country road line", Meshes.Merge(dash.ToArray()), Float3.Zero, new Color(0.92f, 0.82f, 0.36f, 1f));
+            }
+            for (int i = 0; i < 14; i++)
+            {
+                float a = i / 14f * MathF.Tau + 0.2f, r = 210f + (i * 37 % 60);
+                var h = Shape(scene, shader, "~Far hill", Meshes.Blob(1f, 30 + i, 0.08f), new Float3(MathF.Cos(a) * r, -2f, MathF.Sin(a) * r), new Color(0.36f, 0.43f, 0.3f, 1f));
+                h.Transform.LocalScale = new Float3(70f + i % 3 * 20f, 14f + i % 4 * 5f, 60f);
+                h.Transform.LocalEulerAngles = new Float3(0f, -a * 180f / MathF.PI, 0f);
+            }
+        }
+
         // Plaza (centre) and four avenues running out of it, with sidewalks and centre lines.
         Box(scene, shader, "Plaza", new Float3(0f, 0.03f, 0f), new Float3(34f, 0.06f, 34f), Float3.Zero, paver);
         {
