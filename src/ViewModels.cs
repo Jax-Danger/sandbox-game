@@ -153,11 +153,17 @@ public static partial class ViewModels
             {
                 if (i > 0) acc += Float3.Length(pts[i] - pts[i - 1]);
                 float t = acc / MathF.Max(total, 1e-5f);
-                float bump = 0.07f * (MathF.Exp(-MathF.Pow((t - 0.52f) / 0.06f, 2f)) + MathF.Exp(-MathF.Pow((t - 0.78f) / 0.05f, 2f)) * 0.8f);
-                float rr = r * (1.04f - 0.2f * t + bump);
+                float G(float c, float w) => MathF.Exp(-MathF.Pow((t - c) / w, 2f));
+                // Knuckle bumps at the joints with soft creases either side, so each finger reads as segments, not a mitten.
+                float bump = 0.13f * G(0.5f, 0.055f) + 0.1f * G(0.76f, 0.045f) - 0.07f * G(0.62f, 0.035f) - 0.06f * G(0.88f, 0.03f);
+                float rr = r * 0.94f * (1.04f - 0.2f * t + bump);
                 secs.Add(new Sec(pts[i], rr, rr * 0.9f, 2.2f));
             }
             Add(bone, Sweep(secs, side ?? Float3.UnitY, 14, 0.9f), GloveC, Finish.Leather);
+            // Rubber knuckle pad over the first joint (tactical-glove detail).
+            int j = Math.Clamp((int)(pts.Length * 0.5f), 1, pts.Length - 2);
+            Float3 dir = Float3.Normalize(pts[j + 1] - pts[j - 1]);
+            Add(bone, Sweep([new Sec(pts[j] - dir * 0.006f, r * 1.02f, r * 1.0f, 2.4f), new Sec(pts[j] + dir * 0.006f, r * 1.02f, r * 1.0f, 2.4f)], side ?? Float3.UnitY, 12, 0.8f), PadC, Finish.Rubber);
         }
 
         /// <summary>Forearm on its IK bone: glove gauntlet, strap, sleeve hem and a sleeve with soft folds (local +Z = toward the elbow).</summary>
