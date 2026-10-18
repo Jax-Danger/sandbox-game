@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.17 — 2026-10-18
+- Rolling Hills lake: sandy shoreline band draped over the terrain at the waterline, reed clumps with seed heads, a plank jetty on round piles, deeper water colour; shot state hillsat_x_y_z_yaw_pitch
+
 ## v0.8.16 — 2026-10-18
 - Garage gets a service bay: ribbed roller shutter in a steel frame with hood box and guide rails, handle, yellow bollards and a concrete apron
 

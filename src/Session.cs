@@ -169,7 +169,7 @@ public sealed partial class SandboxGame
             switch (ShotState)
             {
                 case "town": Player.Teleport(new Float3(-3f, 0.2f, 2.5f)); Player.SetLook(8f, 2f); break;
-                case { } ta when ta.StartsWith("townat_") && ta.Split('_') is { Length: 6 } tp:
+                case { } ta when (ta.StartsWith("townat_") || ta.StartsWith("hillsat_")) && ta.Split('_') is { Length: 6 } tp:
                     // "townat_x_y_z_yaw_pitch": review shot from any spot in town (noclip, no HUD).
                     if (!Player.Noclip) Player.ToggleNoclip(); PhotoMode = true; Gallery.Active = true;
                     Player.Teleport(new Float3(float.Parse(tp[1]), float.Parse(tp[2]), float.Parse(tp[3]))); Player.SetLook(float.Parse(tp[4]), float.Parse(tp[5])); break;

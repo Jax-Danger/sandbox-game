@@ -167,11 +167,61 @@ public static partial class MapBuilder
         MeshRenderer wr = water.AddComponent<MeshRenderer>();
         wr.Mesh = Mesh.CreateCube(new Float3(48f, 0.05f, 48f));
         var wm = Mats.New(shader);
-        wm.SetColor("_MainColor", new Color(0.18f, 0.42f, 0.62f, 1f));
-        if (!Application.IsHeadless) { wm.SetTexture("_MainTex", ProcTex.Solid(40, 96, 140)); wm.SetTexture("_SurfaceTex", ProcTex.Surface(0.08f, 0.1f)); }
+        wm.SetColor("_MainColor", new Color(0.14f, 0.34f, 0.46f, 1f));
+        if (!Application.IsHeadless) { wm.SetTexture("_MainTex", ProcTex.Solid(34, 82, 110)); wm.SetTexture("_SurfaceTex", ProcTex.Surface(0.08f, 0.1f)); }
         wr.Material = wm;
         Add(scene, water);
 
+        {
+            // Shoreline: a sandy/muddy band draped over the terrain where it meets the water, reed clumps and a jetty.
+            var sv = new List<Float3>(); var su = new List<Float2>(); var si = new List<uint>();
+            for (int j = 0; j < n; j++)
+                for (int i = 0; i < n; i++)
+                {
+                    Float3 a = verts[j * (n + 1) + i], b = verts[j * (n + 1) + i + 1], c = verts[(j + 1) * (n + 1) + i], d = verts[(j + 1) * (n + 1) + i + 1];
+                    foreach (var (p0, p1, p2) in new[] { (a, c, b), (b, c, d) })
+                    {
+                        float lo = MathF.Min(p0.Y, MathF.Min(p1.Y, p2.Y)), hi = MathF.Max(p0.Y, MathF.Max(p1.Y, p2.Y));
+                        Float3 m3 = (p0 + p1 + p2) / 3f;
+                        float ld = MathF.Sqrt((m3.X - 45f) * (m3.X - 45f) + (m3.Z - 35f) * (m3.Z - 35f));
+                        if (ld > 25f || hi < -1.75f || lo > -1.38f) continue;
+                        uint o = (uint)sv.Count; Float3 up = new(0f, 0.03f, 0f);
+                        sv.AddRange([p0 + up, p1 + up, p2 + up]); su.AddRange([new(p0.X / 3f, p0.Z / 3f), new(p1.X / 3f, p1.Z / 3f), new(p2.X / 3f, p2.Z / 3f)]);
+                        si.AddRange([o, o + 1, o + 2]);
+                    }
+                }
+            if (sv.Count > 0)
+            {
+                var shore = new Mesh { IndexFormat = IndexFormat.UInt32, Vertices = sv.ToArray(), UV = su.ToArray(), Indices = si.ToArray() };
+                shore.RecalculateNormals(); shore.RecalculateBounds();
+                Shape(scene, shader, "~Shore", shore, Float3.Zero, new Color(0.4f, 0.36f, 0.27f, 1f));
+            }
+            var reeds = new List<Mesh>(); var heads = new List<Mesh>();
+            for (int i = 0; i < 160; i++)
+            {
+                float a = i * 1.31f, rr = 17f + (i * 7 % 11) * 0.8f;
+                float x = 45f + MathF.Cos(a) * rr, z = 35f + MathF.Sin(a) * rr, y = HillsHeight(x, z);
+                if (y < -1.9f || y > -0.9f) continue;
+                for (int q = 0; q < 7; q++)
+                {
+                    float qa = q * 2.1f + i, qr = 0.08f + (q % 3) * 0.12f, h = 0.9f + (q * 13 % 7) * 0.12f;
+                    Float3 b0 = new(x + MathF.Cos(qa) * qr, y - 0.05f, z + MathF.Sin(qa) * qr), tip = b0 + new Float3(MathF.Cos(qa) * 0.18f, h, MathF.Sin(qa) * 0.18f);
+                    reeds.Add(PropMeshes.Rod(b0, tip, 0.022f, 0.006f));
+                    if (q % 3 == 0) heads.Add(PropMeshes.Rod(tip - new Float3(0f, 0.22f, 0f) + (tip - b0) * 0f, tip - new Float3(0f, 0.04f, 0f), 0.022f));
+                }
+            }
+            if (reeds.Count > 0) Shape(scene, shader, "~Reeds", Meshes.Merge(reeds.ToArray()), Float3.Zero, new Color(0.42f, 0.55f, 0.26f, 1f));
+            if (heads.Count > 0) Shape(scene, shader, "~Reed heads", Meshes.Merge(heads.ToArray()), Float3.Zero, new Color(0.4f, 0.27f, 0.15f, 1f));
+            // Jetty: plank deck on round piles running from the west shore out over the water.
+            var planks = new List<Mesh>(); var piles = new List<Mesh>();
+            float jx0 = 45f - 27f, jz = 35f, jy = -1.15f;
+            for (int i = 0; i < 40; i++) planks.Add(Off(Meshes.RoundedBox(new Float3(0.2f, 0.05f, 1.6f), 0.01f), jx0 + i * 0.22f, jy, jz + ((i * 7) % 3 - 1) * 0.015f));
+            for (float px = jx0 + 0.1f; px <= jx0 + 8.7f; px += 2.15f)
+                foreach (float pz in new[] { -0.75f, 0.75f }) piles.Add(Off(Meshes.Lathe("pile", [(0.0001f, -2.4f), (0.09f, -2.4f), (0.09f, 0.08f), (0.07f, 0.12f), (0.0001f, 0.13f)], 12), px, jy, jz + pz));
+            foreach (float pz in new[] { -0.72f, 0.72f }) planks.Add(Off(Meshes.RoundedBox(new Float3(8.8f, 0.14f, 0.07f), 0.015f), jx0 + 4.4f, jy - 0.09f, jz + pz));
+            Shape(scene, shader, "Jetty", Meshes.Merge(planks.ToArray()), Float3.Zero, new Color(0.56f, 0.42f, 0.29f, 1f), new Float3(8.8f, 0.1f, 1.6f));
+            Shape(scene, shader, "~Jetty piles", Meshes.Merge(piles.ToArray()), Float3.Zero, new Color(0.36f, 0.27f, 0.19f, 1f));
+        }
         // A few rocks and a wooden deck near spawn for scale.
         var rock = new Color(0.52f, 0.50f, 0.48f, 1f);
         for (int i = 0; i < 14; i++)
