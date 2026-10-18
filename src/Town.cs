@@ -229,6 +229,51 @@ public static partial class MapBuilder
                 }
             }
         }
+        // Sidewalk dressing: a raised granite kerb on the road side, expansion joints every 1.5 m, and sloped
+        // ends (dropped kerbs) down to the plaza paving and, out of town, to the grass — no blunt slab ends.
+        {
+            var kerbs = new List<Mesh>(); var joints = new List<Mesh>(); var ramps = new List<Mesh>();
+            // Wedge: a rounded slab whose top falls linearly from h0 (at local -X end) to h1 (+X end).
+            Mesh Wedge(float len, float wid, float h0, float h1, float x, float z)
+            {
+                Mesh m = Meshes.RoundedBox(new Float3(len, h0, wid), 0.012f);
+                float hi = h0 / 2f;
+                var vs = m.Vertices.Select(v =>
+                {
+                    float t = Math.Clamp(v.X / len + 0.5f, 0f, 1f), top = h0 + (h1 - h0) * t;
+                    float y = v.Y > 0f ? top - (hi - v.Y) : v.Y + hi; // keep the bevel thickness under the sloped top
+                    return new Float3(v.X + x, MathF.Max(y, 0f), v.Z + z);
+                }).ToArray();
+                var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = vs, UV = m.UV, Indices = m.Indices };
+                mm.RecalculateNormals(); mm.RecalculateBounds(); return mm;
+            }
+            Mesh Rot(Mesh m, float a)
+            {
+                float r = a * MathF.PI / 180f, c = MathF.Cos(r), sn = MathF.Sin(r);
+                Float3 R(Float3 v) => new(v.X * c + v.Z * sn, v.Y, -v.X * sn + v.Z * c);
+                var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(R).ToArray(), Normals = m.Normals.Select(R).ToArray(), UV = m.UV, Indices = m.Indices };
+                mm.RecalculateBounds(); return mm;
+            }
+            foreach (float ang in new[] { 0f, 180f, -90f, 90f })
+            {
+                var k = new List<Mesh>(); var j = new List<Mesh>(); var r = new List<Mesh>();
+                foreach (float l in new[] { -1f, 1f })
+                {
+                    k.Add(Off(Meshes.RoundedBox(new Float3(66f, 0.2f, 0.26f), 0.03f, 2), 50f, 0.1f, l * 5.13f));
+                    for (float x = 18.5f; x < 83f; x += 1.5f) j.Add(Off(Mesh.CreateCube(new Float3(0.025f, 0.006f, 2.72f)), x, 0.161f, l * 6.62f));
+                    r.Add(Wedge(2.2f, 3f, 0.16f, 0.012f, 84.1f, l * 6.5f));    // out of town: down to the grass
+                    r.Add(Wedge(2.2f, 0.26f, 0.2f, 0.012f, 84.1f, l * 5.13f)); // kerb follows it down
+                    r.Add(Wedge(1.6f, 3f, 0.085f, 0.16f, 16.2f, l * 6.5f));    // plaza end: gentle ramp onto the paving
+                    r.Add(Wedge(1.6f, 0.26f, 0.085f, 0.2f, 16.2f, l * 5.13f));
+                }
+                foreach (var m in k) kerbs.Add(Rot(m, ang));
+                foreach (var m in j) joints.Add(Rot(m, ang));
+                foreach (var m in r) ramps.Add(Rot(m, ang));
+            }
+            Shape(scene, shader, "~Kerbs", Meshes.Merge(kerbs.ToArray()), Float3.Zero, new Color(0.6f, 0.59f, 0.57f, 1f));
+            Shape(scene, shader, "~Sidewalk joints", Meshes.Merge(joints.ToArray()), Float3.Zero, new Color(0.42f, 0.41f, 0.4f, 1f));
+            Shape(scene, shader, "~Sidewalk ramps", Meshes.Merge(ramps.ToArray()), Float3.Zero, new Color(walk.R * 0.84f, walk.G * 0.84f, walk.B * 0.84f, 1f));
+        }
         // Crosswalk stripes at each plaza exit.
         foreach (int dir in new[] { 0, 1, 2, 3 })
             for (int k = -3; k <= 3; k++)
