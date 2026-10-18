@@ -129,6 +129,30 @@ public static class Meshes
         return Lathe($"tp{r0:0.####},{r1:0.####},{length:0.####}", prof.ToArray(), slices, alongZ: true);
     }
 
+    /// <summary>Flat-shaded regular prism along Y (e.g. octagonal sign plate), first corner rotated by half a side.</summary>
+    public static Mesh Prism(int sides, float r, float h)
+    {
+        string key = $"prism{sides},{r:0.###},{h:0.###}";
+        if (_cache.TryGetValue(key, out Mesh? c)) return c;
+        var v = new List<Float3>(); var n = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        Float3 P(int i, float y) { float a = (i + 0.5f) * MathF.Tau / sides; return new Float3(MathF.Cos(a) * r, y, MathF.Sin(a) * r); }
+        void Quad(Float3 a, Float3 b, Float3 cc, Float3 d, Float3 nn)
+        {
+            uint o = (uint)v.Count; v.AddRange([a, b, cc, d]); for (int k = 0; k < 4; k++) { n.Add(nn); uv.Add(new Float2(k & 1, k >> 1)); }
+            Float3 cr = Float3.Cross(b - a, cc - a); bool f = Float3.Dot(cr, nn) >= 0f;
+            idx.AddRange(f ? [o, o + 1, o + 2, o, o + 2, o + 3] : [o, o + 2, o + 1, o, o + 3, o + 2]);
+        }
+        float hy = h / 2f;
+        for (int i = 0; i < sides; i++)
+        {
+            Float3 a = P(i, -hy), b = P(i + 1, -hy), mid = (a + b) / 2f;
+            Quad(a, b, P(i + 1, hy), P(i, hy), Float3.Normalize(new Float3(mid.X, 0f, mid.Z)));
+            Quad(new Float3(0f, hy, 0f), new Float3(0f, hy, 0f), P(i + 1, hy), P(i, hy), Float3.UnitY);
+            Quad(new Float3(0f, -hy, 0f), new Float3(0f, -hy, 0f), P(i, -hy), P(i + 1, -hy), -Float3.UnitY);
+        }
+        return _cache[key] = Build(v, n, uv, idx);
+    }
+
     /// <summary>Cylinder along Y with rounded rims (bevel b) and closed caps; smooth.</summary>
     public static Mesh RoundedCylinder(float radius, float height, float bevel, int slices = 32)
     {
