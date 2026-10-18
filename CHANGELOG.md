@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.18 — 2026-10-18
+- Hemisphere ambient a little stronger and less blue so shadowed sides read neutral instead of navy.
+
 ## v0.9.17 — 2026-10-18
 - Shipment crates measure the weapon model's real mesh bounds, centre it on the lid, sit it flush and shrink long guns to fit.
 

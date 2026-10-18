@@ -83,9 +83,9 @@ public sealed partial class SandboxGame : Game
         World.Fog.Start = 45f;
         World.Fog.End = 220f;
         World.Ambient.Mode = Scene.AmbientLightParams.AmbientMode.Hemisphere;
-        World.Ambient.SkyColor = new Float4(0.55f, 0.65f, 0.80f, 1f);
-        World.Ambient.GroundColor = new Float4(0.30f, 0.28f, 0.26f, 1f);
-        World.Ambient.Strength = 0.9f;
+        World.Ambient.SkyColor = new Float4(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
+        World.Ambient.GroundColor = new Float4(0.34f, 0.32f, 0.28f, 1f);
+        World.Ambient.Strength = 1.0f;
         Props = new PropManager(World, Shader);
         Props.Protection.RoleplayActive = () => Roleplay?.Active == true;
         { var wgo = new GameObject("WaterSimulator"); wgo.AddComponent<WaterSimulator>().Game = this; World.Add(wgo); }
