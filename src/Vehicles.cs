@@ -88,6 +88,9 @@ public sealed class Buggy
         foreach (float x in new[] { -0.22f, -0.12f })
             Detail(g, "Exhaust", VehicleModels.BentPipe(0.028f, 0.08f, Float3.UnitX, new Float3(x, 0.3f, -1.1f), new Float3(x, 0.32f, -1.38f), new Float3(x, 0.42f, -1.52f)), Float3.Zero, metal);
         Detail(g, "Plate", Meshes.RoundedBox(new Float3(0.34f, 0.12f, 0.015f), 0.01f), new Float3(0.15f, 0.14f, -1.42f), new Color(0.92f, 0.9f, 0.8f, 1f));
+        foreach (float x in new[] { -0.42f, 0.42f })
+            Detail(g, "Tail", VehicleModels.Lamp(0.045f), new Float3(x, 0.14f, -1.4f), new Color(0.8f, 0.08f, 0.06f, 1f), new Float3(0f, 180f, 0f));
+        Detail(g, "PlateText", Meshes.RoundedBox(new Float3(0.26f, 0.05f, 0.004f), 0.002f), new Float3(0.15f, 0.14f, -1.43f), new Color(0.15f, 0.2f, 0.45f, 1f));
         }
         float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? -0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.25f : 0.42f;
 

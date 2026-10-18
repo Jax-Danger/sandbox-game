@@ -57,16 +57,21 @@ public static class VehicleModels
         return Merge(parts.ToArray());
     });
 
-    /// <summary>Slim rear arch hugging the tyre (the jeep fender was far too wide on the buggy).</summary>
-    public static Mesh BuggyArch(float x, float z, float r) => C($"barch{x}{z}{r}", () =>
+    /// <summary>Rear fender hugging the tyre at its real ride height (the wheel settles ~0.22 below its design point,
+    /// so the old arch floated like a spoiler): a flared arch with a rolled lip, plus a side skirt joining it to the tub.</summary>
+    public static Mesh BuggyArch(float x, float z, float r) => C($"barch2{x}{z}{r}", () =>
     {
-        var s = new List<Sec>();
-        for (int i = 0; i <= 12; i++)
+        float cy = -0.37f, R = r + 0.065f, sx = MathF.Sign(x);
+        var arch = new List<Sec>(); var lip = new List<Sec>();
+        for (int i = 0; i <= 16; i++)
         {
-            float a = MathF.PI * (0.18f + 0.6f * i / 12f);
-            s.Add(new Sec(V(x, -0.15f + MathF.Sin(a) * (r + 0.07f), z - MathF.Cos(a) * (r + 0.07f)), 0.15f, 0.025f, 4f, Float3.UnitX));
+            float a = MathF.PI * (0.1f + 0.68f * i / 16f), sy = MathF.Sin(a), cz = MathF.Cos(a);
+            arch.Add(new Sec(V(x, cy + sy * R, z - cz * R), 0.16f, 0.018f, 5f, Float3.UnitX));
+            lip.Add(new Sec(V(x + sx * 0.16f, cy + sy * (R - 0.01f), z - cz * (R - 0.01f)), 0.022f, 0.024f, 2f, Float3.UnitX));
         }
-        return Sweep(s, Float3.UnitX, 16, 0.5f);
+        // Skirt: vertical panel on the inner side from the arch up to the deck, so the fender grows out of the body.
+        Mesh skirt = Sweep([new Sec(V(x - sx * 0.12f, -0.02f, z - 0.42f), 0.012f, 0.1f, 4f, Float3.UnitX), new Sec(V(x - sx * 0.12f, 0.05f, z), 0.012f, 0.1f, 4f, Float3.UnitX), new Sec(V(x - sx * 0.12f, 0.02f, z + 0.4f), 0.012f, 0.09f, 4f, Float3.UnitX)], Float3.UnitX, 10, 0.4f);
+        return Merge(Sweep(arch, Float3.UnitX, 16, 0.5f), Sweep(lip, Float3.UnitX, 12, 0.6f), skirt);
     });
 
     public static Mesh JeepBody() => C("jeep", () => Tub(

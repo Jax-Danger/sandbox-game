@@ -57,6 +57,19 @@ public static class Gallery
                 g.Player.SetLook(0f, 18f);
                 break;
             }
+            case "car":
+            {
+                // "car_buggy_135": one vehicle, camera orbiting at that angle (degrees, 0 = from the front... see yaw).
+                var a = set.Split('_'); string kind = a.Length > 1 ? a[1] : "buggy";
+                float ang = a.Length > 2 && float.TryParse(a[2], out float an) ? an : 150f, dist = a.Length > 3 && float.TryParse(a[3], out float dd) ? dd : 4.2f;
+                g.ClearMap(false);
+                Float3 c = new(0f, 0f, 6f);
+                g.Vehicles.SpawnBuggy(c + new Float3(0f, 0.9f, 0f), 0f, false, kind);
+                float r = ang * MathF.PI / 180f;
+                g.Player.Teleport(c - new Float3(MathF.Sin(r), 0f, MathF.Cos(r)) * dist - new Float3(0f, 0.6f, 0f));
+                g.Player.SetLook(ang, 14f);
+                break;
+            }
             case "drive":
             {
                 // Scripted drive test: straight, hard right, hard left, let go. Logs to /tmp/drivetest-<kind>.log.
