@@ -30,7 +30,7 @@ public static class Humans
             "Torso" => Torso(),
             "Head" => Head(),
             _ when name.StartsWith("Upper arm") => UpperArm(side),
-            _ when name.StartsWith("Lower arm") => LowerArm(side),
+            _ when name.StartsWith("Lower arm") => LowerArm(side, name.Contains("grip")),
             _ when name.StartsWith("Upper leg") => UpperLeg(),
             _ => LowerLeg(),
         };
@@ -204,7 +204,7 @@ public static class Humans
         return (arm, [new(delt, Tint.Main), new(roll, Tint.Cuff)]);
     }
 
-    private static (Mesh, Detail[]) LowerArm(float side)
+    private static (Mesh, Detail[]) LowerArm(float side, bool grip = false)
     {
         Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.2f, 0.042f, 0.042f, 0f), (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
         // Relaxed hand: palm, grouped fingers curling in, thumb.
@@ -217,13 +217,16 @@ public static class Humans
             var fs = new List<Sec>();
             for (int i = 0; i <= 6; i++)
             {
-                float a = i / 6f * 1.25f, L = fl[f];
-                fs.Add(new Sec(V(fx[f] * (1f + 0.15f * i / 6f), -0.205f - MathF.Sin(a) * L, 0.004f + (1f - MathF.Cos(a)) * L), 0.0085f - i * 0.0004f, 0.0085f - i * 0.0004f, 2.2f));
+                // Relaxed: a loose 1.25 rad curl. Grip (driving): fingers wrap a ~2 cm bar (steering-wheel rim).
+                float L = fl[f], R = grip ? 0.019f : L, a = i / 6f * (grip ? L / R * 0.95f : 1.25f);
+                fs.Add(new Sec(V(fx[f] * (1f + (grip ? 0.03f : 0.15f) * i / 6f), -0.205f - MathF.Sin(a) * R, 0.004f + (1f - MathF.Cos(a)) * R), 0.0085f - i * 0.0004f, 0.0085f - i * 0.0004f, 2.2f));
             }
             fms.Add(Sweep(fs, Float3.UnitX, 10, 0.9f));
         }
         Mesh fing = Merge(fms.ToArray());
-        Mesh thumb = Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.046f, -0.18f, 0.03f), 0.011f, 0.01f), new Sec(V(-side * 0.04f, -0.205f, 0.045f), 0.0095f, 0.009f)], Float3.UnitX, 12, 0.9f);
+        Mesh thumb = grip
+            ? Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.04f, -0.185f, 0.034f), 0.011f, 0.01f), new Sec(V(-side * 0.022f, -0.215f, 0.046f), 0.0095f, 0.009f), new Sec(V(-side * 0.004f, -0.228f, 0.04f), 0.0088f, 0.0085f)], Float3.UnitX, 12, 0.9f)
+            : Sweep([new Sec(V(-side * 0.032f, -0.15f, 0.012f), 0.012f, 0.011f), new Sec(V(-side * 0.046f, -0.18f, 0.03f), 0.011f, 0.01f), new Sec(V(-side * 0.04f, -0.205f, 0.045f), 0.0095f, 0.009f)], Float3.UnitX, 12, 0.9f);
         return (fore, [new(palm, Tint.Skin), new(fing, Tint.Skin), new(thumb, Tint.Skin)]);
     }
 

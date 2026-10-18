@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.2 — 2026-10-18
+- Driver hands wrap the steering-wheel rim (grip variant of the lower arm with curled fingers and thumb); jeep gets a dashboard with chrome-bezel speedometer/tachometer (ticks, red needles), small gauges, toggle switches, glovebox and grab bar (screens/s7-seatfp-jeep-c.png vs s7-seatfp-jeep.png)
+
 ## v0.12.1 — 2026-10-18
 - Airboat sits on its hull on land (skid rollers raised, shorter travel) instead of hovering; buggy's old painted shock sticks removed now that real coil-overs exist (screens/s7-boat-b-c.png vs s7-boat-a-c.png)
 

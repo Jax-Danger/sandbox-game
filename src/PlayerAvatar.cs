@@ -22,7 +22,7 @@ public sealed class PlayerAvatar
     private GameObject? _root;
     private Seg _pelvis = null!, _torso = null!, _head = null!;
     private readonly Seg[] _thighFp = new Seg[2];
-    private readonly Seg[] _upperArm = new Seg[2], _lowerArm = new Seg[2], _upperLeg = new Seg[2], _lowerLeg = new Seg[2];
+    private readonly Seg[] _upperArm = new Seg[2], _lowerArm = new Seg[2], _lowerArmGrip = new Seg[2], _upperLeg = new Seg[2], _lowerLeg = new Seg[2];
     private float _phase, _move;
     private Float3 _lastFeet;
     private bool _built;
@@ -47,6 +47,7 @@ public sealed class PlayerAvatar
             string s = i == 0 ? "L" : "R";
             _upperArm[i] = Make($"Upper arm {s}", new Float3(0f, -0.16f, 0f));
             _lowerArm[i] = Make($"Lower arm {s}", new Float3(0f, -0.16f, 0f));
+            _lowerArmGrip[i] = Make($"Lower arm grip {s}", new Float3(0f, -0.16f, 0f));
             _upperLeg[i] = Make($"Upper leg {s}", new Float3(0f, -0.22f, 0f));
             _thighFp[i] = new Seg { Go = new GameObject($"Thigh FP {s}") }; _thighFp[i].Go.SetParent(_root!, false);
             Add(_thighFp[i], Humans.ThighFp, new Float3(0f, -0.22f, 0f), Pants);
@@ -134,7 +135,7 @@ public sealed class PlayerAvatar
         for (int i = 0; i < 2; i++)
         {
             bool arms = visible && (!firstPerson || car is not null);
-            Show(_upperArm[i], arms); Show(_lowerArm[i], arms);
+            Show(_upperArm[i], arms); Show(_lowerArm[i], arms && car is null); Show(_lowerArmGrip[i], arms && car is not null);
             bool fpFoot = firstPerson && car is null;
             Show(_upperLeg[i], visible && !fpFoot); Show(_thighFp[i], visible && fpFoot); Show(_lowerLeg[i], visible);
         }
@@ -202,7 +203,7 @@ public sealed class PlayerAvatar
             Limb(_upperLeg[i], _lowerLeg[i], hipJ, foot, UpperLeg, LowerLeg, up + fwd * 0.5f, fwd);
             Float3 sh = tj + tUp * 0.50f + right * (0.26f * side);
             Float3 hand = car.WheelGrip(side);
-            Limb(_upperArm[i], _lowerArm[i], sh, hand, UpperArm, LowerArm, -up + right * side * 0.8f, fwd);
+            Limb(_upperArm[i], _lowerArmGrip[i], sh, hand, UpperArm, LowerArm, -up + right * side * 0.8f, fwd);
         }
     }
 }

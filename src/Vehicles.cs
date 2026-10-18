@@ -178,6 +178,38 @@ public sealed class Buggy
             Detail(g, "WiperBlade", Meshes.RoundedBox(new Float3(0.36f, 0.018f, 0.014f), 0.005f), new Float3(wx + 0.2f, 0.6f, 0.588f), new Color(0.04f, 0.04f, 0.045f, 1f), new Float3(-12f, 0f, 0f));
         }
         Detail(g, "WindFrame", VehicleModels.BentPipe(0.03f, 0.08f, Float3.UnitZ, new Float3(-0.8f, -0.32f, 0f), new Float3(-0.8f, 0.32f, 0f), new Float3(0.8f, 0.32f, 0f), new Float3(0.8f, -0.32f, 0f)), new Float3(0f, 0.85f, 0.5f), dark, new Float3(-12f, 0f, 0f));
+        // Dashboard: a painted steel panel under the screen with a padded top roll, chrome-bezel speedometer and
+        // tachometer (ticks + red needles) ahead of the driver, small fuel/temp gauges, switches and a glovebox.
+        Detail(g, "DashPanel", Meshes.RoundedBox(new Float3(1.62f, 0.2f, 0.05f), 0.015f), new Float3(0f, 0.5f, 0.46f), paint * 0.92f, new Float3(-12f, 0f, 0f));
+        Detail(g, "DashRoll", Meshes.RoundedBox(new Float3(1.6f, 0.05f, 0.1f), 0.024f), new Float3(0f, 0.61f, 0.45f), new Color(0.08f, 0.08f, 0.085f, 1f));
+        var bezel = new Color(0.62f, 0.63f, 0.65f, 1f); var face = new Color(0.05f, 0.05f, 0.055f, 1f); var tick = new Color(0.85f, 0.85f, 0.8f, 1f); var needle = new Color(0.85f, 0.12f, 0.06f, 1f);
+        void Gauge(float gx, float gy, float r, float needleDeg)
+        {
+            // Gauges sit on the -Z face of the dash panel (tilted with it); built facing -Z.
+            float tz = 0.432f - (gy - 0.5f) * 0.21f;
+            Detail(g, "GaugeBezel", Meshes.LatheZ([(r * 0.86f, 0f), (r, 0f), (r, -0.012f), (r * 0.9f, -0.016f), (r * 0.86f, -0.012f)]), new Float3(gx, gy, tz), bezel, new Float3(-12f, 0f, 0f));
+            Detail(g, "GaugeFace", Meshes.LatheZ([(0.0001f, 0f), (r * 0.87f, 0f), (r * 0.87f, -0.004f), (0.0001f, -0.004f)]), new Float3(gx, gy, tz), face, new Float3(-12f, 0f, 0f));
+            for (int i = 0; i <= 8; i++)
+            {
+                float ang = (-135f + i * 33.75f) * MathF.PI / 180f;
+                Detail(g, "GaugeTick", Meshes.RoundedBox(new Float3(r * 0.04f, r * (i % 2 == 0 ? 0.2f : 0.12f), 0.002f), 0.0008f), new Float3(gx + MathF.Sin(ang) * r * 0.66f, gy + MathF.Cos(ang) * r * 0.66f * 0.98f, tz - 0.005f), tick, new Float3(-12f, 0f, -ang * 180f / MathF.PI));
+            }
+            Detail(g, "GaugeNeedle", Meshes.RoundedBox(new Float3(r * 0.05f, r * 0.62f, 0.002f), 0.001f), new Float3(gx + MathF.Sin(needleDeg * MathF.PI / 180f) * r * 0.28f, gy + MathF.Cos(needleDeg * MathF.PI / 180f) * r * 0.28f, tz - 0.008f), needle, new Float3(-12f, 0f, -needleDeg));
+            Detail(g, "GaugeHub", Meshes.Sphere(r * 0.08f), new Float3(gx, gy, tz - 0.008f), bezel);
+        }
+        Gauge(-0.52f, 0.5f, 0.06f, -60f);
+        Gauge(-0.29f, 0.5f, 0.06f, -100f);
+        Gauge(-0.13f, 0.52f, 0.032f, 40f);
+        Gauge(-0.13f, 0.46f, 0.032f, -20f);
+        for (int i = 0; i < 3; i++)
+        {
+            float sx = 0.02f + i * 0.06f;
+            Detail(g, "Switch", Meshes.LatheZ([(0.0001f, 0f), (0.012f, 0f), (0.012f, -0.008f), (0.0001f, -0.008f)]), new Float3(sx, 0.46f, 0.445f), bezel, new Float3(-12f, 0f, 0f));
+            Detail(g, "Toggle", VehicleModels.Pipe(0.0035f, Float3.UnitX, new Float3(sx, 0.46f, 0.44f), new Float3(sx, 0.475f, 0.415f)), Float3.Zero, bezel);
+        }
+        Detail(g, "Glovebox", Meshes.RoundedBox(new Float3(0.42f, 0.13f, 0.02f), 0.012f), new Float3(0.45f, 0.49f, 0.43f), paint * 0.86f, new Float3(-12f, 0f, 0f));
+        Detail(g, "GloveLatch", Meshes.RoundedBox(new Float3(0.06f, 0.018f, 0.02f), 0.006f), new Float3(0.45f, 0.53f, 0.418f), bezel, new Float3(-12f, 0f, 0f));
+        Detail(g, "GrabBar", VehicleModels.BentPipe(0.014f, 0.05f, Float3.UnitY, new Float3(0.2f, 0.6f, 0.42f), new Float3(0.24f, 0.63f, 0.36f), new Float3(0.66f, 0.63f, 0.36f), new Float3(0.7f, 0.6f, 0.42f)), Float3.Zero, dark);
         foreach (float x in new[] { -0.4f, 0.4f })
             Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
