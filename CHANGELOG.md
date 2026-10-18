@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.15 — 2026-10-18
+- Driver hands: grip point sits 3 cm inside the wheel rim (fist wraps the ring) instead of 2 cm above the wheel plane, so the right hand at the top no longer floats above the rim
+
 ## v0.17.14 — 2026-10-18
 - Driver hands: arm IK solves to the fist (+8 cm past the forearm end), so the turning-side hand sits on the steering rim instead of floating inside it (screens/s12-seatfp-b-crop.png vs s12-seatfp-a-crop.png)
 

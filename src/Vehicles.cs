@@ -418,7 +418,9 @@ public sealed class Buggy
         float tilt = WheelTilt * MathF.PI / 180f;
         // Wheel plane axes in car space: x = right, v = up tilted back toward the driver.
         Float3 vx = new(1f, 0f, 0f), vy = new(0f, MathF.Sin(tilt), MathF.Cos(tilt));
-        Float3 local = WheelCentre + (vx * MathF.Cos(a) * side - vy * MathF.Sin(a) * side) * WheelR + vy * 0.02f;
+        Float3 radial = (vx * MathF.Cos(a) - vy * MathF.Sin(a)) * side;
+        // Fist centre sits ~3 cm inside the rim (the curled fingers wrap it), so the top hand no longer floats above the ring.
+        Float3 local = WheelCentre + radial * (WheelR - 0.03f);
         return t.Position + t.Right * local.X + t.Up * local.Y + t.Forward * local.Z;
     }
     private void AddSteeringWheel(SandboxGame g)
