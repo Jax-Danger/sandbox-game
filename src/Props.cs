@@ -38,7 +38,7 @@ public sealed class Prop
 
     private void ApplyTint()
     {
-        Color c = Frozen ? new Color(0.35f, 0.75f, 1f, 1f) : BaseColor;
+        Color c = Frozen && Entity is null ? new Color(0.35f, 0.75f, 1f, 1f) : BaseColor;
         float k = Math.Clamp(_highlight, 0f, 1f) * 0.5f;
         Material.SetColor("_MainColor", Lift(c, k));
         // Tint the detail/part renderers too, so a hovered NPC or model highlights as a whole instead of only its

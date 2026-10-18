@@ -338,7 +338,7 @@ public static class EntityCatalog
     {
         p.Entity = "ent_button";
         p.Go.Name = p.Go.Name.Replace("Small Crate", "Button");
-        p.SetColor(new Prowl.Vector.Color(0.25f, 0.27f, 0.30f, 1f));
+        p.SetColor(new Prowl.Vector.Color(0.42f, 0.44f, 0.47f, 1f));
         var cap = new GameObject("ButtonCap");
         cap.SetParent(p.Go, false);
         cap.Transform.LocalPosition = new Prowl.Vector.Float3(0f, 0.3f, 0f);

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.12.10 — 2026-10-18
+- Entities (button, camera, light...) keep their real colours when frozen instead of the blue frozen-prop tint; button housing is brushed steel grey.
+
 ## v0.12.9 — 2026-10-18
 - Red button dome is a smooth glossy cap (white albedo instead of the patterned default texture; lathe poles now use the axis normal everywhere, removing star-shaped specks on domes and nose cones).
 
