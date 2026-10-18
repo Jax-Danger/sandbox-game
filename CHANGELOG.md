@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.14 — 2026-10-18
+- Driver hands: arm IK solves to the fist (+8 cm past the forearm end), so the turning-side hand sits on the steering rim instead of floating inside it (screens/s12-seatfp-b-crop.png vs s12-seatfp-a-crop.png)
+
 ## v0.17.13 — 2026-10-18
 - Jeep: flat painted channel bumper with angled end returns, carriage bolts and red tow shackles (was a round black pipe) (screens/s12-jeep-c-crop.png vs s12-jeep-b-crop.png)
 

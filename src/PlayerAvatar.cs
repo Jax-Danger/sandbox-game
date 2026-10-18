@@ -203,7 +203,7 @@ public sealed class PlayerAvatar
             Limb(_upperLeg[i], _lowerLeg[i], hipJ, foot, UpperLeg, LowerLeg, up + fwd * 0.5f, fwd);
             Float3 sh = tj + tUp * 0.50f + right * (0.26f * side);
             Float3 hand = car.WheelGrip(side);
-            Limb(_upperArm[i], _lowerArmGrip[i], sh, hand, UpperArm, LowerArm, -up + right * side * 0.8f, fwd);
+            Limb(_upperArm[i], _lowerArmGrip[i], sh, hand, UpperArm, LowerArm + 0.08f, -up + right * side * 0.8f, fwd); // +0.08: the fist curls ~8 cm past the forearm end, so solve to the fist (hands overshot the rim)
         }
     }
 }
