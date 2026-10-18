@@ -101,6 +101,11 @@ public static partial class MapBuilder
         Ramp(scene, shader, "Ramp side", new Float3(0f, 1.5f, 24f), new Float3(10f, 0.4f, 5f), new Float3(0f, 0f, 18f), accent);
         Box(scene, shader, "Platform", new Float3(-14f, 2.2f, 19f), new Float3(8f, 0.6f, 8f), Float3.Zero, concrete);
         Box(scene, shader, "Wall mid", new Float3(10f, 1.5f, -12f), new Float3(12f, 3f, 0.6f), Float3.Zero, concrete);
+        // Coping caps with a drip edge on every wall top, and a plinth on the mid wall.
+        var cap = new Color(0.72f, 0.72f, 0.70f, 1f);
+        foreach (var (p, sz) in new[] { (new Float3(0f, h, half), new Float3(120f, 0.16f, 1.3f)), (new Float3(0f, h, -half), new Float3(120f, 0.16f, 1.3f)), (new Float3(half, h, 0f), new Float3(1.3f, 0.16f, 120f)), (new Float3(-half, h, 0f), new Float3(1.3f, 0.16f, 120f)), (new Float3(10f, 3f, -12f), new Float3(12.3f, 0.14f, 0.85f)) })
+            Shape(scene, shader, "~Coping", Meshes.RoundedBox(sz, 0.05f), p + new Float3(0f, 0.08f, 0f), cap);
+        Shape(scene, shader, "~Plinth", Meshes.RoundedBox(new Float3(12.2f, 0.25f, 0.8f), 0.05f), new Float3(10f, 0.125f, -12f), cap);
         Box(scene, shader, "Step 1", new Float3(-10f, 0.25f, -12f), new Float3(3f, 0.5f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 2", new Float3(-13f, 0.5f, -12f), new Float3(3f, 1f, 3f), Float3.Zero, concrete);
         Box(scene, shader, "Step 3", new Float3(-16f, 0.75f, -12f), new Float3(3f, 1.5f, 3f), Float3.Zero, concrete);
@@ -342,6 +347,16 @@ public static partial class MapBuilder
         }
         foreach (var f in faces) { Float3 c = (f[0] + f[2]) * 0.5f, ctr = (top[0] + top[2]) * 0.5f; if (Float3.Dot(Float3.Cross(f[1] - f[0], f[2] - f[0]), c - ctr) < 0f) Array.Reverse(f); }
         Shape(scene, shader, name + " base", Meshes.Faces(faces.ToArray()), Float3.Zero, new Color(0.6f, 0.6f, 0.58f, 1f));
+        // Deck dressing: dark anti-slip strips across the deck and a yellow edge band along each side.
+        var grip = new Color(0.2f, 0.2f, 0.22f, 1f);
+        int strips = (int)(size.Z / 1.2f);
+        for (int i = 0; i < strips; i++)
+        {
+            float z = -size.Z / 2f + 0.6f + i * (size.Z - 1.2f) / MathF.Max(1, strips - 1);
+            Shape(scene, shader, "~" + name + " grip", Meshes.RoundedBox(new Float3(size.X - 0.6f, 0.02f, 0.14f), 0.008f), deck.Transform.TransformPoint(new Float3(0f, size.Y / 2f + 0.005f, z)), grip, euler: euler);
+        }
+        foreach (float sx in new[] { -1f, 1f })
+            Shape(scene, shader, "~" + name + " edge", Meshes.RoundedBox(new Float3(0.12f, 0.02f, size.Z - 0.1f), 0.008f), deck.Transform.TransformPoint(new Float3(sx * (size.X / 2f - 0.12f), size.Y / 2f + 0.006f, 0f)), new Color(0.95f, 0.75f, 0.15f, 1f), euler: euler);
     }
 
     /// <summary>Visual-only smooth mesh (swept/lathed map detail); optional box collider.</summary>
