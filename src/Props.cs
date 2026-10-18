@@ -135,6 +135,7 @@ public sealed class PropManager(Scene scene, Shader shader)
             PropKind.BigBall => Meshes.Sphere(1f),
             PropKind.Barrel => Meshes.Barrel(0.4f, 1.1f),
             PropKind.Pole => Meshes.RoundedCylinder(0.08f, 3f, 0.02f, 16),
+            PropKind.BigCrate or PropKind.SmallCrate => Meshes.Crate(sz.X),
             _ => Meshes.RoundedBox(sz, MathF.Min(0.05f, minDim * 0.3f)),
         };
     }

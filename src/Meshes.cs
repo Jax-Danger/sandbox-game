@@ -165,6 +165,37 @@ public static class Meshes
     }
 
     /// <summary>Barrel: bulged staves with two rings and rounded rims.</summary>
+
+    /// <summary>Wooden crate: inset panel core, proud edge battens on all 12 edges and a diagonal brace on every face.</summary>
+    public static Mesh Crate(float size)
+    {
+        string key = $"crate{size:0.###}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        float h = size / 2f, w = size * 0.13f, p = w * 0.45f, e = h - w / 2f;
+        var parts = new List<Mesh> { RoundedBox(new Float3(size - 2f * p, size - 2f * p, size - 2f * p), size * 0.01f) };
+        Mesh Off(Mesh m, Float3 o)
+        {
+            var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + o).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+            mm.RecalculateBounds(); return mm;
+        }
+        foreach (float a in new[] { -e, e })
+            foreach (float b in new[] { -e, e })
+            {
+                parts.Add(Off(RoundedBox(new Float3(size, w, w), w * 0.12f), new Float3(0f, a, b)));
+                parts.Add(Off(RoundedBox(new Float3(w, size - 2f * w + 0.002f, w), w * 0.12f), new Float3(a, 0f, b)));
+                parts.Add(Off(RoundedBox(new Float3(w, w, size - 2f * w + 0.002f), w * 0.12f), new Float3(a, b, 0f)));
+            }
+        float d = h - p + w * 0.22f, q = h - w * 0.9f, bw = w * 0.42f, bt = w * 0.24f;
+        Mesh Brace(Float3 a, Float3 b, Float3 side) => Sweep([new Sec(a, bw, bt, 6f), new Sec(b, bw, bt, 6f)], side, 12, 0.15f);
+        foreach (float sg in new[] { -1f, 1f })
+        {
+            parts.Add(Brace(new Float3(-q, -q * sg, sg * d), new Float3(q, q * sg, sg * d), Float3.UnitZ));
+            parts.Add(Brace(new Float3(sg * d, -q, q * sg), new Float3(sg * d, q, -q * sg), Float3.UnitX));
+            parts.Add(Brace(new Float3(-q, sg * d, q * sg), new Float3(q, sg * d, -q * sg), Float3.UnitY));
+        }
+        return _cache[key] = Merge(parts.ToArray());
+    }
+
     public static Mesh Barrel(float radius, float height)
     {
         float h = height / 2f;
