@@ -413,7 +413,7 @@ public static partial class ViewModels
             {
                 Std(V(0.19f, -0.285f, 0.4f), 2.5f, 5f);
                 Bone("muzzle", "weapon", V(0f, 0.115f, 0.52f));
-                Bone("sight", "weapon", V(-0.09f, 0.19f, -0.075f));
+                Bone("sight", "weapon", V(-0.104f, 0.205f, -0.075f)); // offset so the eyepiece lands on screen centre once the rig pitch is applied
                 Bone("rocket", "weapon", Float3.Zero);
                 k.Lz("weapon", Olive, Finish.Paint, V(0, 0.115f, -0.36f),
                     (0.0385f, 0.36f), (0.0395f, 0.364f), (0.0372f, 0.374f), (0.0365f, 0.384f), (0.0365f, 0.4f), (0.0365f, 0.72f), (0.0395f, 0.73f), (0.0395f, 0.85f), (0.0345f, 0.86f), (0.031f, 0.86f), (0.031f, 0.84f), (0f, 0.84f));
@@ -453,7 +453,7 @@ public static partial class ViewModels
                 leftParent = "weapon"; leftPos = V(0f, 0.0f, 0.206f);
                 left = new HandSpec(new GripFrame(Float3.Zero, Nz(V(0f, 1f, 0.12f)), Float3.UnitX, 0.0142f, 0.019f),
                     202f, 1, [0.03f, 0.0115f, -0.007f, -0.025f], 86f, V(-0.026f, -0.02f, -0.075f), 112f, -18f, 0.035f, 0.045f);
-                d.RecoilKick = 3f; d.Weight = 1.9f; d.CanAim = true; d.AimZoom = 1.25f; d.AimShift = V(-0.045f, 0.045f, 0.01f);
+                d.RecoilKick = 3f; d.Weight = 1.9f; d.CanAim = true; d.AimZoom = 1.25f; // sight bone centred on the eyepiece axis (was a fixed shoulder shift that left the optic off-axis)
                 d.SprintPose = new BonePose(V(0.03f, -0.02f, -0.05f), V(8f, -16f, 8f));
                 break;
             }
