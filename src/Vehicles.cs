@@ -196,7 +196,7 @@ public sealed class Buggy
         Detail(g, "Hood", VehicleModels.JeepHood(), Float3.Zero, paint);
         foreach (float x in new[] { -0.9f, 0.9f }) foreach (float z in new[] { -1.25f, 1.25f })
             Detail(g, "Fender", VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
-        Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
+        Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, paint * 0.9f); // painted grille panel so the black slots read (was black-on-black)
         // Stencilled five-point star on the hood (centre pentagon + five point triangles).
         {
             const float sy = 0.546f, sz = 1.12f, ro = 0.19f, ri = 0.075f;

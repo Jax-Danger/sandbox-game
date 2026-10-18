@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.11 — 2026-10-18
+- Jeep: painted grille panel so the seven black slots read (was black-on-black) (screens/s12-jeep-b-crop.png vs s12-jeep-a-crop.png)
+
 ## v0.17.10 — 2026-10-18
 - SMG red dot: flat pale rear lens carrying the red dot, so aiming shows a lens and dot instead of a black disc (screens/vm/r2/s12smge-crop.png vs s12smgc-crop.png)
 
