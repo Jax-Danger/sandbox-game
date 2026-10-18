@@ -37,6 +37,17 @@ public static class Gallery
                 g.Player.SetLook(0f, 22f);
                 break;
             }
+            case "ent":
+            {
+                // "ent_ent_ball-ent_light": catalog entries side by side, 2.2 m in front of the camera.
+                var ids = set[(set.IndexOf('_') + 1)..].Split('-');
+                g.ClearMap(false);
+                for (int i = 0; i < ids.Length; i++)
+                    if (SpawnCatalog.Find(ids[i]) is { } e) e.Spawn(g, new Float3((i - (ids.Length - 1) / 2f) * 1.4f, e.HalfHeight + 0.02f, 2.2f), 200f);
+                g.Player.Teleport(new Float3(0f, 0.05f, 0.2f));
+                g.Player.SetLook(0f, 14f);
+                break;
+            }
             case "one":
             {
                 // Close-up review: "one_pallet-ibeam-tv" spawns those model ids side by side, near the camera.

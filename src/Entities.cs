@@ -216,7 +216,7 @@ public static class EntityCatalog
         {
             case "ent_barrel": MakeBarrel(g, p); break;
             case { } m when m.StartsWith("mdl_"): if (ModelProps.Find(m) is { } def) ModelProps.Apply(g, p, def); break;
-            case "ent_ball": MakeBall(p, keepColor: true); break;
+            case "ent_ball": MakeBall(p, keepColor: true, g); break;
             case "ent_light": p.Entity = "ent_light"; p.Go.Name = p.Go.Name.Replace("Small Crate", "Light"); LightModel(g, p); break;
             case "ent_camera": CameraFeeds.Make(g, p); break;
             case "rp_money" or "rp_printer" or "rp_shipment": g.Roleplay.Decorate(p, entity, key); break;
@@ -256,9 +256,9 @@ public static class EntityCatalog
         return p;
     }
 
-    public static Prop SpawnBall(SandboxGame g, Prowl.Vector.Float3 pos) => MakeBall(g.Props.Spawn(PropKind.Sphere, pos, 0f), keepColor: false);
+    public static Prop SpawnBall(SandboxGame g, Prowl.Vector.Float3 pos) => MakeBall(g.Props.Spawn(PropKind.Sphere, pos, 0f), keepColor: false, g);
 
-    private static Prop MakeBall(Prop p, bool keepColor)
+    private static Prop MakeBall(Prop p, bool keepColor, SandboxGame? g = null)
     {
         p.Entity = "ent_ball";
         if (!keepColor) p.SetColor(ToolGun.HueColor(Random.Shared.NextSingle()));
@@ -267,6 +267,18 @@ public static class EntityCatalog
         p.Body.Friction = 0.3f;
         p.Body.Mass = 0.5f;
         p.Go.Name = p.Go.Name.Replace("Sphere", "Bouncy Ball");
+        if (g is null || Application.IsHeadless || p.Go.Transform.Find("BallBand") is not null) return p;
+        // Smooth high-res shell, a yellow moulding seam band and a little inflation valve (matches the icon).
+        if (p.Go.GetComponent<MeshRenderer>() is { } sr) sr.Mesh = Meshes.Sphere(0.5f);
+        void Part(string name, Mesh mesh, Prowl.Vector.Color c, Prowl.Vector.Float3 euler)
+        {
+            var o = new GameObject(name); o.SetParent(p.Go, false);
+            o.Transform.LocalEulerAngles = euler;
+            var r = o.AddComponent<MeshRenderer>(); r.Mesh = mesh;
+            var m = Mats.New(g.Shader); m.SetColor("_MainColor", c); r.Material = m;
+        }
+        Part("BallBand", Meshes.Lathe("entballband", [(0.494f, -0.06f), (0.504f, -0.055f), (0.506f, 0f), (0.504f, 0.055f), (0.494f, 0.06f)], 64), new Prowl.Vector.Color(0.98f, 0.86f, 0.3f, 1f), new(20f, 0f, -25f));
+        Part("BallValve", Meshes.Lathe("entballvalve", [(0.0001f, 0.508f), (0.035f, 0.505f), (0.042f, 0.497f)], 20), new Prowl.Vector.Color(0.2f, 0.2f, 0.22f, 1f), new(-35f, 0f, 30f));
         return p;
     }
 

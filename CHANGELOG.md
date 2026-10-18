@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.15 — 2026-10-18
+- Bouncy Ball entity gets a smooth high-res shell, yellow seam band and valve like its icon; gallery set gal_ent_<ids> for entity close-ups.
+
 ## v0.9.14 — 2026-10-18
 - Rolling Hills boulders are chiselled, flat-shaded plane-cut rocks instead of smooth blobs; trees no longer spawn inside boulders.
 
