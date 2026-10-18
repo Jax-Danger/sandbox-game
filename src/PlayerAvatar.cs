@@ -21,13 +21,14 @@ public sealed class PlayerAvatar
     private readonly SandboxGame _g;
     private GameObject? _root;
     private Seg _pelvis = null!, _torso = null!, _head = null!;
+    private readonly Seg[] _thighFp = new Seg[2];
     private readonly Seg[] _upperArm = new Seg[2], _lowerArm = new Seg[2], _upperLeg = new Seg[2], _lowerLeg = new Seg[2];
     private float _phase, _move;
     private Float3 _lastFeet;
     private bool _built;
     public static readonly Color Shirt = new(0.22f, 0.36f, 0.62f, 1f), Pants = new(0.16f, 0.17f, 0.2f, 1f), Skin = new(0.86f, 0.68f, 0.54f, 1f);
 
-    private const float UpperLeg = 0.44f, LowerLeg = 0.44f, UpperArm = 0.32f, LowerArm = 0.30f;
+    private const float UpperLeg = 0.44f, LowerLeg = 0.44f, UpperArm = 0.30f, LowerArm = 0.30f;
 
     public PlayerAvatar(SandboxGame g) { _g = g; }
     /// <summary>Screenshot overrides: fake walking speed / crouch amount (&lt;0 = off).</summary>
@@ -47,6 +48,8 @@ public sealed class PlayerAvatar
             _upperArm[i] = Make($"Upper arm {s}", new Float3(0f, -0.16f, 0f));
             _lowerArm[i] = Make($"Lower arm {s}", new Float3(0f, -0.16f, 0f));
             _upperLeg[i] = Make($"Upper leg {s}", new Float3(0f, -0.22f, 0f));
+            _thighFp[i] = new Seg { Go = new GameObject($"Thigh FP {s}") }; _thighFp[i].Go.SetParent(_root!, false);
+            Add(_thighFp[i], Humans.ThighFp, new Float3(0f, -0.22f, 0f), Pants);
             _lowerLeg[i] = Make($"Lower leg {s}", new Float3(0f, -0.22f, 0f));
         }
         _g.World.Add(_root);
@@ -80,7 +83,8 @@ public sealed class PlayerAvatar
         go.Transform.LocalPosition = at;
         MeshRenderer r = go.AddComponent<MeshRenderer>();
         r.Mesh = mesh;
-        var m = Mats.New(_g.Shader); m.SetColor("_MainColor", c); r.Material = m;
+        var m = Mats.New(_g.Shader); m.SetColor("_MainColor", c);
+        r.Material = m;
         seg.R.Add(r);
     }
 
@@ -131,7 +135,8 @@ public sealed class PlayerAvatar
         {
             bool arms = visible && (!firstPerson || car is not null);
             Show(_upperArm[i], arms); Show(_lowerArm[i], arms);
-            Show(_upperLeg[i], visible && !(firstPerson && car is null)); Show(_lowerLeg[i], visible);
+            bool fpFoot = firstPerson && car is null;
+            Show(_upperLeg[i], visible && !fpFoot); Show(_thighFp[i], visible && fpFoot); Show(_lowerLeg[i], visible);
         }
         Show(_pelvis, visible && !(firstPerson && car is null));
         if (!visible) return;
@@ -170,6 +175,7 @@ public sealed class PlayerAvatar
             float lift = MathF.Max(0f, MathF.Cos(ph)) * 0.13f * _move;
             Float3 foot = baseAt + right * (0.11f * side) + fwd * (MathF.Sin(ph) * stride + 0.05f + 0.12f * crouch + FpLead) + new Float3(0f, 0.05f + lift, 0f);
             Limb(_upperLeg[i], _lowerLeg[i], hipJ, foot, UpperLeg, LowerLeg, fwd + Float3.UnitY * 0.2f, fwd);
+            Place(_thighFp[i], _upperLeg[i].Go.Transform.Position, _upperLeg[i].Go.Transform.Rotation);
             Float3 sh = tj + tUp * 0.50f + right * (0.28f * side);
             Float3 hand = sh + new Float3(0f, -0.6f, 0f) + right * (0.04f * side) - fwd * (MathF.Sin(ph) * stride * 0.6f - 0.05f);
             Limb(_upperArm[i], _lowerArm[i], sh, hand, UpperArm, LowerArm, -fwd + right * side * 0.3f, fwd);

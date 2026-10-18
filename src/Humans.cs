@@ -116,10 +116,12 @@ public static class Humans
 
     private static (Mesh, Detail[]) UpperArm(float side)
     {
-        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.13f, 0.048f, 0.048f, 0.004f), (-0.2f, 0.045f, 0.045f, 0.004f));
+        Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.17f, 0.062f, 0.06f, 0f), (0.11f, 0.066f, 0.062f, 0f), (0.0f, 0.056f, 0.054f, 0f), (-0.11f, 0.049f, 0.049f, 0.004f), (-0.165f, 0.047f, 0.047f, 0.004f));
         Mesh delt = Sweep([new Sec(V(-side * 0.025f, 0.175f, 0f), 0.04f, 0.045f), new Sec(V(-side * 0.008f, 0.145f, 0f), 0.066f, 0.062f), new Sec(V(0f, 0.08f, 0f), 0.064f, 0.06f)], Float3.UnitZ, 20, 0.8f);
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
-        return (arm, [new(hem, Tint.Cuff), new(delt, Tint.Main)]);
+        // Sleeve end rolls softly over the elbow (no hard rim cutting into the forearm when the arm bends).
+        Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.19f, 0.05f, 0.05f, 0.004f), (-0.205f, 0.043f, 0.043f, 0.004f));
+        return (arm, [new(hem, Tint.Cuff), new(delt, Tint.Main), new(roll, Tint.Cuff)]);
     }
 
     private static (Mesh, Detail[]) LowerArm(float side)
@@ -136,6 +138,11 @@ public static class Humans
 
     private static (Mesh, Detail[]) UpperLeg()
         => (Sw(2.3f, Float3.UnitX, 0.9f, (0.25f, 0.08f, 0.078f, 0f), (0.12f, 0.08f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
+
+    private static Mesh? _thighFp;
+    /// <summary>First-person thigh: only the knee half, so looking down shows trousers running into the knee instead of
+    /// the top of the shin (the full thigh sits right under the camera and fills the view).</summary>
+    public static Mesh ThighFp => _thighFp ??= Sw(2.3f, Float3.UnitX, 0.9f, (0.0f, 0.064f, 0.064f, 0.004f), (-0.05f, 0.066f, 0.066f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f));
 
     private static (Mesh, Detail[]) LowerLeg()
     {
