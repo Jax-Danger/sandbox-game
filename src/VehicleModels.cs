@@ -38,6 +38,37 @@ public static class VehicleModels
         (-1.38f, 0.66f, 0.15f, 0.02f, 4f), (-1.1f, 0.74f, 0.17f, 0f, 4.5f), (0.4f, 0.74f, 0.17f, 0f, 4.5f), (0.95f, 0.6f, 0.15f, 0.02f, 4f),
         (1.3f, 0.42f, 0.11f, 0.05f, 3.5f), (1.42f, 0.3f, 0.07f, 0.07f, 3f)));
 
+    /// <summary>Buggy nose cowl: rises from the cockpit to a rounded hump over the front axle, then drops to the bumper.</summary>
+    public static Mesh BuggyNose() => C("bnose", () => Tub(
+        (0.25f, 0.62f, 0.05f, 0.2f, 3.5f), (0.45f, 0.66f, 0.12f, 0.24f, 3.6f), (0.8f, 0.64f, 0.15f, 0.25f, 3.4f), (1.1f, 0.56f, 0.13f, 0.22f, 3.2f),
+        (1.32f, 0.42f, 0.09f, 0.16f, 3f), (1.44f, 0.28f, 0.05f, 0.11f, 2.6f)));
+
+    public static Mesh BuggyDash() => C("bdash", () => Sweep([
+        new Sec(V(0f, 0.38f, 0.22f), 0.5f, 0.05f, 3f), new Sec(V(0f, 0.43f, 0.32f), 0.52f, 0.06f, 3f), new Sec(V(0f, 0.4f, 0.4f), 0.5f, 0.04f, 3f)], Float3.UnitX, 20, 0.6f));
+
+    /// <summary>Flat-four style engine: rounded block with finned cylinder heads either side and a fan shroud.</summary>
+    public static Mesh BuggyEngine() => C("bengine", () =>
+    {
+        var parts = new List<Mesh> { RoundedBox(V(0.5f, 0.3f, 0.36f), 0.07f) };
+        foreach (float sx in new[] { -1f, 1f })
+            for (int i = 0; i < 4; i++)
+                parts.Add(Sweep([new Sec(V(sx * 0.25f, -0.02f, -0.12f + i * 0.08f), 0.004f, 0.11f, 4f, Float3.UnitZ), new Sec(V(sx * 0.33f, -0.02f, -0.12f + i * 0.08f), 0.004f, 0.1f, 4f, Float3.UnitZ)], Float3.UnitZ, 10, 0.3f));
+        parts.Add(Sweep([new Sec(V(0f, 0.15f, -0.1f), 0.18f, 0.03f, 3f), new Sec(V(0f, 0.17f, 0.1f), 0.18f, 0.03f, 3f)], Float3.UnitX, 16, 0.6f));
+        return Merge(parts.ToArray());
+    });
+
+    /// <summary>Slim rear arch hugging the tyre (the jeep fender was far too wide on the buggy).</summary>
+    public static Mesh BuggyArch(float x, float z, float r) => C($"barch{x}{z}{r}", () =>
+    {
+        var s = new List<Sec>();
+        for (int i = 0; i <= 12; i++)
+        {
+            float a = MathF.PI * (0.18f + 0.6f * i / 12f);
+            s.Add(new Sec(V(x, -0.15f + MathF.Sin(a) * (r + 0.07f), z - MathF.Cos(a) * (r + 0.07f)), 0.15f, 0.025f, 4f, Float3.UnitX));
+        }
+        return Sweep(s, Float3.UnitX, 16, 0.5f);
+    });
+
     public static Mesh JeepBody() => C("jeep", () => Tub(
         (-1.68f, 0.86f, 0.25f, 0.02f, 5f), (-1.5f, 0.9f, 0.27f, 0f, 5.5f), (0.45f, 0.9f, 0.27f, 0f, 5.5f), (0.6f, 0.88f, 0.3f, 0.04f, 5.5f),
         (1.5f, 0.86f, 0.3f, 0.06f, 5f), (1.68f, 0.82f, 0.26f, 0.06f, 4.5f)));

@@ -71,7 +71,23 @@ public sealed class Buggy
         Detail(g, "CageX", VehicleModels.BentPipe(0.03f, 0.1f, Float3.UnitY, new Float3(-0.56f, 1.15f, 0.0f), new Float3(0.56f, 1.15f, 0.0f)), Float3.Zero, cage);
         Detail(g, "Bumper", VehicleModels.BentPipe(0.05f, 0.15f, Float3.UnitY, new Float3(-0.7f, 0.1f, 1.25f), new Float3(-0.55f, 0.02f, 1.52f), new Float3(0.55f, 0.02f, 1.52f), new Float3(0.7f, 0.1f, 1.25f)), Float3.Zero, cage);
         foreach (float x in new[] { -0.2f, 0.2f })
-            Detail(g, "Light", VehicleModels.Lamp(0.07f), new Float3(x, 0.16f, 1.38f), new Color(0.95f, 0.92f, 0.75f, 1f));
+            Detail(g, "Light", VehicleModels.Lamp(0.07f), new Float3(x, 0.36f, 1.18f), new Color(0.95f, 0.92f, 0.75f, 1f), new Float3(-8f, 0f, 0f));
+        // Dune-buggy body: raised fibreglass nose cowl with a scooped dash, rear wheel arches, side nerf bars,
+        // rear engine with air filter and twin exhausts. (Was a flat plank with a cage on it.)
+        Detail(g, "Nose", VehicleModels.BuggyNose(), Float3.Zero, paint);
+        Detail(g, "Dash", VehicleModels.BuggyDash(), Float3.Zero, dark);
+        foreach (float x in new[] { -0.85f, 0.85f })
+        {
+            Detail(g, "Arch", VehicleModels.BuggyArch(x, -1.05f, 0.42f), Float3.Zero, paint * 0.9f);
+            Detail(g, "Nerf", VehicleModels.BentPipe(0.035f, 0.12f, Float3.UnitY, new Float3(x * 0.8f, 0.12f, 0.55f), new Float3(x * 0.98f, 0.0f, 0.35f), new Float3(x * 0.98f, 0.0f, -0.55f), new Float3(x * 0.8f, 0.12f, -0.72f)), Float3.Zero, cage);
+            Detail(g, "Shock", VehicleModels.Pipe(0.03f, Float3.UnitX, new Float3(x * 0.55f, 0.15f, 1.0f), new Float3(x * 0.8f, -0.12f, 1.05f)), Float3.Zero, new Color(0.85f, 0.2f, 0.1f, 1f));
+        }
+        var metal = new Color(0.55f, 0.56f, 0.58f, 1f);
+        Detail(g, "Engine", VehicleModels.BuggyEngine(), new Float3(0f, 0.3f, -1.15f), new Color(0.28f, 0.29f, 0.3f, 1f));
+        Detail(g, "Filter", VehicleModels.Lamp(0.1f), new Float3(0.22f, 0.62f, -1.0f), metal, new Float3(-90f, 0f, 0f));
+        foreach (float x in new[] { -0.22f, -0.12f })
+            Detail(g, "Exhaust", VehicleModels.BentPipe(0.028f, 0.08f, Float3.UnitX, new Float3(x, 0.3f, -1.1f), new Float3(x, 0.32f, -1.38f), new Float3(x, 0.42f, -1.52f)), Float3.Zero, metal);
+        Detail(g, "Plate", Meshes.RoundedBox(new Float3(0.34f, 0.12f, 0.015f), 0.01f), new Float3(0.15f, 0.14f, -1.42f), new Color(0.92f, 0.9f, 0.8f, 1f));
         }
         float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? -0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.25f : 0.42f;
 
