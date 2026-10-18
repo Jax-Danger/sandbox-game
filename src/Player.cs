@@ -11,7 +11,7 @@ namespace Sandbox;
 public sealed class Player
 {
     public const float EyeHeight = 1.65f;
-    private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6f, CrouchSpeed = 2.3f;
+    private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6.5f, CrouchSpeed = 2.3f;
     /// <summary>Player gravity; scaled with the world's gravity modifier (20 at Earth gravity feels right for the controller).</summary>
     public static float Gravity { get; set; } = 20f;
     public bool Crouching { get; private set; }
@@ -45,6 +45,10 @@ public sealed class Player
     public float CrouchBlend => _crouch;
     public float VerticalVelocity => _verticalVelocity;
     private bool _wasGrounded = true;
+    private float _jumpBuffer, _coyote, _jumpLock;
+    /// <summary>Programmatic jump (self-test); consumed on the next grounded update.</summary>
+    public bool JumpRequested;
+    public int Jumps { get; private set; }
 
     public Player(Scene scene, Float3 spawnFeet, float yaw)
     {
@@ -147,11 +151,17 @@ public sealed class Player
         bool groundedNow = _controller.IsGrounded;
         if (groundedNow && !_wasGrounded && _verticalVelocity < -2f) { LandingImpact = -_verticalVelocity; LandingKick = -_verticalVelocity; }
         _wasGrounded = groundedNow;
-        if (_controller.IsGrounded)
+        // Jump buffer + coyote time; and once airborne-upward, ignore the 0.1 m ground probe so the first frames of a
+        // jump (still within probe range of the floor, especially at high frame rates) don't zero the velocity again.
+        if (allowInput && Binds.Down("jump")) _jumpBuffer = 0.15f;
+        _jumpBuffer -= dt; _coyote = groundedNow ? 0.1f : _coyote - dt; _jumpLock -= dt;
+        if ((_jumpBuffer > 0f || JumpRequested) && _coyote > 0f && _jumpLock <= 0f)
+        {
+            _verticalVelocity = JumpSpeed; _jumpBuffer = 0f; _coyote = 0f; _jumpLock = 0.25f; JumpRequested = false; Jumps++;
+        }
+        else if (_controller.IsGrounded && _jumpLock <= 0f)
         {
             _verticalVelocity = -1f; // small stick-to-ground push
-            if (allowInput && Binds.Down("jump"))
-                _verticalVelocity = JumpSpeed;
         }
         else
         {
@@ -159,14 +169,31 @@ public sealed class Player
         }
 
         if (!float.IsFinite(_verticalVelocity) || !float.IsFinite(Gravity)) _verticalVelocity = 0f;
-        var motion = new Float3(wish.X, _verticalVelocity, wish.Z) * dt;
+        // While grounded the controller's ground snap keeps us on slopes; pushing down into the floor every frame only
+        // sinks the capsule past its skin width (which then trips the engine's bad depenetration below).
+        float vy = _controller.IsGrounded && _verticalVelocity < 0f ? 0f : _verticalVelocity;
+        var motion = new Float3(wish.X, vy, wish.Z) * dt;
         if (!IsFinite(_body.Transform.Position)) RecoverFromNaN();
         else if (IsFinite(motion))
         {
             // Jitter's MPR/EPA can return a NaN contact normal for degenerate overlaps (seen in the 300 s soak
             // after welding two limbs of one ragdoll); the engine's Math.Sign then throws. Skip that frame's move.
+            Float3 before = _body.Transform.Position;
             try { _controller.Move(motion); }
             catch (ArithmeticException) { MoveFaults++; }
+            // The engine's sweep reports a bogus negative hit fraction when the capsule already overlaps the floor
+            // slightly (uneven frame times can sink it past the skin width), which "resolves" by launching the
+            // player tens of metres up — on the big town grass slab this repeated until fall damage killed you.
+            // Reject any upward jump the move couldn't have produced and re-seat the feet on the floor below.
+            Float3 after = _body.Transform.Position;
+            if (IsFinite(after) && after.Y - before.Y > MathF.Max(motion.Y, 0f) + _controller.StepSize + 0.1f)
+            {
+                Float3 back = new(before.X + motion.X, before.Y, before.Z + motion.Z);
+                if (_body.Scene?.Physics.Raycast(back + new Float3(0f, 0.6f, 0f), -Float3.UnitY, 1.2f, out RaycastHit gh) == true && gh.Point.Y <= back.Y + 0.6f)
+                    back.Y = gh.Point.Y + 0.05f;
+                _body.Transform.Position = back;
+                LaunchesRejected++;
+            }
             if (!IsFinite(_body.Transform.Position)) RecoverFromNaN();
         }
 
@@ -194,6 +221,7 @@ public sealed class Player
     }
     public int NaNRecoveries { get; private set; }
     public int MoveFaults { get; private set; }
+    public int LaunchesRejected { get; private set; }
 
     public static Float3 Flat(Float3 v)
     {

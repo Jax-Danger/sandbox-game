@@ -14,7 +14,7 @@ public static class Binds
         ("left", "Strafe left", KeyCode.A), ("right", "Strafe right", KeyCode.D),
         ("jump", "Jump / fly up", KeyCode.Space), ("use", "Use / enter vehicle", KeyCode.E),
         ("reload", "Reload", KeyCode.R), ("flashlight", "Flashlight", KeyCode.F),
-        ("noclip", "Toggle noclip", KeyCode.V), ("undo", "Undo", KeyCode.Z),
+        ("noclip", "Noclip / car camera", KeyCode.V), ("undo", "Undo", KeyCode.Z),
         ("zoom", "Zoom (hold)", KeyCode.B), ("spawnmenu", "Spawn menu (hold)", KeyCode.Q),
         ("context", "Context menu (hold)", KeyCode.C), ("jobs", "Jobs menu (Roleplay)", KeyCode.F4),
         ("fps", "FPS counter", KeyCode.F3),
@@ -35,6 +35,20 @@ public static class Binds
         Source.Binds ??= [];
         Source.Binds[id] = k;
         Source.Save();
+    }
+
+    public static void ResetAll() { if (Source is null) return; Source.Binds = null; Source.Save(); }
+    /// <summary>Other actions sharing this action's key.</summary>
+    public static IEnumerable<string> Conflicts(string id)
+    {
+        KeyCode k = Get(id);
+        foreach (var a in Actions) if (a.Id != id && Get(a.Id) == k) yield return a.Label;
+    }
+    /// <summary>Replaces {actionId} placeholders with the live key name.</summary>
+    public static string Fill(string text)
+    {
+        foreach (var a in Actions) text = text.Replace("{" + a.Id + "}", Name(a.Id));
+        return text;
     }
 
     public static bool Down(string id) => !KeyCapture.Active && !Typing && Input.GetKeyDown(Get(id));

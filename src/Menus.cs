@@ -196,13 +196,17 @@ public sealed partial class Menus
                 {
                     var (id, label, _) = Binds.Actions[i];
                     float rx = lx + (i % 2) * (colW + Theme.S(16)), ry = cy + (i / 2) * Theme.S(30);
-                    Ui.Text(paper, $"st_kb_{i}", rx, ry, colW, Theme.S(24), label, Theme.Body, Theme.TextMuted);
+                    bool clash = Binds.Conflicts(id).Any();
+                    Ui.Text(paper, $"st_kb_{i}", rx, ry, colW, Theme.S(24), clash ? "\u26a0 " + label : label, Theme.Body, clash ? Theme.Danger : Theme.TextMuted);
                     string bid = id;
                     Ui.KeyPicker(paper, $"st_kbk_{id}", rx + colW - Theme.S(92), ry, Theme.S(92), Theme.S(24), Binds.Get(id), k => Binds.Set(bid, k));
                 }
                 float fy = cy + ((Binds.Actions.Length + 1) / 2) * Theme.S(30) + Theme.S(6);
-                Ui.Paragraph(paper, "st_kb_h", lx, fy, cw, Theme.S(32),
-                    "Click a key to rebind it, then press the new key (Esc cancels). Mouse: LMB / RMB fire, wheel or 1\u20139 switch weapons, Shift runs, Ctrl crouches / flies down.", Theme.Caption, Theme.TextFaint);
+                var clashes = Binds.Actions.Where(a => Binds.Conflicts(a.Id).Any()).GroupBy(a => Binds.Get(a.Id))
+                    .Select(gp => $"{Binds.KeyName(gp.Key)}: {string.Join(" + ", gp.Select(a => a.Label))}").ToList();
+                Ui.Button(paper, "st_kb_reset", lx + cw - Theme.S(150), fy, Theme.S(150), Theme.S(26), "Reset keys", Binds.ResetAll, ghost: true, icon: Icon.Undo, radius: Theme.S(13));
+                Ui.Text(paper, "st_kb_warn", lx, fy, cw - Theme.S(160), Theme.S(26),
+                    clashes.Count == 0 ? "Click a key, press the new one (Esc cancels). Shift runs, Ctrl crouches." : "Conflict \u2014 " + string.Join("; ", clashes), Theme.Caption, clashes.Count == 0 ? Theme.TextFaint : Theme.Danger);
                 break;
         }
         g.ApplySettingsLive();

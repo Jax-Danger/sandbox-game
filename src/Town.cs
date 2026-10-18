@@ -56,6 +56,11 @@ public sealed class Door : MonoBehaviour
     /// <summary>"" = for sale / public, "you" = the player, "city" / "police" = map-owned.</summary>
     public string Owner = "";
     public bool Locked, Open;
+    /// <summary>Jobs that hold keys to a map-owned door (e.g. police for the station).</summary>
+    public string[] Jobs = [];
+    /// <summary>Names the owner shared keys with.</summary>
+    public readonly HashSet<string> SharedKeys = [];
+    public bool ForSale => Owner == "" && Price > 0;
     public Float3 Hinge;
     public float Yaw, Width = 1.3f;
     private float _angle;
@@ -68,7 +73,7 @@ public sealed class Door : MonoBehaviour
         "you" => Locked ? "Your door · locked" : "Your door",
         "police" => "Police property",
         "city" => "City property",
-        _ => Price > 0 ? $"For sale · ${Price:N0}" : "",
+        _ => Price > 0 ? $"For sale · ${Price:N0} · press F2 to buy" : "",
     };
 
     public void SetOpen(bool open)
@@ -321,7 +326,8 @@ public static partial class MapBuilder
             Child("DoorKnob", Meshes.Sphere(0.035f), new Float3(width * 0.4f, -0.08f, zz * 1.5f), new Color(0.78f, 0.62f, 0.25f, 1f));
         }
         Door d = go.AddComponent<Door>();
-        d.Id = id; d.Title = title; d.Owner = owner; d.Price = price; d.Locked = locked;
+        d.Id = id; d.Title = title; d.Owner = owner; d.Price = price; d.Locked = locked || (owner == "" && price > 0);
+        d.Jobs = owner == "police" ? ["police"] : owner == "city" && title.Contains("Hall") ? ["mayor"] : [];
         d.Hinge = hinge + new Float3(0f, height / 2f, 0f); d.Yaw = yaw; d.Width = width;
         d.Pose();
         d.Rebuild();

@@ -42,14 +42,6 @@ public sealed class Settings
     public static readonly (int W, int H)[] Resolutions = [(1280, 720), (1600, 900), (1920, 1080), (2560, 1440), (3840, 2160)];
     public static readonly int[] FrameCaps = [0, 30, 60, 120, 144, 240];
 
-    public static readonly (string Action, string Key)[] Keybinds =
-    [
-        ("Move", "W A S D"), ("Jump / fly up", "Space"), ("Run", "Shift"), ("Fly down (noclip)", "Ctrl"),
-        ("Toggle noclip", "V"), ("Spawn menu", "Q / Tab (hold)"), ("Context menu", "C (hold)"),
-        ("Weapons", "1–9 / Mouse wheel"), ("Primary / secondary", "LMB / RMB"), ("Reload", "R"),
-        ("Use / enter vehicle", "E"), ("Flashlight", "F"), ("Zoom", "B (hold)"), ("Crouch", "Ctrl"), ("Jobs menu (Roleplay)", "F4"), ("Undo", "Z"), ("FPS counter", "F3"), ("Pause menu", "Esc"),
-    ];
-
     /// <summary>Overridable for tests.</summary>
     public static string FilePath { get; set; } = Path.Combine(
         Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "settings.json");

@@ -344,13 +344,13 @@ public sealed partial class Menus
 
     private static readonly string[] Tips =
     [
-        "Hold Q to open the spawn menu. Drag anything you spawn with the physics gun.",
+        "Hold {spawnmenu} to open the spawn menu. Drag anything you spawn with the physics gun.",
         "Right-click with the physics gun to freeze a prop in place.",
         "The session autosaves every few seconds. Your contraptions keep moving when you come back.",
-        "Hold C on a prop to change its colour, material and mass.",
-        "Press Z to undo your last spawn or weld.",
-        "In Roleplay, press F4 to pick a job or buy a money printer.",
-        "Press F for the flashlight and hold B to zoom.",
+        "Hold {context} on a prop to change its colour, material and mass.",
+        "Press {undo} to undo your last spawn or weld.",
+        "In Roleplay, press {jobs} to pick a job or buy a money printer.",
+        "Press {flashlight} for the flashlight and hold {zoom} to zoom.",
         "Weld wheels and thrusters to a plank to build a car.",
     ];
 
@@ -390,7 +390,7 @@ public sealed partial class Menus
 
         int tip = (int)((l?.Elapsed ?? 0f) / 4f + (g.Session?.Meta.Seed ?? 0) % Tips.Length) % Tips.Length;
         Ui.Text(paper, "ld_tipk", 0, h - Theme.S(96), w, Theme.S(16), "TIP", Theme.Micro, Theme.Accent, Theme.Bold, TextAlignment.MiddleCenter);
-        Ui.Text(paper, "ld_tip", 0, h - Theme.S(76), w, Theme.S(22), Tips[tip], Theme.Body, Theme.TextMuted, null, TextAlignment.MiddleCenter);
+        Ui.Text(paper, "ld_tip", 0, h - Theme.S(76), w, Theme.S(22), Binds.Fill(Tips[tip]), Theme.Body, Theme.TextMuted, null, TextAlignment.MiddleCenter);
         if (l?.Error is { } err) Ui.Text(paper, "ld_err", 0, by + Theme.S(24), w, Theme.S(20), err, Theme.Body, Theme.Danger, Theme.SemiBold, TextAlignment.MiddleCenter);
     }
 

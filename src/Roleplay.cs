@@ -121,6 +121,7 @@ public sealed class RoleplaySystem(SandboxGame g)
     public List<string> Laws { get; } = [];
     public float WantedTimer { get; private set; }
     public bool Wanted => Active && WantedTimer > 0f;
+    public void ClearWanted() => WantedTimer = 0f;
     public float PayTimer { get; private set; } = PayInterval;
     public float JailTimer { get; private set; }
     public int Bank { get; private set; }
@@ -154,7 +155,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         foreach (Door d in Town.Doors)
         {
             if (p.OwnedDoors.Contains(d.Id)) d.Owner = "you";
-            d.Locked = p.LockedDoors.Contains(d.Id) || (d.Locked && d.Owner is "police");
+            d.Locked = p.LockedDoors.Contains(d.Id) || (d.Locked && d.Owner is "police") || d.ForSale;
         }
         if (Jailed && Town.HasJail) g.Player.Teleport(Town.CellCenter + new Float3(0f, 0.2f, 0f));
     }
@@ -170,14 +171,19 @@ public sealed class RoleplaySystem(SandboxGame g)
 
     // ---------------------------------------------------------------- doors, ATM
 
-    public bool CanUnlock(Door d) => d.Owner == "you" || (d.Owner == "police" && Active && Job.Id == "police") || (!Active && d.Owner != "police");
+    public bool CanUnlock(Door d) => d.Owner == "you" || d.SharedKeys.Contains("you") || (Active && d.Jobs.Contains(Job.Id))
+        || (!Active && d.Owner != "police");
 
     /// <summary>E on a door: opens/closes it, or unlocks it if it's yours.</summary>
     public string UseDoor(Door d)
     {
-        if (d.Locked)
+        if (d.Locked || (Active && d.ForSale && !d.Open))
         {
-            if (!CanUnlock(d)) { g.Sounds.Play("sfx_impact", 0.35f, d.Transform.Position); return $"{d.Title} is locked"; }
+            if (!CanUnlock(d))
+            {
+                g.Sounds.Play("sfx_impact", 0.35f, d.Transform.Position);
+                return Active && d.ForSale ? $"{d.Title} is for sale · press {Binds.KeyName(Prowl.Runtime.KeyCode.F2)} to buy (${d.Price:N0})" : $"{d.Title} is locked";
+            }
             d.Locked = false;
         }
         d.SetOpen(!d.Open);
@@ -192,7 +198,7 @@ public sealed class RoleplaySystem(SandboxGame g)
         if (d.Owner == "you")
         {
             int refund = d.Price / 2;
-            d.Owner = ""; d.Locked = false;
+            d.Owner = ""; d.SharedKeys.Clear(); d.SetOpen(false); d.Locked = true;
             Earn(refund);
             return $"Sold {d.Title} for ${refund:N0}";
         }

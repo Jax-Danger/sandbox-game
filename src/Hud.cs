@@ -78,12 +78,12 @@ public sealed class Hud
         var keys = new List<(string Key, string What)>();
         if (door is not null)
         {
-            keys.Add(("E", door.Locked && !rp.CanUnlock(door) ? "Knock" : door.Open ? "Close" : "Open"));
+            keys.Add((Binds.Name("use"), (door.Locked || (rp.Active && door.ForSale)) && !rp.CanUnlock(door) ? (door.ForSale ? "Locked" : "Knock") : door.Open ? "Close" : "Open"));
             if (rp.Active && door.Owner == "" && door.Price > 0) keys.Add(("F2", $"Buy ${door.Price:N0}"));
             if (rp.Active && door.Owner == "you") { keys.Add(("L", door.Locked ? "Unlock" : "Lock")); keys.Add(("F2", "Sell")); }
-            else if (rp.CanUnlock(door) && door.Owner == "police") keys.Add(("L", door.Locked ? "Unlock" : "Lock"));
+            else if (rp.CanUnlock(door) && door.Jobs.Length > 0) keys.Add(("L", door.Locked ? "Unlock" : "Lock"));
         }
-        else keys.Add(("E", "Use ATM"));
+        else keys.Add((Binds.Name("use"), "Use ATM"));
         float y = cy + Theme.S(26);
         float tw = (float)paper.MeasureText(title, Theme.S(Theme.Body), Theme.SemiBold, 0f).X;
         Ui.Text(paper, "ia_t", cx - tw / 2f - Theme.S(20), y, tw + Theme.S(40), Theme.S(20), title, Theme.Body, Theme.Text, Theme.SemiBold, TextAlignment.MiddleCenter);
