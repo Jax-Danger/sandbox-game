@@ -184,7 +184,7 @@ public sealed partial class SandboxGame : Game
         ApplySettingsLive();
         GraphicsQuality gq = Settings.LowPower ? GraphicsQuality.Low : Settings.Graphics;
         ShadowQuality q = gq == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
-        Sun.ShadowQuality = q; Sun.ShadowStrength = 0.82f; // outdoor skylight fills shadows; full-strength cores looked inked-in
+        Sun.ShadowQuality = q; Sun.ShadowStrength = 0.82f; if (Environment.GetEnvironmentVariable("SANDBOX_NOSHADOW") == "1") Sun.CastShadows = false; // outdoor skylight fills shadows; full-strength cores looked inked-in
         Graphics.Apply(Player.Camera, gq);
     }
 

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.5 — 2026-10-18
+- NPCs: sky-bent face normals push the sun terminator below the chin - the hard dark line across every face at nose height (read as a beard) is gone (screens/s11-bend-c.png vs s11-beard.png); SANDBOX_NOSHADOW/SANDBOX_NOAO debug env
+
 ## v0.16.4 — 2026-10-18
 - View model: domed glove fingertips (quarter-circle rings past the last joint) replace the flat disc ends seen wrapping every grip (screens/s11-sgr-c.png vs s11-sgr-b.png)
 

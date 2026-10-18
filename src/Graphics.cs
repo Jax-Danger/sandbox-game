@@ -30,7 +30,7 @@ public static class Graphics
             {
                 GraphicsQuality.Low => [],
                 GraphicsQuality.Medium => [new FXAAEffect(), Bloom(), Tonemap()],
-                _ => [new FXAAEffect(), new GTAOEffect(), Bloom(), Tonemap()],
+                _ => Environment.GetEnvironmentVariable("SANDBOX_NOAO") == "1" ? [new FXAAEffect(), Bloom(), Tonemap()] : [new FXAAEffect(), new GTAOEffect(), Bloom(), Tonemap()],
             };
         }
         catch (Exception e)

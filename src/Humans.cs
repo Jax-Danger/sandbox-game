@@ -197,6 +197,13 @@ public static class Humans
         d.Add(new(Sphere(0.0025f), Tint.Sclera, V(-0.036f, 0.021f, 0.1198f))); // catch-lights
         d.Add(new(Sphere(0.0025f), Tint.Sclera, V(0.043f, 0.021f, 0.1198f)));
         d.AddRange(ears);
+        // Stylised "sky-bent" face normals: the jaw/lower face turned away from a high sun and fell off a hard terminator
+        // across the nose (read as a beard). Bending normals up/forward pushes the terminator under the chin.
+        {
+            Float3[] nn = skull.Normals;
+            for (int i = 0; i < nn.Length; i++) nn[i] = Float3.Normalize(nn[i] + new Float3(0f, 0.45f, 0.2f) * MathF.Max(0f, 0.3f - nn[i].Y));
+            skull.Normals = nn;
+        }
         return (skull, d.ToArray());
     }
 
