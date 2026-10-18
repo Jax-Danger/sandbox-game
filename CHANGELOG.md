@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.16 — 2026-10-18
+- Houses get a kerbside mailbox (timber post, rounded steel box, red flag) beside the path end.
+
 ## v0.14.15 — 2026-10-18
 - Town: building front paths now run all the way to the sidewalk (were 5 m stubs in the lawn), and avenue centre-line dashes start clear of the zebra crossings instead of painting over them.
 

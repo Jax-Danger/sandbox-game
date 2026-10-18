@@ -582,6 +582,15 @@ public static partial class MapBuilder
         Box(scene, shader, $"~{tag} path", W(0f, 0.04f, -hd - pathLen / 2f), Sz(2.1f, 0.08f, pathLen), Float3.Zero, new Color(0.3f, 0.29f, 0.27f, 1f));
         for (int i = 0; i < (int)pathLen; i++)
             Box(scene, shader, $"~{tag} flag", W(0f, 0.055f, -hd - 0.5f - i), Sz(1.94f, 0.1f, 0.94f), Float3.Zero, i % 2 == 0 ? new Color(0.55f, 0.53f, 0.5f, 1f) : new Color(0.51f, 0.5f, 0.47f, 1f));
+        if (title.StartsWith("House"))
+        {
+            // Kerbside mailbox beside the path end: timber post, rounded steel box, red flag.
+            Float3 mb = W(1.5f, 0f, -hd - pathLen + 0.5f);
+            float mr = yaw * 1f;
+            Shape(scene, shader, "~Mailbox post", Meshes.RoundedBox(new Float3(0.09f, 1.05f, 0.09f), 0.01f), mb + new Float3(0f, 0.525f, 0f), new Color(0.42f, 0.3f, 0.2f, 1f), euler: new Float3(0f, mr, 0f));
+            Shape(scene, shader, "~Mailbox", Meshes.RoundedBox(new Float3(0.24f, 0.24f, 0.5f), 0.09f), mb + new Float3(0f, 1.15f, 0f), new Color(0.2f, 0.22f, 0.24f, 1f), euler: new Float3(0f, mr, 0f));
+            Shape(scene, shader, "~Mailbox flag", Meshes.RoundedBox(new Float3(0.015f, 0.2f, 0.05f), 0.005f), W(1.64f, 1.27f, -hd - pathLen + 0.55f), new Color(0.8f, 0.12f, 0.1f, 1f), euler: new Float3(0f, mr, 0f));
+        }
         MakeDoor(scene, shader, "door_" + tag.ToLowerInvariant(), title, W(-dw / 2f + 0.05f, 0f, -hd), yaw, dw - 0.1f, dh - 0.05f, new Color(0.42f, 0.28f, 0.18f, 1f), owner, price, locked: false);
     }
 
