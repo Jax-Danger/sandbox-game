@@ -56,7 +56,8 @@ public sealed class PlayerAvatar
     {
         var seg = new Seg { Go = new GameObject(limb) };
         seg.Go.SetParent(_root!, false);
-        var (main, det) = Humans.Limb(limb);
+        var (main, _) = Humans.Limb(limb);
+        var det = Humans.MergedDetails(limb);
         Color mc = limb.StartsWith("Lower arm") || limb == "Head" ? Skin : limb.StartsWith("Torso") || limb.Contains("arm") ? Shirt : Pants;
         Add(seg, main, meshOffset, mc);
         foreach (var d in det)

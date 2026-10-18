@@ -57,6 +57,7 @@ public static partial class MapBuilder
     {
         foreach (GameObject go in _objects) scene.Remove(go);
         _objects.Clear();
+        _batch.Clear();
     }
 
     /// <summary>Replaces the current map. Returns an error message for a failed custom import (falls back to Flatgrass).</summary>
@@ -78,6 +79,7 @@ public static partial class MapBuilder
                 break;
             default: Current = "flatgrass"; BuildFlatgrass(scene, shader); break;
         }
+        BuildBatches(scene, shader);
         return error;
     }
 
@@ -211,6 +213,73 @@ public static partial class MapBuilder
 
     private static void Add(Scene scene, GameObject go) { scene.Add(go); _objects.Add(go); }
 
+    // ------------------------------------------------------------------ static batching
+    // Every map piece used to be its own draw call (the town had ~1000, each drawn again per shadow cascade),
+    // which kept the render thread and the GL driver busy. Pieces sharing a look are merged into one mesh.
+    private static readonly Dictionary<GameObject, (Color C, string Look, Float2 Tiling)> _batch = [];
+    public static int BatchedPieces { get; private set; }
+    public static int BatchMeshes { get; private set; }
+    private static void Batchable(GameObject go, Color c, string look, Float2 tiling) => _batch[go] = (c, look, tiling);
+
+    private static void BuildBatches(Scene scene, Shader shader)
+    {
+        BatchedPieces = 0; BatchMeshes = 0;
+        if (Environment.GetEnvironmentVariable("SANDBOX_BATCH") == "0") { _batch.Clear(); return; }
+        var skip = new HashSet<GameObject>(Town.Interactive.Select(i => i.Go));
+        if (Town.Atm is { } atm) skip.Add(atm);
+        if (Town.Board is { } bd) skip.Add(bd);
+        var groups = new Dictionary<(int, int, int, int, string), List<GameObject>>();
+        foreach (var (go, info) in _batch)
+        {
+            if (!go.IsValid() || go.Transform.Parent != null || skip.Contains(go) || go.GetComponent<Door>() is not null) continue;
+            if (go.GetComponent<MeshRenderer>() is not { Enabled: true } mr0 || mr0.Mesh.Res is not { } m || m.Vertices.Length == 0) continue;
+            var key = ((int)(info.C.R * 255), (int)(info.C.G * 255), (int)(info.C.B * 255), (int)(info.C.A * 255), info.Look);
+            if (!groups.TryGetValue(key, out var list)) groups[key] = list = [];
+            list.Add(go);
+        }
+        int n = 0;
+        foreach (var (key, list) in groups)
+        {
+            if (list.Count < 2) continue;
+            var v = new List<Float3>(); var nr = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+            foreach (GameObject go in list)
+            {
+                MeshRenderer r = go.GetComponent<MeshRenderer>()!;
+                Mesh m = r.Mesh.Res!; Transform t = go.Transform; Float2 tile = _batch[go].Tiling;
+                uint b = (uint)v.Count;
+                Float3[] mv = m.Vertices, mn = m.Normals; Float2[] mu = m.UV; uint[] mi = m.Indices;
+                for (int i = 0; i < mv.Length; i++)
+                {
+                    v.Add(t.TransformPoint(mv[i]));
+                    nr.Add(i < mn.Length ? Float3.Normalize(t.TransformDirection(mn[i])) : Float3.UnitY);
+                    uv.Add(i < mu.Length ? new Float2(mu[i].X * tile.X, mu[i].Y * tile.Y) : Float2.Zero);
+                }
+                foreach (uint ii in mi) idx.Add(ii + b);
+                r.Enabled = false;
+                BatchedPieces++;
+            }
+            var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = nr.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
+            mesh.RecalculateBounds();
+            mesh.RecalculateTangents();
+            var bgo = new GameObject($"~Batch {n++} {key.Item5}");
+            MeshRenderer br = bgo.AddComponent<MeshRenderer>();
+            br.Mesh = mesh;
+            var bm = Mats.New(shader);
+            bm.SetColor("_MainColor", new Color(key.Item1 / 255f, key.Item2 / 255f, key.Item3 / 255f, key.Item4 / 255f));
+            if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
+                try
+                {
+                    if (key.Item5 == "detail") bm.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f));
+                    else bm.SetTexture("_MainTex", key.Item5 == "floor" ? ProcTex.DevFloor() : ProcTex.Concrete());
+                }
+                catch { }
+            br.Material = bm;
+            Add(scene, bgo);
+            BatchMeshes++;
+        }
+        _batch.Clear();
+    }
+
     private static GameObject Box(Scene scene, Shader shader, string name, Float3 position, Float3 size, Float3 euler, Color color, bool collide = true)
     {
         GameObject go = new(name);
@@ -223,9 +292,15 @@ public static partial class MapBuilder
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
         {
             bool floor = name == "Floor";
-            if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); return go; }
+            if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); Batchable(go, color, "detail", Float2.One); return go; }
+            Float2 tiling = floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f));
             material.SetTexture("_MainTex", floor ? ProcTex.DevFloor() : ProcTex.Concrete());
-            material.SetVector("_Tiling", floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f)));
+            material.SetVector("_Tiling", tiling);
+            renderer.Material = material;
+            if (collide) go.AddComponent<BoxCollider>().Size = size;
+            Add(scene, go);
+            Batchable(go, color, floor ? "floor" : "concrete", tiling);
+            return go;
         }
         renderer.Material = material;
         if (collide) go.AddComponent<BoxCollider>().Size = size;
@@ -253,6 +328,7 @@ public static partial class MapBuilder
         renderer.Material = material;
         if (collider is { } c) go.AddComponent<BoxCollider>().Size = c;
         Add(scene, go);
+        Batchable(go, color, name.StartsWith("~") ? "detail" : "concrete", Float2.One);
         return go;
     }
 

@@ -69,9 +69,11 @@ public sealed partial class SandboxGame : Game
     public override void Initialize()
     {
         Settings = Application.IsHeadless ? new Settings() : Settings.Load();
+        if (!Application.IsHeadless) Window.StateChanged += st => _minimized = st == Silk.NET.Windowing.WindowState.Minimized;
         Achievements.Load();
         Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_ui_click", 0.7f); };
         World = new Scene();
+        World.Physics.UseMultithreading = false; // see EndUpdate: only big worlds use Jitter's worker pool
         Shader = Shader.LoadDefault(DefaultShader.Standard);
         Sun = MapBuilder.Build(World, Shader);
         // Atmosphere: procedural sky, soft linear distance fog matched to the horizon, hemisphere ambient.
@@ -164,9 +166,10 @@ public sealed partial class SandboxGame : Game
         Props.Protection.Mode = Settings.PropProtection;
         Props.Protection.Load(Settings.Buddies);
         ApplySettingsLive();
-        ShadowQuality q = Settings.Graphics == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
+        GraphicsQuality gq = Settings.LowPower ? GraphicsQuality.Low : Settings.Graphics;
+        ShadowQuality q = gq == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
         Sun.ShadowQuality = q;
-        Graphics.Apply(Player.Camera, Settings.Graphics);
+        Graphics.Apply(Player.Camera, gq);
     }
 
     /// <summary>Cheap settings applied every frame while the settings screen is open.</summary>
@@ -190,7 +193,6 @@ public sealed partial class SandboxGame : Game
         {
             case "main": Menus.Go(Screen.MainMenu); break;
             case "settings": Menus.Go(Screen.Settings); break;
-            case "video": Menus.Go(Screen.Settings); Menus.SettingsTab = 1; break;
             case "night": Menus.Go(Screen.Playing); DayNight.TimeOfDay = 0.95f; DayNight.Apply(this); ToggleFlashlight(); break;
             case "garage":
                 Menus.Go(Screen.Playing);
@@ -306,6 +308,10 @@ public sealed partial class SandboxGame : Game
     public override void EndUpdate()
     {
         _frames++;
+        PerfLog();
+        // Jitter's worker pool wakes every thread twice per step; for a sandbox-sized world one thread is cheaper.
+        bool mt = Props.Props.Count > 300;
+        if (World.Physics.UseMultithreading != mt) World.Physics.UseMultithreading = mt;
         KeyCapture.Poll();
         float dt = Time.UnscaledDeltaTime;
         if (ShotState == "perf")
@@ -678,13 +684,51 @@ public sealed partial class SandboxGame
     private readonly System.Diagnostics.Stopwatch _frameClock = System.Diagnostics.Stopwatch.StartNew();
 
     /// <summary>Optional frame-rate cap (Settings → Video). Sleeps the remainder of the frame budget.</summary>
+    private static readonly bool _perfLog = Environment.GetEnvironmentVariable("SANDBOX_PERF") == "1";
+    private readonly System.Diagnostics.Stopwatch _perfClock = System.Diagnostics.Stopwatch.StartNew();
+    private int _perfFrames; private double _perfBusy, _lastSleepMs; private long _perfAlloc; private TimeSpan _perfCpu;
+    /// <summary>SANDBOX_PERF=1: every 5 s log fps, main-thread CPU ms/frame, allocations/frame, GCs and heap.</summary>
+    private void PerfLog()
+    {
+        if (!_perfLog) return;
+        _perfFrames++;
+        _perfBusy += Time.UnscaledDeltaTime * 1000.0 - Prowl.Runtime.Graphics.LastFrameWaitMs - _lastSleepMs;
+        double s = _perfClock.Elapsed.TotalSeconds;
+        if (s < 5) return;
+        long alloc = GC.GetTotalAllocatedBytes(); TimeSpan cpu = System.Diagnostics.Process.GetCurrentProcess().TotalProcessorTime;
+        Console.WriteLine($"[perf] {_perfFrames / s:0.0} fps, main busy {_perfBusy / _perfFrames:0.00} ms/frame, process cpu {(cpu - _perfCpu).TotalMilliseconds / s / 10:0}% , alloc {(alloc - _perfAlloc) / _perfFrames / 1024.0:0.0} KB/frame, gc {GC.CollectionCount(0)}/{GC.CollectionCount(1)}/{GC.CollectionCount(2)}, heap {GC.GetTotalMemory(false) / 1048576} MB, live-after-gc {GC.GetGCMemoryInfo().HeapSizeBytes / 1048576} MB, rss {Environment.WorkingSet / 1048576} MB, threads {System.Diagnostics.Process.GetCurrentProcess().Threads.Count}, props {Props.Props.Count}, renderers {World.AllObjects.Count(o => o.EnabledInHierarchy && o.GetComponent<MeshRenderer>() is { Enabled: true })}, objects {World.AllObjects.Count()}, batched {MapBuilder.BatchedPieces}->{MapBuilder.BatchMeshes}");
+        if (Environment.GetEnvironmentVariable("SANDBOX_PERF_DUMP") == "1")
+            foreach (var gp in World.AllObjects.Where(o => o.EnabledInHierarchy && o.GetComponent<MeshRenderer>() is { Enabled: true })
+                .GroupBy(o => { var r = o; while (r.Transform.Parent is { } pp) r = pp.GameObject; return r.Name.Split(' ')[0]; }).OrderByDescending(x => x.Count()).Take(15))
+                Console.WriteLine($"  [perf] {gp.Count(),4} renderers under '{gp.Key}*'");
+        _perfAlloc = alloc; _perfCpu = cpu; _perfFrames = 0; _perfBusy = 0; _perfClock.Restart();
+    }
+
+    private bool _minimized;
+    /// <summary>Effective frame-rate limit: the setting, 60 in low-power mode, 30 (15) unfocused, 10 minimised.</summary>
+    public int EffectiveFrameCap
+    {
+        get
+        {
+            int cap = Settings.FrameCap;
+            if (Settings.LowPower) cap = cap <= 0 ? 60 : Math.Min(cap, 60);
+            bool focused = true; try { focused = Window.IsFocused; } catch { }
+            if (_minimized) return 10;
+            if (!focused) return cap <= 0 ? (Settings.LowPower ? 15 : 30) : Math.Min(cap, Settings.LowPower ? 15 : 30);
+            return cap;
+        }
+    }
+
+    /// <summary>Frame limiter. Sleeps (nanosleep on Linux is accurate to well under a millisecond) instead of
+    /// spin-waiting, so a capped frame costs no CPU while it waits.</summary>
     private void FrameCap()
     {
-        if (Application.IsHeadless || Settings.FrameCap <= 0) { _frameClock.Restart(); return; }
-        double budget = 1000.0 / Settings.FrameCap;
+        int cap = Application.IsHeadless ? 0 : EffectiveFrameCap;
+        if (cap <= 0) { _frameClock.Restart(); return; }
+        double budget = 1000.0 / cap;
         double left = budget - _frameClock.Elapsed.TotalMilliseconds;
-        if (left > 1.5) Thread.Sleep((int)(left - 1));
-        while (_frameClock.Elapsed.TotalMilliseconds < budget) Thread.SpinWait(50);
+        _lastSleepMs = 0;
+        if (left > 0.25) { Thread.Sleep(TimeSpan.FromMilliseconds(left - 0.15)); _lastSleepMs = left; }
         _frameClock.Restart();
     }
 

@@ -179,6 +179,8 @@ public sealed partial class Menus
                 cy += Theme.S(48);
                 Row("VSync", "applies after restart  ");
                 Ui.Toggle(paper, "st_vsync", vx, cy + Theme.S(3), s.VSync, v => s.VSync = v); cy += Theme.S(44);
+                Row("Low power mode", "60 FPS, low graphics  ");
+                Ui.Toggle(paper, "st_lowpow", vx, cy + Theme.S(3), s.LowPower, v => { s.LowPower = v; g.ApplySettings(); }); cy += Theme.S(44);
                 Row("Show FPS counter");
                 Ui.Toggle(paper, "st_fps", vx, cy + Theme.S(3), s.ShowFps, v => s.ShowFps = v); cy += Theme.S(44);
                 Ui.Paragraph(paper, "st_gfx_h", lx, cy, cw, Theme.S(40),

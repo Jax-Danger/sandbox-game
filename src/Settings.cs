@@ -33,8 +33,12 @@ public sealed class Settings
     public int ResolutionHeight { get; set; } = 720;
     /// <summary>Applied at start-up (the swap interval lives on the render thread).</summary>
     public bool VSync { get; set; } = true;
-    /// <summary>0 = unlimited.</summary>
-    public int FrameCap { get; set; } = 0;
+    /// <summary>0 = unlimited. Default 144 (with VSync) so the CPU isn't burned on frames nobody sees.</summary>
+    public int FrameCap { get; set; } = 144;
+    /// <summary>Battery / quiet-fans mode: 60 FPS cap, 15 FPS in the background, cheaper graphics.</summary>
+    public bool LowPower { get; set; }
+    /// <summary>Bumped when a default changes and old files need migrating.</summary>
+    public int Version { get; set; }
     public bool FirstRunDone { get; set; }
     /// <summary>Rebound actions (id -> key); missing ids use <see cref="Binds"/> defaults.</summary>
     public Dictionary<string, Prowl.Runtime.KeyCode>? Binds { get; set; }
@@ -87,6 +91,7 @@ public sealed class Settings
         UiScale = Math.Clamp(UiScale, 0.75f, 1.5f);
         ResolutionWidth = Math.Clamp(ResolutionWidth, 640, 7680);
         ResolutionHeight = Math.Clamp(ResolutionHeight, 360, 4320);
+        if (Version < 2) { if (FrameCap == 0) FrameCap = 144; Version = 2; } // old default was unlimited
         FrameCap = Math.Clamp(FrameCap, 0, 1000);
         return this;
     }

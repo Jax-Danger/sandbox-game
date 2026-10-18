@@ -76,7 +76,8 @@ public sealed class Ragdoll
             }
             else go.AddComponent<BoxCollider>().Size = d.Size; // colliders stay boxes (stable stacking)
             // Sculpted look: swept limbs with hands, shoes, face and hair riding on the limb (visual only).
-            var (main, details) = Humans.Limb(d.Name);
+            var (main, _) = Humans.Limb(d.Name);
+            var details = Humans.MergedDetails(d.Name);
             r.Mesh = main;
             foreach (Humans.Detail det in details)
             {
