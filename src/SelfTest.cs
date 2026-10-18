@@ -752,6 +752,7 @@ public sealed class SelfTest
     /// <summary>Jump arcs on Flatgrass and the town at 30 and 144 FPS: smooth rise/fall, no snaps, clean landing.</summary>
     private void JumpArcTest(SandboxGame g)
     {
+        var peaks = new List<float>();
         foreach (string map in new[] { "flatgrass", "town" })
         {
             g.ClearMap(notify: false);
@@ -774,11 +775,13 @@ public sealed class SelfTest
                     if (landedAt < 0 && i > 3 && g.Player.IsGrounded && y - y0 < 0.05f) landedAt = i;
                 }
                 float yEnd = g.Player.FeetPosition.Y;
+                peaks.Add(peak - y0);
                 // A 6.5 m/s jump can't move more than ~6.5*dt per frame; reversals: one at the apex only.
                 Check(peak - y0 > 0.9f && peak - y0 < 1.3f && maxStep < 7f * dt + 0.02f && reversals <= 1 && landedAt > 0 && MathF.Abs(yEnd - y0) < 0.03f,
                     $"smooth jump on {map} at {fps} fps (peak {peak - y0:0.00} m, max step {maxStep:0.000}, reversals {reversals}, landed frame {landedAt}, end dy {yEnd - y0:0.000})");
             }
         }
+        Check(peaks.Count == 4 && peaks.Max() - peaks.Min() < 0.05f, $"jump height is the same at 30 and 144 fps ({string.Join(" / ", peaks.Select(p => p.ToString("0.000")))} m)");
         g.ClearMap(notify: false);
         MapBuilder.Load(g.World, g.Shader, "flatgrass", null);
     }

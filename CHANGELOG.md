@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.5.9 — 2026-10-17
+- Jump height is now identical at any frame rate (1.056 m at 30 and 144 FPS; was 1.27 vs 1.10): gravity applies on the take-off frame too. Self-test checks the peaks match.
+
 ## v0.5.8 — 2026-10-17
 - Spawn-menu icons: tight framing from the real rendered bounds (thin and tall items fill the tile), fill + rim lights so dark guns read, weapons shown in clean side profile instead of end-on.
 
