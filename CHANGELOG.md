@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.7 — 2026-10-18
+- Avatar/NPCs: sleeve roll ends wider and the forearm's elbow end tucks inside it, removing the jagged sawtooth hem where bare forearms leave the sleeve (FP driving most visible); player skin a touch deeper (screens/s11-seatfp-f-c.png vs s11-seatfp-c-c.png)
+
 ## v0.16.6 — 2026-10-18
 - Jeep: in first-person driving the opaque windscreen pane and sheen hide so the frame/wipers outline the screen instead of a dark blue wall blocking the road; restored on exit (screens/s11-seatfp-b.png vs s11-seatfp.png)
 

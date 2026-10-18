@@ -212,13 +212,14 @@ public static class Humans
         Mesh arm = Sw(2.2f, Float3.UnitX, 0.95f, (0.12f, 0.052f, 0.052f, 0f), (0.08f, 0.057f, 0.056f, 0f), (0.0f, 0.054f, 0.052f, 0f), (-0.11f, 0.049f, 0.049f, 0.004f), (-0.165f, 0.047f, 0.047f, 0.004f));
         Mesh hem = Sw(2.2f, Float3.UnitX, 0.3f, (-0.02f, 0.06f, 0.058f, 0f), (-0.045f, 0.058f, 0.056f, 0f));
         // Sleeve end rolls softly over the elbow (no hard rim cutting into the forearm when the arm bends).
-        Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.185f, 0.05f, 0.05f, 0.004f), (-0.2f, 0.045f, 0.045f, 0.004f), (-0.21f, 0.04f, 0.04f, 0.003f));
+        Mesh roll = Sw(2.2f, Float3.UnitX, 0.95f, (-0.13f, 0.049f, 0.049f, 0.004f), (-0.16f, 0.052f, 0.052f, 0.004f), (-0.185f, 0.053f, 0.053f, 0.004f), (-0.2f, 0.053f, 0.053f, 0.004f), (-0.212f, 0.05f, 0.05f, 0.003f)); // ends wider than the forearm so it never pokes through the rim
         return (arm, [new(roll, Tint.Cuff)]);
     }
 
     private static (Mesh, Detail[]) LowerArm(float side, bool grip = false)
     {
-        Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.2f, 0.042f, 0.042f, 0f), (0.16f, 0.046f, 0.044f, 0f), (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
+        Mesh fore = Sw(2.2f, Float3.UnitX, 0.95f, (0.2f, 0.034f, 0.034f, 0f), (0.16f, 0.04f, 0.039f, 0f), // elbow end tucks inside the sleeve roll
+             (0.08f, 0.048f, 0.046f, 0.003f), (-0.06f, 0.038f, 0.034f, 0f), (-0.14f, 0.032f, 0.026f, 0f));
         // Relaxed hand: palm, grouped fingers curling in, thumb.
         Mesh palm = Sweep([new Sec(V(0f, -0.13f, 0f), 0.03f, 0.018f, 2.6f, Float3.UnitZ), new Sec(V(0f, -0.17f, 0.003f), 0.042f, 0.017f, 2.8f, Float3.UnitZ), new Sec(V(0f, -0.21f, 0.004f), 0.044f, 0.015f, 3f, Float3.UnitZ)], Float3.UnitZ, 16, 0.7f);
         // Four separate curled fingers (was one mitten slab), slightly fanned, middle longest.
