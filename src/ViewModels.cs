@@ -224,10 +224,10 @@ public static partial class ViewModels
         string leftParent = "arm_l"; Float3 leftPos = Float3.Zero;
         HandSpec? right = null, left = null;
         bool freeLeft = false;
-        void Std(Float3 arm, float yaw = -2.5f)
+        void Std(Float3 arm, float yaw = -2.5f, float pitch = 0f)
         {
             armR = arm;
-            Bone("arm_r", "vm_root", arm, V(0f, yaw, 0f));
+            Bone("arm_r", "vm_root", arm, V(pitch, yaw, 0f));
             Bone("hand_r", "arm_r", Float3.Zero);
             Bone("weapon", "hand_r", Float3.Zero);
         }
@@ -305,7 +305,9 @@ public static partial class ViewModels
                 k.GripBody("weapon", ga, -0.056f, 0.052f, 0.0155f, 0.0235f, Polymer, Black);
                 k.Guard("weapon", Polymer, 0.04f, 0.075f, 0.0105f, 0.017f, 0.038f);
                 k.Sw("weapon", Polymer, Finish.Polymer, Float3.UnitX, 0.5f, new Sec(V(0, 0.07f, -0.07f), 0.0168f, 0.024f, 4f), new Sec(V(0, 0.069f, -0.084f), 0.0155f, 0.022f, 3.4f));
-                k.Sw("charge", Black, Finish.Metal, Float3.UnitX, 0.6f, new Sec(V(0, 0.0925f, -0.083f), 0.0135f, 0.0032f, 4f), new Sec(V(0, 0.0925f, -0.072f), 0.0135f, 0.0032f, 4f));
+                // MP5-style cocking tube slot + folded handle on the upper-left, forward (keeps the reach away from the camera).
+                k.Bar("weapon", Black, Finish.Metal, V(-0.0182f, 0.084f, 0.13f), V(-0.0182f, 0.084f, 0.19f), 0.0016f, 0.0028f, 4f, 0.5f);
+                k.Sw("charge", Black, Finish.Metal, Float3.UnitZ, 0.6f, new Sec(V(-0.018f, 0.084f, 0.182f), 0.003f, 0.003f), new Sec(V(-0.032f, 0.086f, 0.18f), 0.0045f, 0.004f), new Sec(V(-0.04f, 0.087f, 0.172f), 0.005f, 0.0045f));
                 k.Bar("weapon", Steel, Finish.Metal, V(-0.0175f, 0.055f, -0.02f), V(-0.0175f, 0.058f, -0.006f), 0.0015f, 0.0032f, 3f, 0.6f);
                 right = RightPistol(0.0155f, 0.0235f, 0.004f, Trig(0.026f, 0.042f)) with { F = new GripFrame(Float3.Zero, ga, Float3.UnitX, 0.0155f, 0.0235f) };
                 leftParent = "weapon"; leftPos = V(0f, 0.067f, 0.245f);
@@ -337,19 +339,20 @@ public static partial class ViewModels
                 // Stock: one sweep from the receiver through the wrist (the grip) to the butt, with a recoil pad.
                 k.Sw("weapon", WoodC, Finish.Wood, Float3.UnitX, 0f,
                     new Sec(V(0, 0.058f, 0.03f), 0.0175f, 0.016f, 3f), new Sec(V(0, 0.034f, 0.02f), 0.0165f, 0.02f, 2.8f),
-                    new Sec(V(0, 0f, 0f), 0.0162f, 0.022f, 2.6f), new Sec(V(0, -0.016f, -0.045f), 0.0172f, 0.026f, 2.6f),
-                    new Sec(V(0, -0.022f, -0.11f), 0.019f, 0.037f, 2.8f), new Sec(V(0, -0.025f, -0.135f), 0.0198f, 0.04f, 3f));
+                    new Sec(V(0, 0f, 0f), 0.0162f, 0.022f, 2.6f), new Sec(V(0, -0.03f, -0.02f), 0.0168f, 0.024f, 2.6f),
+                    new Sec(V(0, -0.06f, -0.035f), 0.0175f, 0.026f, 2.8f)); // short "breacher" pistol-grip stock: nothing reaches the camera
+                k.Sw("weapon", Black, Finish.Polymer, Float3.UnitX, 0.5f, new Sec(V(0, -0.062f, -0.036f), 0.0178f, 0.0265f, 2.8f), new Sec(V(0, -0.07f, -0.04f), 0.0172f, 0.025f, 2.8f));
                                 k.Guard("weapon", Black, 0.047f, 0.078f, 0.024f, 0.022f, 0.052f);
                 right = new HandSpec(new GripFrame(Float3.Zero, ga, Float3.UnitX, 0.0163f, 0.022f), -22f, -1,
                     [float.NaN, 0.011f, -0.0075f, -0.026f], 86f, V(0.022f, -0.035f, -0.072f), 72f, 196f, 0.03f, 0.044f, Trig(0.036f, 0.054f));
                 leftParent = "pump"; leftPos = V(0f, 0.05f, 0.305f);
                 left = Under(0.0222f, 0.0222f);
-                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.1f;
+                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.15f; d.AimShift = V(-0.05f, 0.04f, 0.04f); // shoulder raise: bead sights behind a long stock read badly when centred
                 break;
             }
             case "rpg":
             {
-                Std(V(0.17f, -0.26f, 0.42f), -2f);
+                Std(V(0.19f, -0.285f, 0.4f), 2.5f, 5f);
                 Bone("muzzle", "weapon", V(0f, 0.115f, 0.52f));
                 Bone("sight", "weapon", V(-0.09f, 0.19f, -0.075f));
                 Bone("rocket", "weapon", Float3.Zero);

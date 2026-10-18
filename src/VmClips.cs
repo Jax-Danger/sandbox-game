@@ -215,8 +215,8 @@ public static partial class ViewModels
                  .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 2f, 0f, -12f), B("hand_l", -0.012f, 0.072f, -0.028f, 0f, 0f, -18f), B("slide", 0f, 0f, -0.03f))
                  .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", -0.03f, 0.05f, -0.04f, 0f, 0f, -24f), B("slide"));
             if (id == "smg")
-                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.012f, 0.04f, -0.305f, 0f, 0f, 30f), B("charge"))
-                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.012f, 0.04f, -0.345f, 0f, 0f, 30f), B("charge", 0f, 0f, -0.04f))
+                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", -0.028f, 0.022f, -0.07f, 0f, 0f, -25f), B("charge"))
+                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", -0.028f, 0.022f, -0.115f, 0f, 0f, -25f), B("charge", 0f, 0f, -0.045f))
                  .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", 0.012f, 0.03f, -0.32f, 0f, 0f, 20f), B("charge"));
             c.Key(L, Ease.InOut, B("hand_r"), B("hand_l"), B(m), B("weapon"), B("slide"), B("charge"));
             clips["reload"] = c.Build();
