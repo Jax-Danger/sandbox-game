@@ -21,9 +21,9 @@ public sealed class WeatherSystem
         WeatherKind.Fog => (0.35f, 0f, 32f, 0.65f, 0f),
         WeatherKind.Rain => (0.30f, 12f, 110f, 0.75f, 0.7f),
         WeatherKind.Storm => (0.18f, 6f, 80f, 0.9f, 1f),
-        _ => (1f, 45f, 220f, 0f, 0f),
+        _ => (1f, 100f, 284f, 0f, 0f), // clear: light haze only (hills stay readable; the horizon skirt at 290 m is still past fog end)
     };
-    private float _sun = 1f, _start = 45f, _end = 220f, _grey, _rain, _flash, _nextBolt = 6f;
+    private float _sun = 1f, _start = 100f, _end = 284f, _grey, _rain, _flash, _nextBolt = 6f;
     public float RainAmount => _rain;
     public int ActiveDrops { get; private set; }
     public int Bolts { get; private set; }

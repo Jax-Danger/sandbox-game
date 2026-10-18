@@ -84,8 +84,8 @@ public sealed partial class SandboxGame : Game
         World.Skybox.Mode = Scene.SkyboxMode.Procedural;
         World.Fog.Mode = Scene.FogParams.FogMode.Linear;
         World.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
-        World.Fog.Start = 45f;
-        World.Fog.End = 220f;
+        World.Fog.Start = 100f;
+        World.Fog.End = 284f;
         World.Ambient.Mode = Scene.AmbientLightParams.AmbientMode.Hemisphere;
         World.Ambient.SkyColor = new Float4(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
         World.Ambient.GroundColor = new Float4(0.34f, 0.32f, 0.28f, 1f);

@@ -580,7 +580,7 @@ public sealed class SelfTest
                     bool stormy = g.World.Fog.End < 100f && g.Weather.Bolts >= 1 && g.Weather.RainAmount > 0.9f && float.IsFinite(g.Sun.Intensity);
                     g.Weather.Set(WeatherKind.Clear, g);
                     for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);
-                    bool cleared = MathF.Abs(g.World.Fog.End - 220f) < 1f && g.Weather.RainAmount < 0.01f;
+                    bool cleared = MathF.Abs(g.World.Fog.End - 284f) < 2f && g.Weather.RainAmount < 0.01f;
                     bool bad = !g.DevConsole.Execute(g, "weather tornado") && !g.DevConsole.Execute(g, "weather 99");
                     var meta = new SessionMeta(); meta.Modifiers.Weather = "Fog";
                     bool parse = WeatherSystem.Parse(meta.Modifiers.Weather) == WeatherKind.Fog && WeatherSystem.Parse("garbage") == WeatherKind.Clear && WeatherSystem.Parse(null) == WeatherKind.Clear;

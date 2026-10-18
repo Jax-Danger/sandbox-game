@@ -171,8 +171,8 @@ public static partial class MapBuilder
             }
             for (int i = 0; i < 14; i++)
             {
-                float a = i / 14f * MathF.Tau + 0.2f, r = 210f + (i * 37 % 60);
-                var h = Shape(scene, shader, "~Far hill", Meshes.Blob(1f, 30 + i, 0.08f), new Float3(MathF.Cos(a) * r, -2f, MathF.Sin(a) * r), new Color(0.36f, 0.43f, 0.3f, 1f));
+                float a = i / 14f * MathF.Tau + 0.2f, r = 195f + (i * 37 % 50);
+                var h = Shape(scene, shader, "~Far hill", Meshes.Blob(1f, 30 + i, 0.08f), new Float3(MathF.Cos(a) * r, -2f, MathF.Sin(a) * r), new Color(0.27f, 0.37f, 0.2f, 1f));
                 h.Transform.LocalScale = new Float3(70f + i % 3 * 20f, 14f + i % 4 * 5f, 60f);
                 h.Transform.LocalEulerAngles = new Float3(0f, -a * 180f / MathF.PI, 0f);
             }

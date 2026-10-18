@@ -55,12 +55,19 @@ Pass "SandboxSky"
                 vec3 col = mix(_Horizon.rgb, _Zenith.rgb, pow(h, 0.55));
                 vec3 s = normalize(_SunDir.xyz);
                 float sd = max(dot(d, s), 0.0);
-                // Warm glow hugging the horizon around the sun at dawn/dusk, then the sun disc + halo.
-                float band = exp(-h * 7.0);
-                col += _Glow.rgb * _GlowAmt * band * pow(sd, 4.0) * 1.6;
-                col += _Glow.rgb * _GlowAmt * band * 0.3;
+                // Warm glow hugging the horizon around the sun at dawn/dusk: the band grows taller toward the sun (forward
+                // scattering), with a wide soft wash, a tighter halo and a hot core, then a crisp limb-darkened sun disc.
+                float band = exp(-h * mix(9.0, 3.5, pow(sd, 6.0)));
+                col += _Glow.rgb * _GlowAmt * band * (pow(sd, 3.0) * 1.1 + pow(sd, 12.0) * 0.6);
+                col += _Glow.rgb * _GlowAmt * band * 0.22;
                 float up = smoothstep(-0.06, 0.02, s.y);
-                col += mix(_Glow.rgb, vec3(1.0, 0.97, 0.9), 1.0 - _GlowAmt) * (pow(sd, 900.0) * 3.0 + pow(sd, 60.0) * 0.25) * up;
+                vec3 sunCol = mix(vec3(1.0, 0.72, 0.42), vec3(1.0, 0.97, 0.9), 1.0 - _GlowAmt);
+                col += sunCol * (pow(sd, 40.0) * 0.35 + pow(sd, 300.0) * 0.8) * up;
+                float disc = smoothstep(0.99935, 0.99965, sd);
+                float limb = 0.75 + 0.25 * smoothstep(0.99935, 0.99995, sd);
+                col = mix(col, sunCol * 2.2 * limb, disc * up);
+                // Tiny dither so the wide gradients don't band on 8-bit output.
+                col += (hash(d * 1000.0) - 0.5) / 255.0;
                 // Stars: one jittered point per 3D cell on the sphere, faded out near the horizon haze.
                 if (_Night > 0.001)
                 {

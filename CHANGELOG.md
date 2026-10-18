@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.0 — 2026-10-18
+- Atmosphere: clear-weather fog pushed out to 100-284 m (town hills/trees no longer drowned), richer far-hill colour; dusk sky gets a taller forward-scattered glow, layered halo and a crisp limb-darkened sun disc, plus dithering against banding.
+
 ## v0.12.10 — 2026-10-18
 - Entities (button, camera, light...) keep their real colours when frozen instead of the blue frozen-prop tint; button housing is brushed steel grey.
 
