@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.9 — 2026-10-18
+- Town plaza paving: 1.5 m joint grid, darker kerb border and two rings of granite setts around the fountain
+
 ## v0.8.8 — 2026-10-18
 - Town: commercial buildings get plinths, corner quoin pilasters, cornice bands and belt courses on all four sides; plaza lamps are Victorian lanterns (fluted foot, collar, ladder bar, four-post glowing lantern under a peaked cap)
 

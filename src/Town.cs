@@ -139,6 +139,33 @@ public static partial class MapBuilder
 
         // Plaza (centre) and four avenues running out of it, with sidewalks and centre lines.
         Box(scene, shader, "Plaza", new Float3(0f, 0.03f, 0f), new Float3(34f, 0.06f, 34f), Float3.Zero, paver);
+        {
+            // Paving: a darker kerb border, a 1.5 m joint grid, and two concentric granite rings around the fountain.
+            var joints = new List<Mesh>();
+            for (float t = -15.75f; t <= 15.8f; t += 1.5f)
+            {
+                joints.Add(Off(Meshes.RoundedBox(new Float3(32f, 0.006f, 0.035f), 0.002f), 0f, 0.061f, t));
+                joints.Add(Off(Meshes.RoundedBox(new Float3(0.035f, 0.006f, 32f), 0.002f), t, 0.061f, 0f));
+            }
+            Shape(scene, shader, "~Paving joints", Meshes.Merge(joints.ToArray()), Float3.Zero, new Color(0.36f, 0.33f, 0.3f, 1f));
+            var kerb = new List<Mesh>();
+            foreach (float sg in new[] { -1f, 1f })
+            {
+                kerb.Add(Off(Meshes.RoundedBox(new Float3(34f, 0.03f, 0.9f), 0.01f), 0f, 0.07f, sg * 16.55f));
+                kerb.Add(Off(Meshes.RoundedBox(new Float3(0.9f, 0.03f, 32.2f), 0.01f), sg * 16.55f, 0.07f, 0f));
+            }
+            Shape(scene, shader, "~Plaza kerb", Meshes.Merge(kerb.ToArray()), Float3.Zero, new Color(0.6f, 0.58f, 0.55f, 1f));
+            var setts = new List<Mesh>();
+            foreach (var (rr, n, wdt) in new[] { (3.3f, 40, 0.7f), (6.85f, 80, 0.45f) })
+                for (int i = 0; i < n; i++)
+                {
+                    float ang = i * MathF.Tau / n, ca = MathF.Cos(ang), sa = MathF.Sin(ang), len = MathF.Tau * rr / n - 0.04f;
+                    Mesh m = Meshes.RoundedBox(new Float3(wdt, 0.02f, len), 0.008f);
+                    var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => new Float3(v.X * ca - v.Z * sa + ca * rr, v.Y + 0.062f, v.X * sa + v.Z * ca + sa * rr + 4f)).ToArray(), Normals = m.Normals.Select(v => new Float3(v.X * ca - v.Z * sa, v.Y, v.X * sa + v.Z * ca)).ToArray(), UV = m.UV, Indices = m.Indices };
+                    mm.RecalculateBounds(); setts.Add(mm);
+                }
+            Shape(scene, shader, "~Paving rings", Meshes.Merge(setts.ToArray()), Float3.Zero, new Color(0.5f, 0.47f, 0.44f, 1f));
+        }
         foreach (int dir in new[] { 0, 1, 2, 3 })
         {
             bool alongX = dir < 2; float sgn = dir % 2 == 0 ? 1f : -1f;
