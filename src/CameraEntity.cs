@@ -54,8 +54,37 @@ public static class CameraFeeds
         r.Mesh = Meshes.RoundedCylinder(0.125f, 0.012f, 0.005f, 32);
         var m = Mats.New(g.Shader);
         m.SetColor("_MainColor", new Color(0.05f, 0.06f, 0.08f, 1f));
-        if (!Application.IsHeadless) { m.SetTexture("_EmissionTex", ProcTex.Solid(40, 110, 255)); m.SetFloat("_EmissionIntensity", 1.5f); }
+        if (!Application.IsHeadless) { m.SetTexture("_EmissionTex", ProcTex.Solid(30, 70, 150)); m.SetFloat("_EmissionIntensity", 0.7f); }
         r.Material = m;
+        if (!Application.IsHeadless && p.Go.Transform.Find("CamHandle") is null)
+        {
+            try { p.Go.GetComponent<MeshRenderer>()?.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+            var dark = Mats.New(g.Shader); dark.SetColor("_MainColor", new Color(0.07f, 0.07f, 0.08f, 1f));
+            var rub = Mats.New(g.Shader); rub.SetColor("_MainColor", new Color(0.12f, 0.12f, 0.13f, 1f));
+            var stl = Mats.New(g.Shader); stl.SetColor("_MainColor", new Color(0.62f, 0.63f, 0.66f, 1f));
+            var red = Mats.New(g.Shader); red.SetColor("_MainColor", new Color(1f, 0.12f, 0.08f, 1f));
+            if (!Application.IsHeadless) { red.SetTexture("_EmissionTex", ProcTex.Solid(255, 30, 20)); red.SetFloat("_EmissionIntensity", 2f); }
+            void Part(string n, Mesh mesh, Float3 at, Material mt, Float3 eul = default)
+            {
+                var c = new GameObject(n); c.SetParent(p.Go, false); c.Transform.LocalPosition = at; c.Transform.LocalEulerAngles = eul;
+                MeshRenderer mr = c.AddComponent<MeshRenderer>(); mr.Mesh = mesh; mr.Material = mt;
+            }
+            // Carry handle on two posts, knurled focus + zoom rings on the barrel, tally LED, flip-out side monitor,
+            // rear battery pack, and a tripod plate underneath.
+            Part("CamHandle", VehicleModels.BentPipe(0.022f, 0.05f, Float3.UnitX, new Float3(0f, 0.2f, -0.18f), new Float3(0f, 0.29f, -0.14f), new Float3(0f, 0.29f, 0.12f), new Float3(0f, 0.2f, 0.16f)), Float3.Zero, rub);
+            for (int i = 0; i < 9; i++) Part("Knurl", Meshes.LatheZ([(0.157f, 0f), (0.161f, 0.004f), (0.157f, 0.008f)], 32), new Float3(0f, 0f, 0.235f + i * 0.009f), rub);
+            Part("ZoomRing", Meshes.LatheZ([(0.176f, 0f), (0.184f, 0.01f), (0.184f, 0.03f), (0.176f, 0.04f)], 32), new Float3(0f, 0f, 0.345f), stl);
+            Part("Tally", Meshes.Sphere(0.018f), new Float3(0.09f, 0.21f, 0.2f), red);
+            Part("Monitor", Meshes.RoundedBox(new Float3(0.02f, 0.15f, 0.2f), 0.008f, 3), new Float3(-0.26f, 0.04f, 0.04f), dark, new Float3(0f, -18f, 0f));
+            var scr = Mats.New(g.Shader); scr.SetColor("_MainColor", new Color(0.15f, 0.35f, 0.55f, 1f));
+            if (!Application.IsHeadless) { scr.SetTexture("_EmissionTex", ProcTex.Solid(40, 90, 140)); scr.SetFloat("_EmissionIntensity", 1f); }
+            Part("MonitorScreen", Meshes.RoundedBox(new Float3(0.004f, 0.125f, 0.17f), 0.002f, 2), new Float3(-0.273f, 0.04f, 0.042f), scr, new Float3(0f, -18f, 0f));
+            Part("Battery", Meshes.RoundedBox(new Float3(0.3f, 0.2f, 0.08f), 0.02f, 3), new Float3(0f, 0f, -0.32f), dark);
+            Part("BatteryLatch", Meshes.RoundedBox(new Float3(0.08f, 0.03f, 0.02f), 0.006f, 2), new Float3(0f, 0.06f, -0.365f), stl);
+            Part("LensRing", Meshes.LatheZ([(0.1f, 0f), (0.128f, 0f), (0.128f, 0.004f), (0.1f, 0.004f)], 32), new Float3(0f, 0f, 0.329f), dark);
+            Part("LensGlint", Meshes.Sphere(0.02f), new Float3(0.045f, 0.045f, 0.326f), stl);
+            Part("TripodPlate", Meshes.RoundedBox(new Float3(0.16f, 0.025f, 0.22f), 0.008f, 3), new Float3(0f, -0.21f, 0f), stl);
+        }
         _cams.Add(p);
     }
 

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.5 — 2026-10-18
+- Camera entity: carry handle, knurled focus and zoom rings, red tally LED, flip-out side monitor, rear battery with latch, tripod plate, lens ring and glint; deeper, dimmer lens glass; no crate wood texture.
+
 ## v0.9.4 — 2026-10-18
 - Button entity is an industrial push station: crisp steel housing (no crate wood texture), yellow top plate with four screws, black/yellow hazard collar, PUSH plate and a plinth around the red mushroom button.
 
