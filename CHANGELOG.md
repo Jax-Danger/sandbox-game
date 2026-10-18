@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.2 — 2026-10-18
+- NPC heads are sculpted (Meshes.Sculpt): tapered jaw and rounded chin, cheekbones, brow ridge, eye sockets, temples; shell ears with a dished bowl and lobe; slightly larger eyes (screens/s7-face-ab.png before, s7-face-d-crop2.png after)
+
 ## v0.11.1 — 2026-10-18
 - Sign/plate text uses real Inter Bold outlines (curves, counters) instead of the 5x7 block font; PUSH plate text sits proud of the plate (screens/s7-button-d-crop.png)
 

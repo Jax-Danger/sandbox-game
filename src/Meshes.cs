@@ -520,6 +520,41 @@ public static class Meshes
         return Build(v, n, uv, idx);
     }
 
+    /// <summary>Organic closed surface: a lat/long sphere grid (shared seam and poles, smooth normals) whose every
+    /// point is placed by <paramref name="shape"/>(unit direction). Used for heads and other sculpted forms.</summary>
+    public static Mesh Sculpt(Func<Float3, Float3> shape, int rings = 28, int segs = 40)
+    {
+        var v = new List<Float3>(); var uv = new List<Float2>(); var idx = new List<uint>();
+        v.Add(shape(new Float3(0f, -1f, 0f))); uv.Add(new Float2(0.5f, 0f));
+        for (int r = 1; r < rings; r++)
+        {
+            float th = MathF.PI * r / rings - MathF.PI / 2f;
+            for (int sgi = 0; sgi < segs; sgi++)
+            {
+                float ph = MathF.Tau * sgi / segs;
+                v.Add(shape(new Float3(MathF.Cos(th) * MathF.Sin(ph), MathF.Sin(th), MathF.Cos(th) * MathF.Cos(ph))));
+                uv.Add(new Float2((float)sgi / segs, (float)r / rings));
+            }
+        }
+        v.Add(shape(new Float3(0f, 1f, 0f))); uv.Add(new Float2(0.5f, 1f));
+        uint top = (uint)(v.Count - 1);
+        uint Ix(int r, int sgi) => (uint)(1 + (r - 1) * segs + (sgi % segs));
+        for (int sgi = 0; sgi < segs; sgi++) { idx.Add(0); idx.Add(Ix(1, sgi + 1)); idx.Add(Ix(1, sgi)); }
+        for (int r = 1; r < rings - 1; r++)
+            for (int sgi = 0; sgi < segs; sgi++)
+            {
+                uint a = Ix(r, sgi), b = Ix(r, sgi + 1), c = Ix(r + 1, sgi), d = Ix(r + 1, sgi + 1);
+                idx.Add(a); idx.Add(b); idx.Add(d); idx.Add(a); idx.Add(d); idx.Add(c);
+            }
+        for (int sgi = 0; sgi < segs; sgi++) { idx.Add(top); idx.Add(Ix(rings - 1, sgi)); idx.Add(Ix(rings - 1, sgi + 1)); }
+        var mesh = new Mesh { IndexFormat = IndexFormat.UInt16, Vertices = v.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
+        mesh.RecalculateNormals(); mesh.RecalculateBounds(); mesh.RecalculateTangents();
+        return mesh;
+    }
+
+    /// <summary>Gaussian bump weight around direction c (unit d), sharpness k.</summary>
+    public static float Bump(Float3 d, Float3 c, float k) => MathF.Exp(-(1f - Float3.Dot(d, Float3.Normalize(c))) * k);
+
     internal static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };

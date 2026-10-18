@@ -127,14 +127,46 @@ public static class Humans
     private static (Mesh, Detail[]) Head()
     {
         // Egg-shaped skull with a jaw, nose, ears, eyes and a hair cap.
-        Mesh skull = Sweep([
-            new Sec(V(0f, -0.125f, 0.012f), 0.045f, 0.045f), new Sec(V(0f, -0.11f, 0.018f), 0.072f, 0.075f), new Sec(V(0f, -0.07f, 0.01f), 0.098f, 0.105f),
-            new Sec(V(0f, -0.01f, 0f), 0.112f, 0.122f), new Sec(V(0f, 0.05f, -0.006f), 0.114f, 0.126f), new Sec(V(0f, 0.1f, -0.01f), 0.096f, 0.11f),
-            new Sec(V(0f, 0.128f, -0.012f), 0.05f, 0.06f)], Float3.UnitX, 26, 0.3f);
+        Mesh skull = Sculpt(d =>
+        {
+            float x = d.X, y = d.Y, z = d.Z;
+            // Jaw: the lower face narrows toward a rounded chin; cheeks stay full just under the eyes.
+            float low = Math.Clamp(-y, 0f, 1f);
+            float wx = 0.109f * (1f - 0.36f * MathF.Pow(low, 1.4f));
+            float wz = (z > 0f ? 0.123f : 0.125f) * (1f - 0.2f * MathF.Pow(low, 1.6f));
+            float hy = y > 0f ? 0.13f : 0.128f;
+            Float3 p = new(x * wx, y * hy, z * wz);
+            // Back of the skull sits higher and rounder; the face plane is flatter than a ball.
+            Float3 n = d;
+            float push = 0.004f * Bump(d, new(0.55f, -0.05f, 0.8f), 18f) + 0.004f * Bump(d, new(-0.55f, -0.05f, 0.8f), 18f)   // cheekbones
+                       - 0.005f * Bump(d, new(0.36f, 0.15f, 0.92f), 120f) - 0.005f * Bump(d, new(-0.36f, 0.15f, 0.92f), 120f)  // eye sockets
+                       + 0.005f * Bump(d, new(0.3f, 0.32f, 0.9f), 70f) + 0.005f * Bump(d, new(-0.3f, 0.32f, 0.9f), 70f)       // brow ridge
+                       + 0.008f * Bump(d, new(0f, -0.8f, 0.6f), 40f)                                                          // chin
+                       + 0.004f * Bump(d, new(0f, -0.45f, 0.9f), 60f)                                                         // upper lip / muzzle
+                       - 0.006f * Bump(d, new(1f, 0.3f, 0.1f), 18f) - 0.006f * Bump(d, new(-1f, 0.3f, 0.1f), 18f);            // temples
+            p += n * push;
+            return new Float3(p.X, p.Y - 0.002f, p.Z + 0.002f);
+        }, 30, 44);
         Mesh nose = Sweep([new Sec(V(0f, 0.014f, 0.112f), 0.008f, 0.008f), new Sec(V(0f, -0.016f, 0.127f), 0.011f, 0.012f), new Sec(V(0f, -0.032f, 0.128f), 0.014f, 0.012f), new Sec(V(0f, -0.039f, 0.121f), 0.012f, 0.008f)], Float3.UnitX, 12, 0.9f);
         var ears = new List<Detail>();
         foreach (float sx in new[] { -1f, 1f })
-            ears.Add(new(Sweep([new Sec(V(sx * 0.11f, 0.02f, -0.01f), 0.012f, 0.025f, 2f, Float3.UnitZ), new Sec(V(sx * 0.122f, 0.0f, -0.012f), 0.012f, 0.028f, 2f, Float3.UnitZ), new Sec(V(sx * 0.118f, -0.028f, -0.008f), 0.008f, 0.016f, 2f, Float3.UnitZ)], Float3.UnitZ, 12, 0.9f), Tint.Skin));
+        {
+            // Ear: a thin tilted shell with a rolled rim (helix), a hollow bowl (concha) and a fleshy lobe.
+            float side = sx;
+            Mesh ear = Sculpt(d =>
+            {
+                float y = d.Y, zz = d.Z, out_ = d.X * side;
+                float w = 0.023f * (1f - 0.25f * MathF.Max(0f, -y)), h = 0.034f;
+                float t = out_ > 0f ? 0.0075f * (1f - 0.75f * Bump(d, new(side, -0.05f, 0.1f), 6f)) : 0.006f; // bowl dished on the outer face
+                Float3 p = new(d.X * t, y * h, zz * w);
+                if (y < -0.55f) p.Z += (y + 0.55f) * 0.006f; // lobe tucks forward
+                return p;
+            }, 14, 20);
+            Mesh tilt = Meshes.Merge(ear);
+            var vs = tilt.Vertices.Select(v => { float a = side * 0.32f; return new Float3(v.X * MathF.Cos(a) - v.Z * MathF.Sin(a) * 0.4f, v.Y, v.Z + v.X * 0.0f) + V(sx * 0.121f, -0.003f, -0.012f); }).ToArray();
+            tilt.Vertices = vs; tilt.RecalculateNormals(); tilt.RecalculateBounds();
+            ears.Add(new(tilt, Tint.Skin));
+        }
         Mesh hair = Sweep([
             new Sec(V(0f, 0.0f, -0.035f), 0.12f, 0.122f), new Sec(V(0f, 0.06f, -0.017f), 0.123f, 0.138f), new Sec(V(0f, 0.105f, -0.014f), 0.108f, 0.126f),
             new Sec(V(0f, 0.14f, -0.018f), 0.056f, 0.074f)], Float3.UnitX, 26, 0.3f, flatStart: true);
@@ -146,8 +178,8 @@ public static class Humans
         foreach (float sx in new[] { -1f, 1f })
         {
             // Eyes: white eyeball set into the socket, dark iris, upper lid crease and a heavier brow.
-            d.Add(new(Sphere(0.0142f), Tint.Sclera, V(sx * 0.04f, 0.018f, 0.1025f)));
-            d.Add(new(Sphere(0.0078f), Tint.Eye, V(sx * 0.0395f, 0.0175f, 0.1125f)));
+            d.Add(new(Sphere(0.0155f), Tint.Sclera, V(sx * 0.04f, 0.018f, 0.1015f)));
+            d.Add(new(Sphere(0.0086f), Tint.Eye, V(sx * 0.0395f, 0.0175f, 0.1125f)));
             d.Add(new(Sweep([new Sec(V(sx * 0.024f, 0.022f, 0.111f), 0.003f, 0.003f), new Sec(V(sx * 0.04f, 0.0305f, 0.1165f), 0.0045f, 0.004f), new Sec(V(sx * 0.056f, 0.022f, 0.107f), 0.003f, 0.003f)], Float3.UnitY, 8, 0.9f), Tint.Skin));
             d.Add(new(Sweep([new Sec(V(sx * 0.026f, 0.008f, 0.11f), 0.002f, 0.002f), new Sec(V(sx * 0.04f, 0.0045f, 0.1145f), 0.0028f, 0.0028f), new Sec(V(sx * 0.054f, 0.009f, 0.106f), 0.002f, 0.002f)], Float3.UnitY, 8, 0.9f), Tint.Skin));
             d.Add(new(Sweep([new Sec(V(sx * 0.018f, 0.044f, 0.114f), 0.007f, 0.005f), new Sec(V(sx * 0.042f, 0.05f, 0.11f), 0.0085f, 0.0055f), new Sec(V(sx * 0.066f, 0.043f, 0.1f), 0.005f, 0.0035f)], Float3.UnitY, 8, 0.8f), Tint.Hair));
