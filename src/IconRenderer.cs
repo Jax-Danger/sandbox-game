@@ -67,6 +67,18 @@ public sealed class IconRenderer
         light.CastShadows = false;
         scene.Add(lightGo);
 
+        // Soft fill from the opposite side and a cool rim from behind, so dark guns and props don't read as silhouettes.
+        var fillGo = new GameObject("IconFill");
+        fillGo.Transform.LocalEulerAngles = new Float3(-15f, -140f, 0f);
+        DirectionalLight fill = fillGo.AddComponent<DirectionalLight>();
+        fill.Intensity = 0.55f; fill.CastShadows = false; fill.Color = new Color(0.85f, 0.9f, 1f, 1f);
+        scene.Add(fillGo);
+        var rimGo = new GameObject("IconRim");
+        rimGo.Transform.LocalEulerAngles = new Float3(-25f, 200f, 0f);
+        DirectionalLight rim = rimGo.AddComponent<DirectionalLight>();
+        rim.Intensity = weapon ? 1.1f : 0.6f; rim.CastShadows = false; rim.Color = new Color(0.8f, 0.9f, 1f, 1f);
+        scene.Add(rimGo);
+
         var subject = new GameObject("IconSubject");
         (Mesh mesh, float extent) = MeshFor(kind);
         var mat = Mats.New(shader);
@@ -90,8 +102,27 @@ public sealed class IconRenderer
 
         scene.Enable();
 
-        Float3 dir = Float3.Normalize(new Float3(1f, 0.75f, -1.2f));
-        float dist = extent / MathF.Tan(15f * MathF.PI / 180f) * 1.15f;
+        // Tight framing: bounding sphere of the actual rendered vertices (thin weapons and tall props fill the tile),
+        // re-centred on the origin.
+        try
+        {
+            var pts = new List<Float3>();
+            foreach (MeshRenderer mr in subject.GetComponentsInChildren<MeshRenderer>())
+                if (mr.Mesh.Res?.Vertices is { } vs)
+                    for (int i = 0; i < vs.Length; i += Math.Max(1, vs.Length / 400)) pts.Add(mr.GameObject.Transform.TransformPoint(vs[i]));
+            if (pts.Count > 3)
+            {
+                Float3 lo = pts[0], hi = pts[0];
+                foreach (Float3 q in pts) { lo = new Float3(MathF.Min(lo.X, q.X), MathF.Min(lo.Y, q.Y), MathF.Min(lo.Z, q.Z)); hi = new Float3(MathF.Max(hi.X, q.X), MathF.Max(hi.Y, q.Y), MathF.Max(hi.Z, q.Z)); }
+                Float3 ctr = (lo + hi) * 0.5f;
+                float rr = 0f; foreach (Float3 q in pts) rr = MathF.Max(rr, Float3.Length(q - ctr));
+                if (rr > 0.01f && float.IsFinite(rr)) { subject.Transform.Position = subject.Transform.Position - ctr; extent = rr * 0.86f; }
+            }
+        }
+        catch { }
+
+        Float3 dir = Float3.Normalize(weapon ? new Float3(0.45f, 0.35f, 1f) : new Float3(1f, 0.75f, -1.2f));
+        float dist = extent / MathF.Tan(15f * MathF.PI / 180f) * 1.08f;
         camGo.Transform.Position = dir * dist;
         camGo.Transform.Rotation = Quaternion.LookRotation(-dir, Float3.UnitY);
 

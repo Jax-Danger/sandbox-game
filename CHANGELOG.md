@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.5.8 — 2026-10-17
+- Spawn-menu icons: tight framing from the real rendered bounds (thin and tall items fill the tile), fill + rim lights so dark guns read, weapons shown in clean side profile instead of end-on.
+
 ## v0.5.7 — 2026-10-17
 - NPCs/avatar: slimmer, lower deltoids and sloping trapezius yokes (no more puffed knobs above the arms), chest bridges into the shoulders; thighs extend up into the hips (no dimple at the top); sleeve roll tapers into the forearm.
 
