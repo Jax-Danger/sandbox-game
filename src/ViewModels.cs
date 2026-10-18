@@ -119,7 +119,7 @@ public static partial class ViewModels
                 }
                 Float3 last = secs[^1].P;
                 secs.Add(new Sec(Lp(last, s.Wrist, 0.5f), hw * 0.82f, 0.0155f, 2.4f, F.A));
-                secs.Add(new Sec(s.Wrist, 0.026f, 0.019f, 2.2f, F.A));
+                secs.Add(new Sec(s.Wrist, 0.0225f, 0.0165f, 2.2f, F.A)); // tucks inside the gauntlet lip
                 Add(bone, Sweep(secs, F.A, 26, 0.5f), GloveC, Finish.Leather);
                 // Knuckle guard on the back of the hand: tapered at both ends so it sits on the glove as a moulded pad
                 // instead of ending in a blunt slab edge.
@@ -196,8 +196,9 @@ public static partial class ViewModels
         /// <summary>Forearm on its IK bone: glove gauntlet, strap, sleeve hem and a sleeve with soft folds (local +Z = toward the elbow).</summary>
         public void Forearm(string bone)
         {
-            Sw(bone, GloveC, Finish.Leather, Float3.UnitX, 0f,
-                new Sec(V(0, 0, -0.012f), 0.0265f, 0.0205f, 2.4f), new Sec(V(0, 0, 0.02f), 0.029f, 0.0235f, 2.3f), new Sec(V(0, 0, 0.058f), 0.0325f, 0.028f, 2.2f));
+            // Gauntlet opens with a flared, rolled lip that laps over the palm's wrist end, so the IK-tilted joint never shows a jagged intersection.
+            Sw(bone, GloveC, Finish.Leather, Float3.UnitX, 0.5f,
+                new Sec(V(0, 0, -0.024f), 0.0262f, 0.0196f, 2.4f), new Sec(V(0, 0, -0.019f), 0.0288f, 0.0222f, 2.4f), new Sec(V(0, 0, -0.012f), 0.0291f, 0.0225f, 2.4f), new Sec(V(0, 0, -0.006f), 0.0278f, 0.0214f, 2.4f), new Sec(V(0, 0, 0.02f), 0.029f, 0.0235f, 2.3f), new Sec(V(0, 0, 0.058f), 0.0325f, 0.028f, 2.2f));
             Sw(bone, PadC, Finish.Rubber, Float3.UnitX, 0.5f, new Sec(V(0, 0, 0.036f), 0.0318f, 0.0268f, 2.3f), new Sec(V(0, 0, 0.05f), 0.0322f, 0.0272f, 2.3f));
             // Hem: rolled cuff with a rounded lip at both edges (was a flat-ended band that read as a jagged step).
             Sw(bone, HemC, Finish.Fabric, Float3.UnitX, 0.5f,
