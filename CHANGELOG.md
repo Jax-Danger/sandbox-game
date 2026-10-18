@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.5 — 2026-10-18
+- NPC faces: white eyeballs with dark irises and catch-lights, upper lid creases and lower lids, heavier brows, shaped lips with a mouth line, slimmer nose, sideburns, a side-parted fringe and a hairline set back off the brows
+
 ## v0.8.4 — 2026-10-18
 - Big and small crates are real crates now: inset core, proud edge battens on all 12 edges and a diagonal brace on every face
 

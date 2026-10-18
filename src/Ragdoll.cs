@@ -132,7 +132,7 @@ public sealed class Ragdoll
     {
         Color c = t switch
         {
-            Humans.Tint.Skin => skin,
+            Humans.Tint.Skin => skin, Humans.Tint.Sclera => new Color(0.93f, 0.92f, 0.88f, 1f), Humans.Tint.Lip => new Color(skin.R * 0.8f, skin.G * 0.6f, skin.B * 0.58f, 1f),
             Humans.Tint.Shoe => new Color(0.16f, 0.11f, 0.08f, 1f),
             Humans.Tint.Hair => HairColors[_counter % HairColors.Length],
             Humans.Tint.Eye => new Color(0.05f, 0.05f, 0.06f, 1f),

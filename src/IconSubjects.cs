@@ -128,7 +128,7 @@ public static class IconSubjects
         var parts = new List<Part>();
         Color Tc(Humans.Tint t) => t switch
         {
-            Humans.Tint.Skin => Skin, Humans.Tint.Shoe => new Color(0.16f, 0.11f, 0.08f, 1f), Humans.Tint.Hair => new Color(0.18f, 0.12f, 0.08f, 1f),
+            Humans.Tint.Skin => Skin, Humans.Tint.Sclera => new Color(0.93f, 0.92f, 0.88f, 1f), Humans.Tint.Lip => new Color(Skin.R * 0.8f, Skin.G * 0.6f, Skin.B * 0.58f, 1f), Humans.Tint.Shoe => new Color(0.16f, 0.11f, 0.08f, 1f), Humans.Tint.Hair => new Color(0.18f, 0.12f, 0.08f, 1f),
             Humans.Tint.Eye or Humans.Tint.Belt => new Color(0.06f, 0.06f, 0.06f, 1f), Humans.Tint.Pants => new Color(pants.R * 0.8f, pants.G * 0.8f, pants.B * 0.8f, 1f),
             Humans.Tint.Cuff => new Color(shirt.R * 0.75f, shirt.G * 0.75f, shirt.B * 0.75f, 1f), _ => shirt,
         };

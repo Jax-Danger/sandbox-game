@@ -12,7 +12,7 @@ namespace Sandbox;
 /// </summary>
 public static class Humans
 {
-    public enum Tint { Main, Skin, Shoe, Hair, Eye, Belt, Cuff, Pants }
+    public enum Tint { Main, Skin, Shoe, Hair, Eye, Belt, Cuff, Pants, Sclera, Lip }
     public sealed record Detail(Mesh Mesh, Tint Tint, Float3 Offset = default);
 
     private static readonly Dictionary<string, (Mesh Main, Detail[] Details)> _cache = [];
@@ -114,17 +114,33 @@ public static class Humans
             new Sec(V(0f, -0.125f, 0.012f), 0.045f, 0.045f), new Sec(V(0f, -0.11f, 0.018f), 0.072f, 0.075f), new Sec(V(0f, -0.07f, 0.01f), 0.098f, 0.105f),
             new Sec(V(0f, -0.01f, 0f), 0.112f, 0.122f), new Sec(V(0f, 0.05f, -0.006f), 0.114f, 0.126f), new Sec(V(0f, 0.1f, -0.01f), 0.096f, 0.11f),
             new Sec(V(0f, 0.128f, -0.012f), 0.05f, 0.06f)], Float3.UnitX, 26, 0.3f);
-        Mesh nose = Sweep([new Sec(V(0f, 0.012f, 0.112f), 0.012f, 0.01f), new Sec(V(0f, -0.02f, 0.13f), 0.016f, 0.014f), new Sec(V(0f, -0.035f, 0.126f), 0.017f, 0.012f)], Float3.UnitX, 12, 0.9f);
+        Mesh nose = Sweep([new Sec(V(0f, 0.014f, 0.112f), 0.008f, 0.008f), new Sec(V(0f, -0.016f, 0.127f), 0.011f, 0.012f), new Sec(V(0f, -0.032f, 0.128f), 0.014f, 0.012f), new Sec(V(0f, -0.039f, 0.121f), 0.012f, 0.008f)], Float3.UnitX, 12, 0.9f);
         var ears = new List<Detail>();
         foreach (float sx in new[] { -1f, 1f })
             ears.Add(new(Sweep([new Sec(V(sx * 0.11f, 0.02f, -0.01f), 0.012f, 0.025f, 2f, Float3.UnitZ), new Sec(V(sx * 0.122f, 0.0f, -0.012f), 0.012f, 0.028f, 2f, Float3.UnitZ), new Sec(V(sx * 0.118f, -0.028f, -0.008f), 0.008f, 0.016f, 2f, Float3.UnitZ)], Float3.UnitZ, 12, 0.9f), Tint.Skin));
-        Mesh eyeL = Sphere(0.0115f), hair = Sweep([
-            new Sec(V(0f, 0.0f, -0.035f), 0.12f, 0.122f), new Sec(V(0f, 0.06f, -0.01f), 0.123f, 0.14f), new Sec(V(0f, 0.105f, -0.01f), 0.106f, 0.124f),
-            new Sec(V(0f, 0.14f, -0.014f), 0.054f, 0.07f)], Float3.UnitX, 26, 0.3f, flatStart: true);
-        var d = new List<Detail> { new(nose, Tint.Skin), new(Sweep([new Sec(V(-0.026f, -0.062f, 0.105f), 0.004f, 0.003f), new Sec(V(0f, -0.066f, 0.112f), 0.004f, 0.003f), new Sec(V(0.026f, -0.062f, 0.105f), 0.004f, 0.003f)], Float3.UnitY, 8, 0.9f), Tint.Eye), new(hair, Tint.Hair), new(eyeL, Tint.Eye, V(-0.04f, 0.018f, 0.104f)), new(eyeL, Tint.Eye, V(0.04f, 0.018f, 0.104f)) };
+        Mesh hair = Sweep([
+            new Sec(V(0f, 0.0f, -0.035f), 0.12f, 0.122f), new Sec(V(0f, 0.06f, -0.017f), 0.123f, 0.138f), new Sec(V(0f, 0.105f, -0.014f), 0.108f, 0.126f),
+            new Sec(V(0f, 0.14f, -0.018f), 0.056f, 0.074f)], Float3.UnitX, 26, 0.3f, flatStart: true);
+        var d = new List<Detail> { new(nose, Tint.Skin), new(hair, Tint.Hair) };
+        // Mouth: a dark parting line between a thin upper lip and a fuller lower lip, with a soft chin pad below.
+        d.Add(new(Sweep([new Sec(V(-0.024f, -0.061f, 0.106f), 0.003f, 0.002f), new Sec(V(0f, -0.063f, 0.113f), 0.003f, 0.002f), new Sec(V(0.024f, -0.061f, 0.106f), 0.003f, 0.002f)], Float3.UnitY, 8, 0.9f), Tint.Eye));
+        d.Add(new(Sweep([new Sec(V(-0.022f, -0.059f, 0.104f), 0.003f, 0.004f), new Sec(V(-0.008f, -0.055f, 0.112f), 0.005f, 0.005f), new Sec(V(0f, -0.056f, 0.1135f), 0.0045f, 0.005f), new Sec(V(0.008f, -0.055f, 0.112f), 0.005f, 0.005f), new Sec(V(0.022f, -0.059f, 0.104f), 0.003f, 0.004f)], Float3.UnitY, 10, 0.9f), Tint.Lip));
+        d.Add(new(Sweep([new Sec(V(-0.02f, -0.066f, 0.104f), 0.004f, 0.004f), new Sec(V(0f, -0.069f, 0.112f), 0.0065f, 0.0065f), new Sec(V(0.02f, -0.066f, 0.104f), 0.004f, 0.004f)], Float3.UnitY, 10, 0.9f), Tint.Lip));
         foreach (float sx in new[] { -1f, 1f })
-            d.Add(new(Sweep([new Sec(V(sx * 0.018f, 0.044f, 0.112f), 0.006f, 0.004f), new Sec(V(sx * 0.042f, 0.05f, 0.108f), 0.007f, 0.0045f), new Sec(V(sx * 0.064f, 0.044f, 0.098f), 0.005f, 0.0035f)], Float3.UnitY, 8, 0.8f), Tint.Hair));
-        d.Add(new(Sphere(0.004f), Tint.Skin, V(-0.04f, 0.018f, 0.1155f))); // (eye glints stay dark; keeps cache keys distinct)
+        {
+            // Eyes: white eyeball set into the socket, dark iris, upper lid crease and a heavier brow.
+            d.Add(new(Sphere(0.0142f), Tint.Sclera, V(sx * 0.04f, 0.018f, 0.1025f)));
+            d.Add(new(Sphere(0.0078f), Tint.Eye, V(sx * 0.0395f, 0.0175f, 0.1125f)));
+            d.Add(new(Sweep([new Sec(V(sx * 0.024f, 0.022f, 0.111f), 0.003f, 0.003f), new Sec(V(sx * 0.04f, 0.0305f, 0.1165f), 0.0045f, 0.004f), new Sec(V(sx * 0.056f, 0.022f, 0.107f), 0.003f, 0.003f)], Float3.UnitY, 8, 0.9f), Tint.Skin));
+            d.Add(new(Sweep([new Sec(V(sx * 0.026f, 0.008f, 0.11f), 0.002f, 0.002f), new Sec(V(sx * 0.04f, 0.0045f, 0.1145f), 0.0028f, 0.0028f), new Sec(V(sx * 0.054f, 0.009f, 0.106f), 0.002f, 0.002f)], Float3.UnitY, 8, 0.9f), Tint.Skin));
+            d.Add(new(Sweep([new Sec(V(sx * 0.018f, 0.044f, 0.114f), 0.007f, 0.005f), new Sec(V(sx * 0.042f, 0.05f, 0.11f), 0.0085f, 0.0055f), new Sec(V(sx * 0.066f, 0.043f, 0.1f), 0.005f, 0.0035f)], Float3.UnitY, 8, 0.8f), Tint.Hair));
+            // Sideburn.
+            d.Add(new(Sweep([new Sec(V(sx * 0.108f, 0.035f, 0.02f), 0.006f, 0.014f, 2f, Float3.UnitZ), new Sec(V(sx * 0.11f, -0.005f, 0.022f), 0.005f, 0.011f, 2f, Float3.UnitZ)], Float3.UnitZ, 8, 0.8f), Tint.Hair));
+        }
+        // Side-parted fringe sweeping across the forehead.
+        d.Add(new(Sweep([new Sec(V(-0.08f, 0.1f, 0.07f), 0.012f, 0.012f), new Sec(V(-0.035f, 0.104f, 0.094f), 0.02f, 0.014f), new Sec(V(0.02f, 0.094f, 0.1f), 0.02f, 0.012f), new Sec(V(0.068f, 0.08f, 0.088f), 0.012f, 0.008f), new Sec(V(0.09f, 0.07f, 0.07f), 0.004f, 0.004f)], Float3.UnitY, 12, 0.8f), Tint.Hair));
+        d.Add(new(Sphere(0.0025f), Tint.Sclera, V(-0.036f, 0.021f, 0.1198f))); // catch-lights
+        d.Add(new(Sphere(0.0025f), Tint.Sclera, V(0.043f, 0.021f, 0.1198f)));
         d.AddRange(ears);
         return (skull, d.ToArray());
     }
