@@ -161,7 +161,7 @@ public static partial class ViewModels
         if (id == "shotgun")
         {
             // Shell by shell (interruptible): roll the port up → (shell: hand dips to the belt, pushes one in) × n → rack.
-            Float3 port = V(0.0f, -0.01f, -0.15f);
+            Float3 port = V(0.0f, -0.005f, -0.18f);
             var roll = B("hand_r", 0f, 0.01f, 0f, -6f, 0f, 26f);
             clips["reload_start"] = new ClipBuilder(Firearm.ShellStart)
                 .Key(0f, Ease.Linear, B("hand_r"), B("hand_l"))
@@ -211,13 +211,13 @@ public static partial class ViewModels
                 .Key(0.70f * L, Ease.Out, tilt, B("hand_l", toMag.X, toMag.Y - 0.015f, toMag.Z), B(m, 0f, -0.015f, 0f))
                 .Key(0.76f * L, Ease.In, B("hand_r", 0f, 0.014f, 0f, 4f, 0f, -22f), B("hand_l", toMag.X, toMag.Y + 0.004f, toMag.Z), B(m), B("weapon", 0f, 0.006f, 0f, -2f));
             if (id == "pistol")
-                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 2f, 0f, -12f), B("hand_l", -0.02f, 0.11f, -0.05f), B("slide"))
-                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 2f, 0f, -12f), B("hand_l", -0.02f, 0.11f, -0.085f), B("slide", 0f, 0f, -0.03f))
-                 .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", -0.03f, 0.10f, -0.10f), B("slide"));
+                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 2f, 0f, -12f), B("hand_l", -0.012f, 0.072f, 0.004f, 0f, 0f, -18f), B("slide"))
+                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 2f, 0f, -12f), B("hand_l", -0.012f, 0.072f, -0.028f, 0f, 0f, -18f), B("slide", 0f, 0f, -0.03f))
+                 .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", -0.03f, 0.05f, -0.04f, 0f, 0f, -24f), B("slide"));
             if (id == "smg")
-                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.035f, 0.09f, -0.20f), B("charge"))
-                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.035f, 0.09f, -0.24f), B("charge", 0f, 0f, -0.04f))
-                 .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", 0.03f, 0.08f, -0.22f), B("charge"));
+                c.Key(0.85f * L, Ease.InOut, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.012f, 0.04f, -0.305f, 0f, 0f, 30f), B("charge"))
+                 .Key(0.90f * L, Ease.In, B("hand_r", 0f, 0.01f, 0f, 0f, 0f, 10f), B("hand_l", 0.012f, 0.04f, -0.345f, 0f, 0f, 30f), B("charge", 0f, 0f, -0.04f))
+                 .Key(0.93f * L, Ease.Out, B("hand_r"), B("hand_l", 0.012f, 0.03f, -0.32f, 0f, 0f, 20f), B("charge"));
             c.Key(L, Ease.InOut, B("hand_r"), B("hand_l"), B(m), B("weapon"), B("slide"), B("charge"));
             clips["reload"] = c.Build();
             clips["inspect"] = id switch
@@ -227,9 +227,9 @@ public static partial class ViewModels
                     .Key(0f, Ease.Linear, B("hand_r"), B("slide"), B("hand_l"))
                     .Key(0.5f, Ease.InOut, B("hand_r", -0.04f, 0.04f, 0f, -8f, 30f, -55f), B("hand_l", 0f, -0.1f, -0.05f))
                     .Key(1.2f, Ease.InOut, B("hand_r", -0.04f, 0.045f, 0f, -10f, 34f, -58f), B("hand_l", 0f, -0.1f, -0.05f))
-                    .Key(1.6f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.02f, 0.11f, -0.06f))
-                    .Key(1.85f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.02f, 0.11f, -0.075f), B("slide", 0f, 0f, -0.012f))
-                    .Key(2.05f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.02f, 0.11f, -0.06f), B("slide"))
+                    .Key(1.6f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.012f, 0.072f, 0.0f, 0f, 0f, -18f))
+                    .Key(1.85f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.012f, 0.072f, -0.012f, 0f, 0f, -18f), B("slide", 0f, 0f, -0.012f))
+                    .Key(2.05f, Ease.InOut, B("hand_r", -0.02f, 0.03f, 0f, 6f, -20f, 30f), B("hand_l", -0.012f, 0.072f, 0.0f, 0f, 0f, -18f), B("slide"))
                     .Key(2.6f, Ease.InOut, B("hand_r"), B("slide"), B("hand_l"))
                     .Build(),
                 // SMG: roll to look at the mag, tap it.
