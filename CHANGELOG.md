@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.5 — 2026-10-18
+- Dev floor grid and concrete now tile at real world scale (4 m grid squares, 3 m concrete) instead of being shrunk to sub-centimetre noise; the classic grid floor is visible again on flatgrass and sidewalks show concrete mottling.
+
 ## v0.14.4 — 2026-10-18
 - Plaza paving gets sandstone flag texture aligned to the 1.5 m joint grid; asphalt now tiles at a true 6 m (RoundedBox UVs are in metres) with toned-down tar cracks.
 

@@ -435,7 +435,7 @@ public static partial class MapBuilder
             bool floor = name == "Floor", road = name.StartsWith("Road ") || name.StartsWith("Country road"), plaza = name == "Plaza";
             if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); Batchable(go, color, "detail", Float2.One); return go; }
             // RoundedBox UVs are in metres (top face U = Z, V = X), so roads/plaza tile at a fixed world size: 6 m asphalt, 1.5 m flags.
-            Float2 tiling = road ? new Float2(1f / 6f, 1f / 6f) : plaza ? new Float2(1f / 1.5f, 1f / 1.5f) : floor ? new Float2(size.X / 4f, size.Z / 4f) : new Float2(MathF.Max(1f, MathF.Max(size.X, size.Z) / 3f), MathF.Max(1f, size.Y / 3f));
+            Float2 tiling = road ? new Float2(1f / 6f, 1f / 6f) : plaza ? new Float2(1f / 1.5f, 1f / 1.5f) : floor ? new Float2(0.25f, 0.25f) : new Float2(1f / 3f, 1f / 3f);
             material.SetTexture("_MainTex", plaza ? ProcTex.Pavers() : road ? ProcTex.Asphalt() : floor ? ProcTex.DevFloor() : ProcTex.Concrete());
             material.SetVector("_Tiling", tiling);
             renderer.Material = material;
