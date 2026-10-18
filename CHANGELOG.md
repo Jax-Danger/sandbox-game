@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.7 — 2026-10-18
+- Town windows light up at night: about half the facade panes glow warm after dusk (lit rooms), unchanged by day.
+
 ## v0.14.6 — 2026-10-18
 - Plaza street lamps light up at night: lantern glass glows and a warm 13 m point light fades in after dusk (off by day). Review shots accept an optional time-of-day field (townat_x_y_z_yaw_pitch_tod).
 

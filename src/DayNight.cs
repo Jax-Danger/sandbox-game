@@ -62,7 +62,7 @@ public sealed class DayNightCycle
         float lit = Math.Clamp(1f - day * 1.6f, 0f, 1f);
         foreach (var (glass, light) in Town.NightLamps)
         {
-            try { glass.SetFloat("_EmissionIntensity", 0.2f + 2.8f * lit); } catch { }
+            try { glass.SetFloat("_EmissionIntensity", light is null ? 1.4f * lit : 0.2f + 2.8f * lit); } catch { }
             if (light is not null) { light.Intensity = 3.5f * lit; light.Enabled = lit > 0.01f; }
         }
         w.Fog.Color = fog;

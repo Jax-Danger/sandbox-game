@@ -27,13 +27,17 @@ public static partial class MapBuilder
     private static Mesh Bx(float x, float y, float z, float ox, float oy, float oz, float r = 0.01f) => Xf(Meshes.RoundedBox(L3(x, y, z), r), 0f, L3(ox, oy, oz));
 
     /// <summary>One window, built facing -Z with the wall face at z = 0, then turned by a and moved to o.</summary>
+    private static int _winSeq;
+    private static Color LitGlass(Color g) => new(g.R, g.G, g.B + 0.004f, 1f);
     private static void Window(Bucket b, float a, Float3 o, float w, float h, bool house, Color frame, Color trim, Color glass, Color shutter)
     {
         var parts = new List<(Color, Mesh)>();
         float hw = w / 2f, hh = h / 2f;
         // Dark reveal behind the glass fakes the wall depth of a real opening.
         parts.Add((new Color(0.12f, 0.13f, 0.15f, 1f), Bx(w + 0.04f, h + 0.04f, 0.02f, 0, 0, -0.01f)));
-        parts.Add((glass, Bx(w - 0.08f, h - 0.08f, 0.01f, 0, 0, -0.035f, 0.002f)));
+        // About half the panes are "lit rooms": same daytime colour (a hair off so they bucket separately), warm glow at night.
+        bool lit = (uint)(_winSeq++ * 2654435761u) % 100 < 55;
+        parts.Add((lit ? LitGlass(glass) : glass, Bx(w - 0.08f, h - 0.08f, 0.01f, 0, 0, -0.035f, 0.002f)));
         // Sheen: two diagonal pale streaks per pane (reads as glass, not blue paint).
         foreach (float sx in new[] { hw * 0.35f })
             parts.Add((new Color(glass.R + 0.1f, glass.G + 0.1f, glass.B + 0.08f, 1f), Meshes.Faces(new Float3[] { L3(sx - 0.2f, -hh * 0.7f, -0.041f), L3(sx - 0.2f + 0.1f, -hh * 0.7f, -0.041f), L3(sx + 0.15f, hh * 0.7f, -0.041f), L3(sx + 0.05f, hh * 0.7f, -0.041f) }.Reverse().ToArray())));
@@ -254,7 +258,16 @@ public static partial class MapBuilder
         }
         Float3 eul = new(0f, yaw, 0f);
         int k = 0;
-        foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
+        foreach (var (col, list) in b)
+        {
+            var fgo = Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
+            if (col.Equals(LitGlass(glass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
+            {
+                _batch.Remove(fgo);
+                try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 200, 130)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }
+                Town.NightLamps.Add((wm, null));
+            }
+        }
     }
 
     /// <summary>Interior finish (render only): plank floor with staggered butt joints, plaster wall linings, skirting boards,
