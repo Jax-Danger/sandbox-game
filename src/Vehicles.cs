@@ -133,7 +133,7 @@ public sealed class Buggy
     {
         var white = new Color(0.86f, 0.87f, 0.88f, 1f);
         foreach (float x in new[] { -0.9f, 0.9f })
-            Detail(g, "Rail", VehicleModels.BentPipe(0.05f, 0.3f, Float3.UnitY, new Float3(x, 0.2f, -1.75f), new Float3(x, 0.2f, 1.2f), new Float3(x * 0.55f, 0.36f, 2.1f)), Float3.Zero, white);
+            Detail(g, "Rail", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitY, new Float3(x * 0.98f, 0.2f, -1.78f), new Float3(x, 0.215f, -1.4f), new Float3(x, 0.215f, 1.1f), new Float3(x * 0.88f, 0.27f, 1.7f), new Float3(x * 0.62f, 0.33f, 2.06f)), Float3.Zero, white);
         Detail(g, "Seat", VehicleModels.Seat(0.3f), new Float3(0f, 0.25f, -0.35f), dark);
         Detail(g, "Mast", VehicleModels.BentPipe(0.04f, 0.1f, Float3.UnitX, new Float3(-0.45f, 0.18f, -1.2f), new Float3(0f, 1.25f, -1.25f), new Float3(0.45f, 0.18f, -1.2f)), Float3.Zero, dark);
         Detail(g, "Cage", VehicleModels.Ring(0.85f, 0.035f), new Float3(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f));
