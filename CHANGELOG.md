@@ -1,6 +1,9 @@
 # Changelog
 
-Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
+Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
+
+## v1.0.0 — 2026-10-18
+- First official release. Self-contained builds for Windows, Linux and macOS.
 
 ## v0.17.32 — 2026-10-18
 - Jeep: stencilled vehicle number '20431-S' on the rear panel below the spare
