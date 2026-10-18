@@ -90,6 +90,15 @@ public static class ProcTex
         return (B(v * (0.30f + 0.12f * dry)), B(v * (0.46f + 0.04f * dry)), B(v * (0.20f + 0.04f * dry)), 255);
     });
 
+    /// <summary>Painted render for building walls: bright (avg ~0.9, so the wall colour reads true instead of being halved
+    /// like on concrete), soft trowel mottling, faint horizontal float lines and the odd fleck. Tiles every texture unit.</summary>
+    public static Texture2D Render() => Make("render", 128, 128, (x, y) =>
+    {
+        float v = 0.9f + 0.05f * Fbm(x / 14f, y / 14f, 31) + 0.025f * Fbm(x / 3f, y / 3f, 32) - 0.018f * MathF.Max(0f, MathF.Sin(y * 0.39f + 2f * Fbm(x / 20f, y / 20f, 33)) - 0.6f) * 2.5f;
+        if (Hash(x, y, 34) > 0.992f) v -= 0.06f;
+        return (B(v), B(v), B(v), 255);
+    });
+
     public static Texture2D Concrete() => Make("concrete", 128, 128, (x, y) =>
     {
         float v = 0.52f + 0.12f * Fbm(x / 10f, y / 10f, 7) - (Hash(x, y, 9) > 0.985f ? 0.15f : 0f);

@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.15.1 — 2026-10-18
+- Town: building walls use a bright painted-render texture with world-oriented UVs (U horizontal, V up on every face) at 2.5 m, so non-square buildings tile consistently and wall colours read true instead of being halved by dark concrete (screens/s10-tile-c.png vs s10-tile-b.png)
+
 ## v0.15.0 — 2026-10-18
 - Rendering: 16-bit float (HDR) scene target on Medium/High so night ground and flashlight falloff no longer band (8-bit target banded before the tonemapper); bloom retuned for HDR (threshold 1.8, intensity 0.45). screens/s10-band-cmp.png, s10-hdr-cmp2.png
 

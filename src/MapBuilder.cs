@@ -412,7 +412,7 @@ public static partial class MapBuilder
                 try
                 {
                     if (key.Item5 == "detail") bm.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f));
-                    else bm.SetTexture("_MainTex", key.Item5 == "floor" ? ProcTex.DevFloor() : key.Item5 == "asphalt" ? ProcTex.Asphalt() : key.Item5 == "pavers" ? ProcTex.Pavers() : ProcTex.Concrete());
+                    else bm.SetTexture("_MainTex", key.Item5 == "floor" ? ProcTex.DevFloor() : key.Item5 == "asphalt" ? ProcTex.Asphalt() : key.Item5 == "pavers" ? ProcTex.Pavers() : key.Item5 == "render" ? ProcTex.Render() : ProcTex.Concrete());
                 }
                 catch { }
             br.Material = bm;
@@ -428,7 +428,9 @@ public static partial class MapBuilder
         go.Transform.Position = position;
         go.Transform.LocalEulerAngles = euler;
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
-        renderer.Mesh = Meshes.RoundedBox(size, MathF.Min(0.06f, MathF.Min(size.X, MathF.Min(size.Y, size.Z)) * 0.2f));
+        // Building walls (tall, thin, not ground slabs) get the bright render texture with world-oriented UVs.
+        bool wallLike = size.Y >= 1.5f && MathF.Min(size.X, size.Z) <= 0.5f && !name.StartsWith("~") && name != "Floor";
+        renderer.Mesh = Meshes.RoundedBox(size, MathF.Min(0.06f, MathF.Min(size.X, MathF.Min(size.Y, size.Z)) * 0.2f), 3, wallLike);
         var material = Mats.New(shader);
         material.SetColor("_MainColor", color);
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
@@ -436,13 +438,13 @@ public static partial class MapBuilder
             bool floor = name == "Floor", road = name.StartsWith("Road ") || name.StartsWith("Country road"), plaza = name == "Plaza";
             if (name.StartsWith("~")) { material.SetTexture("_SurfaceTex", ProcTex.Surface(0.85f, 0f)); renderer.Material = material; if (collide) go.AddComponent<BoxCollider>().Size = size; Add(scene, go); Batchable(go, color, "detail", Float2.One); return go; }
             // RoundedBox UVs are in metres (top face U = Z, V = X), so roads/plaza tile at a fixed world size: 6 m asphalt, 1.5 m flags.
-            Float2 tiling = road ? new Float2(1f / 6f, 1f / 6f) : plaza ? new Float2(1f / 1.5f, 1f / 1.5f) : floor ? new Float2(0.25f, 0.25f) : new Float2(1f / 3f, 1f / 3f);
-            material.SetTexture("_MainTex", plaza ? ProcTex.Pavers() : road ? ProcTex.Asphalt() : floor ? ProcTex.DevFloor() : ProcTex.Concrete());
+            Float2 tiling = road ? new Float2(1f / 6f, 1f / 6f) : plaza ? new Float2(1f / 1.5f, 1f / 1.5f) : floor ? new Float2(0.25f, 0.25f) : wallLike ? new Float2(0.4f, 0.4f) : new Float2(1f / 3f, 1f / 3f);
+            material.SetTexture("_MainTex", plaza ? ProcTex.Pavers() : road ? ProcTex.Asphalt() : floor ? ProcTex.DevFloor() : wallLike ? ProcTex.Render() : ProcTex.Concrete());
             material.SetVector("_Tiling", tiling);
             renderer.Material = material;
             if (collide) go.AddComponent<BoxCollider>().Size = size;
             Add(scene, go);
-            Batchable(go, color, plaza ? "pavers" : road ? "asphalt" : floor ? "floor" : "concrete", tiling);
+            Batchable(go, color, plaza ? "pavers" : road ? "asphalt" : floor ? "floor" : wallLike ? "render" : "concrete", tiling);
             return go;
         }
         renderer.Material = material;

@@ -14,11 +14,11 @@ public static class Meshes
     private static readonly Dictionary<string, Mesh> _cache = [];
 
     /// <summary>Box with rounded edges and corners (radius r) and smooth normals. UVs are planar per face, in metres / 1 m.</summary>
-    public static Mesh RoundedBox(Float3 size, float r, int bands = 3)
+    public static Mesh RoundedBox(Float3 size, float r, int bands = 3, bool worldUv = false)
     {
         Float3 h = size / 2f;
         r = Math.Clamp(r, 0f, MathF.Min(h.X, MathF.Min(h.Y, h.Z)) * 0.95f);
-        string key = $"rb{size.X:0.###},{size.Y:0.###},{size.Z:0.###},{r:0.###},{bands}";
+        string key = $"rb{size.X:0.###},{size.Y:0.###},{size.Z:0.###},{r:0.###},{bands}{(worldUv ? "w" : "")}";
         if (_cache.TryGetValue(key, out Mesh? cached)) return cached;
         if (r < 0.001f) return _cache[key] = Mesh.CreateCube(size);
 
@@ -53,7 +53,10 @@ public static class Meshes
                     Float3 n = len > 1e-6f ? d / len : faceN;
                     verts.Add(cl + n * r);
                     norms.Add(n);
-                    uvs.Add(new Float2(cu[i] + 0.5f, cv[j] + 0.5f));
+                    // worldUv: U always runs horizontally and V up the wall (sides) / along Z (top), so anisotropic textures
+                    // (render streaks, courses) keep one orientation on every face of a non-square building.
+                    if (worldUv) uvs.Add(axis == 1 ? new Float2(pt.X, pt.Z) : axis == 0 ? new Float2(pt.Z * sign, pt.Y) : new Float2(-pt.X * sign, pt.Y));
+                    else uvs.Add(new Float2(cu[i] + 0.5f, cv[j] + 0.5f));
                 }
             int w = cu.Length;
             for (int j = 0; j < cv.Length - 1; j++)
