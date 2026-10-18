@@ -121,7 +121,7 @@ public static partial class MapBuilder
     {
         SpawnPoint = new Float3(0f, 0.2f, -9f);
         var asphalt = new Color(0.20f, 0.21f, 0.23f, 1f);
-        var walk = new Color(0.66f, 0.65f, 0.62f, 1f);
+        var walk = new Color(0.58f, 0.57f, 0.55f, 1f);
         var paver = new Color(0.72f, 0.66f, 0.58f, 1f);
         var line = new Color(0.92f, 0.80f, 0.30f, 1f);
 
@@ -423,7 +423,10 @@ public static partial class MapBuilder
             Shape(scene, shader, $"~{tag} awning", Meshes.Sweep([new Meshes.Sec(new Float3(0f, dh + 0.85f, -hd - 0.15f), 1.7f, 0.04f, 4f), new Meshes.Sec(new Float3(0f, dh + 0.5f, -hd - 1.2f), 1.7f, 0.04f, 4f)], Float3.UnitX, 12, 0.3f), c, plate, euler: eul);
         }
         // Path from the door to the sidewalk.
-        Box(scene, shader, $"~{tag} path", W(0f, 0.05f, -hd - 2.5f), Sz(2f, 0.1f, 5f), Float3.Zero, new Color(0.64f, 0.62f, 0.58f, 1f));
+        // Path from the door to the sidewalk: five concrete flags with dark joints on a gravel bed.
+        Box(scene, shader, $"~{tag} path", W(0f, 0.04f, -hd - 2.5f), Sz(2.1f, 0.08f, 5f), Float3.Zero, new Color(0.3f, 0.29f, 0.27f, 1f));
+        for (int i = 0; i < 5; i++)
+            Box(scene, shader, $"~{tag} flag", W(0f, 0.055f, -hd - 0.5f - i), Sz(1.94f, 0.1f, 0.94f), Float3.Zero, i % 2 == 0 ? new Color(0.55f, 0.53f, 0.5f, 1f) : new Color(0.51f, 0.5f, 0.47f, 1f));
         MakeDoor(scene, shader, "door_" + tag.ToLowerInvariant(), title, W(-dw / 2f + 0.05f, 0f, -hd), yaw, dw - 0.1f, dh - 0.05f, new Color(0.42f, 0.28f, 0.18f, 1f), owner, price, locked: false);
     }
 
