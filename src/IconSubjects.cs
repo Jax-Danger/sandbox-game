@@ -42,19 +42,34 @@ public static class IconSubjects
 
     private static Part M(Prowl.Runtime.Resources.Mesh m, Color c, Float3 rot = default) => new('m', new(0.4f, 0.4f, 0.1f), Float3.Zero, c, false, rot, m);
 
-    /// <summary>Open gloved hand from the empty-hands view model, scaled up.</summary>
+    /// <summary>Open right hand, palm towards the viewer, fingers slightly spread, shirt cuff at the wrist.
+    /// (Was the view-model glove, which read as a dark blob edge-on in a thumbnail.)</summary>
     private static Part[] HandIcon()
     {
-        ModelDef? d = null;
-        try
+        Color skin = new(0.9f, 0.72f, 0.58f, 1f), nail = new(0.96f, 0.84f, 0.78f, 1f), cuff = new(0.22f, 0.36f, 0.62f, 1f), crease = new(0.78f, 0.58f, 0.46f, 1f);
+        Float3 tilt = new(-18f, 115f, -10f); // icon camera looks from +X/-Z with the subject yawed 25°: turn the palm to it
+        static Float3 V(float x, float y, float z) => new(x, y, z);
+        var l = new List<Part>
         {
-            ViewModelDef vm = ViewModels.Create("hands");
-            var src = vm.Parts.Where(p => p.Bone == "hand_r" && p.M is not null).ToList();
-            if (src.Count > 0) return src.Select(p => new Part('m', new(0.4f, 0.4f, 0.1f), p.Offset * 6f, p.Color, false, p.Rot, p.M, 6f)).ToArray();
+            M(Meshes.Sweep([new Meshes.Sec(V(0f, -0.36f, 0f), 0.15f, 0.07f, 2.6f), new Meshes.Sec(V(0f, -0.22f, 0.005f), 0.19f, 0.08f, 3f), new Meshes.Sec(V(0f, -0.02f, 0.0f), 0.21f, 0.07f, 3.2f), new Meshes.Sec(V(0f, 0.06f, -0.005f), 0.2f, 0.055f, 3f)], Float3.UnitX, 24, 0.5f), skin, tilt),
+            M(Meshes.Sweep([new Meshes.Sec(V(0f, -0.62f, 0f), 0.17f, 0.11f, 2.4f), new Meshes.Sec(V(0f, -0.4f, 0f), 0.18f, 0.12f, 2.4f)], Float3.UnitX, 24, 0.3f), cuff, tilt),
+            M(Meshes.Sweep([new Meshes.Sec(V(0f, -0.42f, 0f), 0.19f, 0.13f, 2.4f), new Meshes.Sec(V(0f, -0.38f, 0f), 0.19f, 0.13f, 2.4f)], Float3.UnitX, 24, 0.4f), new Color(0.17f, 0.28f, 0.5f, 1f), tilt),
+            // Palm creases: life line and heart line, thin darker grooves.
+            M(Meshes.Sweep([new Meshes.Sec(V(-0.12f, -0.02f, 0.072f), 0.006f, 0.003f), new Meshes.Sec(V(0.0f, -0.05f, 0.078f), 0.006f, 0.003f), new Meshes.Sec(V(0.14f, -0.03f, 0.07f), 0.006f, 0.003f)], Float3.UnitZ, 8, 0.6f), crease, tilt),
+            M(Meshes.Sweep([new Meshes.Sec(V(0.08f, -0.08f, 0.074f), 0.006f, 0.003f), new Meshes.Sec(V(0.03f, -0.2f, 0.08f), 0.006f, 0.003f), new Meshes.Sec(V(0.06f, -0.3f, 0.072f), 0.006f, 0.003f)], Float3.UnitZ, 8, 0.6f), crease, tilt),
+        };
+        (float x, float len, float spread, float r)[] fingers = [(-0.14f, 0.24f, -10f, 0.038f), (-0.048f, 0.3f, -3f, 0.042f), (0.048f, 0.28f, 3f, 0.041f), (0.14f, 0.21f, 10f, 0.036f)];
+        foreach (var f in fingers)
+        {
+            float a = f.spread * MathF.PI / 180f; Float3 d = V(MathF.Sin(a), MathF.Cos(a), 0f), b = V(f.x, 0.04f, 0f);
+            Float3 p1 = b + d * (f.len * 0.42f) + V(0, 0, 0.008f), p2 = b + d * (f.len * 0.74f) + V(0, 0, 0.018f), p3 = b + d * f.len + V(0, 0, 0.03f);
+            l.Add(M(Meshes.Sweep([new Meshes.Sec(b, f.r, f.r * 0.9f), new Meshes.Sec(p1, f.r * 0.92f, f.r * 0.85f), new Meshes.Sec(p2, f.r * 0.85f, f.r * 0.78f), new Meshes.Sec(p3, f.r * 0.78f, f.r * 0.7f)], Float3.UnitX, 16, 0.9f), skin, tilt));
+            l.Add(M(Meshes.Sweep([new Meshes.Sec(p3 - d * 0.05f + V(0, 0, -f.r * 0.62f), f.r * 0.6f, 0.006f, 2.4f, Float3.UnitX), new Meshes.Sec(p3 - d * 0.005f + V(0, 0, -f.r * 0.5f), f.r * 0.55f, 0.006f, 2.4f, Float3.UnitX)], Float3.UnitX, 12, 0.6f), nail, tilt));
+            foreach (Float3 k in new[] { p1, p2 }) l.Add(M(Meshes.Sweep([new Meshes.Sec(k + V(-f.r * 0.6f, 0, f.r * 0.82f), 0.003f, 0.003f), new Meshes.Sec(k + V(f.r * 0.6f, 0, f.r * 0.82f), 0.003f, 0.003f)], Float3.UnitY, 6, 0.6f), crease, tilt));
         }
-        catch { }
-        _ = d;
-        return [new('s', new(0.5f, 0.5f, 0.5f), Float3.Zero, Skin)];
+        // Thumb: from the base of the palm out to the side and up.
+        l.Add(M(Meshes.Sweep([new Meshes.Sec(V(0.13f, -0.26f, 0.02f), 0.06f, 0.05f), new Meshes.Sec(V(0.22f, -0.16f, 0.04f), 0.048f, 0.042f), new Meshes.Sec(V(0.29f, -0.06f, 0.06f), 0.042f, 0.038f), new Meshes.Sec(V(0.33f, 0.03f, 0.075f), 0.036f, 0.032f)], Float3.UnitZ, 16, 0.9f), skin, tilt));
+        return l.ToArray();
     }
 
     public static bool IsCustom(string id) => Custom(id) is not null;

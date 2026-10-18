@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.7.2 — 2026-10-18
+- Hands spawn-menu icon: a modelled open hand (palm creases, knuckles, nails, thumb, shirt cuff) turned to the icon camera, instead of the glove seen edge-on as a dark blob.
+
 ## v0.7.1 — 2026-10-18
 - Buggy rear arches rebuilt at true ride height (flared arch, rolled lip, side skirt into the tub; no longer floating like a spoiler); tail lights and plate lettering; gal_car_<kind>_<angle>_<dist> shot state.
 
