@@ -75,7 +75,7 @@ public static partial class MapBuilder
         for (int f = 0; f < floors; f++)
         {
             float wy = 1.65f + f * 3f;
-            foreach (float x in Span(hw, true)) Window(b, 0f, L3(x, wy, -hd - face), ww, wh, house, frame, lintel, glass, shutter);
+            foreach (float x in Span(hw, true)) if (title != "Garage" || x < 0f || f > 0) Window(b, 0f, L3(x, wy, -hd - face), ww, wh, house, frame, lintel, glass, shutter);
             foreach (float x in Span(hw, false)) Window(b, 180f, L3(x, wy, hd + face), ww, wh, house, frame, lintel, glass, shutter);
             foreach (float z in Span(hd, false)) { Window(b, -90f, L3(hw + face, wy, z), ww, wh, house, frame, lintel, glass, shutter); Window(b, 90f, L3(-hw - face, wy, z), ww, wh, house, frame, lintel, glass, shutter); }
         }
@@ -113,6 +113,23 @@ public static partial class MapBuilder
                 b.Add(stone, Bx(0.54f, 0.3f, 0.18f, x, 0.3f, -hd - face - 0.07f)); b.Add(stone, Bx(0.54f, 0.16f, 0.18f, x, h - 0.28f, -hd - face - 0.07f));
             }
             b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, -hd - face - 0.04f));
+            if (title == "Garage")
+            {
+                // Service bay: a ribbed roller shutter in a steel frame with a hood box, guide rails, a handle and bollards.
+                float gx = hw * 0.5f + 0.35f, gw = 3.2f, gh = 3.0f, z0 = -hd - face;
+                Color steelC = new(0.62f, 0.64f, 0.66f, 1f), slat = new(0.78f, 0.79f, 0.8f, 1f), dark = new(0.2f, 0.21f, 0.23f, 1f), yellow = new(0.9f, 0.72f, 0.1f, 1f);
+                b.Add(dark, Bx(gw, gh, 0.05f, gx, gh / 2f, z0 - 0.01f));
+                for (float y = 0.1f; y < gh - 0.05f; y += 0.16f) b.Add(slat, Bx(gw - 0.04f, 0.13f, 0.04f, gx, y + 0.065f, z0 - 0.05f, 0.02f));
+                foreach (float sx in new[] { -1f, 1f }) b.Add(steelC, Bx(0.14f, gh + 0.1f, 0.14f, gx + sx * (gw / 2f + 0.07f), (gh + 0.1f) / 2f, z0 - 0.06f));
+                b.Add(steelC, Bx(gw + 0.5f, 0.45f, 0.4f, gx, gh + 0.25f, z0 - 0.18f, 0.03f));
+                b.Add(dark, Bx(0.3f, 0.04f, 0.05f, gx, 0.35f, z0 - 0.1f));
+                b.Add(new Color(0.7f, 0.7f, 0.68f, 1f), Bx(gw + 1.4f, 0.05f, 4.5f, gx, 0.025f, z0 - 2.25f)); // concrete apron
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    b.Add(yellow, Xf(Meshes.Lathe("bollard", [(0.0001f, 0f), (0.1f, 0f), (0.1f, 0.85f), (0.07f, 0.95f), (0.0001f, 0.97f)], 20), 0f, L3(gx + sx * (gw / 2f + 0.45f), 0f, z0 - 0.5f)));
+                    b.Add(dark, Xf(Meshes.Lathe("bolband", [(0.102f, 0f), (0.102f, 0.1f)], 20), 0f, L3(gx + sx * (gw / 2f + 0.45f), 0.6f, z0 - 0.5f)));
+                }
+            }
             // Sides and back: plinth, corner quoin pilasters, a cornice band under the parapet and a belt course between floors.
             b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, hd + face + 0.04f));
             b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, hw + face + 0.04f, 0.225f, 0)); b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, -hw - face - 0.04f, 0.225f, 0));
