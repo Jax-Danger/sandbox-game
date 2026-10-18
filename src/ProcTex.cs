@@ -103,6 +103,18 @@ public static class ProcTex
         return (B(v), B(v * 0.93f), B(v * 0.86f), 255);
     });
 
+    /// <summary>Gunstock walnut: fine, long, slightly wavy grain with darker pores and figure, tileable in both axes.</summary>
+    public static Texture2D WalnutGrain() => Make("walnut", 256, 256, (x, y) =>
+    {
+        float u = x / 256f, w = y / 256f;
+        float wave = MathF.Sin(w * MathF.Tau * 2f + MathF.Sin(u * MathF.Tau * 3f) * 0.8f) * 0.04f;
+        float g = MathF.Sin((u + wave) * MathF.Tau * 22f + MathF.Sin(w * MathF.Tau) * 2f) * 0.5f + 0.5f;
+        float fine = MathF.Sin((u + wave * 1.7f) * MathF.Tau * 71f) * 0.5f + 0.5f;
+        float pore = ((x * 73856093) ^ (y * 19349663)) % 97 == 0 ? 0.75f : 1f;
+        float v = (0.72f + 0.2f * MathF.Pow(g, 3f) + 0.08f * fine) * pore;
+        return (B(v), B(v * 0.9f), B(v * 0.82f), 255);
+    });
+
     /// <summary>Crate/prop panel: lighter border frame with noise, so props read well without the engine grid.</summary>
     public static Texture2D Panel() => Make("panel", 128, 128, (x, y) =>
     {

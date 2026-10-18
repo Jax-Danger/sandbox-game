@@ -264,6 +264,7 @@ public sealed class ViewModel
                             Finish.Wood => (0.62f, 0f), Finish.Rubber => (0.85f, 0f), Finish.Paint => (0.45f, 0.3f), Finish.Gloss => (0.22f, 0.05f), _ => (0.5f, 0.05f),
                         };
                         m.SetTexture("_SurfaceTex", ProcTex.Surface(rough, metal));
+                        if (part.Finish == Finish.Wood) m.SetTexture("_MainTex", ProcTex.WalnutGrain());
                     }
                     catch { }
                 if (part.Emissive && !Application.IsHeadless)

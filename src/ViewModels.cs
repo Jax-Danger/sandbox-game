@@ -383,6 +383,24 @@ public static partial class ViewModels
                     new Sec(V(0, 0f, 0f), 0.0162f, 0.022f, 2.6f), new Sec(V(0, -0.03f, -0.02f), 0.0168f, 0.024f, 2.6f),
                     new Sec(V(0, -0.06f, -0.035f), 0.0175f, 0.026f, 2.8f)); // short "breacher" pistol-grip stock: nothing reaches the camera
                 k.Sw("weapon", Black, Finish.Polymer, Float3.UnitX, 0.5f, new Sec(V(0, -0.062f, -0.036f), 0.0178f, 0.0265f, 2.8f), new Sec(V(0, -0.07f, -0.04f), 0.0172f, 0.025f, 2.8f));
+                // Receiver detail: ejection port with the bolt showing (right), loading port lip (bottom), trigger-group
+                // pins, a top-tang safety, and a steel tang plate where the stock meets the receiver.
+                k.Bar("weapon", Dark, Finish.Metal, V(0.0186f, 0.077f, 0.055f), V(0.0186f, 0.077f, 0.125f), 0.0026f, 0.0085f, 5f, 0.3f);
+                k.Bar("weapon", Steel, Finish.Metal, V(0.0178f, 0.077f, 0.062f), V(0.0178f, 0.077f, 0.105f), 0.002f, 0.0062f, 4f, 0.5f);
+                k.Bar("weapon", Dark, Finish.Metal, V(0, 0.046f, 0.06f), V(0, 0.046f, 0.17f), 0.0125f, 0.0022f, 5f, 0.3f);
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    foreach (float pz in new[] { 0.035f, 0.165f })
+                    {
+                        k.Bar("weapon", Steel, Finish.Metal, V(sx * 0.0183f, 0.056f, pz), V(sx * 0.0196f, 0.056f, pz), 0.0024f, 0.0024f, 2f, 0.9f, Float3.UnitZ);
+                        k.Bar("weapon", Dark, Finish.Metal, V(sx * 0.0195f, 0.056f, pz), V(sx * 0.0198f, 0.056f, pz), 0.001f, 0.001f, 2f, 0.9f, Float3.UnitZ);
+                    }
+                    k.Bar("weapon", Dark, Finish.Metal, V(sx * 0.0186f, 0.0625f, 0.03f), V(sx * 0.0186f, 0.0625f, 0.2f), 0.0009f, 0.0008f, 3f, 0.5f);
+                }
+                k.Sw("weapon", Gunmetal, Finish.Metal, Float3.UnitX, 0.7f, new Sec(V(0, 0.0905f, 0.03f), 0.006f, 0.0022f, 3f), new Sec(V(0, 0.087f, 0.006f), 0.0058f, 0.0022f, 3f), new Sec(V(0, 0.072f, -0.004f), 0.005f, 0.002f, 3f));
+                k.Lz("weapon", Steel, Finish.Metal, V(0, 0.0935f, 0.016f), (0.0035f, 0f), (0.0035f, 0.0001f), (0f, 0.0001f));
+                k.Add("weapon", Lathe("sgsafety", [(0f, 0f), (0.0036f, 0f), (0.0036f, 0.0022f), (0.0028f, 0.003f), (0f, 0.003f)], 16), Steel, Finish.Metal, V(0, 0.0915f, 0.017f));
+                k.Add("weapon", Lathe("sgsafetyr", [(0f, 0f), (0.0015f, 0f), (0.0015f, 0.0032f), (0f, 0.0032f)], 12), new Color(0.75f, 0.1f, 0.08f, 1f), Finish.Paint, V(0, 0.0915f, 0.017f));
                                 k.Guard("weapon", Black, 0.047f, 0.078f, 0.024f, 0.022f, 0.052f);
                 right = new HandSpec(new GripFrame(Float3.Zero, ga, Float3.UnitX, 0.0163f, 0.022f), -22f, -1,
                     [float.NaN, 0.011f, -0.0075f, -0.026f], 86f, V(0.022f, -0.035f, -0.072f), 72f, 196f, 0.03f, 0.044f, Trig(0.036f, 0.054f));
