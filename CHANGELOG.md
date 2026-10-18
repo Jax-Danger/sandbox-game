@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.12 — 2026-10-18
+- Spawn-menu icons for signs and the billboard now show their printed faces instead of the backs/edges
+
 ## v0.8.11 — 2026-10-18
 - Vehicle seat remodelled as a bucket seat (fluted insert, side bolsters, contrast stitching, headrest posts, steel pan, slide rails and lever); trash can gets corrugation hoops, foot ring, drop handles on lugs and a lid grab handle
 

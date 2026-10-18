@@ -97,7 +97,7 @@ public sealed class IconRenderer
             Float3 c = model.Collider;
             extent = MathF.Sqrt(c.X * c.X + c.Y * c.Y + c.Z * c.Z) * 0.5f;
         }
-        subject.Transform.LocalEulerAngles = weapon ? new Float3(0f, 105f, 0f) : new Float3(kind == PropKind.Ramp ? -20f : 0f, 25f, 0f);
+        subject.Transform.LocalEulerAngles = weapon ? new Float3(0f, 105f, 0f) : new Float3(kind == PropKind.Ramp ? -20f : 0f, model?.Category == "Signs" && model.Id != "street_lamp" ? 205f : 25f, 0f);
         scene.Add(subject);
 
         scene.Enable();
