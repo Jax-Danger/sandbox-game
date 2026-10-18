@@ -123,6 +123,25 @@ public sealed class Ragdoll
             Part("CapVisor", Meshes.Faces([new Float3(-0.095f, 0f, -0.01f), new Float3(-0.065f, 0f, 0.06f), new Float3(0.065f, 0f, 0.06f), new Float3(0.095f, 0f, -0.01f)], [new Float3(0.095f, -0.004f, -0.01f), new Float3(0.065f, -0.004f, 0.06f), new Float3(-0.065f, -0.004f, 0.06f), new Float3(-0.095f, -0.004f, -0.01f)]), black, new Float3(0f, 0.056f, 0.112f), new Float3(16f, 0f, 0f));
             Part("CapBadge", Meshes.Lathe("capbadge", [(0.0001f, 0.006f), (0.012f, 0.004f), (0.014f, 0f), (0.0001f, 0f)], 12), gold, new Float3(0f, 0.12f, 0.124f), new Float3(80f, 0f, 0f));
         }
+        // Hostiles pull on a dark knit beanie with a folded cuff, so they read as thugs at a glance.
+        if (team == NpcTeam.Hostile && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Head")) is { } hh)
+        {
+            var hat = new GameObject("Beanie");
+            hat.SetParent(hh.Go, false);
+            hat.Transform.LocalPosition = new Float3(0f, 0f, -0.006f);
+            hat.Transform.LocalScale = new Float3(1f, 1f, 1.1f);
+            var knit = Mats.New(g.Shader); knit.SetColor("_MainColor", new Color(0.09f, 0.09f, 0.1f, 1f));
+            var cuff = Mats.New(g.Shader); cuff.SetColor("_MainColor", new Color(0.12f, 0.12f, 0.13f, 1f));
+            if (!Application.IsHeadless) try { knit.SetTexture("_SurfaceTex", ProcTex.Surface(0.98f, 0f)); cuff.SetTexture("_SurfaceTex", ProcTex.Surface(0.98f, 0f)); } catch { }
+            var dome = new GameObject("BeanieDome"); dome.SetParent(hat, false);
+            MeshRenderer dr2 = dome.AddComponent<MeshRenderer>();
+            dr2.Mesh = Meshes.Lathe("beaniedome", [(0.118f, 0.045f), (0.121f, 0.09f), (0.118f, 0.12f), (0.106f, 0.145f), (0.08f, 0.163f), (0.045f, 0.172f), (0.0001f, 0.175f)], 32);
+            dr2.Material = knit;
+            var band = new GameObject("BeanieCuff"); band.SetParent(hat, false);
+            MeshRenderer cr = band.AddComponent<MeshRenderer>();
+            cr.Mesh = Meshes.Lathe("beaniecuff", [(0.119f, 0.03f), (0.126f, 0.034f), (0.128f, 0.055f), (0.127f, 0.078f), (0.12f, 0.084f)], 32);
+            cr.Material = cuff;
+        }
         // Police carry their kit on the duty belt: holstered pistol on the right hip, baton on the left.
         if (team == NpcTeam.Police && rd.Limbs.FirstOrDefault(l => l.Go.Name.EndsWith("Pelvis")) is { } hips)
         {

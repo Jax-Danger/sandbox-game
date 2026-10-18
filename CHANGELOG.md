@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.1 — 2026-10-18
+- Hostile NPCs wear a dark knit beanie with a folded cuff (screens/s11-hostile2-c.png)
+
 ## v0.17.0 — 2026-10-18
 - Police NPCs wear peaked caps: navy crown flaring over a black band, glossy two-sided visor and a gold cap badge, sized to the oval skull (screens/s11-police-d-c.png vs s11-police.png)
 
