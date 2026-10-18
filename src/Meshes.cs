@@ -380,6 +380,36 @@ public static class Meshes
     /// <summary>Lathe along +Z from (radius, z) pairs with caps closed where the radius is 0 (not cached).</summary>
     public static Mesh LatheZ((float R, float Z)[] profile, int slices = 28) => Lathe($"lz{string.Join(',', profile.Select(p => $"{p.R:0.####}/{p.Z:0.####}"))}", profile, slices, alongZ: true);
 
+    /// <summary>Bevelled box with a raised picture-frame border on chosen faces (dev-cube / framed panel look).
+    /// faces: bit 0..5 = +X,-X,+Y,-Y,+Z,-Z.</summary>
+    public static Mesh FramedBox(Float3 size, float border, float lip, int faces = 63)
+    {
+        string key = $"framed{size.X:0.###}/{size.Y:0.###}/{size.Z:0.###}/{border:0.###}/{lip:0.####}/{faces}";
+        if (_cache.TryGetValue(key, out Mesh? c)) return c;
+        var parts = new List<Mesh> { RoundedBox(size, MathF.Min(0.05f, MathF.Min(size.X, MathF.Min(size.Y, size.Z)) * 0.3f)) };
+        Float3 h = size / 2f;
+        Mesh Bar(Float3 sz, Float3 at)
+        {
+            Mesh m = RoundedBox(sz, MathF.Min(lip * 0.45f, MathF.Min(sz.X, MathF.Min(sz.Y, sz.Z)) * 0.45f), 2);
+            return new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices!.Select(v => v + at).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+        }
+        for (int f = 0; f < 6; f++)
+        {
+            if ((faces & (1 << f)) == 0) continue;
+            int ax = f / 2; float sg = f % 2 == 0 ? 1f : -1f;
+            // u, v = the two in-face axes
+            int ua = (ax + 1) % 3, va = (ax + 2) % 3;
+            float[] hh = [h.X, h.Y, h.Z];
+            float hu = hh[ua] - 0.02f, hv = hh[va] - 0.02f, off = hh[ax] + lip / 2f - 0.002f;
+            Float3 Mk(float a, float u, float v) { float[] r = new float[3]; r[ax] = a; r[ua] = u; r[va] = v; return new Float3(r[0], r[1], r[2]); }
+            parts.Add(Bar(Mk(lip, hu * 2f, border), Mk(sg * off, 0f, hv - border / 2f)));
+            parts.Add(Bar(Mk(lip, hu * 2f, border), Mk(sg * off, 0f, -hv + border / 2f)));
+            parts.Add(Bar(Mk(lip, border, hv * 2f - border * 2f), Mk(sg * off, hu - border / 2f, 0f)));
+            parts.Add(Bar(Mk(lip, border, hv * 2f - border * 2f), Mk(sg * off, -hu + border / 2f, 0f)));
+        }
+        return _cache[key] = Merge(parts.ToArray());
+    }
+
     /// <summary>Concatenates meshes into one (same material).</summary>
     public static Mesh Merge(params Mesh[] ms)
     {

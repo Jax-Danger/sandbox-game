@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.9 — 2026-10-18
+- Basic cube has a raised picture-frame border on every face (dev-cube look); 2x2 panels get a framed edge on both faces (new Meshes.FramedBox).
+
 ## v0.13.8 — 2026-10-18
 - Glove pass 2: denser palm and thumb sweeps (smoother silhouettes) and a tapered knuckle-guard pad instead of a blunt slab.
 

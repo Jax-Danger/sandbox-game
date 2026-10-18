@@ -130,7 +130,8 @@ public sealed class PropManager(Scene scene, Shader shader)
         float minDim = MathF.Min(sz.X, MathF.Min(sz.Y, sz.Z));
         return kind switch
         {
-            PropKind.Cube => Meshes.RoundedBox(Float3.One, 0.06f),
+            PropKind.Cube => Meshes.FramedBox(Float3.One, 0.075f, 0.014f), // raised border on every face (dev-cube look)
+            PropKind.Panel when MathF.Abs(sz.X - 2f) < 0.01f && MathF.Abs(sz.Z - 0.1f) < 0.01f => Meshes.FramedBox(sz, 0.1f, 0.012f, 48),
             PropKind.Sphere => Meshes.Sphere(0.5f),
             PropKind.BigBall => Meshes.Sphere(1f),
             PropKind.Barrel => Meshes.Barrel(0.4f, 1.1f),
