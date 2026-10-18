@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.3 — 2026-10-18
+- NPC ears are larger and flare ~25 degrees off the skull so they read from the front instead of hiding flush under the hair line.
+
 ## v0.13.2 — 2026-10-18
 - Country roads continue the town avenues seamlessly: same 10 m width, height and asphalt material, overlapping the avenue end (no pale narrower slab / visible road joint); they also collide now.
 

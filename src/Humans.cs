@@ -156,14 +156,16 @@ public static class Humans
             Mesh ear = Sculpt(d =>
             {
                 float y = d.Y, zz = d.Z, out_ = d.X * side;
-                float w = 0.023f * (1f - 0.25f * MathF.Max(0f, -y)), h = 0.034f;
+                float w = 0.025f * (1f - 0.25f * MathF.Max(0f, -y)), h = 0.036f;
                 float t = out_ > 0f ? 0.0075f * (1f - 0.75f * Bump(d, new(side, -0.05f, 0.1f), 6f)) : 0.006f; // bowl dished on the outer face
                 Float3 p = new(d.X * t, y * h, zz * w);
                 if (y < -0.55f) p.Z += (y + 0.55f) * 0.006f; // lobe tucks forward
                 return p;
             }, 14, 20);
             Mesh tilt = Meshes.Merge(ear);
-            var vs = tilt.Vertices.Select(v => { float a = side * 0.32f; return new Float3(v.X * MathF.Cos(a) - v.Z * MathF.Sin(a) * 0.4f, v.Y, v.Z + v.X * 0.0f) + V(sx * 0.121f, -0.003f, -0.012f); }).ToArray();
+            // Flared: the back edge stands ~25 degrees off the skull (ears read from the front instead of hiding in the hair line),
+            // set lower so the top of the helix sits at brow height and the lobe near the nose base.
+            var vs = tilt.Vertices.Select(v => { float flare = MathF.Max(0f, -v.Z) * 0.5f; return new Float3(v.X + side * (flare + 0.002f), v.Y, v.Z) + V(sx * 0.113f, -0.006f, -0.01f); }).ToArray();
             tilt.Vertices = vs; tilt.RecalculateNormals(); tilt.RecalculateBounds();
             ears.Add(new(tilt, Tint.Skin));
         }
