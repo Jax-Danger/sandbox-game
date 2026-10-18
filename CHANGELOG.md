@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.9.13 — 2026-10-18
+- Billboard poster: two-step sky gradient, rolling hills behind the meadow and two puffy clouds.
+
 ## v0.9.12 — 2026-10-18
 - NPC and player shirts get five buttons following the placket curve, a pocket flap and a pocket button.
 

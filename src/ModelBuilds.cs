@@ -498,6 +498,14 @@ public static partial class ModelProps
             // Poster: horizon band, sun, big headline and a tagline.
             M(Slab(Rect(-1.41f, -0.66f, 1.41f, -0.25f), 0.0655f, 0.067f), 0, 0.75f, 0, C(0.2f, 0.55f, 0.3f)),
             M(Slab(NGon(32, 0.2f), 0.0655f, 0.067f), -1.08f, 1.12f, 0, C(1f, 0.82f, 0.3f)),
+            // Sky gradient bands, rolling hills behind the meadow, puffy clouds.
+            M(Slab(Rect(-1.41f, -0.25f, 1.41f, 0.12f), 0.0651f, 0.0653f), 0, 0.75f, 0, C(0.3f, 0.55f, 0.86f)),
+            M(Slab(Rect(-1.41f, -0.25f, 1.41f, -0.08f), 0.0653f, 0.0655f), 0, 0.75f, 0, C(0.48f, 0.68f, 0.9f)),
+            M(Slab([new(-1.41f, -0.3f), new(0.1f, -0.3f), new(-0.25f, -0.1f), new(-0.7f, 0.0f), new(-1.15f, -0.06f), new(-1.41f, -0.15f)], 0.0655f, 0.0659f), 0, 0.75f, 0, C(0.16f, 0.42f, 0.24f)),
+            M(Slab([new(-0.3f, -0.3f), new(1.41f, -0.3f), new(1.41f, -0.08f), new(1.05f, 0.04f), new(0.55f, 0.02f), new(0.1f, -0.12f)], 0.0656f, 0.066f), 0, 0.75f, 0, C(0.24f, 0.5f, 0.28f)),
+            M(Merge(Slab(NGon(20, 0.1f), 0.0656f, 0.0668f), At(Slab(NGon(20, 0.13f), 0.0656f, 0.0668f), P3(0.14f, 0.03f, 0f)), At(Slab(NGon(20, 0.09f), 0.0656f, 0.0668f), P3(0.29f, -0.01f, 0f)),
+                At(Slab(Rect(-0.05f, -0.07f, 0.33f, -0.02f), 0.0656f, 0.0668f), P3(0f, 0f, 0f))), 0.9f, 1.32f, 0, C(0.95f, 0.96f, 0.98f)),
+            M(Merge(Slab(NGon(20, 0.07f), 0.0656f, 0.0668f), At(Slab(NGon(20, 0.09f), 0.0656f, 0.0668f), P3(0.1f, 0.02f, 0f)), At(Slab(NGon(20, 0.06f), 0.0656f, 0.0668f), P3(0.2f, -0.01f, 0f))), -0.62f, 1.36f, 0, C(0.95f, 0.96f, 0.98f)),
             M(Glyphs.Text("SANDBOX", 0.36f, 0.067f, 0.075f, mirror: true), 0.12f, 0.95f, 0, white),
             M(Glyphs.Text("BUILD ANYTHING!", 0.13f, 0.067f, 0.073f, mirror: true), 0.12f, 0.62f, 0, C(1f, 0.85f, 0.25f)),
             // Posts with base plates, cross bracing, catwalk with railing, and two gooseneck flood lights.
