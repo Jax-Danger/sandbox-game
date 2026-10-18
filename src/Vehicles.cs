@@ -47,7 +47,7 @@ public sealed class Buggy
         try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         mat.SetColor("_MainColor", paint);
         MeshRenderer r = Go.AddComponent<MeshRenderer>();
-        r.Mesh = Meshes.RoundedBox(size, 0.08f);
+        r.Mesh = jeep ? VehicleModels.JeepBody() : boat ? VehicleModels.Hull() : VehicleModels.BuggyBody();
         r.Material = mat;
         Body = Go.AddComponent<Rigidbody3D>();
         Body.Mass = jeep ? 750f : boat ? 380f : 450f;
@@ -62,17 +62,16 @@ public sealed class Buggy
         if (jeep) JeepDetails(g, paint, dark);
         else if (boat) BoatDetails(g, dark);
         else {
-        // Visual-only details (no colliders): seat, roll cage, bumper.
-        Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.6f, 0.5f, 0.15f), 0.025f, 2), new Float3(0f, 0.4f, -0.55f), dark);
-        Detail(g, "SeatBase", Meshes.RoundedBox(new Float3(0.6f, 0.12f, 0.55f), 0.025f, 2), new Float3(0f, 0.22f, -0.3f), dark);
-        foreach (float x in new[] { -0.65f, 0.65f })
-        {
-            Detail(g, "CageA", Meshes.RoundedBox(new Float3(0.06f, 1.0f, 0.06f), 0.025f, 2), new Float3(x, 0.65f, -0.85f), dark);
-            Detail(g, "CageB", Meshes.RoundedBox(new Float3(0.06f, 0.06f, 1.2f), 0.025f, 2), new Float3(x, 1.15f, -0.3f), dark);
-            Detail(g, "CageC", Meshes.RoundedBox(new Float3(0.06f, 0.95f, 0.06f), 0.025f, 2), new Float3(x, 0.65f, 0.3f), dark, new Float3(-25f, 0f, 0f));
-        }
-        Detail(g, "CageTop", Meshes.RoundedBox(new Float3(1.36f, 0.06f, 0.06f), 0.025f, 2), new Float3(0f, 1.15f, -0.85f), dark);
-        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.6f, 0.15f, 0.15f), 0.025f, 2), new Float3(0f, 0.0f, 1.45f), dark);
+        // Visual-only details (no colliders): bucket seat, bent-tube roll cage, tube bumper.
+        Detail(g, "Seat", VehicleModels.Seat(0.27f), new Float3(0f, 0.22f, -0.4f), dark);
+        var cage = new Color(0.16f, 0.16f, 0.17f, 1f);
+        foreach (float x in new[] { -0.62f, 0.62f })
+            Detail(g, "Cage", VehicleModels.BentPipe(0.032f, 0.18f, Float3.UnitX, new Float3(x, 0.15f, -0.95f), new Float3(x, 1.15f, -0.85f), new Float3(x * 0.9f, 1.15f, 0.0f), new Float3(x, 0.15f, 0.55f)), new Float3(0f, 0f, 0f), cage);
+        Detail(g, "CageTop", VehicleModels.BentPipe(0.032f, 0.1f, Float3.UnitY, new Float3(-0.62f, 1.15f, -0.85f), new Float3(0.62f, 1.15f, -0.85f)), Float3.Zero, cage);
+        Detail(g, "CageX", VehicleModels.BentPipe(0.03f, 0.1f, Float3.UnitY, new Float3(-0.56f, 1.15f, 0.0f), new Float3(0.56f, 1.15f, 0.0f)), Float3.Zero, cage);
+        Detail(g, "Bumper", VehicleModels.BentPipe(0.05f, 0.15f, Float3.UnitY, new Float3(-0.7f, 0.1f, 1.25f), new Float3(-0.55f, 0.02f, 1.52f), new Float3(0.55f, 0.02f, 1.52f), new Float3(0.7f, 0.1f, 1.25f)), Float3.Zero, cage);
+        foreach (float x in new[] { -0.2f, 0.2f })
+            Detail(g, "Light", VehicleModels.Lamp(0.07f), new Float3(x, 0.16f, 1.38f), new Color(0.95f, 0.92f, 0.75f, 1f));
         }
         float wx = jeep ? 0.95f : boat ? 0.7f : 0.85f, wz = jeep ? 1.25f : boat ? 1.2f : 1.05f, wy = jeep ? -0.2f : boat ? -0.1f : -0.15f, rad = jeep ? 0.5f : boat ? 0.25f : 0.42f;
 
@@ -115,32 +114,30 @@ public sealed class Buggy
 
     private void JeepDetails(SandboxGame g, Color paint, Color dark)
     {
-        Detail(g, "Hood", Meshes.RoundedBox(new Float3(1.7f, 0.3f, 1.2f), 0.06f, 2), new Float3(0f, 0.42f, 1.05f), paint);
-        Detail(g, "Grille", Meshes.RoundedBox(new Float3(1.2f, 0.4f, 0.06f), 0.02f, 2), new Float3(0f, 0.3f, 1.72f), dark);
-        foreach (float x in new[] { -0.5f, 0.5f })
-            Detail(g, "Light", Meshes.RoundedBox(new Float3(0.22f, 0.22f, 0.05f), 0.08f, 2), new Float3(x, 0.38f, 1.74f), new Color(0.95f, 0.92f, 0.75f, 1f));
-        Detail(g, "Windshield", Meshes.RoundedBox(new Float3(1.6f, 0.6f, 0.05f), 0.02f, 2), new Float3(0f, 0.85f, 0.42f), new Color(0.55f, 0.68f, 0.78f, 1f), new Float3(-12f, 0f, 0f));
+        Detail(g, "Hood", VehicleModels.JeepHood(), Float3.Zero, paint);
+        foreach (float x in new[] { -0.9f, 0.9f }) foreach (float z in new[] { -1.25f, 1.25f })
+            Detail(g, "Fender", VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
+        Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
+        foreach (float x in new[] { -0.6f, 0.6f })
+            Detail(g, "Light", VehicleModels.Lamp(0.12f), new Float3(x, 0.4f, 1.72f), new Color(0.95f, 0.92f, 0.75f, 1f));
+        Detail(g, "Windshield", VehicleModels.Windshield(), new Float3(0f, 0.85f, 0.5f), new Color(0.55f, 0.68f, 0.78f, 1f), new Float3(-12f, 0f, 0f));
+        Detail(g, "WindFrame", VehicleModels.BentPipe(0.03f, 0.08f, Float3.UnitZ, new Float3(-0.8f, -0.32f, 0f), new Float3(-0.8f, 0.32f, 0f), new Float3(0.8f, 0.32f, 0f), new Float3(0.8f, -0.32f, 0f)), new Float3(0f, 0.85f, 0.5f), dark, new Float3(-12f, 0f, 0f));
         foreach (float x in new[] { -0.4f, 0.4f })
-        {
-            Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.55f, 0.55f, 0.14f), 0.03f, 2), new Float3(x, 0.62f, -0.55f), dark);
-            Detail(g, "SeatBase", Meshes.RoundedBox(new Float3(0.55f, 0.12f, 0.5f), 0.03f, 2), new Float3(x, 0.33f, -0.3f), dark);
-        }
-        Detail(g, "RollBar", Meshes.RoundedBox(new Float3(1.6f, 0.07f, 0.07f), 0.03f, 2), new Float3(0f, 1.3f, -0.9f), dark);
-        foreach (float x in new[] { -0.8f, 0.8f })
-            Detail(g, "RollPost", Meshes.RoundedBox(new Float3(0.07f, 1.0f, 0.07f), 0.03f, 2), new Float3(x, 0.8f, -0.9f), dark);
+            Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
+        Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
-        Detail(g, "Bumper", Meshes.RoundedBox(new Float3(1.9f, 0.16f, 0.16f), 0.04f, 2), new Float3(0f, 0.05f, 1.78f), dark);
+        Detail(g, "Bumper", VehicleModels.BentPipe(0.07f, 0.12f, Float3.UnitY, new Float3(-0.95f, 0.05f, 1.72f), new Float3(-0.9f, 0.05f, 1.8f), new Float3(0.9f, 0.05f, 1.8f), new Float3(0.95f, 0.05f, 1.72f)), Float3.Zero, dark);
     }
 
     private void BoatDetails(SandboxGame g, Color dark)
     {
         var white = new Color(0.86f, 0.87f, 0.88f, 1f);
-        Detail(g, "Bow", Meshes.RoundedBox(new Float3(1.9f, 0.25f, 0.8f), 0.1f, 2), new Float3(0f, 0.12f, 1.85f), white, new Float3(-14f, 0f, 0f));
         foreach (float x in new[] { -0.9f, 0.9f })
-            Detail(g, "Rail", Meshes.RoundedBox(new Float3(0.1f, 0.22f, 3.4f), 0.04f, 2), new Float3(x, 0.24f, 0f), white);
-        Detail(g, "Seat", Meshes.RoundedBox(new Float3(0.7f, 0.9f, 0.5f), 0.06f, 2), new Float3(0f, 0.6f, -0.4f), dark);
-        Detail(g, "Mast", Meshes.RoundedBox(new Float3(0.1f, 1.3f, 0.1f), 0.03f, 2), new Float3(0f, 0.8f, -1.2f), dark);
-        Detail(g, "Cage", Meshes.Tyre(0.85f, 0.12f), new Float3(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f), new Float3(90f, 0f, 0f));
+            Detail(g, "Rail", VehicleModels.BentPipe(0.05f, 0.3f, Float3.UnitY, new Float3(x, 0.2f, -1.75f), new Float3(x, 0.2f, 1.2f), new Float3(x * 0.55f, 0.36f, 2.1f)), Float3.Zero, white);
+        Detail(g, "Seat", VehicleModels.Seat(0.3f), new Float3(0f, 0.25f, -0.35f), dark);
+        Detail(g, "Mast", VehicleModels.BentPipe(0.04f, 0.1f, Float3.UnitX, new Float3(-0.45f, 0.18f, -1.2f), new Float3(0f, 1.25f, -1.25f), new Float3(0.45f, 0.18f, -1.2f)), Float3.Zero, dark);
+        Detail(g, "Cage", VehicleModels.Ring(0.85f, 0.035f), new Float3(0f, 1.25f, -1.45f), new Color(0.3f, 0.3f, 0.32f, 1f));
+        Detail(g, "Hub", VehicleModels.Hub(0.16f), new Float3(0f, 1.25f, -1.38f), dark);
         var fan = new GameObject("Fan");
         fan.Transform.Parent = Go.Transform;
         fan.Transform.LocalPosition = new Float3(0f, 1.25f, -1.4f);
@@ -154,13 +151,13 @@ public sealed class Buggy
             blade.Transform.LocalPosition = Float3.Zero;
             var child = new GameObject("BladeMesh");
             child.Transform.Parent = blade.Transform;
-            child.Transform.LocalPosition = new Float3(0f, 0.38f, 0f);
+            child.Transform.LocalPosition = Float3.Zero;
             MeshRenderer r = child.AddComponent<MeshRenderer>();
-            r.Mesh = Meshes.RoundedBox(new Float3(0.14f, 0.7f, 0.03f), 0.02f, 2);
+            r.Mesh = VehicleModels.Blade();
             var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Color(0.7f, 0.55f, 0.3f, 1f)); r.Material = m;
             g.World.Add(blade); g.World.Add(child);
         }
-        Detail(g, "Rudder", Meshes.RoundedBox(new Float3(0.05f, 0.8f, 0.4f), 0.02f, 2), new Float3(0f, 1.2f, -1.75f), dark);
+        Detail(g, "Rudder", Meshes.Sweep([new Meshes.Sec(new Float3(0f, -0.4f, 0f), 0.025f, 0.2f, 2.5f), new Meshes.Sec(new Float3(0f, 0.4f, -0.03f), 0.02f, 0.16f, 2.5f)], Float3.UnitX, 14, 0.5f), new Float3(0f, 1.2f, -1.75f), dark);
     }
 
     public float Thrust { get; private set; }
