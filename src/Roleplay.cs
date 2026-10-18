@@ -593,7 +593,7 @@ public sealed class LockpickWeapon : Weapon
     public override string Name => "Lockpick";
     public override int Slot => 1;
     public override Icon Icon => Icon.Key;
-    public override string? ViewModelId => "hands";
+    public override string? ViewModelId => "lockpick";
     public override bool Available(SandboxGame g) => g.Roleplay.Active && g.Roleplay.Job.Id == "thief";
     public float Progress { get; private set; }
     private Prop? _target;

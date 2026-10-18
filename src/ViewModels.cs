@@ -681,6 +681,36 @@ public static partial class ViewModels
                 d.Weight = 0.9f;
                 break;
             }
+            case "lockpick":
+            {
+                // Thief's pick: walnut handle in the fist, a slim steel hook pick and a rake poking forward, and a
+                // bent tension wrench. (Was the empty-hands rig, so nothing was held.)
+                Float3 s = Nz(V(-0.12f, 0.35f, 1f));
+                Float3 up = Nz(Float3.UnitY - s * Float3.Dot(Float3.UnitY, s));
+                Float3 d0 = Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
+                Std(V(0.13f, -0.125f, 0.37f), -8f);
+                Bone("muzzle", "weapon", s * 0.17f);
+                Color wood = new(0.33f, 0.21f, 0.12f, 1f);
+                k.Sw("weapon", wood, Finish.Wood, up, 0.7f, new Sec(s * -0.055f, 0.009f, 0.007f, 2.6f), new Sec(s * -0.045f, 0.0125f, 0.009f, 2.6f),
+                    new Sec(s * 0.03f, 0.0135f, 0.0095f, 2.6f), new Sec(s * 0.052f, 0.0105f, 0.0078f, 2.6f), new Sec(s * 0.058f, 0.006f, 0.005f, 2.6f));
+                k.Sw("weapon", Steel, Finish.Metal, up, 0.6f, new Sec(s * 0.05f, 0.0045f, 0.0045f, 2f), new Sec(s * 0.066f, 0.0045f, 0.0045f, 2f));
+                // Hook pick: flat strip ending in an upturned hook.
+                k.Sw("weapon", Steel, Finish.Metal, d0, 0.3f, new Sec(s * 0.062f, 0.0028f, 0.0009f, 3f, d0), new Sec(s * 0.15f, 0.0022f, 0.0008f, 3f, d0),
+                    new Sec(s * 0.158f + up * 0.002f, 0.0021f, 0.0008f, 3f, d0), new Sec(s * 0.16f + up * 0.0065f, 0.0018f, 0.0008f, 3f, d0));
+                // Rake beside it: a zig-zag tip.
+                Float3 o = d0 * 0.0042f - up * 0.001f;
+                var rake = new List<Sec> { new(o + s * 0.062f, 0.0024f, 0.0008f, 3f, d0) };
+                for (int i = 0; i <= 6; i++) rake.Add(new Sec(o + s * (0.11f + i * 0.006f) + up * (i % 2 == 0 ? 0f : 0.0035f), 0.002f, 0.0008f, 3f, d0));
+                k.Sw("weapon", new Color(0.5f, 0.52f, 0.56f, 1f), Finish.Metal, d0, 0.3f, rake.ToArray());
+                // Tension wrench tucked under the thumb: an L of flat steel.
+                Float3 t0 = -d0 * 0.012f + up * 0.006f;
+                k.Sw("weapon", Steel, Finish.Metal, up, 0.3f, new Sec(t0 + s * -0.02f, 0.0026f, 0.0009f, 3f, up), new Sec(t0 + s * 0.09f, 0.0026f, 0.0009f, 3f, up),
+                    new Sec(t0 + s * 0.092f - up * 0.003f, 0.0024f, 0.0009f, 3f, up), new Sec(t0 + s * 0.093f - up * 0.012f, 0.0022f, 0.0009f, 3f, up));
+                right = Fist(s, d0, 0.0128f, V(0.03f, -0.045f, -0.06f));
+                freeLeft = true;
+                d.Weight = 0.4f;
+                break;
+            }
             case "crowbar":
             {
                 static Float3 d0Pre(Float3 s) => Nz(Float3.UnitX - s * Float3.Dot(Float3.UnitX, s));
