@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.10 — 2026-10-18
+- SMG red dot: flat pale rear lens carrying the red dot, so aiming shows a lens and dot instead of a black disc (screens/vm/r2/s12smge-crop.png vs s12smgc-crop.png)
+
 ## v0.17.9 — 2026-10-18
 - SMG red dot: longer open tube with sunshade hood, base and clamp rings; dropped the smoothed opaque rear lens that read as a black ball from the hip; paler front glass (screens/vm/r2/s12smgc-crop.png vs s12smg-crop.png)
 

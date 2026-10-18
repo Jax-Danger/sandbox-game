@@ -395,7 +395,14 @@ public static partial class ViewModels
                 k.Bar("weapon", Dark, Finish.Polymer, V(-0.0145f, 0.034f, -0.142f), V(0.0145f, 0.034f, -0.142f), 0.0045f, 0.0045f, 2.4f, 0.8f, Float3.UnitY);
                 // Red dot: rear lens rim, windage turret on the right, crossbolt knob on the left of the mount.
                 k.Lz("weapon", Black, Finish.Metal, V(0, 0.1235f, 0.019f), (0.0132f, 0.001f), (0.0166f, 0f), (0.0166f, 0.004f), (0.0132f, 0.004f), (0.0132f, 0.001f));
-                // (no opaque rear lens: its smoothed dark disc read as a black ball and blocked the view when aiming)
+                // Rear glass: a flat (unsmoothed) pale coated disc carrying the red dot, so ADS (rig pitched, eye off the tube axis)
+                // reads as a lens with a dot rather than looking into the dark tube; the old lathe disc shaded like a black ball.
+                {
+                    var disc = new Float3[24];
+                    for (int i = 0; i < 24; i++) { float an = -i * MathF.Tau / 24f; disc[i] = V(MathF.Cos(an) * 0.013f, MathF.Sin(an) * 0.013f, 0f); }
+                    k.Add("weapon", Meshes.Faces(disc), new Color(0.5f, 0.62f, 0.66f, 1f), Finish.Gloss, V(0, 0.1235f, 0.0215f));
+                    k.Dot("weapon", new Color(1f, 0.18f, 0.12f, 1f), V(0, 0.1235f, 0.0205f), 0.0009f);
+                }
                 k.Bar("weapon", Black, Finish.Metal, V(0.0158f, 0.1235f, 0.043f), V(0.0215f, 0.1235f, 0.043f), 0.0055f, 0.0055f, 2f, 0.9f, Float3.UnitZ);
                 for (int i = 0; i < 6; i++) { float an = i * MathF.PI / 3f; k.Bar("weapon", Gunmetal, Finish.Metal, V(0.0175f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), V(0.0215f, 0.1235f + MathF.Sin(an) * 0.0056f, 0.043f + MathF.Cos(an) * 0.0056f), 0.0008f, 0.0008f, 2f, 0.9f, Float3.UnitZ); }
                 k.Bar("weapon", Gunmetal, Finish.Metal, V(-0.0095f, 0.1045f, 0.042f), V(-0.016f, 0.1045f, 0.042f), 0.0042f, 0.0042f, 2f, 0.9f, Float3.UnitZ);
