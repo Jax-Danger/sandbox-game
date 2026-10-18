@@ -375,7 +375,7 @@ public static class EntityCatalog
             foreach (float sz in new[] { 1f, -1f })
             {
                 Part("PushPlate", Meshes.RoundedBox(new Prowl.Vector.Float3(0.26f, 0.09f, 0.008f), 0.004f, 2), new(0f, 0.05f, 0.3f * sz), blk);
-                Part("PushText", Glyphs.Text("PUSH", 0.06f, 0f, 0.003f), new(0f, 0.05f, 0.304f * sz), wht, new(0f, sz > 0f ? 180f : 0f, 0f));
+                Part("PushText", Glyphs.Text("PUSH", 0.06f, 0f, 0.003f), new(0f, 0.05f, 0.3075f * sz), wht, new(0f, sz > 0f ? 180f : 0f, 0f));
             }
             Part("Plinth", Meshes.RoundedBox(new Prowl.Vector.Float3(0.64f, 0.04f, 0.64f), 0.01f, 3), new(0f, -0.28f, 0f), blk);
         }

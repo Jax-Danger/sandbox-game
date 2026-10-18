@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.11.1 — 2026-10-18
+- Sign/plate text uses real Inter Bold outlines (curves, counters) instead of the 5x7 block font; PUSH plate text sits proud of the plate (screens/s7-button-d-crop.png)
+
 ## v0.11.0 — 2026-10-18
 - Custom sky shader replaces the engine's procedural sky: blue zenith to fog-matched horizon (no greenish dusk, no horizon seam), orange sun glow at dawn/dusk, stars and a moon at night; horizon skirt follows the fog colour (screens/s7-night-d.png, s7-dusksun-e.png)
 

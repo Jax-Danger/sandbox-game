@@ -520,7 +520,7 @@ public static class Meshes
         return Build(v, n, uv, idx);
     }
 
-    private static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
+    internal static Mesh Build(List<Float3> v, List<Float3> n, List<Float2> uv, List<uint> idx)
     {
         var mesh = new Mesh { IndexFormat = v.Count > 65000 ? IndexFormat.UInt32 : IndexFormat.UInt16, Vertices = v.ToArray(), Normals = n.ToArray(), UV = uv.ToArray(), Indices = idx.ToArray() };
         mesh.RecalculateBounds();
