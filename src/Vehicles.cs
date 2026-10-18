@@ -197,7 +197,7 @@ public sealed class Buggy
         foreach (float x in new[] { -0.9f, 0.9f }) foreach (float z in new[] { -1.25f, 1.25f })
             Detail(g, "Fender", VehicleModels.Fender(x, z, 0.5f), Float3.Zero, paint * 0.85f);
         Detail(g, "Grille", VehicleModels.Grille(), Float3.Zero, dark);
-        // Stencilled five-point star on the hood (centre pentagon + five point triangles) and two over-centre hood latches.
+        // Stencilled five-point star on the hood (centre pentagon + five point triangles).
         {
             const float sy = 0.546f, sz = 1.12f, ro = 0.19f, ri = 0.075f;
             Float3 P(float a, float r) => new(MathF.Sin(a) * r, sy, sz + MathF.Cos(a) * r);
@@ -211,8 +211,6 @@ public sealed class Buggy
                 polys.Add([P(a - MathF.PI / 5f, ri), P(a, ro), P(a + MathF.PI / 5f, ri)]);
             }
             Detail(g, "HoodStar", Meshes.Faces(polys.ToArray()), Float3.Zero, new Color(0.6f, 0.6f, 0.55f, 1f));
-            foreach (float x in new[] { -0.74f, 0.74f })
-                Detail(g, "HoodLatch", Meshes.RoundedBox(new Float3(0.03f, 0.09f, 0.05f), 0.01f), new Float3(x, 0.48f, 1.2f), dark);
         }
         foreach (float x in new[] { -0.6f, 0.6f })
             HeadLamp(g, VehicleModels.Lamp(0.12f), 0.12f, new Float3(x, 0.4f, 1.72f), Float3.Zero);
@@ -265,8 +263,8 @@ public sealed class Buggy
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
         // Spare wheel rim (was an empty tyre): dished steel disc with a hub cap and five lug nuts, facing rearward.
-        Detail(g, "SpareRim", Meshes.LatheZ([(0.0001f, -0.07f), (0.08f, -0.07f), (0.1f, -0.05f), (0.2f, -0.04f), (0.255f, -0.07f), (0.27f, -0.1f), (0.27f, 0.08f), (0.0001f, 0.08f)], 32), new Float3(0f, 0.55f, -1.82f), new Color(0.72f, 0.72f, 0.66f, 1f), new Float3(0f, 180f, 0f));
-        Detail(g, "SpareCap", VehicleModels.Hub(0.12f), new Float3(0f, 0.55f, -1.95f), new Color(0.6f, 0.61f, 0.63f, 1f), new Float3(0f, 180f, 0f));
+        Detail(g, "SpareRim", Meshes.LatheZ([(0.0001f, -0.07f), (0.08f, -0.07f), (0.1f, -0.05f), (0.2f, -0.04f), (0.255f, -0.07f), (0.27f, -0.1f), (0.27f, 0.08f), (0.0001f, 0.08f)], 32), new Float3(0f, 0.55f, -1.82f), new Color(0.5f, 0.51f, 0.46f, 1f), new Float3(0f, 180f, 0f));
+        Detail(g, "SpareCap", VehicleModels.Hub(0.12f), new Float3(0f, 0.55f, -1.95f), new Color(0.4f, 0.41f, 0.42f, 1f), new Float3(0f, 180f, 0f));
         for (int i = 0; i < 5; i++) { float a = i * MathF.Tau / 5f; Detail(g, "SpareLug", Meshes.Sphere(0.014f), new Float3(MathF.Cos(a) * 0.15f, 0.55f + MathF.Sin(a) * 0.15f, -1.905f), new Color(0.3f, 0.3f, 0.32f, 1f)); }
         // Classic seven-slot grille, side mirrors on stalks, tail lamps, hood latches and a jerrycan on the tailgate.
         for (int i = 0; i < 7; i++)
@@ -275,7 +273,10 @@ public sealed class Buggy
         {
             Detail(g, "MirrorArm", VehicleModels.Pipe(0.012f, Float3.UnitY, new Float3(x * 0.9f, 0.5f, 0.55f), new Float3(x * 1.05f, 0.75f, 0.5f)), Float3.Zero, dark);
             Detail(g, "Mirror", Meshes.Lathe("mirror", [(0.0001f, -0.015f), (0.07f, -0.015f), (0.075f, 0f), (0.07f, 0.015f), (0.0001f, 0.015f)], 20), new Float3(x * 1.06f, 0.8f, 0.5f), dark, new Float3(90f, 0f, 0f));
-            Detail(g, "TailLamp", VehicleModels.Lamp(0.06f), new Float3(x * 0.85f, 0.25f, -1.7f), new Color(0.8f, 0.1f, 0.08f, 1f), new Float3(0f, 180f, 0f));
+            Detail(g, "TailLamp", VehicleModels.Lamp(0.06f), new Float3(x * 0.85f, 0.25f, -1.7f), new Color(0.62f, 0.06f, 0.05f, 1f), new Float3(0f, 180f, 0f));
+            // Black rubber bezel and chrome trim ring so the lamp reads as a flush lens, not a red ball stuck on.
+            Detail(g, "TailBezel", Meshes.LatheZ([(0.058f, 0.012f), (0.074f, 0.008f), (0.078f, -0.004f), (0.075f, -0.02f), (0.058f, -0.02f)], 28), new Float3(x * 0.85f, 0.25f, -1.7f), new Color(0.05f, 0.05f, 0.055f, 1f), new Float3(0f, 180f, 0f));
+            Detail(g, "TailTrim", Meshes.LatheZ([(0.06f, 0.016f), (0.064f, 0.016f), (0.064f, 0.008f), (0.06f, 0.008f)], 28), new Float3(x * 0.85f, 0.25f, -1.7f), new Color(0.7f, 0.71f, 0.73f, 1f), new Float3(0f, 180f, 0f));
             Detail(g, "Latch", Meshes.RoundedBox(new Float3(0.04f, 0.1f, 0.06f), 0.015f), new Float3(x * 0.84f, 0.48f, 1.2f), dark);
         }
         Detail(g, "Jerrycan", Meshes.RoundedBox(new Float3(0.16f, 0.45f, 0.32f), 0.04f), new Float3(0.62f, 0.55f, -1.82f), paint * 0.8f);
