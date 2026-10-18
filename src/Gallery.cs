@@ -11,6 +11,8 @@ namespace Sandbox;
 public static class Gallery
 {
     public static bool Active { get; private set; }
+    /// <summary>Player-body showcase sets keep the local avatar visible.</summary>
+    public static bool ShowAvatar { get; private set; }
 
     public static void Show(SandboxGame g, string set)
     {
@@ -43,6 +45,28 @@ public static class Gallery
                 var go = new GameObject("DriveTest");
                 go.AddComponent<DriveTest>().Init(g, car, kind);
                 g.World.Add(go);
+                break;
+            }
+            case "body":
+            {
+                ShowAvatar = true;
+                g.Player.Teleport(new Float3(-30f, 0.05f, -30f));
+                g.Player.SetLook(0f, set.Contains("up") ? 10f : set.Contains("steep") ? 82f : 62f);
+                if (set.Contains("walk")) g.Avatar.DebugSpeed = 3.5f;
+                if (set.Contains("show")) { g.Avatar.DebugOffset = new Float3(0.6f, 0f, 2.4f); g.Avatar.DebugYaw = set.Contains("side") ? 90f : 200f; }
+                if (set.Contains("crouch")) g.Avatar.DebugCrouch = 1f;
+                break;
+            }
+            case "seat":
+            {
+                ShowAvatar = true;
+                string kind = set.Contains("jeep") ? "jeep" : "buggy";
+                Buggy car = g.Vehicles.SpawnBuggy(new Float3(-30f, 1.2f, -30f), 0f, false, kind);
+                g.Vehicles.Enter(car);
+                g.Vehicles.FirstPerson = set.Contains("fp");
+                g.Vehicles.SetOrbit(set.Contains("fp") ? 0f : 155f, set.Contains("fp") ? 32f : 18f);
+                if (set.Contains("close")) { g.Vehicles.OrbitDist = 2.6f; g.Vehicles.SetOrbit(set.Contains("left") ? -90f : 90f, 4f); }
+                g.Vehicles.ScriptInput = (set.Contains("left") ? -0.7f : 0.7f, false, false, true);
                 break;
             }
             case "tools":

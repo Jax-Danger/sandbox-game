@@ -109,6 +109,7 @@ public sealed class Buggy
             (front ? Front : Rear).Add(wc);
         }
 
+        if (!boat) AddSteeringWheel(g);
         Prop = g.Props.Adopt(Go, Body, mat, paint, PropKind.Limb, 0.5f);
     }
 
@@ -161,6 +162,43 @@ public sealed class Buggy
     }
 
     public float Thrust { get; private set; }
+    /// <summary>Driver's hip point in vehicle-local space (x right, y up, z forward).</summary>
+    public Float3 DriverHips => Kind switch { "jeep" => new Float3(-0.4f, 0.48f, -0.5f), "airboat" => new Float3(0f, 0.4f, -0.45f), _ => new Float3(0f, 0.34f, -0.45f) };
+    private Transform? _wheel;
+    private Float3 WheelCentre => Kind switch { "jeep" => new Float3(-0.4f, 0.9f, 0.08f), "airboat" => new Float3(0f, 0.8f, 0.08f), _ => new Float3(0f, 0.74f, 0.08f) };
+    private const float WheelTilt = 55f, WheelR = 0.19f;
+    /// <summary>World position of the left (side -1) / right (+1) hand grip on the steering wheel, turning with it.</summary>
+    public Float3 WheelGrip(float side)
+    {
+        Transform t = Go.Transform;
+        float a = -_steer * 1.6f; // radians of wheel turn
+        float tilt = WheelTilt * MathF.PI / 180f;
+        // Wheel plane axes in car space: x = right, v = up tilted back toward the driver.
+        Float3 vx = new(1f, 0f, 0f), vy = new(0f, MathF.Sin(tilt), MathF.Cos(tilt));
+        Float3 local = WheelCentre + (vx * MathF.Cos(a) * side - vy * MathF.Sin(a) * side) * WheelR + vy * 0.02f;
+        return t.Position + t.Right * local.X + t.Up * local.Y + t.Forward * local.Z;
+    }
+    private void AddSteeringWheel(SandboxGame g)
+    {
+        var col = new GameObject("SteeringColumn"); col.Transform.Parent = Go.Transform;
+        col.Transform.LocalPosition = WheelCentre; col.Transform.LocalEulerAngles = new Float3(-WheelTilt, 0f, 0f);
+        g.World.Add(col);
+        var spin = new GameObject("SteeringWheel"); spin.Transform.Parent = col.Transform; spin.Transform.LocalPosition = Float3.Zero;
+        g.World.Add(spin);
+        _wheel = spin.Transform;
+        void Part(Mesh m, Color c, Float3 rot)
+        {
+            var d = new GameObject("WheelPart"); d.Transform.Parent = spin.Transform; d.Transform.LocalPosition = Float3.Zero; d.Transform.LocalEulerAngles = rot;
+            MeshRenderer r = d.AddComponent<MeshRenderer>(); r.Mesh = m; var mt = Mats.New(g.Shader); try { mt.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { } mt.SetColor("_MainColor", c); r.Material = mt;
+            g.World.Add(d);
+        }
+        var dark = new Color(0.08f, 0.08f, 0.09f, 1f);
+        Part(VehicleModels.Ring(WheelR, 0.016f), dark, new Float3(90f, 0f, 0f)); // ring in the column's XZ plane
+        Part(Meshes.Lathe("whub", [(0.0001f, -0.03f), (0.045f, -0.03f), (0.05f, 0f), (0.035f, 0.025f), (0.0001f, 0.03f)], 20), new Color(0.2f, 0.2f, 0.22f, 1f), Float3.Zero);
+        Part(VehicleModels.Pipe(0.011f, Float3.UnitY, new Float3(-WheelR, 0f, 0f), new Float3(WheelR, 0f, 0f)), dark, Float3.Zero);
+        Part(VehicleModels.Pipe(0.011f, Float3.UnitY, new Float3(0f, 0f, 0f), new Float3(0f, 0f, -WheelR)), dark, Float3.Zero);
+        Part(VehicleModels.Pipe(0.018f, Float3.UnitX, new Float3(0f, -0.03f, 0f), new Float3(0f, -0.38f, 0f)), dark, Float3.Zero);
+    }
     private readonly Dictionary<WheelCollider, Transform> _visuals = new();
     /// <summary>Steering-wheel input in -1..1 after smoothing (drives the steering-wheel mesh and the driver's arms).</summary>
     public float SteerInput => _steer;
@@ -170,6 +208,7 @@ public sealed class Buggy
     /// steer the wrong way relative to the contact frame.</summary>
     public void SyncWheels()
     {
+        if (_wheel is not null) _wheel.LocalEulerAngles = new Float3(0f, _steer * 1.6f * 180f / MathF.PI, 0f);
         foreach (var (wc, vis) in _visuals)
         {
             if (!wc.GameObject.IsValid()) continue;
@@ -326,7 +365,11 @@ public sealed class VehicleSystem(SandboxGame game)
     public bool InVehicle => Driving is not null;
     /// <summary>Scripted driving input (drive tests / screenshots); overrides the keyboard when set.</summary>
     public (float Steer, bool Throttle, bool Brake, bool Handbrake)? ScriptInput;
+    /// <summary>V toggles a first-person driver's-eye camera (legs, hands and steering wheel visible).</summary>
+    public bool FirstPerson;
+    public void SetOrbit(float yaw, float pitch) { _orbitYaw = yaw; _orbitPitch = pitch; }
     private float _orbitYaw, _orbitPitch = 12f;
+    public float OrbitDist = 6.5f;
     private AudioSource? _engine;
 
     public static void Register()
@@ -412,9 +455,11 @@ public sealed class VehicleSystem(SandboxGame game)
             s = Input.GetKey(KeyCode.S);
             space = Input.GetKey(KeyCode.Space);
             if (Input.GetKeyDown(KeyCode.R)) car.Flip();
+            if (Binds.Down("noclip")) { FirstPerson = !FirstPerson; _orbitYaw = 0f; _orbitPitch = FirstPerson ? 0f : 12f; }
             Float2 md = Input.MouseDelta * 0.12f * game.Settings.MouseSensitivity;
             _orbitYaw += md.X;
-            _orbitPitch = Math.Clamp(_orbitPitch + md.Y, -10f, 60f);
+            _orbitPitch = FirstPerson ? Math.Clamp(_orbitPitch + md.Y, -60f, 60f) : Math.Clamp(_orbitPitch + md.Y, -10f, 60f);
+            if (FirstPerson) _orbitYaw = Math.Clamp(_orbitYaw, -120f, 120f);
         }
         if (ScriptInput is { } si) { steer = si.Steer; w = si.Throttle; s = si.Brake; space = si.Handbrake; }
         car.Drive(steer, w, s, space);
@@ -423,12 +468,24 @@ public sealed class VehicleSystem(SandboxGame game)
         // Keep the (invisible) player body parked above the car so it doesn't block anything.
         game.Player.Teleport(car.Go.Transform.Position + new Float3(0f, 40f, 0f), moveCamera: false);
 
+        if (FirstPerson)
+        {
+            Transform ct = car.Go.Transform;
+            Float3 hips = car.DriverHips;
+            Float3 eye = ct.Position + ct.Right * hips.X + ct.Up * (hips.Y + 0.80f) + ct.Forward * (hips.Z + 0.02f);
+            float fy = _orbitYaw * MathF.PI / 180f, fp = -_orbitPitch * MathF.PI / 180f;
+            Float3 look = ct.Forward * (MathF.Cos(fy) * MathF.Cos(fp)) + ct.Right * (MathF.Sin(fy) * MathF.Cos(fp)) + ct.Up * MathF.Sin(fp);
+            Transform fc = game.Player.CameraObject.Transform;
+            fc.Position = eye;
+            fc.Rotation = Quaternion.LookRotation(Float3.Normalize(look), ct.Up);
+            return;
+        }
         // Chase camera: orbit around the car, smoothed.
         float yaw = (car.Go.Transform.LocalEulerAngles.Y + _orbitYaw) * MathF.PI / 180f;
         float pitch = _orbitPitch * MathF.PI / 180f;
         Float3 back = new(-MathF.Sin(yaw) * MathF.Cos(pitch), MathF.Sin(pitch), -MathF.Cos(yaw) * MathF.Cos(pitch));
         Float3 focus = car.Go.Transform.Position + new Float3(0f, 1.0f, 0f);
-        Float3 want = focus + back * 6.5f;
+        Float3 want = focus + back * OrbitDist;
         Transform cam = game.Player.CameraObject.Transform;
         cam.Position = cam.Position + (want - cam.Position) * Math.Clamp(dt * 8f, 0f, 1f);
         cam.Forward = Float3.Normalize(focus - cam.Position);

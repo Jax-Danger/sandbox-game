@@ -24,6 +24,7 @@ public sealed partial class SandboxGame : Game
     public WeaponSystem Weapons { get; } = new();
     public SoundSystem Sounds { get; } = new();
     public VehicleSystem Vehicles { get; private set; } = null!;
+    public PlayerAvatar Avatar { get; private set; } = null!;
     public Settings Settings { get; private set; } = new();
     public Menus Menus { get; } = new();
     public HealthSystem Health { get; } = new();
@@ -93,6 +94,7 @@ public sealed partial class SandboxGame : Game
         PhysGun = new PhysGun(Props);
         ToolGun = new ToolGun(Props);
         Vehicles = new VehicleSystem(this);
+        Avatar = new PlayerAvatar(this);
         _spawnMenu = new SpawnMenu(_icons);
         Scene.Load(World);
         Sounds.Init(World, Player.CameraObject);
@@ -365,6 +367,7 @@ public sealed partial class SandboxGame : Game
         }
         else if (SeatedIn is not null) StandUp();
         else if (!InVehicle && !menuWorld) Player.Update(Time.DeltaTime, input && !Health.Dead);
+        Avatar.Tick(Time.DeltaTime, hidden: menuWorld || (Gallery.Active && !Gallery.ShowAvatar) || Health.Dead || SeatedIn is not null);
         UpdateFlashlightZoom(dt, input);
         Weapons.Aiming = input && !Health.Dead && Weapons.Current is Firearm && Input.GetMouseButton(1);
         Weapons.Animate(this, Time.DeltaTime, input ? Input.MouseDelta : Float2.Zero);
