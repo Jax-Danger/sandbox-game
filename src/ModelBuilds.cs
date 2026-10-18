@@ -63,7 +63,7 @@ public static partial class ModelProps
     private static Color Galv => C(0.62f, 0.64f, 0.66f);
     private static Color Glass => C(0.42f, 0.58f, 0.68f);
     private static Color Brass => C(0.78f, 0.62f, 0.3f);
-    private static Color Linen => C(0.93f, 0.92f, 0.88f);
+    private static Color Linen => C(0.76f, 0.75f, 0.71f);
 
     private static Part[] PalletParts()
     {
@@ -318,7 +318,7 @@ public static partial class ModelProps
 
     private static Part[] BedParts()
     {
-        Color duvet = C(0.62f, 0.16f, 0.14f), throwC = C(0.84f, 0.79f, 0.68f);
+        Color duvet = C(0.5f, 0.14f, 0.13f), throwC = C(0.7f, 0.64f, 0.52f);
         var l = new List<Part>
         {
             // Frame: side and end rails, turned legs, headboard posts with finials and a raised panel, low footboard.
@@ -336,8 +336,8 @@ public static partial class ModelProps
         }
         // Mattress with piping, pillows, duvet with a turned-down sheet, side drapes and a folded throw at the foot.
         l.Add(M(PropMeshes.Cushion(2.0f, 0.19f, 1.02f), 0, -0.02f, 0, Linen, false, P3(0, 90, 0)));
-        l.Add(RB(1.04f, 0.012f, 2.0f, 0.005f, 0, -0.1f, 0, C(0.8f, 0.8f, 0.78f)));
-        foreach (float x in new[] { -0.25f, 0.25f }) l.Add(M(PropMeshes.Cushion(0.46f, 0.13f, 0.32f), x, 0.135f, -0.78f, C(0.96f, 0.96f, 0.98f), false, P3(-12, x * 8f, 0)));
+        l.Add(RB(1.04f, 0.012f, 2.0f, 0.005f, 0, -0.1f, 0, C(0.7f, 0.7f, 0.68f)));
+        foreach (float x in new[] { -0.25f, 0.25f }) l.Add(M(PropMeshes.Cushion(0.46f, 0.13f, 0.32f), x, 0.135f, -0.78f, C(0.72f, 0.72f, 0.75f), false, P3(-12, x * 8f, 0)));
         l.Add(M(PropMeshes.Cushion(1.38f, 0.07f, 1.1f), 0, 0.105f, 0.33f, duvet, false, P3(0, 90, 0)));
         l.Add(M(PropMeshes.Cushion(0.24f, 0.075f, 1.12f), 0, 0.12f, -0.33f, Linen, false, P3(0, 90, 0)));
         foreach (float x in new[] { -0.555f, 0.555f }) l.Add(RB(0.025f, 0.2f, 1.36f, 0.01f, x, 0.0f, 0.33f, duvet, false, P3(0, 0, x > 0 ? -4 : 4)));
