@@ -168,7 +168,7 @@ public static partial class MapBuilder
         wr.Mesh = Mesh.CreateCube(new Float3(48f, 0.05f, 48f));
         var wm = Mats.New(shader);
         wm.SetColor("_MainColor", new Color(0.14f, 0.34f, 0.46f, 1f));
-        if (!Application.IsHeadless) { wm.SetTexture("_MainTex", ProcTex.Solid(34, 82, 110)); wm.SetTexture("_SurfaceTex", ProcTex.Surface(0.08f, 0.1f)); }
+        if (!Application.IsHeadless) { wm.SetTexture("_MainTex", ProcTex.Water()); wm.SetVector("_Tiling", new Float2(9f, 9f)); wm.SetColor("_MainColor", new Color(0.62f, 0.68f, 0.74f, 1f)); wm.SetTexture("_SurfaceTex", ProcTex.Surface(0.08f, 0.1f)); }
         wr.Material = wm;
         Add(scene, water);
 

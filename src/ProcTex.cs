@@ -74,6 +74,15 @@ public static class ProcTex
         return (B(v), B(v), B(v * 1.01f), 255);
     });
 
+    /// <summary>Lake surface: deep teal with soft wind-ripple bands and the odd bright glint streak (tiles seamlessly).</summary>
+    public static Texture2D Water() => Make("water", 128, 128, (x, y) =>
+    {
+        float rip = Fbm(x / 6f, y / 18f, 21), broad = Fbm(x / 30f, y / 30f, 22);
+        float v = 0.82f + 0.22f * rip + 0.12f * broad;
+        float glint = MathF.Max(0f, rip - 0.72f) * 3.5f;
+        return (B(v * 0.135f + glint * 0.35f), B(v * 0.33f + glint * 0.4f), B(v * 0.44f + glint * 0.42f), 255);
+    });
+
     public static Texture2D Grass() => Make("grass", 128, 128, (x, y) =>
     {
         float v = 0.8f + 0.25f * Fbm(x / 9f, y / 9f, 11) + (Hash(x, y, 4) - 0.5f) * 0.12f;

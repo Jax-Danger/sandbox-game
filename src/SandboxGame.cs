@@ -348,7 +348,7 @@ public sealed partial class SandboxGame : Game
             : (Menus.Screen is Screen.Paused || (Menus.Screen == Screen.Settings && Session is not null)) && ShotState is null ? 0f
             : Settings.TimeScale;
         if (Menus.Screen == Screen.Loading) { TickLoader(dt); FrameCap(); return; }
-        if (Session is not null && SelfTest is null) TickAutosave(dt);
+        if (Session is not null && SelfTest is null && ShotState is null) TickAutosave(dt); // review shots must not pile their props into the saves
         if (menuWorld) OrbitMenuCamera();
         Health.Tick(this, Time.DeltaTime);
         Achievements.Tick(this, dt);
