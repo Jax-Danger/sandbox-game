@@ -578,8 +578,10 @@ public static partial class ViewModels
                 Std(V(0.14f, -0.17f, 0.34f), -8f);
                 Bone("muzzle", "weapon", V(0f, 0.04f, 0.05f));
                 Bone("pin", "weapon", Float3.Zero);
-                k.Add("weapon", Lathe("vm_frag", [(0f, -0.042f), (0.014f, -0.04f), (0.025f, -0.032f), (0.0305f, -0.017f), (0.032f, 0f), (0.031f, 0.017f), (0.026f, 0.031f), (0.018f, 0.04f), (0.011f, 0.044f)], 32), Olive, Finish.Paint);
+                k.Add("weapon", Lathe("vm_frag", [(0f, -0.042f), (0.014f, -0.04f), (0.025f, -0.032f), (0.0305f, -0.017f), (0.032f, 0f), (0.031f, 0.017f), (0.026f, 0.031f), (0.018f, 0.04f), (0.011f, 0.044f)], 32), new Color(0.3f, 0.36f, 0.2f, 1f), Finish.Paint);
                 for (int i = 0; i < 3; i++) { float y = -0.018f + i * 0.018f, r = MathF.Sqrt(MathF.Max(0f, 0.032f * 0.032f - y * y * 0.9f)) + 0.0004f; k.Add("weapon", Lathe($"vm_fragring{i}", [(r, y - 0.0012f), (r + 0.0008f, y), (r, y + 0.0012f)], 32), new Color(0.21f, 0.24f, 0.16f, 1f), Finish.Paint); }
+                // Dull steel fuse-well collar.
+                k.Add("weapon", Lathe("vm_fragcol", [(0.0125f, 0.0405f), (0.0135f, 0.042f), (0.0135f, 0.0445f), (0.011f, 0.046f)], 24), new Color(0.32f, 0.33f, 0.3f, 1f), Finish.Metal);
                 k.Add("weapon", Lathe("vm_fuse", [(0.0105f, 0.04f), (0.0105f, 0.05f), (0.0085f, 0.06f), (0.006f, 0.063f), (0f, 0.063f)], 24), Steel, Finish.Metal);
                 k.Sw("weapon", Steel, Finish.Metal, Float3.UnitZ, 0.6f,
                     new Sec(V(0.004f, 0.062f, 0), 0.0065f, 0.0012f, 4f), new Sec(V(0.02f, 0.058f, 0), 0.0065f, 0.0012f, 4f), new Sec(V(0.031f, 0.04f, 0), 0.0068f, 0.0012f, 4f),
