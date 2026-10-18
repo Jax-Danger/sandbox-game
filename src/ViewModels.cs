@@ -464,7 +464,7 @@ public static partial class ViewModels
                     [float.NaN, 0.011f, -0.0075f, -0.026f], 86f, V(0.022f, -0.035f, -0.072f), 72f, 196f, 0.03f, 0.044f, Trig(0.036f, 0.054f));
                 leftParent = "pump"; leftPos = V(0f, 0.05f, 0.275f); // rear half of the pump: shorter, more natural left-arm reach
                 left = Under(0.0222f, 0.0222f);
-                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.15f; d.AimShift = V(-0.05f, 0.04f, 0.04f); // shoulder raise: bead sights behind a long stock read badly when centred
+                d.RecoilKick = 2.2f; d.Weight = 1.35f; d.CanAim = true; d.AimZoom = 1.15f; d.AimExtra = new BonePose(V(0.001f, -0.037f, 0.035f), V(-6.5f, 1.5f, -11f)); // bead centred; gun pushed out, heel dropped, canted so the grip glove clears the sight line
                 break;
             }
             case "rpg":

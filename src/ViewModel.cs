@@ -120,6 +120,9 @@ public sealed class ViewModelDef
     /// <summary>When set, aiming shifts the rig by this (a shoulder raise) instead of centring the sight; the crosshair stays.
     /// Used by long launchers whose tube would otherwise run through the middle of the view.</summary>
     public Float3? AimShift;
+    /// <summary>Extra vm_root pose blended in while aiming, on top of the sight-centring offset (drop/tilt the gun so the
+    /// grip hand clears the sight line).</summary>
+    public BonePose AimExtra;
     /// <summary>Extra vm_root offset while sprinting (gun lowered and angled).</summary>
     public BonePose SprintPose = new(new Float3(0.035f, -0.015f, -0.03f), new Float3(9f, -22f, 12f));
 
@@ -445,6 +448,7 @@ public sealed class ViewModel
                 pose += new BonePose(pos, rot);
                 pose += Def.SprintPose * _sprint;
                 pose += new BonePose(AimOffset, Float3.Zero) * _aim;
+                pose += Def.AimExtra * _aim;
                 if (DebugOffset is { } dbg) pose += dbg;
             }
             else if (name == "hand_r" && fidget > 0f) pose += new BonePose(new Float3(0f, 0.004f, 0f), new Float3(-6f, 4f, -28f)) * fidget;
