@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.6 — 2026-10-18
+- Plaza street lamps light up at night: lantern glass glows and a warm 13 m point light fades in after dusk (off by day). Review shots accept an optional time-of-day field (townat_x_y_z_yaw_pitch_tod).
+
 ## v0.14.5 — 2026-10-18
 - Dev floor grid and concrete now tile at real world scale (4 m grid squares, 3 m concrete) instead of being shrunk to sub-centimetre noise; the classic grid floor is visible again on flatgrass and sidewalks show concrete mottling.
 

@@ -58,6 +58,13 @@ public sealed class DayNightCycle
         }
         w.Ambient.GroundColor = L4(new Float4(0.12f, 0.12f, 0.16f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
         w.Ambient.Strength = 0.6f + 0.3f * day;
+        // Town lamps: glass glows and a warm point light fades in as the sun goes down.
+        float lit = Math.Clamp(1f - day * 1.6f, 0f, 1f);
+        foreach (var (glass, light) in Town.NightLamps)
+        {
+            try { glass.SetFloat("_EmissionIntensity", 0.2f + 2.8f * lit); } catch { }
+            if (light is not null) { light.Intensity = 3.5f * lit; light.Enabled = lit > 0.01f; }
+        }
         w.Fog.Color = fog;
         g.HorizonColor(fog);
     }

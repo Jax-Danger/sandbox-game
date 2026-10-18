@@ -12,6 +12,8 @@ public static class Town
 {
     public static List<Door> Doors { get; } = [];
     public static List<Float3> Waypoints { get; } = [];
+    /// <summary>Night-lit lamp glass materials and their point lights; DayNight fades them in after dusk.</summary>
+    public static List<(Material Glass, PointLight? Light)> NightLamps { get; } = [];
     public static GameObject? Atm { get; set; }
     public static GameObject? Board { get; set; }
     public static Float3 CellCenter { get; set; }
@@ -22,7 +24,7 @@ public static class Town
     public static bool Active => MapBuilder.Current == "town" || Markers;
     public static bool HasJail => CellHalf.X > 0f;
 
-    public static void Reset() { Interactive.Clear(); Doors.Clear(); Waypoints.Clear(); Atm = null; Board = null; Markers = false; CellHalf = Float3.Zero; }
+    public static void Reset() { Interactive.Clear(); Doors.Clear(); Waypoints.Clear(); NightLamps.Clear(); Atm = null; Board = null; Markers = false; CellHalf = Float3.Zero; }
 
     public static bool InCell(Float3 p) => MathF.Abs(p.X - CellCenter.X) < CellHalf.X && MathF.Abs(p.Z - CellCenter.Z) < CellHalf.Z && p.Y < CellCenter.Y + 3f;
 
@@ -358,7 +360,18 @@ public static partial class MapBuilder
                 Meshes.Lathe("tlcap", [(0.0001f, 0.33f), (0.24f, 0.33f), (0.25f, 0.35f), (0.12f, 0.46f), (0.03f, 0.5f), (0.03f, 0.56f), (0.0001f, 0.58f)], 4),
                 Meshes.RoundedBox(new Float3(0.025f, 0.32f, 0.025f), 0.006f) is var lpost ? Meshes.Merge(Off(lpost, 0.12f, 0.17f, 0f), Off(lpost, -0.12f, 0.17f, 0f), Off(lpost, 0f, 0.17f, 0.12f), Off(lpost, 0f, 0.17f, -0.12f)) : null!),
                 lp + new Float3(0f, 3.95f, 0f), new Color(0.12f, 0.12f, 0.13f, 1f), euler: new Float3(0f, 45f, 0f));
-            Shape(scene, shader, "~Lamp glass", Meshes.Lathe("tlglass", [(0.0001f, 0f), (0.1f, 0f), (0.15f, 0.31f), (0.0001f, 0.31f)], 4), lp + new Float3(0f, 3.97f, 0f), new Color(1f, 0.92f, 0.70f, 1f), euler: new Float3(0f, 45f, 0f));
+            var glass = Shape(scene, shader, "~Lamp glass", Meshes.Lathe("tlglass", [(0.0001f, 0f), (0.1f, 0f), (0.15f, 0.31f), (0.0001f, 0.31f)], 4), lp + new Float3(0f, 3.97f, 0f), new Color(1f, 0.92f, 0.70f, 1f), euler: new Float3(0f, 45f, 0f));
+            if (!Application.IsHeadless && glass.GetComponent<MeshRenderer>()?.Material.Res is { } gmat)
+            {
+                _batch.Remove(glass); // keep its own material so it can glow at night
+                try { gmat.SetTexture("_EmissionTex", ProcTex.Solid(255, 214, 150)); gmat.SetFloat("_EmissionIntensity", 0f); } catch { }
+                var lgo = new GameObject("~Lamp light");
+                lgo.Transform.Position = lp + new Float3(0f, 3.9f, 0f);
+                PointLight pl = lgo.AddComponent<PointLight>();
+                pl.Color = new Color(1f, 0.78f, 0.5f, 1f); pl.Range = 13f; pl.Intensity = 0f; pl.CastShadows = false;
+                Add(scene, lgo);
+                Town.NightLamps.Add((gmat, pl));
+            }
         }
         // Laws board (north edge of the plaza, facing spawn).
         Box(scene, shader, "Board posts", new Float3(0f, 1.1f, 12.5f), new Float3(4.4f, 2.2f, 0.18f), Float3.Zero, new Color(0.30f, 0.22f, 0.15f, 1f)).GetComponent<MeshRenderer>()!.Enabled = false;
