@@ -81,6 +81,22 @@ public sealed class Buggy
             Detail(g, "Arch", VehicleModels.BuggyArch(x, -1.05f, 0.42f), Float3.Zero, paint * 0.9f);
             Detail(g, "Nerf", VehicleModels.BentPipe(0.035f, 0.12f, Float3.UnitY, new Float3(x * 0.8f, 0.12f, 0.55f), new Float3(x * 0.98f, 0.0f, 0.35f), new Float3(x * 0.98f, 0.0f, -0.55f), new Float3(x * 0.8f, 0.12f, -0.72f)), Float3.Zero, cage);
         }
+        // Fibreglass panel detail: rubber edge trim where the cowl meets the cockpit, a moulded centre seam, chrome
+        // fuel filler and twin hood pins on the hump, and a rivet row + pressed character line along each tub side.
+        var rubber = new Color(0.05f, 0.05f, 0.055f, 1f); var chrome = new Color(0.78f, 0.79f, 0.81f, 1f);
+        Detail(g, "CowlTrim", VehicleModels.BentPipe(0.018f, 0.12f, Float3.UnitY, new Float3(-0.6f, 0.2f, 0.27f), new Float3(-0.5f, 0.27f, 0.3f), new Float3(0.5f, 0.27f, 0.3f), new Float3(0.6f, 0.2f, 0.27f)), Float3.Zero, rubber);
+        Detail(g, "NoseSeam", VehicleModels.Pipe(0.006f, Float3.UnitY, new Float3(0f, 0.355f, 0.45f), new Float3(0f, 0.398f, 0.8f), new Float3(0f, 0.348f, 1.1f), new Float3(0f, 0.25f, 1.32f)), Float3.Zero, paint * 0.82f);
+        Detail(g, "FuelCap", Meshes.Lathe("bfuel", [(0.0001f, 0.022f), (0.045f, 0.022f), (0.05f, 0.012f), (0.05f, 0f), (0.0001f, 0f)], 24), new Float3(0.3f, 0.385f, 0.72f), chrome);
+        foreach (float x in new[] { -0.38f, 0.38f })
+        {
+            Detail(g, "HoodPin", VehicleModels.Pipe(0.009f, Float3.UnitX, new Float3(x, 0.36f, 1.05f), new Float3(x, 0.4f, 1.05f)), Float3.Zero, chrome);
+            Detail(g, "PinClip", VehicleModels.Ring(0.022f, 0.004f), new Float3(x, 0.395f, 1.05f), chrome, new Float3(90f, 0f, 0f));
+        }
+        foreach (float x in new[] { -1f, 1f })
+        {
+            Detail(g, "TubRivets", VehicleModels.Rivets(new Float3(x * 0.735f, 0.15f, -1.0f), new Float3(x * 0.735f, 0.15f, 0.3f), 11, 0.008f), Float3.Zero, chrome);
+            Detail(g, "TubLine", VehicleModels.Pipe(0.009f, Float3.UnitY, new Float3(x * 0.742f, 0.02f, -1.05f), new Float3(x * 0.742f, 0.02f, 0.35f)), Float3.Zero, paint * 1.1f);
+        }
         var metal = new Color(0.55f, 0.56f, 0.58f, 1f);
         Detail(g, "Engine", VehicleModels.BuggyEngine(), new Float3(0f, 0.3f, -1.15f), new Color(0.28f, 0.29f, 0.3f, 1f));
         Detail(g, "Filter", VehicleModels.Lamp(0.1f), new Float3(0.22f, 0.62f, -1.0f), metal, new Float3(-90f, 0f, 0f));
