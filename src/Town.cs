@@ -361,9 +361,19 @@ public static partial class MapBuilder
             Shape(scene, shader, $"~{tag} chimney", Meshes.RoundedBox(new Float3(0.7f, 2.2f, 0.7f), 0.04f), W(hw * 0.55f, ry + rise * 0.55f + 0.6f, hd * 0.35f), new Color(0.55f, 0.3f, 0.24f, 1f), euler: eul);
             Shape(scene, shader, $"~{tag} chimney cap", Meshes.RoundedBox(new Float3(0.86f, 0.12f, 0.86f), 0.03f), W(hw * 0.55f, ry + rise * 0.55f + 1.76f, hd * 0.35f), trim, euler: eul);
             // Porch canopy on brackets over the door.
-            Shape(scene, shader, $"~{tag} canopy", Meshes.Faces([L(-1.3f, dh + 0.55f, -hd - 1.0f), L(1.3f, dh + 0.55f, -hd - 1.0f), L(1.3f, dh + 0.95f, -hd), L(-1.3f, dh + 0.95f, -hd)]), c, shingle, euler: eul);
-            foreach (float bx in new[] { -1.15f, 1.15f })
-                Shape(scene, shader, $"~{tag} bracket", PropMeshes.Rod(L(bx, dh + 0.1f, -hd - 0.05f), L(bx, dh + 0.6f, -hd - 0.85f), 0.04f), c, Color.White, euler: eul);
+            {
+                // Porch canopy: a solid shingled slab on a fascia board, carried on two turned brackets off the facade.
+                float th = MathF.Atan2(0.4f, 1.1f), cs = MathF.Cos(th), sn = MathF.Sin(th), fz = -hd - 0.15f;
+                Mesh Tilt(Mesh m, Float3 o) { var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => new Float3(v.X, v.Y * cs + v.Z * sn, -v.Y * sn + v.Z * cs) + o).ToArray(), Normals = m.Normals.Select(v => new Float3(v.X, v.Y * cs + v.Z * sn, -v.Y * sn + v.Z * cs)).ToArray(), UV = m.UV, Indices = m.Indices }; mm.RecalculateBounds(); return mm; }
+                Float3 co = L(0f, dh + 0.72f, fz - 0.56f);
+                Shape(scene, shader, $"~{tag} canopy", Tilt(Meshes.RoundedBox(new Float3(2.8f, 0.07f, 1.2f), 0.02f), co), c, shingle, euler: eul);
+                Shape(scene, shader, $"~{tag} canopy fascia", Meshes.Merge(Tilt(Meshes.RoundedBox(new Float3(2.84f, 0.16f, 0.04f), 0.012f), co + new Float3(0f, -0.11f, -0.56f)), Tilt(Meshes.RoundedBox(new Float3(2.7f, 0.04f, 1.1f), 0.01f), co + new Float3(0f, -0.06f, 0f))), c, Color.White, euler: eul);
+                foreach (float bx in new[] { -1.2f, 1.2f })
+                    Shape(scene, shader, $"~{tag} bracket", Meshes.Merge(PropMeshes.Rod(L(bx, dh + 0.05f, fz - 0.02f), L(bx, dh + 0.5f, fz - 0.95f), 0.035f), PropMeshes.Rod(L(bx, dh + 0.62f, fz - 0.02f), L(bx, dh + 0.5f, fz - 0.95f), 0.03f), Meshes.RoundedBox(new Float3(0.1f, 0.7f, 0.05f), 0.015f) is var pl ? Off(pl, bx, dh + 0.35f, fz - 0.02f) : null!), c, Color.White, euler: eul);
+                // Front step and a door mat.
+                Shape(scene, shader, $"~{tag} step", Meshes.RoundedBox(new Float3(2.0f, 0.16f, 0.7f), 0.03f), W(0f, 0.08f, fz - 0.35f), new Color(0.7f, 0.68f, 0.64f, 1f), euler: eul);
+                Shape(scene, shader, $"~{tag} mat", Meshes.RoundedBox(new Float3(1.0f, 0.02f, 0.5f), 0.008f), W(0f, 0.17f, fz - 0.33f), new Color(0.35f, 0.24f, 0.16f, 1f), euler: eul);
+            }
         }
         else
         {
