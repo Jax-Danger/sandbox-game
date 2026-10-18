@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.17.24 — 2026-10-18
+- Plank prop: three chamfered boards with staggered ends on two cleats (was a single rounded slab); same collider
+
 ## v0.17.23 — 2026-10-18
 - Airboat: rudder blades hang from a braced top/bottom rail frame with pivot knuckles and transom posts (were floating behind the cage)
 

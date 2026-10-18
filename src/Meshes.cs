@@ -173,6 +173,32 @@ public static class Meshes
     /// <summary>Barrel: bulged staves with two rings and rounded rims.</summary>
 
     /// <summary>Wooden crate: inset panel core, proud edge battens on all 12 edges and a diagonal brace on every face.</summary>
+    /// <summary>Plank prop: three boards with chamfered edges and slightly staggered ends on two cleats underneath,
+    /// filling exactly the given box. (Was a single rounded slab.)</summary>
+    public static Mesh Plank(Float3 sz)
+    {
+        string key = $"plank{sz.X:0.###}_{sz.Y:0.###}_{sz.Z:0.###}";
+        if (_cache.TryGetValue(key, out Mesh? hit)) return hit;
+        static Mesh Off(Mesh m, Float3 o)
+        {
+            var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + o).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+            mm.RecalculateBounds(); return mm;
+        }
+        float boardH = sz.Y * 0.62f, cleatH = sz.Y - boardH, gap = 0.008f, bw = (sz.Z - 2f * gap) / 3f, top = sz.Y / 2f - boardH / 2f;
+        var parts = new List<Mesh>();
+        float[] trim = [0.012f, 0f, 0.02f];
+        for (int i = 0; i < 3; i++)
+        {
+            float z = -sz.Z / 2f + bw / 2f + i * (bw + gap), len = sz.X - trim[i], shift = (i - 1) * 0.004f;
+            parts.Add(Off(RoundedBox(new Float3(len, boardH, bw), MathF.Min(0.012f, boardH * 0.2f)), new Float3(shift, top, z)));
+        }
+        foreach (float x in new[] { -1f, 1f })
+            parts.Add(Off(RoundedBox(new Float3(0.1f, cleatH + 0.004f, sz.Z - 0.04f), 0.008f), new Float3(x * (sz.X / 2f - 0.28f), -sz.Y / 2f + cleatH / 2f, 0f)));
+        Mesh merged = Merge(parts.ToArray());
+        _cache[key] = merged;
+        return merged;
+    }
+
     public static Mesh Crate(float size)
     {
         string key = $"crate{size:0.###}";
