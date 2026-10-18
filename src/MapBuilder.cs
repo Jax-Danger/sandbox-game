@@ -222,8 +222,33 @@ public static partial class MapBuilder
             Shape(scene, shader, "Jetty", Meshes.Merge(planks.ToArray()), Float3.Zero, new Color(0.56f, 0.42f, 0.29f, 1f), new Float3(8.8f, 0.1f, 1.6f));
             Shape(scene, shader, "~Jetty piles", Meshes.Merge(piles.ToArray()), Float3.Zero, new Color(0.36f, 0.27f, 0.19f, 1f));
         }
+        {
+            // Grass tufts: clumps of tapered blades (two-sided, up-facing normals so they light like the turf) scattered
+            // over the hills; skips the lake, the deck and the rim.
+            var gv = new List<Float3>(); var gn = new List<Float3>(); var gu = new List<Float2>(); var gi = new List<uint>();
+            var rng = new Random(7);
+            for (int t = 0; t < 4500; t++)
+            {
+                float x = (float)(rng.NextDouble() * 160 - 80), z = (float)(rng.NextDouble() * 160 - 80);
+                if (MathF.Sqrt((x - 45f) * (x - 45f) + (z - 35f) * (z - 35f)) < 25f || (MathF.Abs(x - 6f) < 4f && MathF.Abs(z - 4f) < 3f)) continue;
+                float y = HillsHeight(x, z);
+                int nb = 8 + rng.Next(8);
+                for (int kb = 0; kb < nb; kb++)
+                {
+                    float a = (float)(rng.NextDouble() * MathF.Tau), rb = (float)rng.NextDouble() * 0.18f, h = 0.18f + (float)rng.NextDouble() * 0.28f, w = 0.025f;
+                    Float3 b = new(x + MathF.Cos(a) * rb, y - 0.02f, z + MathF.Sin(a) * rb);
+                    Float3 side = new(-MathF.Sin(a) * w, 0f, MathF.Cos(a) * w), lean = new(MathF.Cos(a) * h * 0.35f, h, MathF.Sin(a) * h * 0.35f);
+                    uint o = (uint)gv.Count;
+                    gv.AddRange([b - side, b + side, b + lean]); gn.AddRange([Float3.UnitY, Float3.UnitY, Float3.UnitY]); gu.AddRange([new(0f, 0f), new(1f, 0f), new(0.5f, 1f)]);
+                    gi.AddRange([o, o + 1, o + 2, o, o + 2, o + 1]);
+                }
+            }
+            var gm = new Mesh { IndexFormat = IndexFormat.UInt32, Vertices = gv.ToArray(), Normals = gn.ToArray(), UV = gu.ToArray(), Indices = gi.ToArray() };
+            gm.RecalculateBounds();
+            Shape(scene, shader, "~Grass tufts", gm, Float3.Zero, new Color(0.24f, 0.4f, 0.15f, 1f));
+        }
         // A few rocks and a wooden deck near spawn for scale.
-        var rock = new Color(0.52f, 0.50f, 0.48f, 1f);
+        var rock = new Color(0.4f, 0.39f, 0.37f, 1f);
         for (int i = 0; i < 14; i++)
         {
             float a = i * 2.4f, d = 24f + (i * 37 % 50);
@@ -246,7 +271,17 @@ public static partial class MapBuilder
             Shape(scene, shader, "~Tree crown b", Meshes.Blob(1.05f * tk, sd + 1), new Float3(x + 0.9f * tk, y + 3.0f * tk, z - 0.4f), new Color(0.2f, 0.4f, 0.18f, 1f));
             Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.95f * tk, sd + 2), new Float3(x - 0.8f * tk, y + 3.2f * tk, z + 0.6f), new Color(0.3f, 0.52f, 0.25f, 1f));
         }
-        Box(scene, shader, "Deck", new Float3(6f, HillsHeight(6f, 4f) + 0.2f, 4f), new Float3(6f, 0.3f, 4f), Float3.Zero, new Color(0.62f, 0.44f, 0.28f, 1f));
+        {
+            // Deck near spawn: gapped boards on joists, rim boards and corner posts (one box collider).
+            float dy = HillsHeight(6f, 4f) + 0.2f;
+            var boards = new List<Mesh>(); var frame = new List<Mesh>();
+            for (int i = 0; i < 27; i++) boards.Add(Off(Meshes.RoundedBox(new Float3(0.2f, 0.05f, 3.9f), 0.012f), -2.9f + i * 0.223f, 0.125f, ((i * 5) % 3 - 1) * 0.01f));
+            foreach (float z in new[] { -1.98f, 1.98f }) frame.Add(Off(Meshes.RoundedBox(new Float3(6.05f, 0.22f, 0.06f), 0.012f), 0f, 0.02f, z));
+            foreach (float x in new[] { -2.98f, 2.98f }) frame.Add(Off(Meshes.RoundedBox(new Float3(0.06f, 0.22f, 4.0f), 0.012f), x, 0.02f, 0f));
+            foreach (float x in new[] { -2.9f, 2.9f }) foreach (float z in new[] { -1.9f, 1.9f }) frame.Add(Off(Meshes.RoundedBox(new Float3(0.14f, 0.6f, 0.14f), 0.02f), x, -0.25f, z));
+            Shape(scene, shader, "Deck", Meshes.Merge(boards.ToArray()), new Float3(6f, dy, 4f), new Color(0.62f, 0.44f, 0.28f, 1f), new Float3(6f, 0.3f, 4f));
+            Shape(scene, shader, "~Deck frame", Meshes.Merge(frame.ToArray()), new Float3(6f, dy, 4f), new Color(0.45f, 0.32f, 0.2f, 1f));
+        }
     }
 
     private static string? BuildCustom(Scene scene, Shader shader, string? file)
