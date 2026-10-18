@@ -151,6 +151,7 @@ public static class Gallery
             }
             case "npcs":
             case "face":
+            case "npcbody":
             {
                 NpcTeam[] teams = [NpcTeam.Dummy, NpcTeam.Friendly, NpcTeam.Hostile];
                 for (int i = 0; i < 3; i++)
@@ -162,6 +163,7 @@ public static class Gallery
                 g.Player.Teleport(new Float3(0f, 0.05f, -1.5f));
                 g.Player.SetLook(0f, 10f);
                 if (set.StartsWith("face")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 1.45f)); g.Player.SetLook(0f, 4f); }
+                if (set.StartsWith("npcbody")) { g.Player.Teleport(new Float3(-0.3f, 0.05f, 0.2f)); g.Player.SetLook(0f, 14f); }
                 break;
             }
         }

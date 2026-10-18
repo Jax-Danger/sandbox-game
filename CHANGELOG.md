@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.10 — 2026-10-18
+- NPC trousers get side seams and a pressed front crease; shoes get a tongue, laces, heel counter and toe-cap seam; gallery state gal_npcbody for full-body review
+
 ## v0.8.9 — 2026-10-18
 - Town plaza paving: 1.5 m joint grid, darker kerb border and two rings of granite setts around the fountain
 

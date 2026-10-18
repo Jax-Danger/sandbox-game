@@ -179,7 +179,15 @@ public static class Humans
     }
 
     private static (Mesh, Detail[]) UpperLeg()
-        => (Sw(2.3f, Float3.UnitX, 0.6f, (0.29f, 0.07f, 0.07f, 0f), (0.25f, 0.084f, 0.082f, 0f), (0.12f, 0.081f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f)), []);
+    {
+        Mesh thigh = Sw(2.3f, Float3.UnitX, 0.6f, (0.29f, 0.07f, 0.07f, 0f), (0.25f, 0.084f, 0.082f, 0f), (0.12f, 0.081f, 0.08f, 0.004f), (-0.05f, 0.068f, 0.068f, 0.004f), (-0.2f, 0.058f, 0.058f, 0f), (-0.23f, 0.056f, 0.056f, 0f));
+        // Trouser seams down both sides and a pressed front crease, so the legs aren't plain tubes.
+        var d = new List<Detail>();
+        foreach (float sx in new[] { -1f, 1f })
+            d.Add(new(Sweep([new Sec(V(sx * 0.083f, 0.25f, 0f), 0.0025f, 0.006f), new Sec(V(sx * 0.081f, 0.12f, 0.002f), 0.0025f, 0.006f), new Sec(V(sx * 0.068f, -0.05f, 0.004f), 0.0025f, 0.005f), new Sec(V(sx * 0.057f, -0.22f, 0f), 0.0025f, 0.005f)], Float3.UnitZ, 6, 0.6f), Tint.Pants));
+        d.Add(new(Sweep([new Sec(V(0f, 0.2f, 0.08f), 0.004f, 0.0025f), new Sec(V(0f, 0.12f, 0.083f), 0.004f, 0.0025f), new Sec(V(0f, -0.05f, 0.071f), 0.004f, 0.0025f), new Sec(V(0f, -0.22f, 0.057f), 0.004f, 0.0025f)], Float3.UnitX, 6, 0.6f), Tint.Pants));
+        return (thigh, d.ToArray());
+    }
 
     private static Mesh? _thighFp;
     /// <summary>First-person thigh: only the knee half, so looking down shows trousers running into the knee instead of
@@ -194,6 +202,12 @@ public static class Humans
         Mesh shoe = Sweep([new Sec(V(0f, -0.2f, -0.06f), 0.042f, 0.035f, 3f), new Sec(V(0f, -0.205f, -0.02f), 0.046f, 0.038f, 3f), new Sec(V(0f, -0.212f, 0.05f), 0.05f, 0.03f, 3f),
             new Sec(V(0f, -0.218f, 0.11f), 0.046f, 0.024f, 3f), new Sec(V(0f, -0.22f, 0.135f), 0.036f, 0.02f, 3f)], Float3.UnitX, 18, 0.7f);
         Mesh sole = Sweep([new Sec(V(0f, -0.238f, -0.07f), 0.044f, 0.008f, 4f), new Sec(V(0f, -0.24f, 0.05f), 0.052f, 0.008f, 4f), new Sec(V(0f, -0.239f, 0.14f), 0.04f, 0.008f, 4f)], Float3.UnitX, 18, 0.7f);
-        return (calf, [new(cuff, Tint.Pants), new(shoe, Tint.Shoe), new(sole, Tint.Belt)]);
+        // Lace-up details: tongue, laces across the instep, heel counter and a toe-cap seam.
+        Mesh tongue = Sweep([new Sec(V(0f, -0.172f, 0.0f), 0.02f, 0.006f, 3f), new Sec(V(0f, -0.19f, 0.045f), 0.022f, 0.006f, 3f), new Sec(V(0f, -0.2f, 0.07f), 0.018f, 0.005f, 3f)], Float3.UnitX, 10, 0.6f);
+        var laces = new List<Mesh>();
+        for (int i = 0; i < 4; i++) { float z = 0.012f + i * 0.017f, y = -0.18f - i * 0.0055f; laces.Add(Sweep([new Sec(V(-0.022f, y - 0.002f, z), 0.0025f, 0.0025f), new Sec(V(0f, y + 0.003f, z + 0.002f), 0.0025f, 0.0025f), new Sec(V(0.022f, y - 0.002f, z), 0.0025f, 0.0025f)], Float3.UnitY, 6, 0.8f)); }
+        Mesh heel = Sweep([new Sec(V(-0.04f, -0.215f, -0.045f), 0.006f, 0.014f, 2f, Float3.UnitY), new Sec(V(0f, -0.215f, -0.068f), 0.006f, 0.016f, 2f, Float3.UnitY), new Sec(V(0.04f, -0.215f, -0.045f), 0.006f, 0.014f, 2f, Float3.UnitY)], Float3.UnitY, 8, 0.6f);
+        Mesh toe = Sweep([new Sec(V(-0.046f, -0.222f, 0.085f), 0.003f, 0.003f), new Sec(V(0f, -0.2f, 0.1f), 0.003f, 0.003f), new Sec(V(0.046f, -0.222f, 0.085f), 0.003f, 0.003f)], Float3.UnitY, 6, 0.8f);
+        return (calf, [new(cuff, Tint.Pants), new(shoe, Tint.Shoe), new(sole, Tint.Belt), new(tongue, Tint.Shoe), new(Merge(laces.ToArray()), Tint.Belt), new(heel, Tint.Belt), new(toe, Tint.Belt)]);
     }
 }
