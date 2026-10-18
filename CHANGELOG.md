@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.13.7 — 2026-10-18
+- Pistol VM: front cocking serrations, slide/frame parting line, extractor claw, takedown lever, mag catch, flared magazine base pad and witness hole.
+
 ## v0.13.6 — 2026-10-18
 - Buggy body panels: rubber cowl edge trim, moulded nose centre seam, chrome fuel filler and hood pins, tub rivet rows and pressed side character lines.
 

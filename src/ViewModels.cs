@@ -298,6 +298,16 @@ public static partial class ViewModels
                 k.GripBody("weapon", pistolA, -0.058f, 0.062f, 0.0148f, 0.0245f, Polymer, Black);
                 k.Guard("weapon", Polymer, 0.0505f, 0.073f, 0.0185f, 0.02f, 0.041f);
                 k.Sw("mag", Black, Finish.Metal, Float3.UnitX, 0.5f, new Sec(pistolA * -0.068f + V(0, 0, -0.002f), 0.0158f, 0.027f, 3.2f), new Sec(pistolA * -0.058f, 0.0155f, 0.0265f, 3.2f));
+                // Extra machining: front cocking serrations, slide/frame parting line, extractor claw, takedown lever,
+                // reversible mag catch, and a flared magazine base pad with a witness hole.
+                for (int i = 0; i < 5; i++)
+                    k.Bar("slide", Black, Finish.Metal, V(0, 0.07f, 0.108f + i * 0.0042f), V(0, 0.0885f, 0.108f + i * 0.0042f), 0.01288f, 0.0008f, 4f, 0.3f);
+                k.Bar("slide", Black, Finish.Metal, V(0, 0.0652f, -0.044f), V(0, 0.0652f, 0.15f), 0.01295f, 0.0006f, 4f, 0.2f);
+                k.Bar("slide", Steel, Finish.Metal, V(0.0131f, 0.0835f, 0.03f), V(0.0131f, 0.0835f, 0.056f), 0.0009f, 0.0022f, 3f, 0.6f);
+                k.Bar("weapon", Steel, Finish.Metal, V(-0.0125f, 0.0585f, 0.064f), V(-0.0125f, 0.0585f, 0.072f), 0.0012f, 0.0024f, 3f, 0.6f);
+                k.Lz("weapon", Black, Finish.Polymer, pistolA * 0.04f + V(-0.0156f, 0f, 0.012f), (0.0035f, 0f), (0.0035f, 0.001f), (0.003f, 0.0016f), (0f, 0.0016f));
+                k.Sw("mag", Polymer, Finish.Polymer, Float3.UnitX, 0.5f, new Sec(pistolA * -0.0705f + V(0, 0, -0.001f), 0.0172f, 0.0292f, 3f), new Sec(pistolA * -0.0675f, 0.0168f, 0.0285f, 3f));
+                k.Bar("mag", Black, Finish.Metal, pistolA * -0.03f + V(0, 0, -0.026f), pistolA * -0.03f + V(0, 0, -0.026f), 0.0161f, 0.0022f, 4f, 0.9f);
                 right = RightPistol(0.0148f, 0.0245f, 0.012f, Trig(0.034f, 0.045f));
                 leftParent = "weapon";
                 left = new HandSpec(new GripFrame(Float3.Zero, pistolA, Float3.UnitX, 0.0148f + 0.0175f, 0.0245f + 0.0175f),
