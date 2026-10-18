@@ -303,6 +303,49 @@ public static partial class MapBuilder
         Box(scene, shader, $"~{tag} casing r", W(dw / 2f + 0.07f, dh / 2f, -hd - 0.17f), Sz(0.14f, dh + 0.1f, 0.06f), Float3.Zero, Color.White, collide: false);
         Box(scene, shader, $"~{tag} casing t", W(0f, dh + 0.07f, -hd - 0.17f), Sz(dw + 0.28f, 0.14f, 0.06f), Float3.Zero, Color.White, collide: false);
         Box(scene, shader, $"~{tag} cornice", W(0f, h - 0.12f, -hd - 0.19f), Sz(s.X + 0.1f, 0.18f, 0.1f), Float3.Zero, trim, collide: false);
+        Float3 eul = new(0f, yaw, 0f);
+        if (title.StartsWith("House"))
+        {
+            // Pitched gable roof with eaves overhang, gable-end walls, fascia boards and a brick chimney.
+            float ov = 0.5f, rise = 2.2f, ry = h + 0.2f, rx = hw + ov, rz = hd + ov;
+            Float3 L(float x, float y, float z) => new(x, y, z);
+            var roof = Meshes.Faces(
+                [L(-rx, ry, -rz), L(rx, ry, -rz), L(rx, ry + rise, 0f), L(-rx, ry + rise, 0f)],
+                [L(rx, ry, rz), L(-rx, ry, rz), L(-rx, ry + rise, 0f), L(rx, ry + rise, 0f)],
+                [L(-rx, ry - 0.12f, -rz), L(-rx, ry, -rz), L(-rx, ry + rise, 0f), L(-rx, ry + rise - 0.12f, 0f)],
+                [L(rx, ry, -rz), L(rx, ry - 0.12f, -rz), L(rx, ry + rise - 0.12f, 0f), L(rx, ry + rise, 0f)],
+                [L(-rx, ry, rz), L(-rx, ry - 0.12f, rz), L(-rx, ry + rise - 0.12f, 0f), L(-rx, ry + rise, 0f)],
+                [L(rx, ry - 0.12f, rz), L(rx, ry, rz), L(rx, ry + rise, 0f), L(rx, ry + rise - 0.12f, 0f)],
+                [L(-rx, ry - 0.12f, -rz), L(-rx, ry + rise - 0.12f, 0f), L(rx, ry + rise - 0.12f, 0f), L(rx, ry - 0.12f, -rz)],
+                [L(rx, ry - 0.12f, rz), L(rx, ry + rise - 0.12f, 0f), L(-rx, ry + rise - 0.12f, 0f), L(-rx, ry - 0.12f, rz)],
+                [L(-rx, ry - 0.12f, -rz), L(rx, ry - 0.12f, -rz), L(rx, ry, -rz), L(-rx, ry, -rz)],
+                [L(rx, ry - 0.12f, rz), L(-rx, ry - 0.12f, rz), L(-rx, ry, rz), L(rx, ry, rz)]);
+            var shingle = new Color(0.36f, 0.22f, 0.18f, 1f);
+            Shape(scene, shader, $"~{tag} pitched roof", roof, c, shingle, euler: eul);
+            var gable = Meshes.Faces([L(-hw, ry, -hd + 0.05f), L(-hw, ry, hd - 0.05f), L(-hw, ry + rise * (1f - ov / rz) , 0f)], [L(hw, ry, hd - 0.05f), L(hw, ry, -hd + 0.05f), L(hw, ry + rise * (1f - ov / rz), 0f)]);
+            Shape(scene, shader, $"~{tag} gables", gable, c, wall, euler: eul);
+            Shape(scene, shader, $"~{tag} ridge", Meshes.Sweep([new Meshes.Sec(L(-rx - 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY), new Meshes.Sec(L(rx + 0.05f, ry + rise + 0.02f, 0f), 0.09f, 0.07f, 2.4f, Float3.UnitY)], Float3.UnitY, 12, 0.5f), c, trim, euler: eul);
+            Shape(scene, shader, $"~{tag} chimney", Meshes.RoundedBox(new Float3(0.7f, 2.2f, 0.7f), 0.04f), W(hw * 0.55f, ry + rise * 0.55f + 0.6f, hd * 0.35f), new Color(0.55f, 0.3f, 0.24f, 1f), euler: eul);
+            Shape(scene, shader, $"~{tag} chimney cap", Meshes.RoundedBox(new Float3(0.86f, 0.12f, 0.86f), 0.03f), W(hw * 0.55f, ry + rise * 0.55f + 1.76f, hd * 0.35f), trim, euler: eul);
+            // Porch canopy on brackets over the door.
+            Shape(scene, shader, $"~{tag} canopy", Meshes.Faces([L(-1.3f, dh + 0.55f, -hd - 1.0f), L(1.3f, dh + 0.55f, -hd - 1.0f), L(1.3f, dh + 0.95f, -hd), L(-1.3f, dh + 0.95f, -hd)]), c, shingle, euler: eul);
+            foreach (float bx in new[] { -1.15f, 1.15f })
+                Shape(scene, shader, $"~{tag} bracket", PropMeshes.Rod(L(bx, dh + 0.1f, -hd - 0.05f), L(bx, dh + 0.6f, -hd - 0.85f), 0.04f), c, Color.White, euler: eul);
+        }
+        else
+        {
+            // Flat-roof commercial: coping all round, a mid-height string course, rooftop AC unit and vents.
+            foreach (var (px, pz, sx, sz) in new[] { (0f, hd + 0.2f, s.X + 0.6f, 0.2f), (-hw - 0.2f, 0f, 0.2f, s.Z + 0.6f), (hw + 0.2f, 0f, 0.2f, s.Z + 0.6f) })
+                Box(scene, shader, $"~{tag} parapet", W(px, h + 0.35f, pz), Sz(sx, 0.3f, sz), Float3.Zero, trim, collide: false);
+            Shape(scene, shader, $"~{tag} coping", Meshes.Sweep([new Meshes.Sec(new Float3(-hw - 0.35f, h + 0.52f, -hd - 0.35f), 0.03f, 0.05f, 2.4f), new Meshes.Sec(new Float3(hw + 0.35f, h + 0.52f, -hd - 0.35f), 0.03f, 0.05f, 2.4f)], Float3.UnitY, 10, 0.5f), c, new Color(0.85f, 0.85f, 0.82f, 1f), euler: eul);
+            Box(scene, shader, $"~{tag} band", W(0f, 3.0f, -hd - 0.18f), Sz(s.X + 0.06f, 0.14f, 0.08f), Float3.Zero, trim, collide: false);
+            Shape(scene, shader, $"~{tag} ac", Meshes.RoundedBox(new Float3(1.6f, 0.9f, 1.1f), 0.08f), W(hw * 0.4f, h + 0.65f, hd * 0.3f), new Color(0.72f, 0.73f, 0.74f, 1f), euler: eul);
+            Shape(scene, shader, $"~{tag} ac fan", Meshes.Lathe("acfan", [(0.0001f, 0f), (0.36f, 0f), (0.38f, 0.03f), (0.36f, 0.05f), (0.0001f, 0.05f)], 28), W(hw * 0.4f, h + 1.1f, hd * 0.3f), new Color(0.25f, 0.26f, 0.27f, 1f), euler: eul);
+            foreach (float vx in new[] { -hw * 0.5f, -hw * 0.3f })
+                Shape(scene, shader, $"~{tag} vent", Meshes.Lathe("vent", [(0.0001f, 0f), (0.14f, 0f), (0.14f, 0.5f), (0.2f, 0.55f), (0.2f, 0.62f), (0.0001f, 0.66f)], 20), W(vx, h + 0.2f, -hd * 0.2f), new Color(0.6f, 0.6f, 0.62f, 1f), euler: eul);
+            // Awning over the entrance.
+            Shape(scene, shader, $"~{tag} awning", Meshes.Sweep([new Meshes.Sec(new Float3(0f, dh + 0.85f, -hd - 0.15f), 1.7f, 0.04f, 4f), new Meshes.Sec(new Float3(0f, dh + 0.5f, -hd - 1.2f), 1.7f, 0.04f, 4f)], Float3.UnitX, 12, 0.3f), c, plate, euler: eul);
+        }
         // Path from the door to the sidewalk.
         Box(scene, shader, $"~{tag} path", W(0f, 0.05f, -hd - 2.5f), Sz(2f, 0.1f, 5f), Float3.Zero, new Color(0.64f, 0.62f, 0.58f, 1f));
         MakeDoor(scene, shader, "door_" + tag.ToLowerInvariant(), title, W(-dw / 2f + 0.05f, 0f, -hd), yaw, dw - 0.1f, dh - 0.05f, new Color(0.42f, 0.28f, 0.18f, 1f), owner, price, locked: false);
