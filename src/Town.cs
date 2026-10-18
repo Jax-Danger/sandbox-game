@@ -263,9 +263,25 @@ public static partial class MapBuilder
         {
             float wy = 1.6f + f * 3f;
             foreach (float wx in new[] { -hw * 0.6f, hw * 0.6f })
+            {
                 Box(scene, shader, $"~{tag} window", W(wx, wy, -hd - 0.16f), Sz(1.6f, 1.1f, 0.04f), Float3.Zero, glass, collide: false);
+                // Frame, mullion and a sill so windows read as windows, not flat decals.
+                Box(scene, shader, $"~{tag} wframe t", W(wx, wy + 0.6f, -hd - 0.18f), Sz(1.8f, 0.1f, 0.08f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} wframe b", W(wx, wy - 0.6f, -hd - 0.18f), Sz(1.8f, 0.1f, 0.08f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} wframe l", W(wx - 0.85f, wy, -hd - 0.18f), Sz(0.1f, 1.3f, 0.08f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} wframe r", W(wx + 0.85f, wy, -hd - 0.18f), Sz(0.1f, 1.3f, 0.08f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} mullion", W(wx, wy, -hd - 0.18f), Sz(0.05f, 1.1f, 0.05f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} sill", W(wx, wy - 0.68f, -hd - 0.24f), Sz(1.95f, 0.08f, 0.2f), Float3.Zero, trim, collide: false);
+            }
             foreach (float sx in new[] { -hw - 0.16f, hw + 0.16f })
+            {
                 Box(scene, shader, $"~{tag} side window", W(sx, wy, 0f), Sz(0.04f, 1.1f, 1.6f), Float3.Zero, glass, collide: false);
+                float fx = sx + MathF.Sign(sx) * 0.02f;
+                Box(scene, shader, $"~{tag} sframe t", W(fx, wy + 0.6f, 0f), Sz(0.08f, 0.1f, 1.8f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} sframe b", W(fx, wy - 0.6f, 0f), Sz(0.08f, 0.1f, 1.8f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} sframe l", W(fx, wy, -0.85f), Sz(0.08f, 1.3f, 0.1f), Float3.Zero, Color.White, collide: false);
+                Box(scene, shader, $"~{tag} sframe r", W(fx, wy, 0.85f), Sz(0.08f, 1.3f, 0.1f), Float3.Zero, Color.White, collide: false);
+            }
         }
         // Sign plate over the door (the colour tells the building's role).
         Color plate = owner switch { "police" => new Color(0.20f, 0.36f, 0.85f, 1f), "city" => new Color(0.85f, 0.45f, 0.18f, 1f), _ => new Color(0.18f, 0.62f, 0.40f, 1f) };
@@ -275,6 +291,11 @@ public static partial class MapBuilder
             Box(scene, shader, $"~{tag} light R", W(-1.2f, dh + 0.9f, -hd - 0.2f), Sz(0.3f, 0.2f, 0.1f), Float3.Zero, new Color(0.95f, 0.2f, 0.2f, 1f), collide: false);
             Box(scene, shader, $"~{tag} light B", W(1.2f, dh + 0.9f, -hd - 0.2f), Sz(0.3f, 0.2f, 0.1f), Float3.Zero, new Color(0.2f, 0.4f, 1f, 1f), collide: false);
         }
+        // Door casing and a cornice band under the roof.
+        Box(scene, shader, $"~{tag} casing l", W(-dw / 2f - 0.07f, dh / 2f, -hd - 0.17f), Sz(0.14f, dh + 0.1f, 0.06f), Float3.Zero, Color.White, collide: false);
+        Box(scene, shader, $"~{tag} casing r", W(dw / 2f + 0.07f, dh / 2f, -hd - 0.17f), Sz(0.14f, dh + 0.1f, 0.06f), Float3.Zero, Color.White, collide: false);
+        Box(scene, shader, $"~{tag} casing t", W(0f, dh + 0.07f, -hd - 0.17f), Sz(dw + 0.28f, 0.14f, 0.06f), Float3.Zero, Color.White, collide: false);
+        Box(scene, shader, $"~{tag} cornice", W(0f, h - 0.12f, -hd - 0.19f), Sz(s.X + 0.1f, 0.18f, 0.1f), Float3.Zero, trim, collide: false);
         // Path from the door to the sidewalk.
         Box(scene, shader, $"~{tag} path", W(0f, 0.05f, -hd - 2.5f), Sz(2f, 0.1f, 5f), Float3.Zero, new Color(0.64f, 0.62f, 0.58f, 1f));
         MakeDoor(scene, shader, "door_" + tag.ToLowerInvariant(), title, W(-dw / 2f + 0.05f, 0f, -hd), yaw, dw - 0.1f, dh - 0.05f, new Color(0.42f, 0.28f, 0.18f, 1f), owner, price, locked: false);
@@ -283,6 +304,20 @@ public static partial class MapBuilder
     private static void MakeDoor(Scene scene, Shader shader, string id, string title, Float3 hinge, float yaw, float width, float height, Color color, string owner, int price, bool locked)
     {
         GameObject go = Box(scene, shader, $"~Door {title}", hinge, new Float3(width, height, 0.1f), Float3.Zero, color);
+        // Raised panels and brass knobs (visual children swing with the door).
+        void Child(string n, Mesh m, Float3 lp, Color c)
+        {
+            var k = new GameObject(n); k.SetParent(go, false); k.Transform.LocalPosition = lp;
+            var r = k.AddComponent<MeshRenderer>(); r.Mesh = m; var mt = Mats.New(shader); mt.SetColor("_MainColor", c); r.Material = mt;
+        }
+        var panel = Meshes.RoundedBox(new Float3(width * 0.62f, height * 0.36f, 0.03f), 0.012f, 3);
+        var dark = new Color(color.R * 0.85f, color.G * 0.85f, color.B * 0.85f, 1f);
+        foreach (float zz in new[] { -0.055f, 0.055f })
+        {
+            Child("DoorPanel", panel, new Float3(-width * 0.04f, height * 0.2f, zz), dark);
+            Child("DoorPanel", panel, new Float3(-width * 0.04f, -height * 0.22f, zz), dark);
+            Child("DoorKnob", Meshes.Sphere(0.035f), new Float3(width * 0.4f, -0.08f, zz * 1.5f), new Color(0.78f, 0.62f, 0.25f, 1f));
+        }
         Door d = go.AddComponent<Door>();
         d.Id = id; d.Title = title; d.Owner = owner; d.Price = price; d.Locked = locked;
         d.Hinge = hinge + new Float3(0f, height / 2f, 0f); d.Yaw = yaw; d.Width = width;
