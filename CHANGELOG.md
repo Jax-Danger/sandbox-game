@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.14.15 — 2026-10-18
+- Town: building front paths now run all the way to the sidewalk (were 5 m stubs in the lawn), and avenue centre-line dashes start clear of the zebra crossings instead of painting over them.
+
 ## v0.14.14 — 2026-10-18
 - NPC shirt collar points use the shirt fabric colour (were the darker cuff tone, reading as a bandana).
 

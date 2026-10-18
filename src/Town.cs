@@ -217,9 +217,9 @@ public static partial class MapBuilder
             Float3 c = alongX ? new Float3(sgn * 50f, 0.02f, 0f) : new Float3(0f, 0.02f, sgn * 50f);
             Float3 road = alongX ? new Float3(66f, 0.04f, 10f) : new Float3(10f, 0.04f, 66f);
             Box(scene, shader, $"Road {dir}", c, road, Float3.Zero, asphalt);
-            for (int k = 0; k < 11; k++)
+            for (int k = 0; k < 10; k++)
             {
-                float t = 20f + k * 6f;
+                float t = 23f + k * 6f; // first dash clears the zebra crossing (17.3-19.7 m)
                 Box(scene, shader, $"~Line {dir}.{k}", alongX ? new Float3(sgn * t, 0.045f, 0f) : new Float3(0f, 0.045f, sgn * t), alongX ? new Float3(3f, 0.01f, 0.25f) : new Float3(0.25f, 0.01f, 3f), Float3.Zero, line, collide: false);
             }
             foreach (float side in new[] { -1f, 1f })
@@ -576,10 +576,11 @@ public static partial class MapBuilder
             // Awning over the entrance.
             Shape(scene, shader, $"~{tag} awning", Meshes.Sweep([new Meshes.Sec(new Float3(0f, dh + 0.85f, -hd - 0.15f), 1.7f, 0.04f, 4f), new Meshes.Sec(new Float3(0f, dh + 0.5f, -hd - 1.2f), 1.7f, 0.04f, 4f)], Float3.UnitX, 12, 0.3f), c, plate, euler: eul);
         }
-        // Path from the door to the sidewalk.
-        // Path from the door to the sidewalk: five concrete flags with dark joints on a gravel bed.
-        Box(scene, shader, $"~{tag} path", W(0f, 0.04f, -hd - 2.5f), Sz(2.1f, 0.08f, 5f), Float3.Zero, new Color(0.3f, 0.29f, 0.27f, 1f));
-        for (int i = 0; i < 5; i++)
+                // Path from the door to the sidewalk: five concrete flags with dark joints on a gravel bed.
+        // Runs all the way out to the back edge of the sidewalk (|z| = 8) instead of stopping in the lawn.
+        float pathLen = MathF.Max(5f, MathF.Abs(c.Z) - hd - 7.9f);
+        Box(scene, shader, $"~{tag} path", W(0f, 0.04f, -hd - pathLen / 2f), Sz(2.1f, 0.08f, pathLen), Float3.Zero, new Color(0.3f, 0.29f, 0.27f, 1f));
+        for (int i = 0; i < (int)pathLen; i++)
             Box(scene, shader, $"~{tag} flag", W(0f, 0.055f, -hd - 0.5f - i), Sz(1.94f, 0.1f, 0.94f), Float3.Zero, i % 2 == 0 ? new Color(0.55f, 0.53f, 0.5f, 1f) : new Color(0.51f, 0.5f, 0.47f, 1f));
         MakeDoor(scene, shader, "door_" + tag.ToLowerInvariant(), title, W(-dw / 2f + 0.05f, 0f, -hd), yaw, dw - 0.1f, dh - 0.05f, new Color(0.42f, 0.28f, 0.18f, 1f), owner, price, locked: false);
     }
