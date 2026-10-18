@@ -96,6 +96,22 @@ public sealed class Buggy
         try { wm.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             wm.SetColor("_MainColor", dark);
             wr.Material = wm;
+            if (!boat)
+            {
+                // Spoked steel rims on both faces of the tyre (plain black discs read as toy wheels).
+                var rm = Mats.New(g.Shader); rm.SetColor("_MainColor", jeep ? new Color(0.55f, 0.56f, 0.5f, 1f) : new Color(0.72f, 0.74f, 0.77f, 1f));
+                if (!Application.IsHeadless) try { rm.SetTexture("_SurfaceTex", ProcTex.Surface(0.35f, 0.85f)); } catch { }
+                float tw = jeep ? 0.38f : 0.32f;
+                foreach (float face in new[] { 1f, -1f })
+                {
+                    var rim = new GameObject("Rim"); rim.SetParent(mesh, false);
+                    rim.Transform.LocalEulerAngles = face > 0f ? Float3.Zero : new Float3(180f, 0f, 0f);
+                    rim.Transform.LocalScale = new Float3(1f, 1.42f, 1f);
+                    MeshRenderer rr = rim.AddComponent<MeshRenderer>();
+                    rr.Mesh = PropMeshes.Rim(rad * 0.56f, tw * 0.72f, jeep ? 6 : 5);
+                    rr.Material = rm;
+                }
+            }
             WheelCollider wc = wheel.AddComponent<WheelCollider>();
             wc.Radius = rad;
             wc.Width = jeep ? 0.38f : 0.32f;
