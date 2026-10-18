@@ -31,7 +31,7 @@ public sealed class DayNightCycle
         float pitch = elev > 0.08f ? -MathF.Max(6f, elev * 75f) : MathF.Min(30f, (0.08f - elev) * 60f) - 4.8f;
         float yaw = 30f + t * 360f;
         g.Sun.Transform.LocalEulerAngles = new Float3(pitch, yaw, 0f);
-        g.Sun.Intensity = 0.15f + 1.35f * day;
+        g.Sun.Intensity = 0.45f + 1.05f * day; // brighter moon: the ACES toe crushed 0.15 to black
         g.Sun.Color = Lerp(new Color(0.55f, 0.62f, 0.95f, 1f), Lerp(new Color(1f, 0.97f, 0.92f, 1f), new Color(1f, 0.62f, 0.35f, 1f), warm), day);
 
         Prowl.Runtime.Resources.Scene w = g.World;
@@ -46,7 +46,7 @@ public sealed class DayNightCycle
             if (Sky(g) is { } m)
             {
                 Float3 toSun = -g.Sun.Transform.Forward;
-                Color zen = Lerp(new Color(0.008f, 0.012f, 0.035f, 1f), Lerp(new Color(0.24f, 0.45f, 0.84f, 1f), new Color(0.13f, 0.17f, 0.42f, 1f), warm), day);
+                Color zen = Lerp(new Color(0.008f, 0.012f, 0.035f, 1f), Lerp(new Color(0.2f, 0.42f, 0.88f, 1f), new Color(0.13f, 0.17f, 0.42f, 1f), warm), day);
                 m.SetColor("_Zenith", zen);
                 m.SetColor("_Horizon", fog);
                 m.SetColor("_Glow", new Color(1f, 0.48f, 0.22f, 1f));
@@ -57,7 +57,7 @@ public sealed class DayNightCycle
             }
         }
         w.Ambient.GroundColor = L4(new Float4(0.12f, 0.12f, 0.16f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day);
-        w.Ambient.Strength = 0.6f + 0.3f * day;
+        w.Ambient.Strength = 0.8f + 0.1f * day;
         // Town lamps: glass glows and a warm point light fades in as the sun goes down.
         float lit = Math.Clamp(1f - day * 1.6f, 0f, 1f);
         foreach (var (glass, light) in Town.NightLamps)

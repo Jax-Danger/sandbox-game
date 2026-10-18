@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.16.0 — 2026-10-18
+- Rendering: ACES tonemapper replaces AgX (AgX rolled sunlit paints, skin and aluminium to desaturated white); brighter moonlight/night ambient to suit the ACES toe, deeper day zenith; SANDBOX_TONEMAP env override for comparisons (screens/s10-tm-sheet.png rows AgX/ACES/Uncharted2, s10-aces-cmp2.png, s10-night-cmp3.png)
+
 ## v0.15.5 — 2026-10-18
 - Buggy: twin black racing stripes following the nose cowl crown (screens/s10-buggy-d-c.png vs s10-buggy-a.png)
 

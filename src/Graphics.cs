@@ -10,6 +10,15 @@ public static class Graphics
     /// close-up arms in a car; only genuinely hot pixels (lamps, muzzle flashes, emissives) should glow.</summary>
     private static BloomEffect Bloom() => new() { Threshold = 1.8f, Intensity = 0.45f };
 
+    private static TonemapperEffect Tonemap()
+    {
+        // ACES over the engine's AgX default: AgX rolled sunlit paints/skin toward desaturated white (lime jeep, white
+        // airboat deck, pale foreheads); ACES keeps colour in the highlights and deepens midtones (screens/s10-tm-sheet.png).
+        var t = new TonemapperEffect { Type = TonemapperType.ACES, Saturation = 1.05f };
+        if (Enum.TryParse(Environment.GetEnvironmentVariable("SANDBOX_TONEMAP"), out TonemapperType ty)) t.Type = ty;
+        return t;
+    }
+
     public static void Apply(Camera camera, GraphicsQuality q)
     {
         try
@@ -20,8 +29,8 @@ public static class Graphics
             camera.Effects = q switch
             {
                 GraphicsQuality.Low => [],
-                GraphicsQuality.Medium => [new FXAAEffect(), Bloom(), new TonemapperEffect()],
-                _ => [new FXAAEffect(), new GTAOEffect(), Bloom(), new TonemapperEffect()],
+                GraphicsQuality.Medium => [new FXAAEffect(), Bloom(), Tonemap()],
+                _ => [new FXAAEffect(), new GTAOEffect(), Bloom(), Tonemap()],
             };
         }
         catch (Exception e)
