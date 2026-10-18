@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.7.0 — 2026-10-18
+- Remodelled pallet (gapped boards, blocks, nails, stamp), I-beam (root fillets, bolt holes, stencil), sash window (two sashes, glazing bars, sill, lock, lifts), sawhorse (2x4 legs, brackets, striped board), stop/arrow/warning signs (lettering, borders, telespar post, clamps), TV (picture on, pedestal), bed (posts, panels, duvet, pillows, throw), fridge (doors, gaskets, bar handles, grille); gal_one_<ids> close-up shot state.
+
 ## v0.6.8 — 2026-10-18
 - NPC shirt colour mismatch fixed (aim highlight now tints the whole NPC/model, not just the root mesh; gallery shots never highlight; limbs use matte cloth instead of rubber albedo); pointed fold-down collar flaps.
 

@@ -1,0 +1,301 @@
+using Prowl.Runtime;
+using Prowl.Runtime.Resources;
+using Prowl.Vector;
+using static Sandbox.Meshes;
+
+namespace Sandbox;
+
+/// <summary>Hand-built detailed models (pallet, I-beam, window, sawhorse, signs, TV, bed, fridge) written as code
+/// instead of long part lists: planks with gaps and nails, filleted steel, moulded sashes, lettered signs.</summary>
+public static partial class ModelProps
+{
+    private static Float3 P3(float x, float y, float z) => new(x, y, z);
+    private static Part RB(float x, float y, float z, float r, float ox, float oy, float oz, Color c, bool paint = false, Float3 rot = default)
+        => M(RoundedBox(P3(x, y, z), r), ox, oy, oz, c, paint, rot);
+
+    /// <summary>Mesh moved by an offset (for baking many small pieces into one draw).</summary>
+    private static Mesh At(Mesh m, Float3 o)
+    {
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => v + o).ToArray(), Normals = m.Normals, UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
+    }
+    private static Mesh Bake(IEnumerable<(Mesh M, Float3 O)> ms) => Merge(ms.Select(x => At(x.M, x.O)).ToArray());
+
+    /// <summary>Convex 2D polygon (counter-clockwise seen from +Z) extruded between z0 and z1.</summary>
+    private static Mesh Slab(Float2[] p, float z0, float z1)
+    {
+        var faces = new List<Float3[]> { p.Select(q => P3(q.X, q.Y, z1)).ToArray(), p.Reverse().Select(q => P3(q.X, q.Y, z0)).ToArray() };
+        for (int i = 0; i < p.Length; i++)
+        {
+            Float2 a = p[i], b = p[(i + 1) % p.Length];
+            faces.Add([P3(a.X, a.Y, z0), P3(b.X, b.Y, z0), P3(b.X, b.Y, z1), P3(a.X, a.Y, z1)]);
+        }
+        return Faces(faces.ToArray());
+    }
+    private static Float2[] Rect(float x0, float y0, float x1, float y1) => [new(x0, y0), new(x1, y0), new(x1, y1), new(x0, y1)];
+    private static Float2[] NGon(int n, float r, float rot0 = 0f) => Enumerable.Range(0, n).Select(i => { float a = rot0 + i * MathF.Tau / n; return new Float2(MathF.Cos(a) * r, MathF.Sin(a) * r); }).ToArray();
+    /// <summary>Thin plate with rounded corners in the XY plane (half sizes w, h), thickness t, corner exponent n.</summary>
+    private static Mesh Plate(float w, float h, float t, float n = 6f) => Sweep([new Sec(P3(0, 0, -t / 2f), w, h, n), new Sec(P3(0, 0, t / 2f), w, h, n)], Float3.UnitX, 40, 0.0f);
+
+    /// <summary>Block letters from rectangles (unit cell 0.6 wide × 1 tall), scaled by h, baked as slabs z0..z1.</summary>
+    private static Mesh Letters(string text, float h, float gap, float z0, float z1)
+    {
+        float s = h, w = 0.6f * s, t = 0.17f * s, x = -(text.Length * w + (text.Length - 1) * gap) / 2f, y0 = -s / 2f;
+        var slabs = new List<Mesh>();
+        // Mirrored in X: the engine's +X is screen-left when looking at a sign's +Z face.
+        void R(float a, float b, float c, float d) => slabs.Add(Slab(Rect(-(x + c * w), y0 + b * s, -(x + a * w), y0 + d * s), z0, z1));
+        float tw = t / w, th = t / s;
+        foreach (char ch in text)
+        {
+            switch (ch)
+            {
+                case 'S': R(0, 1 - th, 1, 1); R(0, 0.5f - th / 2, 1, 0.5f + th / 2); R(0, 0, 1, th); R(0, 0.5f, tw, 1); R(1 - tw, 0, 1, 0.5f); break;
+                case 'T': R(0, 1 - th, 1, 1); R(0.5f - tw / 2, 0, 0.5f + tw / 2, 1 - th); break;
+                case 'O': R(0, 1 - th, 1, 1); R(0, 0, 1, th); R(0, th, tw, 1 - th); R(1 - tw, th, 1, 1 - th); break;
+                case 'P': R(0, 0, tw, 1); R(tw, 1 - th, 1, 1); R(tw, 0.5f - th / 2, 1, 0.5f + th / 2); R(1 - tw, 0.5f, 1, 1 - th); break;
+            }
+            x += w + gap;
+        }
+        return Merge(slabs.ToArray());
+    }
+
+    // Properties, not fields: static initialisers in another partial file may run after ModelProps.All is built.
+    private static Color Galv => C(0.62f, 0.64f, 0.66f);
+    private static Color Glass => C(0.42f, 0.58f, 0.68f);
+    private static Color Brass => C(0.78f, 0.62f, 0.3f);
+    private static Color Linen => C(0.93f, 0.92f, 0.88f);
+
+    private static Part[] PalletParts()
+    {
+        var l = new List<Part>();
+        float[] tz = [-0.43f, -0.215f, 0f, 0.215f, 0.43f], tw = [0.14f, 0.1f, 0.14f, 0.1f, 0.14f];
+        Color[] shades = [C(0.62f, 0.45f, 0.28f), C(0.56f, 0.4f, 0.24f), C(0.66f, 0.5f, 0.32f), C(0.58f, 0.43f, 0.27f), C(0.6f, 0.44f, 0.26f)];
+        for (int i = 0; i < 5; i++) l.Add(RB(1.2f, 0.022f, tw[i], 0.005f, 0, 0.055f, tz[i], shades[i], i % 2 == 0, P3(0, (i - 2) * 0.35f, 0)));
+        foreach (float x in new[] { -0.53f, 0f, 0.53f }) l.Add(RB(0.14f, 0.022f, 1.0f, 0.005f, x, 0.033f, 0, C(0.55f, 0.39f, 0.23f), true));
+        var blocks = new List<(Mesh, Float3)>(); var nails = new List<(Mesh, Float3)>();
+        Mesh blk = RoundedBox(P3(0.14f, 0.075f, 0.12f), 0.008f), nail = RoundedCylinder(0.0055f, 0.004f, 0.0015f, 10);
+        foreach (float x in new[] { -0.53f, 0f, 0.53f })
+            foreach (float z in new[] { -0.43f, 0f, 0.43f })
+            {
+                blocks.Add((blk, P3(x, -0.0155f, z)));
+                foreach (float dx in new[] { -0.035f, 0.035f }) { nails.Add((nail, P3(x + dx, 0.0665f, z - 0.03f))); nails.Add((nail, P3(x + dx, 0.0665f, z + 0.03f))); }
+            }
+        l.Add(M(Bake(blocks), 0, 0, 0, C(0.48f, 0.33f, 0.19f)));
+        l.Add(M(Bake(nails), 0, 0, 0, C(0.3f, 0.3f, 0.32f)));
+        foreach (float z in new[] { -0.43f, 0f, 0.43f }) l.Add(RB(1.2f, 0.022f, 0.14f, 0.005f, 0, -0.064f, z, C(0.57f, 0.41f, 0.25f), true));
+        // Burnt-in stamp on the middle block and a green paint dab (recycled pallet).
+        l.Add(M(Slab(Rect(-0.045f, -0.022f, 0.045f, 0.022f), 0f, 0.002f), 0, -0.0155f, 0.4601f, C(0.18f, 0.12f, 0.07f)));
+        l.Add(M(Slab(Rect(-0.02f, -0.02f, 0.02f, 0.02f), 0f, 0.002f), 0.53f, -0.0155f, 0.4601f, C(0.2f, 0.45f, 0.3f)));
+        return l.ToArray();
+    }
+
+    private static Part[] IBeamParts()
+    {
+        Color rust = C(0.55f, 0.22f, 0.13f);
+        var l = new List<Part>
+        {
+            RB(4.0f, 0.026f, 0.2f, 0.006f, 0, 0.137f, 0, rust, true), RB(4.0f, 0.026f, 0.2f, 0.006f, 0, -0.137f, 0, rust, true),
+            RB(4.0f, 0.25f, 0.016f, 0.004f, 0, 0, 0, rust, true),
+        };
+        // Root fillets where web meets flanges (the thing that makes it read as rolled steel, not three planks).
+        var fil = new List<(Mesh, Float3)>();
+        Mesh rod = Sweep([new Sec(P3(-1.995f, 0, 0), 0.011f, 0.011f), new Sec(P3(1.995f, 0, 0), 0.011f, 0.011f)], Float3.UnitY, 10, 0f);
+        foreach (float y in new[] { -0.118f, 0.118f }) foreach (float z in new[] { -0.009f, 0.009f }) fil.Add((rod, P3(0, y, z)));
+        l.Add(M(Bake(fil), 0, 0, 0, rust, true));
+        // Bolt holes at both ends of the web and flange, darker mill scale patches, a chalk/paint stencil mark.
+        var holes = new List<(Mesh, Float3)>();
+        Mesh hole = RoundedCylinder(0.011f, 0.019f, 0.002f, 14);
+        foreach (float x in new[] { -1.88f, -1.78f, 1.78f, 1.88f }) foreach (float y in new[] { -0.05f, 0.05f }) holes.Add((hole, P3(x, y, 0)));
+        l.Add(M(Bake(holes.Select(h => (Rot90X(h.Item1), h.Item2))), 0, 0, 0, C(0.05f, 0.04f, 0.04f)));
+        l.Add(M(Slab(Rect(-0.12f, -0.012f, 0.12f, 0.012f), 0f, 0.0018f), 0.2f, 0.04f, 0.0081f, C(0.95f, 0.85f, 0.3f)));
+        l.Add(M(Slab(Rect(-0.05f, -0.012f, 0.05f, 0.012f), 0f, 0.0018f), 0.2f, 0.0f, 0.0081f, C(0.95f, 0.85f, 0.3f)));
+        return l.ToArray();
+    }
+    private static Mesh Rot90X(Mesh m)
+    {
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => P3(v.X, -v.Z, v.Y)).ToArray(), Normals = m.Normals.Select(v => P3(v.X, -v.Z, v.Y)).ToArray(), UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
+    }
+
+    private static Part[] WindowParts()
+    {
+        Color paint = C(0.92f, 0.92f, 0.9f), dark = C(0.2f, 0.2f, 0.22f);
+        var l = new List<Part>
+        {
+            // Frame: head, jambs with a front stop moulding, and a projecting sloped sill.
+            RB(1.2f, 0.08f, 0.1f, 0.012f, 0, 0.56f, 0, paint), RB(0.08f, 1.12f, 0.1f, 0.012f, -0.56f, 0.0f, 0, paint), RB(0.08f, 1.12f, 0.1f, 0.012f, 0.56f, 0.0f, 0, paint),
+            RB(1.12f, 0.025f, 0.022f, 0.008f, 0, 0.51f, 0.045f, paint), RB(0.025f, 1.0f, 0.022f, 0.008f, -0.51f, 0.0f, 0.045f, paint), RB(0.025f, 1.0f, 0.022f, 0.008f, 0.51f, 0.0f, 0.045f, paint),
+            RB(1.32f, 0.045f, 0.17f, 0.012f, 0, -0.565f, 0.025f, paint, true, P3(-6, 0, 0)), RB(1.2f, 0.03f, 0.03f, 0.008f, 0, -0.6f, 0.08f, paint),
+        };
+        // Two sliding sashes (upper behind, lower in front), each with stiles, rails, a glazing bar and glass with a sheen streak.
+        foreach (var (cy, cz) in new[] { (0.255f, -0.02f), (-0.255f, 0.02f) })
+        {
+            l.Add(RB(1.02f, 0.05f, 0.035f, 0.008f, 0, cy + 0.235f, cz, paint)); l.Add(RB(1.02f, cy > 0 ? 0.035f : 0.06f, 0.035f, 0.008f, 0, cy - (cy > 0 ? 0.24f : 0.225f), cz, paint));
+            l.Add(RB(0.05f, 0.51f, 0.035f, 0.008f, -0.485f, cy, cz, paint)); l.Add(RB(0.05f, 0.51f, 0.035f, 0.008f, 0.485f, cy, cz, paint));
+            l.Add(RB(0.02f, 0.44f, 0.026f, 0.006f, 0, cy, cz, paint));
+            l.Add(M(Slab(Rect(-0.46f, -0.215f, 0.46f, 0.215f), -0.003f, 0.003f), 0, cy, cz, Glass));
+            foreach (float sx in new[] { -0.23f, 0.23f })
+                l.Add(M(Slab([new(-0.12f, -0.2f), new(-0.06f, -0.2f), new(0.1f, 0.2f), new(0.04f, 0.2f)], 0.0031f, 0.0035f), sx, cy, cz, C(0.66f, 0.78f, 0.85f)));
+        }
+        // Sash lock on the meeting rails and two lift handles on the lower sash.
+        l.Add(RB(0.07f, 0.014f, 0.03f, 0.005f, 0, 0.025f, 0.0f, Brass)); l.Add(M(RoundedCylinder(0.012f, 0.012f, 0.003f, 14), 0.025f, 0.035f, 0.0f, Brass));
+        foreach (float x in new[] { -0.3f, 0.3f }) l.Add(M(PropMeshes.Handle(0.07f), x, -0.47f, 0.06f, Brass, false, P3(0, 0, 90)));
+        return l.ToArray();
+    }
+
+    private static Part[] SawhorseParts()
+    {
+        Color timber = C(0.72f, 0.56f, 0.36f), orange = C(0.95f, 0.38f, 0.06f), white = C(0.95f, 0.95f, 0.93f), steel = C(0.3f, 0.32f, 0.35f);
+        var l = new List<Part> { RB(1.0f, 0.09f, 0.09f, 0.008f, 0, 0.355f, 0, timber, true) };
+        Mesh Leg(float sx, float sz) => Sweep([new Sec(P3(sx * 0.37f, 0.33f, sz * 0.035f), 0.045f, 0.02f, 8f), new Sec(P3(sx * 0.44f, -0.385f, sz * 0.22f), 0.045f, 0.02f, 8f)], Float3.UnitX, 12, 0.3f);
+        foreach (float sx in new[] { -1f, 1f })
+        {
+            l.Add(M(Leg(sx, 1f), 0, 0, 0, timber, true)); l.Add(M(Leg(sx, -1f), 0, 0, 0, timber, true));
+            // Folded steel bracket clamping the legs to the beam, rubber feet, and a spreader bar.
+            l.Add(RB(0.11f, 0.13f, 0.13f, 0.01f, sx * 0.37f, 0.33f, 0, steel)); l.Add(M(RoundedCylinder(0.012f, 0.135f, 0.003f, 12), sx * 0.37f, 0.33f, 0, C(0.7f, 0.7f, 0.72f), false, P3(90, 0, 0)));
+            l.Add(RB(0.1f, 0.03f, 0.06f, 0.008f, sx * 0.44f, -0.385f, 0.22f, Rubber)); l.Add(RB(0.1f, 0.03f, 0.06f, 0.008f, sx * 0.44f, -0.385f, -0.22f, Rubber));
+            l.Add(RB(0.02f, 0.03f, 0.36f, 0.006f, sx * 0.425f, -0.2f, 0, steel));
+        }
+        // Barricade board with diagonal reflective stripes.
+        l.Add(RB(0.92f, 0.16f, 0.022f, 0.006f, 0, 0.1f, 0.115f, orange));
+        var str = new List<Mesh>();
+        for (float x = -0.44f; x < 0.2f; x += 0.16f) str.Add(Slab([new(x, -0.075f), new(x + 0.07f, -0.075f), new(x + 0.07f + 0.15f, 0.075f), new(x + 0.15f, 0.075f)], 0f, 0.002f));
+        l.Add(M(Merge(str.ToArray()), 0, 0.1f, 0.1262f, white));
+        return l.ToArray();
+    }
+
+    private static Part[] StopSignParts()
+    {
+        Color red = C(0.75f, 0.06f, 0.07f);
+        var holes = new List<(Mesh, Float3)>(); Mesh h = Slab(Rect(-0.006f, -0.006f, 0.006f, 0.006f), 0f, 0.001f);
+        for (float y = -1.1f; y < 0.72f; y += 0.05f) holes.Add((h, P3(0, y, 0)));
+        return
+        [
+            // Square perforated telespar post on a bolted base plate.
+            RB(0.05f, 2.2f, 0.05f, 0.006f, 0, -0.1f, -0.035f, Galv), M(Bake(holes), 0, 0, -0.0095f, C(0.1f, 0.1f, 0.11f)),
+            RB(0.26f, 0.02f, 0.26f, 0.004f, 0, -1.19f, -0.035f, Galv), M(Bake([(RoundedCylinder(0.014f, 0.02f, 0.004f, 6), P3(-0.1f, 0, -0.1f)), (RoundedCylinder(0.014f, 0.02f, 0.004f, 6), P3(0.1f, 0, -0.1f)), (RoundedCylinder(0.014f, 0.02f, 0.004f, 6), P3(-0.1f, 0, 0.1f)), (RoundedCylinder(0.014f, 0.02f, 0.004f, 6), P3(0.1f, 0, 0.1f))]), 0, -1.17f, -0.035f, C(0.45f, 0.46f, 0.48f)),
+            // Aluminium blank, white reflective border, red field, STOP lettering, two bolts and a back clamp.
+            M(Slab(NGon(8, 0.345f, MathF.PI / 8f), -0.004f, 0f), 0, 0.85f, 0, C(0.7f, 0.71f, 0.73f)),
+            M(Slab(NGon(8, 0.34f, MathF.PI / 8f), 0f, 0.002f), 0, 0.85f, 0, C(0.96f, 0.96f, 0.95f)),
+            M(Slab(NGon(8, 0.31f, MathF.PI / 8f), 0.002f, 0.003f), 0, 0.85f, 0, red, true),
+            M(Letters("STOP", 0.15f, 0.025f, 0.003f, 0.0042f), 0, 0.85f, 0, C(0.97f, 0.97f, 0.96f)),
+            M(RoundedCylinder(0.011f, 0.006f, 0.002f, 12), 0, 1.12f, 0.004f, Galv, false, P3(90, 0, 0)), M(RoundedCylinder(0.011f, 0.006f, 0.002f, 12), 0, 0.58f, 0.004f, Galv, false, P3(90, 0, 0)),
+            RB(0.09f, 0.04f, 0.03f, 0.005f, 0, 1.12f, -0.02f, Galv), RB(0.09f, 0.04f, 0.03f, 0.005f, 0, 0.58f, -0.02f, Galv),
+        ];
+    }
+
+    private static Part[] ArrowSignParts()
+    {
+        Color blue = C(0.08f, 0.3f, 0.7f), white = C(0.96f, 0.96f, 0.95f);
+        Float2[] shaft = Rect(-0.33f, -0.055f, 0.08f, 0.055f), head = [new(0.06f, -0.14f), new(0.34f, 0f), new(0.06f, 0.14f)];
+        return
+        [
+            M(Plate(0.44f, 0.2f, 0.01f, 7f), 0, 0, -0.004f, C(0.7f, 0.71f, 0.73f)),
+            M(Plate(0.435f, 0.195f, 0.004f, 7f), 0, 0, 0.002f, white),
+            M(Plate(0.415f, 0.175f, 0.003f, 7f), 0, 0, 0.004f, blue, true),
+            M(Merge(Slab(shaft, 0.0055f, 0.0068f), Slab(head, 0.0055f, 0.0068f)), 0, 0, 0, white),
+            // Rivets in the corners and two rail brackets on the back.
+            M(Bake(new[] { (-0.38f, 0.14f), (0.38f, 0.14f), (-0.38f, -0.14f), (0.38f, -0.14f) }.Select(p => (Rot90X(RoundedCylinder(0.009f, 0.004f, 0.0015f, 12)), P3(p.Item1, p.Item2, 0.007f)))), 0, 0, 0, Galv),
+            RB(0.06f, 0.36f, 0.025f, 0.006f, -0.25f, 0, -0.02f, Galv), RB(0.06f, 0.36f, 0.025f, 0.006f, 0.25f, 0, -0.02f, Galv),
+        ];
+    }
+
+    private static Part[] WarningSignParts()
+    {
+        Color yel = C(0.98f, 0.76f, 0.08f), blk = C(0.06f, 0.06f, 0.07f);
+        Float3 rot = P3(0, 0, 45);
+        return
+        [
+            M(Plate(0.3f, 0.3f, 0.008f, 9f), 0, 0.35f, -0.004f, C(0.7f, 0.71f, 0.73f), false, rot),
+            M(Plate(0.295f, 0.295f, 0.004f, 9f), 0, 0.35f, 0.001f, yel, true, rot),
+            M(Plate(0.27f, 0.27f, 0.002f, 9f), 0, 0.35f, 0.0035f, blk, false, rot),
+            M(Plate(0.25f, 0.25f, 0.002f, 9f), 0, 0.35f, 0.0045f, yel, true, rot),
+            M(Slab([new(-0.022f, -0.02f), new(0.022f, -0.02f), new(0.03f, 0.17f), new(-0.03f, 0.17f)], 0.0055f, 0.0068f), 0, 0.33f, 0, blk),
+            M(Rot90X(RoundedCylinder(0.026f, 0.0013f, 0.0004f, 20)), 0, 0.29f, 0.0061f, blk),
+            // Round post with two band clamps, weighted foot.
+            Cy(0.025f, 1.0f, 0, -0.2f, -0.03f, Galv), RB(0.07f, 0.03f, 0.06f, 0.008f, 0, 0.5f, -0.02f, Galv), RB(0.07f, 0.03f, 0.06f, 0.008f, 0, 0.2f, -0.02f, Galv),
+            M(PropMeshes.SignFoot(), 0, -0.68f, -0.03f, Dark), RB(0.12f, 0.05f, 0.12f, 0.012f, 0, -0.66f, -0.03f, Dark),
+        ];
+    }
+
+    private static Part[] TvParts()
+    {
+        Color body = C(0.06f, 0.06f, 0.07f), glass = C(0.02f, 0.025f, 0.03f);
+        float sz = 0.0152f; // screen surface
+        var pic = new List<Part>
+        {
+            // Picture (emissive): sky gradient, sun, two hills and a lake — reads as a TV that is on.
+            M(Slab(Rect(-0.56f, 0.06f, 0.56f, 0.34f), sz, sz + 0.0005f), 0, 0.035f, 0, C(0.27f, 0.47f, 0.70f)) with { Glow = true },
+            M(Slab(Rect(-0.56f, -0.1f, 0.56f, 0.06f), sz, sz + 0.0005f), 0, 0.035f, 0, C(0.47f, 0.58f, 0.72f)) with { Glow = true },
+            M(Slab(NGon(24, 0.055f), sz + 0.0005f, sz + 0.001f), 0.28f, 0.255f, 0, C(0.78f, 0.70f, 0.43f)) with { Glow = true },
+            M(Slab([new(-0.56f, -0.1f), new(0.05f, -0.1f), new(-0.2f, 0.09f), new(-0.4f, 0.12f), new(-0.56f, 0.05f)], sz + 0.0006f, sz + 0.0011f), 0, 0.035f, 0, C(0.16f, 0.39f, 0.20f)) with { Glow = true },
+            M(Slab([new(-0.2f, -0.1f), new(0.56f, -0.1f), new(0.56f, 0.02f), new(0.3f, 0.07f), new(0.1f, 0.04f)], sz + 0.0007f, sz + 0.0012f), 0, 0.035f, 0, C(0.22f, 0.45f, 0.23f)) with { Glow = true },
+            M(Slab(Rect(-0.56f, -0.3f, 0.56f, -0.1f), sz, sz + 0.0005f), 0, 0.035f, 0, C(0.16f, 0.33f, 0.55f)) with { Glow = true },
+        };
+        return
+        [
+            // Thin bezel, slimmer edge chamfer, deeper electronics hump behind, chin with logo and standby LED.
+            RB(1.2f, 0.68f, 0.028f, 0.008f, 0, 0.035f, 0, body, true), RB(1.13f, 0.61f, 0.002f, 0.001f, 0, 0.035f, 0.0142f, glass),
+            RB(0.86f, 0.44f, 0.05f, 0.02f, 0, 0.0f, -0.035f, body, true), RB(0.5f, 0.2f, 0.02f, 0.008f, 0, -0.02f, -0.065f, C(0.1f, 0.1f, 0.11f)),
+            RB(0.06f, 0.012f, 0.002f, 0.001f, 0, -0.29f, 0.0145f, C(0.6f, 0.6f, 0.62f)), M(Rot90X(RoundedCylinder(0.003f, 0.002f, 0.0005f, 8)), 0.52f, -0.292f, 0.0145f, C(1f, 0.2f, 0.15f)) with { Glow = true },
+            // Brushed pedestal: neck and an oval foot.
+            M(Sweep([new Sec(P3(0, -0.36f, -0.03f), 0.04f, 0.012f, 4f), new Sec(P3(0, -0.24f, -0.035f), 0.035f, 0.01f, 4f)], Float3.UnitX, 14, 0.2f), 0, 0, 0, C(0.25f, 0.26f, 0.28f)),
+            M(Sweep([new Sec(P3(0, -0.372f, -0.03f), 0.2f, 0.11f, 2.6f, Float3.UnitX), new Sec(P3(0, -0.36f, -0.03f), 0.195f, 0.105f, 2.6f, Float3.UnitX)], Float3.UnitX, 32, 0.4f), 0, 0, 0, C(0.25f, 0.26f, 0.28f)),
+            .. pic,
+        ];
+    }
+
+    private static Part[] BedParts()
+    {
+        Color duvet = C(0.62f, 0.16f, 0.14f), throwC = C(0.3f, 0.32f, 0.36f);
+        var l = new List<Part>
+        {
+            // Frame: side and end rails, turned legs, headboard posts with finials and a raised panel, low footboard.
+            RB(0.045f, 0.16f, 2.0f, 0.01f, -0.53f, -0.16f, 0, DarkWood, true), RB(0.045f, 0.16f, 2.0f, 0.01f, 0.53f, -0.16f, 0, DarkWood, true),
+            RB(1.02f, 0.03f, 1.96f, 0.006f, 0, -0.13f, 0, C(0.5f, 0.4f, 0.3f)),
+            M(PropMeshes.InsetPanel(1.0f, 0.42f, 0.035f, 0.05f), 0, 0.06f, -1.02f, DarkWood, true),
+            M(PropMeshes.InsetPanel(1.0f, 0.2f, 0.035f, 0.04f), 0, -0.1f, 1.02f, DarkWood, true, P3(0, 180, 0)),
+        };
+        foreach (float x in new[] { -0.53f, 0.53f })
+        {
+            l.Add(M(Lathe("bedpost", [(0.0001f, -0.3f), (0.03f, -0.3f), (0.032f, -0.27f), (0.028f, -0.2f), (0.034f, 0.22f), (0.038f, 0.24f), (0.03f, 0.255f), (0.0001f, 0.26f)], 16), x, 0, -1.02f, DarkWood, true));
+            l.Add(M(Sphere(0.032f), x, 0.27f, -1.02f, DarkWood));
+            l.Add(M(Lathe("bedpostf", [(0.0001f, -0.3f), (0.03f, -0.3f), (0.032f, -0.27f), (0.028f, -0.2f), (0.034f, 0.02f), (0.038f, 0.04f), (0.03f, 0.055f), (0.0001f, 0.06f)], 16), x, 0, 1.02f, DarkWood, true));
+            l.Add(M(Sphere(0.03f), x, 0.075f, 1.02f, DarkWood));
+        }
+        // Mattress with piping, pillows, duvet with a turned-down sheet, side drapes and a folded throw at the foot.
+        l.Add(M(PropMeshes.Cushion(2.0f, 0.19f, 1.02f), 0, -0.02f, 0, Linen, false, P3(0, 90, 0)));
+        l.Add(RB(1.04f, 0.012f, 2.0f, 0.005f, 0, -0.1f, 0, C(0.8f, 0.8f, 0.78f)));
+        foreach (float x in new[] { -0.25f, 0.25f }) l.Add(M(PropMeshes.Cushion(0.46f, 0.13f, 0.32f), x, 0.135f, -0.78f, C(0.96f, 0.96f, 0.98f), false, P3(-12, x * 8f, 0)));
+        l.Add(M(PropMeshes.Cushion(1.38f, 0.07f, 1.1f), 0, 0.105f, 0.33f, duvet, false, P3(0, 90, 0)));
+        l.Add(M(PropMeshes.Cushion(0.24f, 0.075f, 1.12f), 0, 0.12f, -0.33f, Linen, false, P3(0, 90, 0)));
+        foreach (float x in new[] { -0.555f, 0.555f }) l.Add(RB(0.025f, 0.2f, 1.36f, 0.01f, x, 0.0f, 0.33f, duvet, false, P3(0, 0, x > 0 ? -4 : 4)));
+        l.Add(RB(1.12f, 0.12f, 0.025f, 0.01f, 0, 0.05f, 1.0f, duvet, false, P3(4, 0, 0)));
+        l.Add(M(PropMeshes.Cushion(0.32f, 0.035f, 1.16f), 0, 0.15f, 0.78f, throwC, false, P3(0, 90, 0)));
+        l.Add(M(PropMeshes.Cushion(0.04f, 0.037f, 1.17f), 0, 0.15f, 0.7f, C(0.85f, 0.75f, 0.45f), false, P3(0, 90, 0)));
+        l.Add(M(PropMeshes.Cushion(0.04f, 0.037f, 1.17f), 0, 0.15f, 0.86f, C(0.85f, 0.75f, 0.45f), false, P3(0, 90, 0)));
+        return l.ToArray();
+    }
+
+    private static Part[] FridgeParts()
+    {
+        Color body = C(0.9f, 0.9f, 0.88f), gasket = C(0.1f, 0.1f, 0.11f), ss = C(0.72f, 0.74f, 0.76f);
+        var slats = new List<(Mesh, Float3)>(); Mesh slat = RoundedBox(P3(0.62f, 0.01f, 0.012f), 0.003f);
+        for (int i = 0; i < 4; i++) slats.Add((slat, P3(0, -0.875f + i * 0.016f, 0.338f)));
+        return
+        [
+            // Cabinet, black door gaskets in the gaps, freezer + fresh-food doors with rolled edges.
+            RB(0.75f, 1.8f, 0.64f, 0.03f, 0, 0, -0.03f, body),
+            RB(0.72f, 1.7f, 0.02f, 0.006f, 0, 0.03f, 0.3f, gasket),
+            RB(0.74f, 0.55f, 0.055f, 0.022f, 0, 0.615f, 0.325f, body),
+            RB(0.74f, 1.13f, 0.055f, 0.022f, 0, -0.24f, 0.325f, body),
+            // Stainless bar handles on standoffs, badge, hinge caps and a slotted kick grille.
+            M(PropMeshes.Handle(0.3f), -0.31f, 0.52f, 0.386f, ss, false, P3(0, 180, 0)), M(PropMeshes.Handle(0.55f), -0.31f, 0.07f, 0.386f, ss, false, P3(0, 180, 0)),
+            RB(0.09f, 0.022f, 0.004f, 0.002f, 0.24f, 0.84f, 0.353f, ss),
+            RB(0.03f, 0.02f, 0.06f, 0.006f, 0.35f, 0.9f, 0.32f, C(0.7f, 0.7f, 0.7f)), RB(0.03f, 0.02f, 0.06f, 0.006f, 0.35f, 0.325f, 0.33f, C(0.7f, 0.7f, 0.7f)), RB(0.03f, 0.02f, 0.06f, 0.006f, 0.35f, -0.82f, 0.32f, C(0.7f, 0.7f, 0.7f)),
+            RB(0.7f, 0.08f, 0.02f, 0.006f, 0, -0.86f, 0.32f, gasket), M(Bake(slats), 0, 0, 0, C(0.25f, 0.25f, 0.27f)),
+            // Tall vertical seam on the side so the cabinet doesn't read as a plain slab.
+            RB(0.004f, 1.7f, 0.004f, 0.001f, 0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)), RB(0.004f, 1.7f, 0.004f, 0.001f, -0.376f, 0, 0.2f, C(0.75f, 0.75f, 0.74f)),
+        ];
+    }
+}

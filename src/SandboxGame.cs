@@ -288,7 +288,7 @@ public sealed partial class SandboxGame : Game
                 break;
             case { } gal when gal.StartsWith("gal_"):
                 Menus.Go(Screen.Playing);
-                Gallery.Show(this, gal[4..]);
+                try { Gallery.Show(this, gal[4..]); } catch (Exception e) { Console.WriteLine("[gallery] " + e); }
                 break;
             default:
                 if (ShotState is not null) { Menus.Go(Screen.Playing); ShotHooks?.Invoke(this, ShotState); }

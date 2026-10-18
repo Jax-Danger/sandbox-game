@@ -16,6 +16,7 @@ public static class Gallery
 
     public static void Show(SandboxGame g, string set)
     {
+        Console.WriteLine($"[gallery] {set}");
         Active = true;
         g.PhotoMode = true;
         var spots = new List<Float3>();
@@ -34,6 +35,26 @@ public static class Gallery
                 }
                 g.Player.Teleport(new Float3(0f, 0.05f, -1.5f));
                 g.Player.SetLook(0f, 22f);
+                break;
+            }
+            case "one":
+            {
+                // Close-up review: "one_pallet-ibeam-tv" spawns those model ids side by side, near the camera.
+                var ids = set[(set.IndexOf('_') + 1)..].Split('-');
+                g.ClearMap(false);
+                float yaw = set.EndsWith("-b") ? 20f : 200f;
+                var list = ids.Select(id => ModelProps.All.FirstOrDefault(d => d.Entity == "mdl_" + id)).Where(d => d != null).ToArray();
+                float span = list.Sum(d => MathF.Max(d!.Collider.X, d.Collider.Z) + 0.5f), x = -span / 2f;
+                float far = list.Max(d => MathF.Max(d!.Collider.Y, MathF.Max(d.Collider.X, d.Collider.Z)));
+                foreach (var d in list)
+                {
+                    float w = MathF.Max(d!.Collider.X, d.Collider.Z) + 0.5f;
+                    ModelProps.Spawn(g, d, new Float3(x + w / 2f, d.HalfHeight + 0.02f, 2.2f), yaw - (ids.Contains("s") ? 75f : 15f), false);
+                    x += w;
+                }
+                float dist = (MathF.Max(span * 0.6f, far * 1.25f) + 0.4f) * (ids.Contains("z") ? 0.4f : 1f);
+                g.Player.Teleport(new Float3(0f, 0.05f, 2.2f - dist));
+                g.Player.SetLook(0f, 18f);
                 break;
             }
             case "drive":
