@@ -396,6 +396,13 @@ public sealed class RoleplaySystem(SandboxGame g)
             case "rp_shipment":
                 p.Go.Name = $"Shipment: {g.Weapons.All.FirstOrDefault(w => w.Id == data)?.Name ?? "weapons"}";
                 p.SetColor(new Color(0.45f, 0.36f, 0.22f, 1f));
+                // The weapon itself lies strapped on the lid (laid on its side, muzzle along the crate's X axis).
+                if (data is not null && p.Go.Transform.Find("WorldWeapon") is null)
+                {
+                    Float3 ws = WorldWeapons.Size(g, data);
+                    float top = PropManager.SizeOf(PropKind.SmallCrate).Y / 2f;
+                    WorldWeapons.Attach(g, p.Go, data, new Float3(0f, top + ws.X / 2f + 0.005f, 0f), new Float3(0f, ws.Z > 0.5f ? 135f : 90f, 90f));
+                }
                 break;
         }
     }
