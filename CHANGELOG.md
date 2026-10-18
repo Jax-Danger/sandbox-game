@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.6.1 — 2026-10-18
+- Jeep: seven-slot grille, side mirrors on stalks, tail lamps, hood latches, jerrycan. Airboat: engine with finned heads and exhaust stacks, fan guard spokes.
+
 ## v0.6.0 — 2026-10-18
 - Town buildings overhaul: houses get pitched gable roofs with eaves, fascia, ridge cap, gable walls, brick chimneys and porch canopies on brackets; commercial buildings get parapets all round with coping, a string course, entrance awnings, rooftop AC units and vents. (Overnight model pass from v0.5.1–0.5.10 rolled up into this minor.)
 

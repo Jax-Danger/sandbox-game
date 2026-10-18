@@ -159,6 +159,17 @@ public sealed class Buggy
             Detail(g, "Seat", VehicleModels.Seat(0.24f), new Float3(x, 0.36f, -0.42f), dark);
         Detail(g, "RollBar", VehicleModels.BentPipe(0.04f, 0.2f, Float3.UnitZ, new Float3(-0.8f, 0.3f, -0.9f), new Float3(-0.8f, 1.3f, -0.9f), new Float3(0.8f, 1.3f, -0.9f), new Float3(0.8f, 0.3f, -0.9f)), Float3.Zero, dark);
         var spare = Detail(g, "Spare", Meshes.Tyre(0.42f, 0.25f), new Float3(0f, 0.55f, -1.82f), dark, new Float3(90f, 0f, 0f));
+        // Classic seven-slot grille, side mirrors on stalks, tail lamps, hood latches and a jerrycan on the tailgate.
+        for (int i = 0; i < 7; i++)
+            Detail(g, "GrilleSlot", Meshes.RoundedBox(new Float3(0.07f, 0.3f, 0.02f), 0.03f), new Float3(-0.36f + i * 0.12f, 0.3f, 1.745f), new Color(0.03f, 0.03f, 0.03f, 1f));
+        foreach (float x in new[] { -0.92f, 0.92f })
+        {
+            Detail(g, "MirrorArm", VehicleModels.Pipe(0.012f, Float3.UnitY, new Float3(x * 0.9f, 0.5f, 0.55f), new Float3(x * 1.05f, 0.75f, 0.5f)), Float3.Zero, dark);
+            Detail(g, "Mirror", Meshes.Lathe("mirror", [(0.0001f, -0.015f), (0.07f, -0.015f), (0.075f, 0f), (0.07f, 0.015f), (0.0001f, 0.015f)], 20), new Float3(x * 1.06f, 0.8f, 0.5f), dark, new Float3(90f, 0f, 0f));
+            Detail(g, "TailLamp", VehicleModels.Lamp(0.06f), new Float3(x * 0.85f, 0.25f, -1.7f), new Color(0.8f, 0.1f, 0.08f, 1f), new Float3(0f, 180f, 0f));
+            Detail(g, "Latch", Meshes.RoundedBox(new Float3(0.04f, 0.1f, 0.06f), 0.015f), new Float3(x * 0.84f, 0.48f, 1.2f), dark);
+        }
+        Detail(g, "Jerrycan", Meshes.RoundedBox(new Float3(0.16f, 0.45f, 0.32f), 0.04f), new Float3(0.62f, 0.55f, -1.82f), paint * 0.8f);
         Detail(g, "Bumper", VehicleModels.BentPipe(0.07f, 0.12f, Float3.UnitY, new Float3(-0.95f, 0.05f, 1.72f), new Float3(-0.9f, 0.05f, 1.8f), new Float3(0.9f, 0.05f, 1.8f), new Float3(0.95f, 0.05f, 1.72f)), Float3.Zero, dark);
     }
 
@@ -189,6 +200,15 @@ public sealed class Buggy
             r.Mesh = VehicleModels.Blade();
             var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Color(0.7f, 0.55f, 0.3f, 1f)); r.Material = m;
             g.World.Add(blade); g.World.Add(child);
+        }
+        // Aircraft engine on the mast base: finned cylinder bank, exhaust stacks, and guard spokes behind the fan.
+        Detail(g, "Engine", VehicleModels.BuggyEngine(), new Float3(0f, 0.38f, -1.25f), new Color(0.3f, 0.31f, 0.33f, 1f));
+        foreach (float x in new[] { -0.18f, 0.18f })
+            Detail(g, "Stack", VehicleModels.BentPipe(0.03f, 0.06f, Float3.UnitX, new Float3(x, 0.5f, -1.2f), new Float3(x * 1.4f, 0.75f, -1.1f), new Float3(x * 1.4f, 0.95f, -1.12f)), Float3.Zero, new Color(0.5f, 0.5f, 0.52f, 1f));
+        for (int i = 0; i < 6; i++)
+        {
+            float a = i * MathF.Tau / 6f;
+            Detail(g, "GuardSpoke", VehicleModels.Pipe(0.01f, Float3.UnitZ, new Float3(0f, 0f, 0f), new Float3(MathF.Cos(a) * 0.84f, MathF.Sin(a) * 0.84f, 0f)), new Float3(0f, 1.25f, -1.6f), new Color(0.3f, 0.3f, 0.32f, 1f));
         }
         Detail(g, "Rudder", Meshes.Sweep([new Meshes.Sec(new Float3(0f, -0.4f, 0f), 0.025f, 0.2f, 2.5f), new Meshes.Sec(new Float3(0f, 0.4f, -0.03f), 0.02f, 0.16f, 2.5f)], Float3.UnitX, 14, 0.5f), new Float3(0f, 1.2f, -1.75f), dark);
     }
