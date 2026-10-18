@@ -131,7 +131,7 @@ public static partial class MapBuilder
         MeshRenderer gr = ground.AddComponent<MeshRenderer>();
         gr.Mesh = Mesh.CreateCube(new Float3(200f, 1f, 200f));
         var gm = Mats.New(shader);
-        gm.SetColor("_MainColor", new Color(0.48f, 0.64f, 0.38f, 1f));
+        gm.SetColor("_MainColor", new Color(0.43f, 0.48f, 0.34f, 1f));
         if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0") { gm.SetTexture("_MainTex", ProcTex.Grass()); gm.SetVector("_Tiling", new Float2(50f, 50f)); }
         gr.Material = gm;
         ground.AddComponent<BoxCollider>().Size = new Float3(200f, 1f, 200f);
@@ -237,10 +237,10 @@ public static partial class MapBuilder
             Shape(scene, shader, "Tree trunk", Meshes.Lathe("trunk", [(0.0001f, -1.2f), (0.34f, -1.2f), (0.24f, -0.9f), (0.2f, 0f), (0.17f, 1.0f), (0.12f, 1.4f), (0.0001f, 1.45f)], 20), new Float3(x, 1.2f, z), new Color(0.40f, 0.28f, 0.18f, 1f), new Float3(0.4f, 2.4f, 0.4f));
             // Clustered leaf clumps in three greens plus a couple of visible branches.
             int sd = (int)(MathF.Abs(x * 7f + z * 3f)) % 9;
-            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.35f, sd), new Float3(x, 3.5f, z), new Color(0.27f, 0.5f, 0.24f, 1f));
-            Shape(scene, shader, "~Tree crown b", Meshes.Blob(0.95f, sd + 1), new Float3(x + 0.9f, 3.0f, z - 0.4f), new Color(0.22f, 0.44f, 0.2f, 1f));
-            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.9f, sd + 2), new Float3(x - 0.8f, 3.1f, z + 0.5f), new Color(0.32f, 0.56f, 0.27f, 1f));
-            Shape(scene, shader, "~Tree crown d", Meshes.Blob(0.8f, sd + 3), new Float3(x + 0.1f, 4.4f, z + 0.2f), new Color(0.3f, 0.54f, 0.26f, 1f));
+            Shape(scene, shader, "~Tree crown", Meshes.Blob(1.35f, sd), new Float3(x, 3.5f, z), new Color(0.3f, 0.4f, 0.24f, 1f));
+            Shape(scene, shader, "~Tree crown b", Meshes.Blob(0.95f, sd + 1), new Float3(x + 0.9f, 3.0f, z - 0.4f), new Color(0.25f, 0.34f, 0.2f, 1f));
+            Shape(scene, shader, "~Tree crown c", Meshes.Blob(0.9f, sd + 2), new Float3(x - 0.8f, 3.1f, z + 0.5f), new Color(0.35f, 0.45f, 0.26f, 1f));
+            Shape(scene, shader, "~Tree crown d", Meshes.Blob(0.8f, sd + 3), new Float3(x + 0.1f, 4.4f, z + 0.2f), new Color(0.33f, 0.43f, 0.25f, 1f));
             Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(0.8f, 0.7f, -0.35f), 0.09f, 0.04f), new Float3(x, 2.3f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
             Shape(scene, shader, "~Branch", PropMeshes.Rod(new Float3(0f, 0f, 0f), new Float3(-0.7f, 0.8f, 0.45f), 0.08f, 0.035f), new Float3(x, 2.4f, z), new Color(0.40f, 0.28f, 0.18f, 1f));
             Shape(scene, shader, "Lamp post", PropMeshes.Post(0.07f, 4f), new Float3(x * 0.7f, 2f, z * 0.7f), new Color(0.12f, 0.12f, 0.13f, 1f), new Float3(0.14f, 4f, 0.14f));

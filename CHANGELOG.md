@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. No 1.0 until approved. (No git tags are pushed.)
 
+## v0.8.29 — 2026-10-18
+- Town colour pass: lawn toned from bright green to a natural muted turf and plaza tree crowns use softer olive leaf greens (matching the Rolling Hills pass).
+
 ## v0.8.28 — 2026-10-18
 - Physics gun is slimmer: body, rings, collar, prongs, hoses and grip hand ~23% narrower and the bulbous rear dome shortened, so it no longer fills the lower right of the screen.
 
