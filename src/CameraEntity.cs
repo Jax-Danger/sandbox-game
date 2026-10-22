@@ -58,7 +58,7 @@ public static class CameraFeeds
         r.Material = m;
         if (!Application.IsHeadless && p.Go.Transform.Find("CamHandle") is null)
         {
-            try { p.Go.GetComponent<MeshRenderer>()?.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+            try { p.Go.GetComponent<MeshRenderer>()?.Material?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             var dark = Mats.New(g.Shader); dark.SetColor("_MainColor", new Color(0.07f, 0.07f, 0.08f, 1f));
             var rub = Mats.New(g.Shader); rub.SetColor("_MainColor", new Color(0.12f, 0.12f, 0.13f, 1f));
             var stl = Mats.New(g.Shader); stl.SetColor("_MainColor", new Color(0.62f, 0.63f, 0.66f, 1f));
@@ -99,15 +99,15 @@ public static class CameraFeeds
         if (++_frame % 2 != 0) return;
         if (_rt is null)
         {
-            _rt = new RenderTexture(Width, Height, true, [TextureImageFormat.Color4b]);
+            _rt = new RenderTexture(Width, Height, true, [TextureFormat.RGBA8]);
             _camGo = new GameObject("FeedCamera");
             _cam = _camGo.AddComponent<Camera>();
             _cam.FieldOfView = 70f;
             _cam.NearClipPlane = 0.05f;
             _cam.FarClipPlane = 300f;
-            _cam.ClearFlags = CameraClearFlags.Skybox;
+            _cam.Background = CameraBackground.Skybox;
             _cam.Target = _rt;
-            try { _cam.Effects = [new TonemapperEffect()]; } catch { } // match the main view's exposure
+            _cam.Tonemapping = Graphics.Tonemapper(); // match the main view's exposure
             _cam.Enabled = false; // rendered manually, never as a scene camera
             g.World.Add(_camGo);
         }
@@ -115,7 +115,7 @@ public static class CameraFeeds
         _camGo!.Transform.Position = t.Position + t.Forward * 0.42f;
         _camGo.Transform.Rotation = t.Rotation;
         _cam!.UpdateRenderData();
-        (_cam.Pipeline ?? DefaultRenderPipeline.Default).Render(_cam, new RenderingData());
+        _cam.Render();
         Renders++;
     }
 

@@ -19,11 +19,11 @@ public static class ProcTex
                 int i = (y * w + x) * 4;
                 data[i] = r; data[i + 1] = g; data[i + 2] = b; data[i + 3] = a;
             }
-        // Same upload path as Prowl's image importer (Magick → Texture2D.FromImage, 16-bit RGBA, flipped rows).
-        var settings = new ImageMagick.MagickReadSettings { Width = (uint)w, Height = (uint)h, Format = ImageMagick.MagickFormat.Rgba, Depth = 8 };
-        using (var img = new ImageMagick.MagickImage(data, settings))
-            t = Texture2D.FromImage(img, generateMipmaps: true);
-        try { t.SetWrapModes(TextureWrap.Repeat, TextureWrap.Repeat); } catch { }
+        // Engine 1.0 uploads raw RGBA8 directly (no Magick round trip). Linear (not sRGB) to match the v1.0 GL look.
+        t = new Texture2D((uint)w, (uint)h, TextureFormat.RGBA8, mipmaps: true, srgb: Environment.GetEnvironmentVariable("SANDBOX_SRGBTEX") == "1");
+        t.SetData(new Memory<byte>(data));
+        try { t.GenerateMipmaps(); } catch { }
+        try { t.SetWrap(WrapMode.Repeat); } catch { }
         return Cache[key] = t;
     }
 

@@ -48,7 +48,7 @@ public sealed class Prop
         {
             _partBase = [];
             foreach (MeshRenderer r in Go.GetComponentsInChildren<MeshRenderer>())
-                if (r.GameObject != Go && r.Material.Res is { } m && !ReferenceEquals(m, Material) && m._properties.HasColor("_MainColor")) _partBase.Add((m, m._properties.GetColor("_MainColor")));
+                if (r.GameObject != Go && r.Material is { } m && !ReferenceEquals(m, Material) && m._properties.HasColor("_MainColor")) _partBase.Add((m, m._properties.GetColor("_MainColor")));
         }
         foreach (var (m, bc) in _partBase) m.SetColor("_MainColor", Frozen ? bc : Lift(bc, k));
     }

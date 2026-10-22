@@ -201,10 +201,10 @@ public sealed partial class ToolGun
     }
 }
 
-public sealed class NoCollideLink : MonoBehaviour { public Prop? Other; }
+public sealed class NoCollideLink : Component { public Prop? Other; }
 
 /// <summary>Spring band: pulls two anchor points together past its rest length (damped).</summary>
-public sealed class ElasticBand : MonoBehaviour
+public sealed class ElasticBand : Component
 {
     public Prop? Other;
     public Float3 LocalA, LocalB;
@@ -232,7 +232,7 @@ public sealed class ElasticBand : MonoBehaviour
 }
 
 /// <summary>Holds its prop at a target height; up/down keys move the target.</summary>
-public sealed class Hoverball : MonoBehaviour
+public sealed class Hoverball : Component
 {
     public KeyCode Up, Down;
     public float Strength = 1f, Target;
@@ -280,7 +280,7 @@ public sealed class Hoverball : MonoBehaviour
 }
 
 /// <summary>Sprays sparks along its normal while its key is held.</summary>
-public sealed class Emitter : MonoBehaviour
+public sealed class Emitter : Component
 {
     public KeyCode Key;
     public float Rate = 8f;

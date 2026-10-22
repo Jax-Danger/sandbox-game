@@ -13,7 +13,7 @@ public static class Town
     public static List<Door> Doors { get; } = [];
     public static List<Float3> Waypoints { get; } = [];
     /// <summary>Night-lit lamp glass materials and their point lights; DayNight fades them in after dusk.</summary>
-    public static List<(Material Glass, PointLight? Light)> NightLamps { get; } = [];
+    public static List<(Material Glass, Light? Light)> NightLamps { get; } = [];
     public static GameObject? Atm { get; set; }
     public static GameObject? Board { get; set; }
     public static Float3 CellCenter { get; set; }
@@ -51,7 +51,7 @@ public static class Town
 /// A hinged door. Static collider while closed; swings open (collider off) with E. In Roleplay, unowned doors with a
 /// price can be bought (F2), owned doors locked/unlocked (L), and thieves can pick locked ones.
 /// </summary>
-public sealed class Door : MonoBehaviour
+public sealed class Door : Component
 {
     public string Id = "", Title = "Door";
     public int Price;
@@ -114,8 +114,8 @@ public sealed class Door : MonoBehaviour
     }
 }
 
-public sealed class AtmMachine : MonoBehaviour { }
-public sealed class LawsBoard : MonoBehaviour { }
+public sealed class AtmMachine : Component { }
+public sealed class LawsBoard : Component { }
 
 public static partial class MapBuilder
 {
@@ -145,7 +145,7 @@ public static partial class MapBuilder
         {
             var outer = Shape(scene, shader, "~Outskirts", Mesh.CreateCube(new Float3(1400f, 0.02f, 1400f)), new Float3(0f, -0.04f, 0f), new Color(0.4f, 0.46f, 0.31f, 1f));
             if (outer.GetComponent<MeshRenderer>() is { } om && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
-            { om.Material.Res?.SetTexture("_MainTex", ProcTex.Grass()); om.Material.Res?.SetVector("_Tiling", new Float2(350f, 350f)); }
+            { om.Material?.SetTexture("_MainTex", ProcTex.Grass()); om.Material?.SetVector("_Tiling", new Float2(350f, 350f)); }
             var rng = new Random(77);
             var crowns = new[] { new List<Mesh>(), new List<Mesh>(), new List<Mesh>() }; var trunks = new List<Mesh>(); // merged: 4 draws, not 300
             for (int i = 0; i < 150; i++)
@@ -380,13 +380,13 @@ public static partial class MapBuilder
                 Meshes.RoundedBox(new Float3(0.025f, 0.32f, 0.025f), 0.006f) is var lpost ? Meshes.Merge(Off(lpost, 0.12f, 0.17f, 0f), Off(lpost, -0.12f, 0.17f, 0f), Off(lpost, 0f, 0.17f, 0.12f), Off(lpost, 0f, 0.17f, -0.12f)) : null!),
                 lp + new Float3(0f, 3.95f, 0f), new Color(0.12f, 0.12f, 0.13f, 1f), euler: new Float3(0f, 45f, 0f));
             var glass = Shape(scene, shader, "~Lamp glass", Meshes.Lathe("tlglass", [(0.0001f, 0f), (0.1f, 0f), (0.15f, 0.31f), (0.0001f, 0.31f)], 4), lp + new Float3(0f, 3.97f, 0f), new Color(1f, 0.92f, 0.70f, 1f), euler: new Float3(0f, 45f, 0f));
-            if (!Application.IsHeadless && glass.GetComponent<MeshRenderer>()?.Material.Res is { } gmat)
+            if (!Application.IsHeadless && glass.GetComponent<MeshRenderer>()?.Material is { } gmat)
             {
                 _batch.Remove(glass); // keep its own material so it can glow at night
                 try { gmat.SetTexture("_EmissionTex", ProcTex.Solid(255, 214, 150)); gmat.SetFloat("_EmissionIntensity", 0f); } catch { }
                 var lgo = new GameObject("~Lamp light");
                 lgo.Transform.Position = lp + new Float3(0f, 3.9f, 0f);
-                PointLight pl = lgo.AddComponent<PointLight>();
+                Light pl = lgo.AddLight(LightType.Point);
                 pl.Color = new Color(1f, 0.78f, 0.5f, 1f); pl.Range = 13f; pl.Intensity = 0f; pl.CastShadows = false;
                 Add(scene, lgo);
                 Town.NightLamps.Add((gmat, pl));

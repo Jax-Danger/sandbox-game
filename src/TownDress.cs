@@ -271,7 +271,7 @@ public static partial class MapBuilder
         foreach (var (col, list) in b)
         {
             var fgo = Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
-            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass))) || col.Equals(LanternGlass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material.Res is { } wm)
+            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass))) || col.Equals(LanternGlass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material is { } wm)
             {
                 _batch.Remove(fgo);
                 try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 168, 86)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }

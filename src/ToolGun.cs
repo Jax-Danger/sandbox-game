@@ -178,7 +178,7 @@ public sealed partial class ToolGun(PropManager props)
 }
 
 /// <summary>Lifts its prop with a steady upward force. Shows a red sphere above the prop.</summary>
-public sealed class Balloon : MonoBehaviour
+public sealed class Balloon : Component
 {
     private const float Gravity = 9.81f;
     private float _lift = 1.45f; // multiple of the prop's weight

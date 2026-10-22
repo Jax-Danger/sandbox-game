@@ -15,7 +15,7 @@ internal static class Program
             float soakSecs = si >= 0 && si + 1 < args.Length && float.TryParse(args[si + 1], out float ss) ? ss : 120f;
             int seed = si >= 0 && si + 2 < args.Length && int.TryParse(args[si + 2], out int sd) ? sd : 1;
             game.SelfTest = si >= 0 ? new SelfTest { Soak = new Soak(soakSecs, seed) } : new SelfTest();
-            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = si >= 0 ? soakSecs + 20f : 26, TargetFps = 60 });
+            game.RunHeadless(new HeadlessRunOptions { MaxSeconds = si >= 0 ? soakSecs + 20f : 26, TargetFrameRate = 60 });
             return game.SelfTest.ExitCode;
         }
 

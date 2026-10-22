@@ -58,13 +58,13 @@ public sealed class IconRenderer
         cam.FieldOfView = 30f;
         cam.NearClipPlane = 0.05f;
         cam.FarClipPlane = 50f;
-        cam.ClearFlags = CameraClearFlags.SolidColor;
-        cam.ClearColor = new Color(0f, 0f, 0f, 0f);
+        cam.Background = CameraBackground.Color;
+        cam.BackgroundColor = new Color(0f, 0f, 0f, 0f);
         scene.Add(camGo);
 
         var lightGo = new GameObject("IconLight");
         lightGo.Transform.LocalEulerAngles = new Float3(-40f, 35f, 0f);
-        DirectionalLight light = lightGo.AddComponent<DirectionalLight>();
+        Light light = lightGo.AddLight(LightType.Directional);
         light.Intensity = 1.6f;
         light.CastShadows = false;
         scene.Add(lightGo);
@@ -72,12 +72,12 @@ public sealed class IconRenderer
         // Soft fill from the opposite side and a cool rim from behind, so dark guns and props don't read as silhouettes.
         var fillGo = new GameObject("IconFill");
         fillGo.Transform.LocalEulerAngles = new Float3(-15f, -140f, 0f);
-        DirectionalLight fill = fillGo.AddComponent<DirectionalLight>();
+        Light fill = fillGo.AddLight(LightType.Directional);
         fill.Intensity = 0.55f; fill.CastShadows = false; fill.Color = new Color(0.85f, 0.9f, 1f, 1f);
         scene.Add(fillGo);
         var rimGo = new GameObject("IconRim");
         rimGo.Transform.LocalEulerAngles = new Float3(-25f, 200f, 0f);
-        DirectionalLight rim = rimGo.AddComponent<DirectionalLight>();
+        Light rim = rimGo.AddLight(LightType.Directional);
         rim.Intensity = weapon ? 1.1f : 0.6f; rim.CastShadows = false; rim.Color = new Color(0.8f, 0.9f, 1f, 1f);
         scene.Add(rimGo);
 
@@ -111,7 +111,7 @@ public sealed class IconRenderer
         {
             var pts = new List<Float3>();
             foreach (MeshRenderer mr in subject.GetComponentsInChildren<MeshRenderer>())
-                if (mr.Mesh.Res?.Vertices is { } vs)
+                if (mr.Mesh?.Vertices is { } vs)
                     for (int i = 0; i < vs.Length; i += Math.Max(1, vs.Length / 400)) pts.Add(mr.GameObject.Transform.TransformPoint(vs[i]));
             if (pts.Count > 3)
             {
@@ -130,10 +130,10 @@ public sealed class IconRenderer
         camGo.Transform.Position = dir * dist;
         camGo.Transform.Rotation = Quaternion.LookRotation(-dir, Float3.UnitY);
 
-        var rt = new RenderTexture(Size, Size, true, [TextureImageFormat.Color4b]);
+        var rt = new RenderTexture(Size, Size, true, [TextureFormat.RGBA8]);
         cam.Target = rt;
         cam.UpdateRenderData();
-        (cam.Pipeline ?? DefaultRenderPipeline.Default).Render(cam, new RenderingData());
+        cam.Render();
         scene.Disable();
         return rt;
     }

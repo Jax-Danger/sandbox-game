@@ -15,14 +15,14 @@ public static class CollisionPairs
     public static void Ignore(Rigidbody3D a, Rigidbody3D b)
     {
         if (a is null || b is null || ReferenceEquals(a, b)) return;
-        PhysicsWorld.IgnoreCollisionBetween(a, b);
+        a.GameObject.Scene.Physics.IgnoreCollisionBetween(a, b);
         Link(a, b); Link(b, a);
     }
 
     public static void Enable(Rigidbody3D a, Rigidbody3D b)
     {
         if (a is null || b is null) return;
-        PhysicsWorld.EnableCollisionBetween(a, b);
+        a.GameObject.Scene.Physics.EnableCollisionBetween(a, b);
         Unlink(a, b); Unlink(b, a);
     }
 
@@ -32,7 +32,7 @@ public static class CollisionPairs
         if (body is null || !_pairs.Remove(body, out var others)) return;
         foreach (Rigidbody3D o in others)
         {
-            try { PhysicsWorld.EnableCollisionBetween(body, o); } catch { }
+            try { body.GameObject.Scene.Physics.EnableCollisionBetween(body, o); } catch { }
             Unlink(o, body);
         }
     }

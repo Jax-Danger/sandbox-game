@@ -4,7 +4,7 @@ using Prowl.Runtime;
 namespace Sandbox;
 
 /// <summary>Explosive barrel: blows up when shot enough, hit by an explosion, or slammed hard.</summary>
-public sealed class ExplosiveBarrel : MonoBehaviour
+public sealed class ExplosiveBarrel : Component
 {
     public SandboxGame? Game;
     public float Health = 20f;
@@ -35,7 +35,7 @@ public static class KeyState
 }
 
 /// <summary>Press with E (or shoot it) to toggle its key on/off, like GMod's button bound to a numpad key.</summary>
-public sealed class SandboxButton : MonoBehaviour
+public sealed class SandboxButton : Component
 {
     public KeyCode Key = KeyCode.T;
     public bool On { get; private set; }
@@ -69,7 +69,7 @@ public enum NpcTeam { Dummy, Friendly, Hostile, Citizen, Police }
 /// Keeps an NPC ragdoll upright and, for walkers, steers it: friendly/citizen NPCs wander, hostiles chase and hit the
 /// player, police chase a wanted player. Any hard hit (bullet, blast, physgun) knocks it limp.
 /// </summary>
-public sealed class DummyBrain : MonoBehaviour
+public sealed class DummyBrain : Component
 {
     public Ragdoll? Doll;
     public float StandHeight;
@@ -294,7 +294,7 @@ public static class EntityCatalog
         var m = Mats.New(g.Shader); m.SetColor("_MainColor", new Prowl.Vector.Color(0.12f, 0.12f, 0.13f, 1f)); br.Material = m;
         if (Application.IsHeadless || p.Go.Transform.Find("LightCage") is not null) return;
         // Frosted globe (plain white, not the crate's wood texture) inside a steel wire cage with a screw collar.
-        try { p.Go.GetComponent<MeshRenderer>()?.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+        try { p.Go.GetComponent<MeshRenderer>()?.Material?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         var wire = Mats.New(g.Shader); wire.SetColor("_MainColor", new Prowl.Vector.Color(0.2f, 0.2f, 0.22f, 1f));
         var cage = new GameObject("LightCage"); cage.SetParent(p.Go, false);
         var meshes = new List<Mesh>();
@@ -346,7 +346,7 @@ public static class EntityCatalog
         {
             housing.Mesh = Meshes.RoundedBox(new Prowl.Vector.Float3(0.6f, 0.56f, 0.6f), 0.05f, 4);
             p.SetSurface(SurfaceMaterial.Get("Metal"));
-            if (!Application.IsHeadless) try { housing.Material.Res?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
+            if (!Application.IsHeadless) try { housing.Material?.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         }
         if (!Application.IsHeadless && p.Go.Transform.Find("ButtonPlate") is null)
         {
@@ -401,7 +401,7 @@ public static class EntityCatalog
 }
 
 /// <summary>Explodes a barrel when it hits something hard (big sudden velocity change).</summary>
-public sealed class ImpactFuse : MonoBehaviour
+public sealed class ImpactFuse : Component
 {
     public SandboxGame? Game;
     private Prowl.Vector.Float3 _lastV;

@@ -42,14 +42,14 @@ public static class WorldWeapons
     {
         Float3 lo = new(1e9f), hi = new(-1e9f);
         foreach (var mr in gun.GetComponentsInChildren<MeshRenderer>())
-            if (mr.Mesh.Res?.Vertices is { } vs)
+            if (mr.Mesh?.Vertices is { } vs)
                 for (int i = 0; i < vs.Length; i++)
                 {
                     Float3 q = crate.Transform.InverseTransformPoint(mr.GameObject.Transform.TransformPoint(vs[i]));
                     lo = new Float3(MathF.Min(lo.X, q.X), MathF.Min(lo.Y, q.Y), MathF.Min(lo.Z, q.Z)); hi = new Float3(MathF.Max(hi.X, q.X), MathF.Max(hi.Y, q.Y), MathF.Max(hi.Z, q.Z));
                 }
         if (hi.X < lo.X) return;
-        if (crate.GetComponent<MeshRenderer>()?.Mesh.Res?.Vertices is { Length: > 0 } cv)
+        if (crate.GetComponent<MeshRenderer>()?.Mesh?.Vertices is { Length: > 0 } cv)
         {   // the crate's own mesh extent in its local space (props may be scaled)
             Float3 a = new(1e9f), b = new(-1e9f);
             foreach (var q in cv) { a = new Float3(MathF.Min(a.X, q.X), MathF.Min(a.Y, q.Y), MathF.Min(a.Z, q.Z)); b = new Float3(MathF.Max(b.X, q.X), MathF.Max(b.Y, q.Y), MathF.Max(b.Z, q.Z)); }

@@ -234,11 +234,11 @@ public static class Worlds
         const int W = 320, H = 180;
         try
         {
-            var rt = new RenderTexture(W, H, true, [TextureImageFormat.Color4b]);
+            var rt = new RenderTexture(W, H, true, [TextureFormat.RGBA8]);
             var prev = cam.Target;
             cam.Target = rt;
             cam.UpdateRenderData();
-            (cam.Pipeline ?? DefaultRenderPipeline.Default).Render(cam, new RenderingData());
+            cam.Render();
             cam.Target = prev;
             var px = new byte[W * H * 4];
             rt.MainTexture.GetData(new Memory<byte>(px));

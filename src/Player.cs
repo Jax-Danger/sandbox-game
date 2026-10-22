@@ -62,8 +62,8 @@ public sealed class Player
 
         CameraObject = new GameObject("Main Camera") { Tag = "Main Camera" };
         Camera = CameraObject.AddComponent<Camera>();
-        Camera.ClearFlags = CameraClearFlags.SolidColor;
-        Camera.ClearColor = new Color(0.53f, 0.70f, 0.86f, 1f);
+        Camera.Background = CameraBackground.Color;
+        Camera.BackgroundColor = new Color(0.53f, 0.70f, 0.86f, 1f);
         Camera.FieldOfView = 70f;
         Camera.NearClipPlane = 0.02f; // view models sit ~0.15 m from the eye
         Camera.NearClipPlane = 0.05f;

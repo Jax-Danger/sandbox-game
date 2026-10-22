@@ -121,7 +121,7 @@ public static class MapSave
                 data.Gadgets.Add(new GadgetData { Type = "hoverball", Prop = i, Point = F(hb.LocalPoint), Normal = [0, 1, 0], Value = hb.Strength, Target = hb.Target, Key = hb.Up.ToString(), Key2 = hb.Down.ToString() });
             foreach (Emitter em in p.Go.GetComponents<Emitter>())
                 data.Gadgets.Add(new GadgetData { Type = "emitter", Prop = i, Point = F(em.LocalPoint), Normal = F(em.LocalNormal), Value = em.Rate, Key = em.Key.ToString() });
-            foreach (PointLight l in p.Go.GetComponentsInChildren<PointLight>())
+            foreach (Light l in p.Go.GetComponentsInChildren<Light>())
                 data.Lights.Add(new LightData { Prop = i, Point = F(p.Go.Transform.InverseTransformPoint(l.Transform.Position)), Range = l.Range, Color = [l.Color.R, l.Color.G, l.Color.B, 1f] });
         }
         foreach (Prop w in g.Props.Props.Where(p => p.Kind == PropKind.Limb))

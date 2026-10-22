@@ -286,9 +286,9 @@ public sealed class ViewModel
                 {
                     m.SetTexture("_EmissionTex", ProcTex.Solid((byte)(part.Color.R * 255), (byte)(part.Color.G * 255), (byte)(part.Color.B * 255)));
                     m.SetFloat("_EmissionIntensity", 1.2f);
-                    if (part.Shape == 'L' && go.GetComponent<PointLight>() is null)
+                    if (part.Shape == 'L' && go.GetComponent<Light>() is null)
                     {
-                        PointLight glow = go.AddComponent<PointLight>();
+                        Light glow = go.AddLight(LightType.Point);
                         glow.Color = part.Color; glow.Range = 0.6f; glow.Intensity = 0.5f; glow.CastShadows = false;
                     }
                 }
@@ -473,13 +473,9 @@ public sealed class ViewModel
 
     private void ApplyEmbedded(AnimationClip clip, float seconds)
     {
-        float t = MathF.Min(seconds, clip.Duration);
-        foreach (var ab in clip.Bones)
-        {
-            if (!_nodes.TryGetValue(ab.BoneName, out GameObject? n)) continue;
-            if (ab.PosX is not null) n.Transform.LocalPosition = ab.EvaluatePositionAt(t);
-            if (ab.RotX is not null) n.Transform.LocalRotation = ab.EvaluateRotationAt(t);
-        }
+        // Engine 1.0 replaced per-bone clip curves with Motion clips; embedded user-model clips are not sampled yet
+        // (the JSON clips still drive user models). TODO(editor-migration): sample via an Animator once VMs are prefabs.
+        _ = clip; _ = seconds;
     }
 
 

@@ -69,15 +69,15 @@ public sealed class WeatherSystem
         Scene w = g.World;
         float flash = _flash * _flash;
         g.Sun.Intensity = g.Sun.Intensity * _sun + flash * 2.5f;
-        Color f = w.Fog.Color, grey = new(0.52f, 0.55f, 0.58f, 1f);
+        Color f = w.Environment.Fog.Color, grey = new(0.52f, 0.55f, 0.58f, 1f);
         float lum = (f.R + f.G + f.B) / 3f; // keep night dark
         grey = new Color(grey.R * MathF.Min(1f, lum * 1.4f), grey.G * MathF.Min(1f, lum * 1.4f), grey.B * MathF.Min(1f, lum * 1.4f), 1f);
-        w.Fog.Color = new Color(f.R + (grey.R - f.R) * _grey + flash * 0.4f, f.G + (grey.G - f.G) * _grey + flash * 0.4f, f.B + (grey.B - f.B) * _grey + flash * 0.45f, 1f);
-        w.Fog.Start = _start; w.Fog.End = _end;
-        w.Ambient.Strength *= 1f - _grey * 0.25f;
+        w.Environment.Fog.Color = new Color(f.R + (grey.R - f.R) * _grey + flash * 0.4f, f.G + (grey.G - f.G) * _grey + flash * 0.4f, f.B + (grey.B - f.B) * _grey + flash * 0.45f, 1f);
+        w.Environment.Fog.Start = _start; w.Environment.Fog.End = _end;
+        w.Environment.Ambient.Intensity *= 1f - _grey * 0.25f;
         // The procedural sky can't be greyed, so under heavy cloud clear to the fog colour (the horizon then matches).
-        if (_grey > 0.3f) { g.Player.Camera.ClearFlags = CameraClearFlags.SolidColor; g.Player.Camera.ClearColor = w.Fog.Color; }
-        w.Ambient.SkyColor = w.Ambient.SkyColor * (1f - _grey * 0.35f) + new Float4(flash * 0.5f, flash * 0.5f, flash * 0.6f, 0f);
+        if (_grey > 0.3f) { g.Player.Camera.Background = CameraBackground.Color; g.Player.Camera.BackgroundColor = w.Environment.Fog.Color; }
+        w.Environment.Ambient.SkyColor = DayNightCycle.C(new Float4(w.Environment.Ambient.SkyColor.R, w.Environment.Ambient.SkyColor.G, w.Environment.Ambient.SkyColor.B, 1f) * (1f - _grey * 0.35f) + new Float4(flash * 0.5f, flash * 0.5f, flash * 0.6f, 0f));
     }
 
     private void TickRain(SandboxGame g, float dt)

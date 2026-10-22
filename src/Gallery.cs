@@ -202,7 +202,7 @@ public static class Gallery
                         foreach (Prop l in rr.Limbs)
                             foreach (MeshRenderer mr in l.Go.GetComponentsInChildren<MeshRenderer>())
                             {
-                                Prowl.Runtime.Resources.Mesh? me = mr.Mesh.Res; if (me is null) continue;
+                                Prowl.Runtime.Resources.Mesh? me = mr.Mesh; if (me is null) continue;
                                 bool bad = me.Vertices.Any(v => !float.IsFinite(v.X + v.Y + v.Z)) || (me.Normals?.Any(v => !float.IsFinite(v.X + v.Y + v.Z) || Float3.Length(v) < 0.5f) ?? false)
                                     || (me.HasTangents && me.Tangents.Any(v => !float.IsFinite(v.X + v.Y + v.Z + v.W)));
                                 if (bad) Console.WriteLine($"[nan] {rr.Name} {l.Go.Name}/{mr.GameObject.Name} verts={me.Vertices.Length} v={me.Vertices.Count(v => !float.IsFinite(v.X + v.Y + v.Z))} n={me.Normals?.Count(v => !float.IsFinite(v.X + v.Y + v.Z))} nz={me.Normals?.Count(v => Float3.Length(v) < 0.5f)} nl={me.Normals?.Length} t={(me.HasTangents ? me.Tangents.Count(v => !float.IsFinite(v.X + v.Y + v.Z + v.W)) : -1)}");
@@ -222,7 +222,7 @@ public static class Gallery
 }
 
 /// <summary>Drives a car through a fixed input script and logs speed, yaw rate, roll and slip angle.</summary>
-public sealed class DriveTest : MonoBehaviour
+public sealed class DriveTest : Component
 {
     private SandboxGame _g = null!; private Buggy _car = null!; private float _t, _next; private string _path = "";
     private float _maxRoll, _maxSlip; private readonly System.Text.StringBuilder _log = new();

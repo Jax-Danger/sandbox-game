@@ -1,5 +1,6 @@
 using Prowl.PaperUI;
 using Prowl.Runtime;
+using Prowl.Runtime.Rendering;
 using Prowl.Runtime.Resources;
 using Prowl.Vector;
 
@@ -38,12 +39,12 @@ public sealed partial class SandboxGame : Game
     public bool Flashlight { get; private set; }
     /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
     public bool MenuBackdrop { get; private set; }
-    private SpotLight? _flashlight;
+    private Light? _flashlight;
     private float _zoom, _frameStart;
     public bool AimingAtProp { get; private set; }
     public bool InVehicle => Vehicles.InVehicle;
     public Shader Shader { get; private set; } = null!;
-    public DirectionalLight Sun { get; private set; } = null!;
+    public Light Sun { get; private set; } = null!;
     private GameObject? _horizon;
     private Material? _horizonMat;
     /// <summary>Keeps the horizon skirt the same colour as fog and sky horizon (no seam at dusk/night).</summary>
@@ -78,18 +79,18 @@ public sealed partial class SandboxGame : Game
         Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_ui_click", 0.7f); };
         World = new Scene();
         World.Physics.UseMultithreading = false; // see EndUpdate: only big worlds use Jitter's worker pool
-        Shader = Shader.LoadDefault(DefaultShader.Standard);
+        Shader = Shader.LoadDefault(DefaultShader.Lit);
         Sun = MapBuilder.Build(World, Shader);
         // Atmosphere: procedural sky, soft linear distance fog matched to the horizon, hemisphere ambient.
-        World.Skybox.Mode = Scene.SkyboxMode.Procedural;
-        World.Fog.Mode = Scene.FogParams.FogMode.Linear;
-        World.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
-        World.Fog.Start = 100f;
-        World.Fog.End = 284f;
-        World.Ambient.Mode = Scene.AmbientLightParams.AmbientMode.Hemisphere;
-        World.Ambient.SkyColor = new Float4(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
-        World.Ambient.GroundColor = new Float4(0.34f, 0.32f, 0.28f, 1f);
-        World.Ambient.Strength = 1.0f;
+        World.Environment.SkyMaterial = SceneEnvironment.CreateSkyMaterial(BuiltInSky.Procedural);
+        World.Environment.Fog.Mode = FogMode.Linear;
+        World.Environment.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
+        World.Environment.Fog.Start = 100f;
+        World.Environment.Fog.End = 284f;
+        World.Environment.Ambient.Mode = AmbientMode.Hemisphere;
+        World.Environment.Ambient.SkyColor = new Color(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
+        World.Environment.Ambient.GroundColor = new Color(0.34f, 0.32f, 0.28f, 1f);
+        World.Environment.Ambient.Intensity = 1.0f;
         if (!Application.IsHeadless)
         {
             // Horizon skirt: a ring past the fog end (fully fogged, so it takes the fog colour) that hides the procedural
@@ -98,7 +99,7 @@ public sealed partial class SandboxGame : Game
             var hr = _horizon.AddComponent<MeshRenderer>();
             (float, float)[] prof = [(290f, -260f), (290f, 5f)]; // top rides just above eye level
             hr.Mesh = Meshes.Merge(Meshes.Lathe("horizonA", prof, 48), Meshes.Lathe("horizonB", prof.Reverse().ToArray(), 48));
-            var hm = Mats.New(Shader); hm.SetColor("_MainColor", World.Fog.Color); hr.Material = hm; _horizonMat = hm;
+            var hm = Mats.New(Shader); hm.SetColor("_MainColor", World.Environment.Fog.Color); hr.Material = hm; _horizonMat = hm;
             World.Add(_horizon);
         }
         Props = new PropManager(World, Shader);
@@ -107,7 +108,7 @@ public sealed partial class SandboxGame : Game
         Roleplay = new RoleplaySystem(this);
         DummyBrain.Game = this;
         Player = new Player(World, new Float3(0f, 0.1f, -10f), 0f);
-        if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1") Player.Camera.ClearFlags = CameraClearFlags.Skybox;
+        if (Environment.GetEnvironmentVariable("SANDBOX_SOLIDSKY") != "1") Player.Camera.Background = CameraBackground.Skybox;
         DayNight.Apply(this);
         PhysGun = new PhysGun(Props);
         ToolGun = new ToolGun(Props);
@@ -183,8 +184,8 @@ public sealed partial class SandboxGame : Game
         Props.Protection.Load(Settings.Buddies);
         ApplySettingsLive();
         GraphicsQuality gq = Settings.LowPower ? GraphicsQuality.Low : Settings.Graphics;
-        ShadowQuality q = gq == GraphicsQuality.Low ? ShadowQuality.Hard : ShadowQuality.Soft;
-        Sun.ShadowQuality = q; Sun.ShadowStrength = 0.82f; if (Environment.GetEnvironmentVariable("SANDBOX_NOSHADOW") == "1") Sun.CastShadows = false; // outdoor skylight fills shadows; full-strength cores looked inked-in
+        ShadowFilter q = gq == GraphicsQuality.Low ? ShadowFilter.Hard : ShadowFilter.ContactHardening;
+        Sun.ShadowFilter = q; Sun.ShadowStrength = 0.82f; if (Environment.GetEnvironmentVariable("SANDBOX_NOSHADOW") == "1") Sun.CastShadows = false; // outdoor skylight fills shadows; full-strength cores looked inked-in
         Graphics.Apply(Player.Camera, gq);
     }
 
@@ -789,11 +790,11 @@ public sealed partial class SandboxGame
         if (_flashlight is null)
         {
             var go = new GameObject("Flashlight");
-            _flashlight = go.AddComponent<SpotLight>();
+            _flashlight = go.AddLight(LightType.Spot);
             _flashlight.Color = new Color(1f, 0.95f, 0.85f, 1f);
             _flashlight.Intensity = 4.5f;
             _flashlight.Range = 30f;
-            _flashlight.SpotAngle = 50f;
+            _flashlight.OuterAngle = 50f; _flashlight.InnerAngle = 30f;
             _flashlight.CastShadows = false;
             World.Add(go);
         }
@@ -956,10 +957,10 @@ public sealed partial class SandboxGame
             if (cam is null) return;
             var fb = Window.InternalWindow.FramebufferSize;
             int w = Math.Max(16, fb.X), h = Math.Max(16, fb.Y);
-            var rt = new RenderTexture(w, h, true, [TextureImageFormat.Color4b]);
+            var rt = new RenderTexture(w, h, true, [TextureFormat.RGBA8]);
             RenderTexture? old = cam.Target;
             cam.Target = rt;
-            try { cam.UpdateRenderData(); (cam.Pipeline ?? Prowl.Runtime.Rendering.DefaultRenderPipeline.Default).Render(cam, new Prowl.Runtime.Rendering.RenderingData()); }
+            try { cam.UpdateRenderData(); cam.Render(); }
             finally { cam.Target = old; cam.UpdateRenderData(); }
             byte[] px = new byte[w * h * 4];
             rt.MainTexture.GetData(new Memory<byte>(px));

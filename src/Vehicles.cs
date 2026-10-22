@@ -518,7 +518,7 @@ public sealed class Buggy
         GameObject Part(string name, Mesh m, Color c)
         {
             var go = Detail(g, name, m, Float3.Zero, c);
-            if (!Application.IsHeadless) try { go.GetComponent<MeshRenderer>().Material.Res?.SetTexture("_SurfaceTex", ProcTex.Surface(0.4f, 0.7f)); } catch { }
+            if (!Application.IsHeadless) try { go.GetComponent<MeshRenderer>().Material?.SetTexture("_SurfaceTex", ProcTex.Surface(0.4f, 0.7f)); } catch { }
             return go;
         }
         Float3 Body(Float3 p) => Go.Transform.TransformPoint(p);

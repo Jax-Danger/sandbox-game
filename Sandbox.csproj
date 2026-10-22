@@ -36,6 +36,7 @@
 
   <ItemGroup>
     <ProjectReference Include="external/Prowl/Prowl.Runtime/Prowl.Runtime.csproj" />
+    <PackageReference Include="Magick.NET-Q16-AnyCPU" Version="14.13.0" />
   </ItemGroup>
 
 </Project>

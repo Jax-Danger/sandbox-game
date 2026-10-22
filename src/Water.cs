@@ -56,7 +56,7 @@ public static class Water
 }
 
 /// <summary>Ticks buoyancy for every prop and vehicle once per physics step.</summary>
-public sealed class WaterSimulator : MonoBehaviour
+public sealed class WaterSimulator : Component
 {
     public SandboxGame? Game;
     private int _sweep;

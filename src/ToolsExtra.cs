@@ -176,7 +176,7 @@ public sealed partial class ToolGun
         var go = new GameObject("Light");
         go.SetParent(prop.Go, false);
         go.Transform.Position = worldPos;
-        PointLight l = go.AddComponent<PointLight>();
+        Light l = go.AddLight(LightType.Point);
         l.Range = range;
         l.Color = color;
         l.Intensity = 4f;
@@ -277,7 +277,7 @@ public sealed class ActionUndo(string label, Action undo) : IUndoable
 }
 
 /// <summary>Draws a rope between two anchors (on this object and on another prop).</summary>
-public sealed class RopeVisual : MonoBehaviour
+public sealed class RopeVisual : Component
 {
     private Float3 _localA, _localB;
     private Prop? _b;
@@ -292,7 +292,7 @@ public sealed class RopeVisual : MonoBehaviour
         _localA = localA; _b = b; _localB = localB;
         if (_mat is null)
         {
-            _mat = Mats.New(Shader.LoadDefault(DefaultShader.Standard));
+            _mat = Mats.New(Shader.LoadDefault(DefaultShader.Lit));
             _mat.SetColor("_MainColor", new Color(0.55f, 0.42f, 0.28f, 1f));
             try { _mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
         }
@@ -328,7 +328,7 @@ public sealed class RopeVisual : MonoBehaviour
 }
 
 /// <summary>Key-bound thruster: pushes the prop opposite to the surface normal while its key is held.</summary>
-public sealed class Thruster : MonoBehaviour
+public sealed class Thruster : Component
 {
     public KeyCode Key;
     public float Multiple = 1.5f;
@@ -376,7 +376,7 @@ public sealed class Thruster : MonoBehaviour
 }
 
 /// <summary>Drives a wheel's hinge motor from two keys.</summary>
-public sealed class WheelMotor : MonoBehaviour
+public sealed class WheelMotor : Component
 {
     public HingeJoint? Joint;
     public KeyCode Fwd, Back;

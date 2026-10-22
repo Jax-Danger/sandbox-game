@@ -246,7 +246,7 @@ public static partial class ModelProps
 }
 
 /// <summary>A seat the player can sit in with E (weld it into a contraption to ride it). E again stands up.</summary>
-public sealed class Seat : MonoBehaviour
+public sealed class Seat : Component
 {
     public ModelDef? Def;
     public Float3 SitOffset => new(0f, (Def?.Collider.Y ?? 0.9f) * 0.05f - 0.2f, 0.02f);

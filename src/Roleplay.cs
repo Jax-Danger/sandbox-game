@@ -540,7 +540,7 @@ public sealed class RoleplaySystem(SandboxGame g)
 }
 
 /// <summary>Prints money into its own internal tray (saved in Prop.EntityData) every 20 s.</summary>
-public sealed class MoneyPrinter : MonoBehaviour
+public sealed class MoneyPrinter : Component
 {
     public Prop? Prop;
     public RoleplaySystem? Rp;

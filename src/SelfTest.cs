@@ -415,7 +415,7 @@ public sealed class SelfTest
                     t.Mode = ToolMode.Material; t.MaterialIndex = 4; t.Apply(a);
                     Check(a.Surface == SurfaceMaterial.All[4].Name, $"material tool sets {a.Surface}");
                     t.Mode = ToolMode.Light; t.SetHit(bb, bb.Go.Transform.Position + new Float3(0f, 0.5f, 0f), Float3.UnitY); t.Apply(bb);
-                    Check(bb.Go.GetComponentsInChildren<PointLight>().Any(), "light tool attaches a light");
+                    Check(bb.Go.GetComponentsInChildren<Light>().Any(), "light tool attaches a light");
                     t.Mode = ToolMode.Wheel; t.SetHit(bb, bb.Go.Transform.Position + new Float3(0.5f, 0f, 0f), Float3.UnitX);
                     int n0 = g.Props.Props.Count; t.Apply(bb);
                     Check(g.Props.Props.Count == n0 + 1 && g.Props.Props[^1].Go.GetComponent<HingeJoint>().IsValid(), "wheel tool adds a hinged wheel");
@@ -440,7 +440,7 @@ public sealed class SelfTest
                 _button = EntityCatalog.SpawnButton(g, new Float3(-26f, 0.3f, -24f), 0f);
                 _ball = EntityCatalog.SpawnBall(g, new Float3(-45f, 4f, 40f));
                 Prop lightEnt = EntityCatalog.SpawnLight(g, new Float3(-30f, 0.3f, -20f));
-                Check(lightEnt.Go.GetComponentsInChildren<PointLight>().Any(), "light entity glows");
+                Check(lightEnt.Go.GetComponentsInChildren<Light>().Any(), "light entity glows");
                 Check(SpawnCatalog.Entries.Count(e => e.Tab == MenuTab.Entities) >= 6, "entities tab lists NPCs, barrel, ball, light, button");
                 break;
             case 860:
@@ -574,17 +574,17 @@ public sealed class SelfTest
                     g.Hints.Reset(g); g.Settings.ShowHints = true;
                 }
                 {
-                    float fogEnd0 = g.World.Fog.End, sun0 = g.Sun.Intensity;
+                    float fogEnd0 = g.World.Environment.Fog.End, sun0 = g.Sun.Intensity;
                     bool ok = g.DevConsole.Execute(g, "weather storm") && g.Weather.Kind == WeatherKind.Storm;
                     for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);
-                    bool stormy = g.World.Fog.End < 100f && g.Weather.Bolts >= 1 && g.Weather.RainAmount > 0.9f && float.IsFinite(g.Sun.Intensity);
+                    bool stormy = g.World.Environment.Fog.End < 100f && g.Weather.Bolts >= 1 && g.Weather.RainAmount > 0.9f && float.IsFinite(g.Sun.Intensity);
                     g.Weather.Set(WeatherKind.Clear, g);
                     for (int i = 0; i < 60 * 20; i++) g.Weather.Tick(g, 1f / 60f);
-                    bool cleared = MathF.Abs(g.World.Fog.End - 284f) < 2f && g.Weather.RainAmount < 0.01f;
+                    bool cleared = MathF.Abs(g.World.Environment.Fog.End - 284f) < 2f && g.Weather.RainAmount < 0.01f;
                     bool bad = !g.DevConsole.Execute(g, "weather tornado") && !g.DevConsole.Execute(g, "weather 99");
                     var meta = new SessionMeta(); meta.Modifiers.Weather = "Fog";
                     bool parse = WeatherSystem.Parse(meta.Modifiers.Weather) == WeatherKind.Fog && WeatherSystem.Parse("garbage") == WeatherKind.Clear && WeatherSystem.Parse(null) == WeatherKind.Clear;
-                    Check(ok && stormy && cleared && bad && parse, $"weather: storm darkens/fogs/rains/lightning, clear restores, bad input rejected (fogEnd {fogEnd0:0}->{g.World.Fog.End:0})");
+                    Check(ok && stormy && cleared && bad && parse, $"weather: storm darkens/fogs/rains/lightning, clear restores, bad input rejected (fogEnd {fogEnd0:0}->{g.World.Environment.Fog.End:0})");
                 }
                 {
                     // View models: every rig builds with finite parts, firearms aim their sight onto the screen centre,
@@ -837,7 +837,7 @@ public sealed class SelfTest
             Check(bad == 0, $"human detail meshes have valid normals ({bad} bad)");
             var badNames = new List<string>(); int scanned = 0;
             foreach (var go in g.World.AllObjects.ToList())
-                if (go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh.Res is { } me && me.Normals is { Length: > 0 } nn)
+                if (go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh is { } me && me.Normals is { Length: > 0 } nn)
                 {
                     scanned++;
                     if (nn.Any(n => !float.IsFinite(n.X + n.Y + n.Z) || Float3.Length(n) < 0.5f)) badNames.Add(go.Name);

@@ -33,22 +33,22 @@ public static partial class MapBuilder
         _ => fallback,
     };
 
-    public static DirectionalLight CreateSun(Scene scene)
+    public static Light CreateSun(Scene scene)
     {
         GameObject lightGo = new("Directional Light");
-        DirectionalLight light = lightGo.AddComponent<DirectionalLight>();
+        Light light = lightGo.AddLight(LightType.Directional);
         light.Color = Color.White;
         light.Intensity = 1.4f;
-        light.ShadowQuality = ShadowQuality.Soft;
+        light.ShadowFilter = ShadowFilter.ContactHardening;
         lightGo.Transform.LocalEulerAngles = new Float3(-50f, 30f, 0f);
         scene.Add(lightGo);
         return light;
     }
 
     /// <summary>Back-compat: sun + default map.</summary>
-    public static DirectionalLight Build(Scene scene, Shader shader)
+    public static Light Build(Scene scene, Shader shader)
     {
-        DirectionalLight sun = CreateSun(scene);
+        Light sun = CreateSun(scene);
         Load(scene, shader, "flatgrass", null);
         return sun;
     }
@@ -333,7 +333,7 @@ public static partial class MapBuilder
             Float3 min = new(float.MaxValue), max = new(float.MinValue);
             var all = root.GetChildrenDeep().Prepend(root).ToList();
             foreach (GameObject go in all)
-                if (!IsMarker(go.Name) && go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh.Res is { } mesh)
+                if (!IsMarker(go.Name) && go.GetComponent<MeshRenderer>() is { } mr && mr.Mesh is { } mesh)
                 {
                     go.AddComponent<MeshCollider>().Mesh = mesh;
                     colliders++;
@@ -374,7 +374,7 @@ public static partial class MapBuilder
         foreach (var (go, info) in _batch)
         {
             if (!go.IsValid() || go.Transform.Parent != null || skip.Contains(go) || go.GetComponent<Door>() is not null) continue;
-            if (go.GetComponent<MeshRenderer>() is not { Enabled: true } mr0 || mr0.Mesh.Res is not { } m || m.Vertices.Length == 0) continue;
+            if (go.GetComponent<MeshRenderer>() is not { Enabled: true } mr0 || mr0.Mesh is not { } m || m.Vertices.Length == 0) continue;
             var key = ((int)(info.C.R * 255), (int)(info.C.G * 255), (int)(info.C.B * 255), (int)(info.C.A * 255), info.Look);
             if (!groups.TryGetValue(key, out var list)) groups[key] = list = [];
             list.Add(go);
@@ -387,7 +387,7 @@ public static partial class MapBuilder
             foreach (GameObject go in list)
             {
                 MeshRenderer r = go.GetComponent<MeshRenderer>()!;
-                Mesh m = r.Mesh.Res!; Transform t = go.Transform; Float2 tile = _batch[go].Tiling;
+                Mesh m = r.Mesh!; Transform t = go.Transform; Float2 tile = _batch[go].Tiling;
                 uint b = (uint)v.Count;
                 Float3[] mv = m.Vertices, mn = m.Normals; Float2[] mu = m.UV; uint[] mi = m.Indices;
                 for (int i = 0; i < mv.Length; i++)
