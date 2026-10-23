@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.3.0 — 2026-10-23
+- Stage 3 mesh baking: editor-only MeshBaker bakes the 25 parameterless procedural meshes (PropMeshes, VehicleModels, Meshes.RampDeck) to Assets/Meshes/*.mesh; verified they load as Mesh assets in the editor
+
 ## v1.2.2 — 2026-10-23
 - Saves, settings, logs and sound caches go through DataPaths (SANDBOX_DATA_DIR override); editor play tests use the project's Library/SandboxData, never the player's ~/.config/ProwlSandbox
 - Editor: game data path follows the project symlink (custom sky and fonts load), menu shows the real version

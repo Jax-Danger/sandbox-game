@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Sandbox</RootNamespace>
     <AssemblyName>Sandbox</AssemblyName>
-    <Version>1.2.2</Version>
+    <Version>1.3.0</Version>
     <!-- Desktop game, not a server: workstation non-concurrent GC (no background GC thread) and a tighter heap. -->
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
