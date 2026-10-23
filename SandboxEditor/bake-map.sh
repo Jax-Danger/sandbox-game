@@ -3,8 +3,15 @@
 # usage: ./bake-map.sh <mapid: flatgrass|hills|town> <SceneName>   (PROWL_CLI = path to Prowl.Cli, default ~/Projects/Prowl/Build/Cli/Prowl.Cli)
 # Afterwards Scenes/MainMenu.scene is open and its MapLibrary points at the new scene.
 set -e
+# Scene name defaults from the map id; an empty name used to write Scenes/Maps/.scene.
+case "$1" in flatgrass) D=Flatgrass;; hills) D=Hills;; town) D=Town;; *) echo "usage: $0 flatgrass|hills|town [SceneName]" >&2; exit 2;; esac
+set -- "$1" "${2:-$D}"
 PROJ=$(cd "$(dirname "$0")" && pwd)
-C="${PROWL_CLI:-$HOME/Projects/Prowl/Build/Cli/Prowl.Cli}"; P="--project $PROJ"
+export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}" PATH="$HOME/.dotnet:$PATH"
+# Build/Cli/Prowl.Cli (older Prowl builds) or Build/Cli/<Config>/<tfm>/Prowl.Cli (newer layout, e.g. the Fedora desktop).
+C="${PROWL_CLI:-$(find "$HOME/Projects/Prowl/Build/Cli" -maxdepth 3 -name Prowl.Cli -type f 2>/dev/null | head -1)}"; P="--project $PROJ"
+# Check the CLI reaches the open editor BEFORE deleting the previous bake.
+"$C" command tree $P >/dev/null 2>&1 || { echo "Prowl.Cli ($C) can't reach an editor with $PROJ open; start it with ~/Projects/run-editor.sh" >&2; exit 1; }
 rm -rf "$PROJ/Assets/Meshes/Maps/$1" "$PROJ/Assets/Materials/Maps/$1" "$PROJ/Assets/Scenes/Maps/$2.scene"*
 $C command asset Refresh $P >/dev/null 2>&1 || true
 $C command scene $P --action New --force >/dev/null

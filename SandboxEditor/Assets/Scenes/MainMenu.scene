@@ -98,21 +98,21 @@
                   "$id": 10,
                   "Id": "flatgrass",
                   "Scene": {
-                    "$asset": "361342a0-8088-4e56-ba25-7d92cd417ea3"
+                    "$asset": "3c79db73-0ef0-4f36-b462-e49d1419867a"
                   }
                 },
                 {
                   "$id": 11,
                   "Id": "hills",
                   "Scene": {
-                    "$asset": "dfb48253-3445-435a-9a55-e75787937562"
+                    "$asset": "30111dcd-ec56-430e-97be-10377d19b2bd"
                   }
                 },
                 {
                   "$id": 12,
                   "Id": "town",
                   "Scene": {
-                    "$asset": "0a681097-23b1-4e56-948b-792fca658690"
+                    "$asset": "e6f537d6-afd3-44ff-8b7b-59361b45fefd"
                   }
                 }
               ]
