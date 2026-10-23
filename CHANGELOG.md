@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.1.1 — 2026-10-23
+- Screenshots, world thumbnails and the self-test PNG check use a built-in PNG writer; Magick.NET dependency removed (editor script assemblies cannot reference it)
+
 ## v1.1.0 — 2026-10-23
 - Engine upgrade to Prowl 1.0 (main 2510d8fc, Vulkan): lights, volumes, scene environment, camera background, textures, physics pairs ported
 - Bodies keep the v1.0 Jitter damping (0.002 linear / 0.005 angular); imported maps turned a half turn to match the 1.0 glTF handedness

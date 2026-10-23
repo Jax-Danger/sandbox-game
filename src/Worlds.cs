@@ -244,11 +244,8 @@ public static class Worlds
             rt.MainTexture.GetData(new Memory<byte>(px));
             rt.Dispose();
             for (int i = 3; i < px.Length; i += 4) px[i] = 255;
-            var settings = new ImageMagick.MagickReadSettings { Width = W, Height = H, Format = ImageMagick.MagickFormat.Rgba, Depth = 8 };
-            using var img = new ImageMagick.MagickImage(px, settings);
-            img.Flip();
             string path = Path.Combine(folder, "icon.png");
-            img.Write(path + ".tmp", ImageMagick.MagickFormat.Png);
+            PngWriter.Write(path + ".tmp", px, W, H, bottomUp: true);
             File.Move(path + ".tmp", path, overwrite: true);
             _thumbs.Remove(path);
         }

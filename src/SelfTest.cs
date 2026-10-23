@@ -1109,7 +1109,7 @@ public sealed class SelfTest
         byte[] px = new byte[4 * 3 * 4];
         px[0] = 255; px[3] = 255; // bottom-left red (GL bottom-up)
         bool ok = true;
-        try { SandboxGame.WritePng(png, px, 4, 3); using var img = new ImageMagick.MagickImage(png); ok = img.Width == 4 && img.Height == 3; }
+        try { SandboxGame.WritePng(png, px, 4, 3); ok = PngWriter.Size(png) == (4, 3); }
         catch (Exception e) { ok = false; Console.WriteLine(e); }
         Check(ok && File.Exists(png) && !File.Exists(png + ".tmp"), "screenshot PNG writer handles unicode/space paths");
         string next = SandboxGame.NextScreenshotPath(new DateTime(2026, 1, 2, 3, 4, 5));

@@ -940,11 +940,8 @@ public sealed partial class SandboxGame
     public static void WritePng(string path, byte[] rgba, int w, int h)
     {
         Directory.CreateDirectory(Path.GetDirectoryName(path)!);
-        using var img = new ImageMagick.MagickImage(rgba, new ImageMagick.PixelReadSettings((uint)w, (uint)h, ImageMagick.StorageType.Char, ImageMagick.PixelMapping.RGBA));
-        img.Flip();
-        img.Alpha(ImageMagick.AlphaOption.Off);
         string tmp = path + ".tmp";
-        img.Write(tmp, ImageMagick.MagickFormat.Png);
+        PngWriter.Write(tmp, rgba, w, h, bottomUp: true);
         File.Move(tmp, path, true);
     }
 
