@@ -113,7 +113,7 @@
     },
     {
       "$id": 7,
-      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
       "Kind": 6L,
       "Surface": "Wood",
       "HalfHeight": 0.3F,
