@@ -77,7 +77,7 @@ public sealed class DayNightCycle
         _skyTried = true;
         try
         {
-            string path = Path.Combine(AppContext.BaseDirectory, "assets", "shaders", "SandboxSky.shader");
+            string path = Path.Combine(AssetRegistry.Root, "shaders", "SandboxSky.shader");
             _sky = new Material(Shader.LoadFromFile(path));
             g.World.Environment.SkyMaterial = _sky;
         }

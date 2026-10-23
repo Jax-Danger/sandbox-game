@@ -1,6 +1,10 @@
 Scenes:
   $id: 2
-  $values: []
+  $values:
+    - Path: "Scenes/Main.scene"
+      SceneGuid: "7ac299e5-c8a6-4268-85c9-da9a4872be67"
+      Enabled: true
+      $id: 3
 Config: 1
 OutputDirectory: "Builds"
 PackagingMode: 1
@@ -8,7 +12,7 @@ AssetMode: 1
 MaxPakSizeMB: 2048
 SelectedPipeline: ""
 PlatformProfiles:
-  $id: 3
+  $id: 4
   $values:
     - Platform: 0
       SelectedTargetId: "linux-x64"
@@ -17,7 +21,7 @@ PlatformProfiles:
       PublishAot: false
       WindowWidth: 1280
       WindowHeight: 720
-      $id: 4
+      $id: 5
       $type: "Prowl.Editor.Build.DesktopBuildProfile, Prowl.Editor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
 $id: 1
 $type: "Prowl.Editor.Projects.Settings.BuildSettings, Prowl.Editor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"

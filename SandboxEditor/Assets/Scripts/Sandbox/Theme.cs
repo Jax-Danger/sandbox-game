@@ -73,7 +73,7 @@ public static class Theme
 
     private static FontFile Load(string file)
     {
-        string path = Path.Combine(AppContext.BaseDirectory, "assets", "fonts", file);
+        string path = Path.Combine(AssetRegistry.Root, "fonts", file);
         if (File.Exists(path))
             return new FontFile(File.ReadAllBytes(path));
         // Fallback: Prowl's built-in Geist font.

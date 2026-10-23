@@ -2,6 +2,10 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.2.1 — 2026-10-23
+- Editor: Scenes/Main.scene with a SandboxHost bootstrap; pressing Play in the Prowl editor builds and runs the game (main menu verified on RADV)
+- Game data path resolves to the repo assets/ folder when running inside the editor; Main.scene added to the build scene list
+
 ## v1.2.0 — 2026-10-23
 - Editor project layout: new Prowl editor project SandboxEditor/ (SandboxEditor.prowl, ProjectSettings with the linux-x64 build target)
 - Game code moved to SandboxEditor/Assets/Scripts/Sandbox and compiles in the editor (0 errors); the standalone exe (src/Program.cs) builds from the same files
