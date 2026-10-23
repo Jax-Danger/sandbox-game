@@ -2,6 +2,13 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.9.3 — 2026-10-23
+- View model hands reworked (checked finger by finger on screen). Y Bot finger joints share the hand's frame (+Y along the finger, index → pinky on X), so fingers now flex about that axis with the correct sign (v1.9.1/2 bent them backwards, leaving flat, splayed hands); the thumb flexes about thumb × palm normal
+- Grips: closed grip round pistol/physgun/toolgun/rifle handles with the index on the trigger, a looser wrap round fore-ends, and the hand seated higher on the grip; bare hands use a relaxed, slightly curled pose held lower and wider, partly out of view
+- Arm size: the view model root's fake-FOV scale (FovScale, FovScale, 1) is undone on the arms, which also get a 0.85 uniform scale, so the hands keep human proportions instead of filling the lower screen (view model FOV setting unchanged, default 68)
+- Looking down with bare hands, the hands sink out of view so you see one body and your feet; the first-person body still hides its own arms, so only one pair of hands is ever drawn
+- Crosshair: the HUD now lays out in the game camera's render size instead of the window size. In the editor the window is shorter than the game view, which put the crosshair ~37 px above centre; it is now exactly at screen centre, on the camera forward ray that bullets, the physgun and the toolgun trace
+
 ## v1.9.2 — 2026-10-23
 - Garry's Mod style world model / view model split (LocalView.cs holds the layers and the single local-only flag, ready for a later client/server split; no networking): the world model is one full Y Bot with head and normal animation that every camera sees; the view model (weapon, arms-only Y Bot, headless first-person body) is on an owner-only layer drawn only by the local player's camera. In first person the owner's camera skips the world model, which still casts the player's shadow
 - Fixed the "two heads" in camera props: the feed camera survived from an old play session/world and kept showing a stale frame (old v1.9.0 body + view model rig). It is now rebuilt in the current world, and it never draws view model layers

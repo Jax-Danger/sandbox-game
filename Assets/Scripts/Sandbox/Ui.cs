@@ -45,10 +45,17 @@ public static class Ui
         return s.Step(target, Dt);
     }
 
+    /// <summary>
+    /// Size of the HUD's drawing space: the player camera's render target (the game view), which is what the overlay
+    /// covers. In a standalone build that equals the window; in the editor the game view is not the window, and using
+    /// the window put the crosshair ~37 px above the real screen centre (off the camera's forward ray).
+    /// </summary>
     public static (float W, float H) ScreenSize()
     {
-        var fb = Window.InternalWindow.FramebufferSize;
         float cs = Math.Max(0.01f, Window.ContentScale);
+        if (SandboxHost.Current?.Player?.Camera is { PixelWidth: > 0, PixelHeight: > 0 } cam)
+            return (cam.PixelWidth / cs, cam.PixelHeight / cs);
+        var fb = Window.InternalWindow.FramebufferSize;
         return (fb.X / cs, fb.Y / cs);
     }
 
