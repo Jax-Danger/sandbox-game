@@ -41,6 +41,19 @@ public sealed partial class SandboxGame : Game
     public bool Flashlight { get; private set; }
     /// <summary>True while the main menu's live scene is showing (no session): hides the view model, orbits the camera.</summary>
     public bool MenuBackdrop { get; private set; }
+    private Action<Silk.NET.Windowing.WindowState>? _onWindowState;
+    private Action? _onWindowClosing;
+
+    /// <summary>
+    /// Editor play stop: unhooks the window events. They are static, so the handlers kept every stopped play session's
+    /// SandboxGame (world, meshes, textures, render targets) alive; on the shared-memory GPU that GPU memory added up per
+    /// session until the kernel OOM killer took the editor down.
+    /// </summary>
+    public void Shutdown()
+    {
+        if (_onWindowState is not null) { Window.StateChanged -= _onWindowState; _onWindowState = null; }
+        if (_onWindowClosing is not null) { Window.Closing -= _onWindowClosing; _onWindowClosing = null; }
+    }
     private Light? _flashlight;
     private float _zoom, _frameStart;
     public bool AimingAtProp { get; private set; }
@@ -91,7 +104,7 @@ public sealed partial class SandboxGame : Game
     public override void Initialize()
     {
         Settings = Application.IsHeadless ? new Settings() : Settings.Load();
-        if (!Application.IsHeadless) Window.StateChanged += st => _minimized = st == Silk.NET.Windowing.WindowState.Minimized;
+        if (!Application.IsHeadless) { _onWindowState = st => _minimized = st == Silk.NET.Windowing.WindowState.Minimized; Window.StateChanged += _onWindowState; }
         Achievements.Load();
         Achievements.OnUnlock += a => { _hud.Notify($"Achievement unlocked · {a.Name}", ToastKind.Success); Sounds?.Play("sfx_ui_click", 0.7f); };
         World = new Scene();
@@ -154,7 +167,10 @@ public sealed partial class SandboxGame : Game
 
         SpawnMenuBackdrop();
         if (!Application.IsHeadless)
-            Window.Closing += () => SaveOnExit();
+        {
+            _onWindowClosing = SaveOnExit;
+            Window.Closing += _onWindowClosing;
+        }
 
         ApplySettings();
         if (Application.IsHeadless || SelfTest is not null) Menus.Go(Screen.Playing);

@@ -64,6 +64,14 @@ public static partial class MapBuilder
         return true;
     }
 
+    /// <summary>Editor play stop: forgets the map statics that point into the stopped session's world.</summary>
+    public static void ReleaseSession()
+    {
+        _objects.Clear(); _batch.Clear(); SpawnPoints.Clear();
+        Town.Reset(); Water.Clear(); Ragdoll.All.Clear();
+        BakedScenes.Clear();
+    }
+
 #if PROWL_EDITOR
     /// <summary>Editor bake: records the code-built map's gameplay data on a MapInfo GameObject.</summary>
     internal static MapInfo CaptureInfo(Scene scene, string map)

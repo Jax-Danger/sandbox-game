@@ -19,6 +19,12 @@ public static class EntityBaker
     {
         var g = SandboxHost.Current ?? throw new InvalidOperationException("Start play mode first.");
         Pending.Clear();
+        EntityLibrary.Enabled = false; // bake from the code-built models, never from earlier prefabs
+        try { return BakeAllCore(g, overwrite); } finally { EntityLibrary.Enabled = true; }
+    }
+
+    private static string BakeAllCore(SandboxGame g, bool overwrite)
+    {
         var baker = new AssetBaking();
         var log = new List<string>();
         Float3 at = new(0f, 200f, 0f); // out of sight, above the map

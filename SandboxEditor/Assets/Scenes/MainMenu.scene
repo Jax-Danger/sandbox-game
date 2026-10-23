@@ -37,7 +37,7 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,
@@ -46,7 +46,7 @@
           },
           {
             "$id": 6,
-            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
             "Props": {
               "$id": 7,
               "$values": [
@@ -90,7 +90,7 @@
           },
           {
             "$id": 8,
-            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
             "Maps": {
               "$id": 9,
               "$values": [
@@ -125,7 +125,7 @@
           },
           {
             "$id": 13,
-            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
             "SunScale": 0.55F,
             "AmbientScale": 0.7F,
             "StartTimeOfDay": 0.42F,
@@ -142,6 +142,83 @@
             "_enabledInHierarchy": true,
             "HideFlags": 0L,
             "Name": "NewGameTuning"
+          },
+          {
+            "$id": 14,
+            "$type": "Sandbox.EntityLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "Entities": {
+              "$id": 15,
+              "$values": [
+                {
+                  "$asset": "46a14cea-e691-4232-a7ef-0d8a97d20fa1"
+                },
+                {
+                  "$asset": "d29e48d7-3426-44d5-bb30-09def001d811"
+                },
+                {
+                  "$asset": "0a7063d4-8c05-4f7a-b04b-6de6d90d35c9"
+                },
+                {
+                  "$asset": "9a78f665-4dd9-4674-af38-511dc9708c94"
+                },
+                {
+                  "$asset": "cf46e7d2-d725-4a5a-9b47-0df60b46c575"
+                },
+                {
+                  "$asset": "60197fbc-bf1e-49a3-85ec-be7499db8d79"
+                },
+                {
+                  "$asset": "4e399359-2c3a-4ab8-893e-9ce609172b8f"
+                },
+                {
+                  "$asset": "e2aecce6-e392-41ba-b744-a26f95d5dc3b"
+                },
+                {
+                  "$asset": "f139b9b2-219d-4c8e-8bc4-3d8b08467ea6"
+                },
+                {
+                  "$asset": "bdf04dfc-f09d-4311-99ca-a342d30b1e08"
+                },
+                {
+                  "$asset": "c9518a5a-67cd-4bb6-a51f-52bd02c3ae5f"
+                },
+                {
+                  "$asset": "42d32550-e0be-4268-a037-cd901cde2104"
+                },
+                {
+                  "$asset": "3c93d055-3802-4e70-ba2f-0221898cce85"
+                },
+                {
+                  "$asset": "158cf0d8-a216-4dcf-a980-3cad1b392277"
+                },
+                {
+                  "$asset": "473814ea-2741-47e9-beca-d1402d077ddf"
+                },
+                {
+                  "$asset": "66957a91-1ccb-42d4-ad74-e3cedaff87ca"
+                },
+                {
+                  "$asset": "9ff3e61a-78f7-4d45-920e-cd24a0e94aae"
+                },
+                {
+                  "$asset": "fab1025b-dc7a-4fcf-a8f6-2e9ae914d84d"
+                },
+                {
+                  "$asset": "6da5f4fb-5a37-4859-8388-c3261b113610"
+                },
+                {
+                  "$asset": "b894f88e-a207-4a18-b08f-e6e652a287ff"
+                },
+                {
+                  "$asset": "eff6b66b-0b5c-41b3-a31b-7d4f07185a1b"
+                }
+              ]
+            },
+            "_identifier": "1c256042-95e2-4500-9ca0-ad0f9c7a2091",
+            "_enabled": true,
+            "_enabledInHierarchy": true,
+            "HideFlags": 0L,
+            "Name": "NewEntityLibrary"
           }
         ],
         "Children": [
@@ -151,84 +228,84 @@
     ]
   },
   "Environment": {
-    "$id": 14,
+    "$id": 16,
     "SkyMaterial": {
-      "$id": 15,
+      "$id": 17,
       "_shader": {
         "$asset": "73295c5c-0e55-4550-ae74-f13cd62796d2"
       },
       "_parent": NULL,
       "_properties": {
-        "$id": 16,
+        "$id": 18,
         "_colors": {
-          "$id": 17,
-          "entries": [
-
-          ]
-        },
-        "_vectors2": {
-          "$id": 18,
-          "entries": [
-
-          ]
-        },
-        "_vectors3": {
           "$id": 19,
           "entries": [
 
           ]
         },
-        "_vectors4": {
+        "_vectors2": {
           "$id": 20,
           "entries": [
 
           ]
         },
-        "_floats": {
+        "_vectors3": {
           "$id": 21,
           "entries": [
 
           ]
         },
-        "_ints": {
+        "_vectors4": {
           "$id": 22,
           "entries": [
 
           ]
         },
-        "_matrices": {
+        "_floats": {
           "$id": 23,
           "entries": [
 
           ]
         },
-        "_textures": {
+        "_ints": {
           "$id": 24,
           "entries": [
 
           ]
         },
-        "_textures3D": {
+        "_matrices": {
           "$id": 25,
           "entries": [
 
           ]
         },
-        "_texturesCube": {
+        "_textures": {
           "$id": 26,
+          "entries": [
+
+          ]
+        },
+        "_textures3D": {
+          "$id": 27,
+          "entries": [
+
+          ]
+        },
+        "_texturesCube": {
+          "$id": 28,
           "entries": [
 
           ]
         }
       },
       "_overrides": {
-        "$id": 27,
+        "$id": 29,
         "$values": [
 
         ]
       },
       "_keywords": {
-        "$id": 28,
+        "$id": 30,
         "entries": [
 
         ]
@@ -286,43 +363,43 @@
     }
   },
   "BakedLighting": {
-    "$id": 29,
+    "$id": 31,
     "Lightmaps": {
-      "$id": 30,
+      "$id": 32,
       "$values": [
 
       ]
     },
     "Placements": {
-      "$id": 31,
+      "$id": 33,
       "entries": [
 
       ]
     },
     "ProbePositions": {
-      "$id": 32,
-      "array": [
-
-      ]
-    },
-    "ProbeSH": {
-      "$id": 33,
-      "array": [
-
-      ]
-    },
-    "ProbeTetrahedra": {
       "$id": 34,
       "array": [
 
       ]
     },
+    "ProbeSH": {
+      "$id": 35,
+      "array": [
+
+      ]
+    },
+    "ProbeTetrahedra": {
+      "$id": 36,
+      "array": [
+
+      ]
+    },
     "ProbeTetNeighbours": {
-      "$id": 34
+      "$id": 36
     }
   },
   "LightmapBake": {
-    "$id": 35,
+    "$id": 37,
     "AtlasSize": 1024,
     "TexelsPerUnit": 20F,
     "DilatePixels": 2,

@@ -27,7 +27,24 @@ public static class WorldWeapons
     /// <summary>Builds the model as a child of <paramref name="parent"/>; returns null if the weapon has no model.</summary>
     public static GameObject? Attach(SandboxGame g, GameObject parent, string weaponId, Float3 localPos, Float3 localEuler)
     {
-        if (Application.IsHeadless || Def(g, weaponId) is not { } def) return null;
+        if (Application.IsHeadless) return null;
+        if (EntityLibrary.Find("Weapon", weaponId) is { } prefab && parent.Scene.IsValid())
+        {
+            // Baked prefab (editable in the editor): its root holds the "WorldWeapon" model built below.
+            GameObject inst = GameObject.Instantiate(prefab, parent.Scene, Float3.Zero, Quaternion.Identity);
+            GameObject? model = inst.Children.FirstOrDefault(c => c.Name == "WorldWeapon");
+            if (model.IsValid())
+            {
+                model!.SetParent(parent, false);
+                model.Transform.LocalPosition = localPos;
+                model.Transform.LocalEulerAngles = localEuler;
+                model.Transform.LocalScale = new Float3(Scale) / parent.Transform.LocalScale;
+                inst.Destroy();
+                return model;
+            }
+            inst.Destroy();
+        }
+        if (Def(g, weaponId) is not { } def) return null;
         var go = new GameObject("WorldWeapon");
         go.Transform.Parent = parent.Transform;
         go.Transform.LocalPosition = localPos;
