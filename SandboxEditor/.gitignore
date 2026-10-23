@@ -8,3 +8,14 @@ Builds/
 .claude/
 AGENTS.md
 CLAUDE.md
+# Large generated map bakes (regenerate with ./bake-map.sh hills Hills / town Town; Town meshes are ~180 MB)
+Assets/Meshes/Maps/hills/
+Assets/Meshes/Maps/hills.meta
+Assets/Meshes/Maps/town/
+Assets/Meshes/Maps/town.meta
+Assets/Materials/Maps/hills/
+Assets/Materials/Maps/hills.meta
+Assets/Materials/Maps/town/
+Assets/Materials/Maps/town.meta
+Assets/Scenes/Maps/Hills.scene*
+Assets/Scenes/Maps/Town.scene*

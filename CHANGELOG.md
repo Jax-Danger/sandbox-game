@@ -2,6 +2,11 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.5.0 — 2026-10-23
+- Stage 5 scenes: SceneBaker builds a map with MapBuilder into the open editor scene (unbatched, editable objects), bakes its meshes and materials as assets deduplicated by content, adds the sun and a SpawnPoint; SandboxEditor/bake-map.sh drives it
+- Scenes/Maps/Flatgrass.scene committed (54 objects, 25 meshes, 11 materials); Hills (435 objects) and Town (1001 objects, ~180 MB of meshes) bake locally and are git-ignored
+- SandboxGame.ApplyAtmosphere shared by the game and the baker
+
 ## v1.4.0 — 2026-10-23
 - Stage 4 prefabs: PrefabBaker builds each spawnable prop kind exactly like the game and saves Assets/Prefabs/Props/<Kind>.prefab (10) with its mesh (Assets/Meshes/Props) and material (Assets/Materials/Props) as assets
 - New PropDefinition component (kind, surface, half height) on every prop prefab; Scenes/PropShowcase.scene lays them all out

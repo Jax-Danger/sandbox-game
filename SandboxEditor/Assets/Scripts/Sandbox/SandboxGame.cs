@@ -73,6 +73,21 @@ public sealed partial class SandboxGame : Game
     public void Notify(string? message, ToastKind? kind = null) { _hud.Notify(message, kind); if (message is not null) Achievements.Observe(message); }
     public Achievements Achievements { get; } = new();
 
+    /// <summary>Atmosphere: procedural sky, soft linear distance fog matched to the horizon, hemisphere ambient.
+    /// Shared with the editor's SceneBaker so baked map scenes look like the game.</summary>
+    public static void ApplyAtmosphere(Scene scene)
+    {
+        scene.Environment.SkyMaterial = SceneEnvironment.CreateSkyMaterial(BuiltInSky.Procedural);
+        scene.Environment.Fog.Mode = FogMode.Linear;
+        scene.Environment.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
+        scene.Environment.Fog.Start = 100f;
+        scene.Environment.Fog.End = 284f;
+        scene.Environment.Ambient.Mode = AmbientMode.Hemisphere;
+        scene.Environment.Ambient.SkyColor = new Color(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
+        scene.Environment.Ambient.GroundColor = new Color(0.34f, 0.32f, 0.28f, 1f);
+        scene.Environment.Ambient.Intensity = 1.0f;
+    }
+
     public override void Initialize()
     {
         Settings = Application.IsHeadless ? new Settings() : Settings.Load();
@@ -83,16 +98,7 @@ public sealed partial class SandboxGame : Game
         World.Physics.UseMultithreading = false; // see EndUpdate: only big worlds use Jitter's worker pool
         Shader = Shader.LoadDefault(DefaultShader.Lit);
         Sun = MapBuilder.Build(World, Shader);
-        // Atmosphere: procedural sky, soft linear distance fog matched to the horizon, hemisphere ambient.
-        World.Environment.SkyMaterial = SceneEnvironment.CreateSkyMaterial(BuiltInSky.Procedural);
-        World.Environment.Fog.Mode = FogMode.Linear;
-        World.Environment.Fog.Color = new Color(0.72f, 0.80f, 0.88f, 1f);
-        World.Environment.Fog.Start = 100f;
-        World.Environment.Fog.End = 284f;
-        World.Environment.Ambient.Mode = AmbientMode.Hemisphere;
-        World.Environment.Ambient.SkyColor = new Color(0.6f, 0.67f, 0.78f, 1f); // a touch less blue: shadows read neutral, not navy
-        World.Environment.Ambient.GroundColor = new Color(0.34f, 0.32f, 0.28f, 1f);
-        World.Environment.Ambient.Intensity = 1.0f;
+        ApplyAtmosphere(World);
         if (!Application.IsHeadless)
         {
             // Horizon skirt: a ring past the fog end (fully fogged, so it takes the fog colour) that hides the procedural
