@@ -132,8 +132,17 @@ public sealed class ViewModelDef
     /// so arms never swing into the camera when a hand travels (reloads, slide racks).</summary>
     public List<(string Forearm, string Wrist, Float3 Elbow, Float3 Up)> Ik = [];
 
+    /// <summary>How each hand holds the weapon (filled by ViewModels.Create), for the Y Bot hands.</summary>
+    public VmGrip GripR = new(Float3.UnitY, new Float3(0f, 0f, -0.075f), 0.02f, false, false), GripL = new(Float3.UnitY, new Float3(0f, 0f, -0.075f), 0.02f, true, false);
+    /// <summary>Support hand holds the weapon (rifle/launcher) rather than hanging free.</summary>
+    public bool LeftOnWeapon, FreeLeft = true;
+
     public static readonly string[] StandardBones = ["vm_root", "arm_r", "hand_r", "weapon", "muzzle", "arm_l", "hand_l"];
 }
+
+/// <summary>A hand's grip in its hand bone's space: the axis the fingers wrap around (index → pinky runs along -Axis),
+/// the wrist point, the grip radius, whether the hand is open (relaxed), and whether the index rests on a trigger.</summary>
+public readonly record struct VmGrip(Float3 Axis, Float3 Wrist, float Radius, bool Open, bool Trigger);
 
 /// <summary>Per-frame inputs that drive the procedural layers.</summary>
 public readonly record struct VmInput(Float2 Mouse, float Speed, Float2 Move = default, bool Grounded = true, float VerticalVelocity = 0f,
@@ -168,6 +177,8 @@ public sealed class ViewModel
     /// <summary>Y Bot arms following the hands (null: code-built sleeves / headless).</summary>
     private readonly YBotArms? _ybotArms;
     public bool UsingYBotArms => _ybotArms is not null;
+    private readonly bool UseYBotArms;
+    private static readonly HashSet<string> ArmBones = ["hand_r", "hand_l", "forearm_r", "forearm_l", "wrist_r", "wrist_l", "arm_r", "arm_l"];
     /// <summary>Primitive parts are authored at roughly real-world size and shrunk to sit nicely on screen.</summary>
     public const float PartScale = 1f;
 
@@ -252,9 +263,12 @@ public sealed class ViewModel
             _rest[bone] = (p2, rot);
         }
 
+        // With Y Bot arms the code-built arm, sleeve and glove parts are not built at all.
+        UseYBotArms = !UsingUserModel && YBot.Available;
         if (!UsingUserModel)
             foreach (VmPart part in def.Parts)
             {
+                if (UseYBotArms && ArmBones.Contains(part.Bone)) continue;
                 if (!Bones.TryGetValue(part.Bone, out GameObject? bone)) continue;
                 var go = new GameObject($"{part.Bone}_mesh");
                 go.SetParent(bone, false);
@@ -300,16 +314,8 @@ public sealed class ViewModel
                 r.Material = m;
             }
 
-        // Y Bot arms replace the code-built sleeves/gauntlets (the sculpted gloves stay on the grips).
-        if (!UsingUserModel && YBot.Available && Bones.ContainsKey("wrist_r"))
-        {
-            _ybotArms = YBotArms.TryCreate(camera);
-            if (_ybotArms is not null)
-                foreach (string fa in new[] { "forearm_r", "forearm_l" })
-                    if (Bones.TryGetValue(fa, out GameObject? fb))
-                        foreach (GameObject c in fb.GetChildrenDeep())
-                            if (c.GetComponent<MeshRenderer>() is { } mr) mr.Enabled = false;
-        }
+        // Y Bot arms and hands replace the code-built sleeves and gloves entirely (see the parts loop above).
+        if (UseYBotArms) _ybotArms = YBotArms.TryCreate(Root, def);
 
         // Aim offset: move vm_root so the sight sits on the screen centre line, slightly closer to the eye.
         if (def.AimShift is { } shift) AimOffset = shift;
@@ -481,7 +487,7 @@ public sealed class ViewModel
                     fb.Transform.LocalPosition = wl;
                     fb.Transform.LocalRotation = Quaternion.LookRotation(Float3.Normalize(dir), up);
                 }
-        _ybotArms?.Pose(Bones.GetValueOrDefault("wrist_r"), Bones.GetValueOrDefault("wrist_l"));
+        _ybotArms?.Pose(this, _time);
         // A user model's own clip (same name as the playing one-shot) drives its skeleton directly; the skinned
         // mesh follows its bone transforms. Procedural layers still move vm_root on top.
         if (_oneShot is not null && _embedded.TryGetValue(_oneShot, out AnimationClip? emb)) ApplyEmbedded(emb, _oneShotTime);

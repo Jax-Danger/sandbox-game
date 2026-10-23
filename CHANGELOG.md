@@ -2,6 +2,14 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.9.1 — 2026-10-23
+- Y Bot rework after v1.9.0 looked like "a blob with legs". Root cause: first person shrank the head and shoulder bones (leaving a headless torso under the camera), a per-clip yaw "fix" twisted every take, and the old code-built view model sleeves/gloves were still drawn over the Y Bot arms
+- Per-clip yaw hack removed: clips play as authored; only the hips keep their vertical bob (root motion stripped)
+- First person on foot: the body sits exactly on the player (feet on the controller, facing the view yaw) and the camera is at the head bone's eyes. A masked mesh hides only the head, neck and arms (the view model arms stand in for them); torso, legs and feet stay. Look pitch is spread over Spine/Spine1/Spine2 (bend forward looking down, lean back looking up, smoothed) and the hips slide back as you look down, so looking down shows belly, legs and feet. A full-body shadows-only copy keeps the full shadow
+- Smoother animation: every clip crossfades over ~0.25 s; speed, direction, turn-in-place, jump, fall and land are smoothed; Basic Shooter Pack rifle idle/walk/run/strafe/back clips are used while a firearm is out
+- View model: the old code-built arms and gloves are gone. A separate arms-only Y Bot is parented to the view model root (FOV scale, sway, bob, recoil apply to it), posed from the rifle aim idle, with two-bone IK putting each wrist on the weapon's grip point and the hand aligned to the grip; fingers curl around the grip (open grips curl less, trigger finger straighter). Pistol-type weapons (physgun, toolgun, pistol) use the one-hand grip, rifles a fore-end support hand
+- New clips (Basic Shooter Pack): RifleAimIdle, RifleFire, RifleReload, RifleJump, RifleWalk/Run(+Back), RifleStrafeLeft/Right/A/B, RifleTurnLeft/Right45, GrenadeToss, HitReaction; editor .meta files committed
+
 ## v1.9.0 — 2026-10-23
 - Player model: the Mixamo Y Bot (Assets/Resources/Player/YBot.fbx, loaded by path so no editor references are needed) replaces the code-built third/first-person body. Prowl imports its skeleton (66 bones, 52 skinned), both skinned meshes (Alpha_Surface, Alpha_Joints) and every clip; skinning runs on the GPU
 - Locomotion clips in Assets/Resources/Player/Animations (Mixamo Locomotion Pack + extras, clean names): Idle, Walk, Run, Jump, StrafeLeft/Right, StrafeWalkLeft/Right, TurnLeft/Right(90), CrouchIdle, CrouchWalk, FallIdle, FallLand

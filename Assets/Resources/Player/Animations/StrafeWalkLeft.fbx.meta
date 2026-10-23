@@ -1,0 +1,26 @@
+{
+  "guid": "c507e8b8-f6fb-4c32-9c71-c177b90d52e8",
+  "importer": "EditorModelImporter",
+  "importerVersion": 17,
+  "settings": {
+    "generateNormals": true,
+    "generateSmoothNormals": true,
+    "smoothNormalsAngle": 80F,
+    "recalculateNormals": false,
+    "calculateTangents": true,
+    "flipUVs": true,
+    "unitScale": 1F,
+    "importCameras": true,
+    "importLights": true,
+    "loopAnimations": true,
+    "rigType": 1,
+    "animationSampleRate": 30F,
+    "clips": {
+
+    },
+    "materialRemap": {
+
+    },
+    "generateLightmapUVs": false
+  }
+}

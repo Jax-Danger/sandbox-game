@@ -1,5 +1,6 @@
 #pragma warning disable PROWLEO001, PROWLEO002
 using Prowl.Runtime;
+using Prowl.Runtime.Resources;
 using Prowl.Vector;
 
 namespace Sandbox;
@@ -18,11 +19,32 @@ public sealed class YBotBody
     private Float3 _lastFeet;
     private float _lastYaw, _phase, _speed, _fwd, _side, _turn, _air, _crouch, _runBlend, _land;
     private bool _wasGrounded = true, _first = true;
+    private float _airPeak;
+    private readonly Dictionary<string, float> _weights = [], _targets = [];
     private readonly Float3 _knee, _elbow;
+
+    // First person (Unreal "true first person" style): the visible body is a masked copy (hips and legs on foot, plus
+    // the arms in a vehicle), while full-body shadow-only copies keep the complete shadow.
+    private readonly List<(SkinnedMeshRenderer R, Mesh Full, Mesh? Legs, Mesh? Seated)> _parts = [];
+    private readonly List<SkinnedMeshRenderer> _shadows = [];
+    private int _mode = -1;
+    private static bool IsLeg(string b) => b == "Hips" || b.Contains("UpLeg") || b.EndsWith("Leg") || b.Contains("Foot") || b.Contains("Toe");
+    /// <summary>First person on foot: everything but the head, neck and arms (the view model arms stand in for them).</summary>
+    private static bool IsTorsoAndLegs(string b) => !(b.Contains("Head") || b.Contains("Neck") || b.Contains("Arm") || b.Contains("Hand") || b.Contains("Eye"));
+    private float _pitch;
+    private static bool IsLegOrArm(string b) => IsLeg(b) || b.Contains("ForeArm") || b.Contains("Hand") || b.EndsWith("Arm");
 
     private YBotBody(SandboxGame g, YRig rig)
     {
         _g = g; _rig = rig;
+        foreach (SkinnedMeshRenderer r in rig.Renderers.ToList())
+        {
+            if (r.SharedMesh is not { } full) continue;
+            _parts.Add((r, full, YRig.Masked(r, "torso", IsTorsoAndLegs), YRig.Masked(r, "seated", IsLegOrArm)));
+            SkinnedMeshRenderer sh = rig.AddRenderer(r, full, r.GameObject.Name + " Shadow", ShadowCasting.ShadowsOnly);
+            sh.Enabled = false;
+            _shadows.Add(sh);
+        }
         _knee = rig.Hinge("LeftLeg", "CrouchIdle", 1f, Float3.UnitX);
         _elbow = rig.Hinge("RightForeArm", "Run", 0.2f, Float3.UnitX);
     }
@@ -31,19 +53,29 @@ public sealed class YBotBody
     public bool Valid => _rig.Valid;
     public void Destroy() => _rig.Destroy();
 
+    /// <summary>-1 hidden, 0 full body (third person), 1 first person on foot (torso and legs, no head/neck/arms), 2 first person seated (legs + arms).</summary>
+    private void SetMode(int mode)
+    {
+        if (mode == _mode) return;
+        _mode = mode;
+        foreach (var (r, full, legs, seated) in _parts)
+        {
+            r.Enabled = mode >= 0;
+            r.SharedMesh = mode == 1 ? legs ?? full : mode == 2 ? seated ?? full : full;
+            r.ShadowCasting = mode == 0 ? ShadowCasting.On : ShadowCasting.Off;
+        }
+        foreach (SkinnedMeshRenderer sh in _shadows) sh.Enabled = mode >= 1;
+    }
+
     private YClip? C(string n) => YBot.Clips.GetValueOrDefault(n);
 
     public void Tick(float dt, bool hidden, PlayerAvatar dbg)
     {
-        _rig.SetVisible(!hidden);
-        if (hidden) { _first = true; return; }
+        if (hidden) { SetMode(-1); _first = true; return; }
         dt = Math.Clamp(dt, 1e-4f, 0.1f);
         Buggy? car = _g.Vehicles.Driving;
-        bool firstPerson = car is null || _g.Vehicles.FirstPerson;
-        _rig.Hide("Head", firstPerson);
-        bool arms = !firstPerson || car is not null;
-        _rig.Hide("LeftShoulder", !arms);
-        _rig.Hide("RightShoulder", !arms);
+        bool firstPerson = (car is null || _g.Vehicles.FirstPerson) && dbg.DebugOffset == Float3.Zero;
+        SetMode(!firstPerson ? 0 : car is null ? 1 : 2);
         if (car is not null) Seated(car); else Standing(dt, firstPerson, dbg);
     }
 
@@ -60,67 +92,108 @@ public sealed class YBotBody
         float yawRate = Wrap(yawDeg - _lastYaw) / dt; _lastYaw = yawDeg;
         Float3 flat = new(vel.X, 0f, vel.Z);
         if (dbg.DebugSpeed >= 0f) flat = fwd * dbg.DebugSpeed;
-        float k = Math.Clamp(dt * 10f, 0f, 1f);
+        // Blend parameters are smoothed (critically-damped style exponential, ~0.12 s), and every clip weight then
+        // eases toward its target over ~0.25 s, so state changes cross-fade instead of popping.
+        float k = 1f - MathF.Exp(-dt / 0.12f);
         float speed = Float3.Length(flat);
         _speed += (speed - _speed) * k;
         float vf = Float3.Dot(flat, fwd), vs = Float3.Dot(flat, right);
-        _fwd += ((speed > 0.1f ? vf / speed : 1f) - _fwd) * k;
-        _side += ((speed > 0.1f ? vs / speed : 0f) - _side) * k;
+        _fwd += ((speed > 0.3f ? vf / speed : 1f) - _fwd) * k;
+        _side += ((speed > 0.3f ? vs / speed : 0f) - _side) * k;
         bool grounded = p.IsGrounded || p.Noclip || dbg.DebugSpeed >= 0f;
         float crouch = dbg.DebugCrouch >= 0f ? dbg.DebugCrouch : p.CrouchBlend;
         _crouch += (crouch - _crouch) * k;
         _air = grounded ? 0f : _air + dt;
-        if (grounded && !_wasGrounded && p.LandingImpact > 3f) _land = 1f;
+        if (grounded && !_wasGrounded && _airPeak > 0.25f) _land = 1f;
+        _airPeak = grounded ? 0f : _air;
         _wasGrounded = grounded;
-        _land = MathF.Max(0f, _land - dt * 2.5f);
-        _turn += ((speed < 0.3f && grounded ? Math.Clamp(yawRate / 120f, -1f, 1f) : 0f) - _turn) * Math.Clamp(dt * 6f, 0f, 1f);
+        _land = MathF.Max(0f, _land - dt / 0.45f);
+        float turnK = 1f - MathF.Exp(-dt / 0.2f);
+        _turn += ((speed < 0.3f && grounded ? Math.Clamp(yawRate / 150f, -1f, 1f) : 0f) - _turn) * turnK;
 
         // Gait: one shared normalized phase so walk, run and strafes stay foot-synced while they blend.
         float run = Math.Clamp((_speed - Player.WalkSpeed * 0.55f) / MathF.Max(0.5f, Player.RunSpeed * 0.75f - Player.WalkSpeed * 0.55f), 0f, 1f);
         _runBlend += (run - _runBlend) * k;
-        float move = Math.Clamp(_speed / 1.2f, 0f, 1f);
-        float stride = 1.6f + (3.4f - 1.6f) * _runBlend; // metres per gait cycle (walk / run clip)
-        if (_crouch > 0.5f) stride = 1.1f;
+        float move = Math.Clamp((_speed - 0.15f) / 1.2f, 0f, 1f);
+        move = move * move * (3f - 2f * move);
+        float stride = (1.6f + (3.4f - 1.6f) * _runBlend) * (1f - 0.35f * _crouch); // metres per gait cycle
         float rate = Math.Clamp(_speed / stride, 0f, 2.2f);
-        if (move > 0.02f) _phase += dt * rate * (_fwd < -0.3f ? -1f : 1f);
+        _phase += dt * rate * (_fwd < -0.2f ? -1f : 1f);
         _phase -= MathF.Floor(_phase);
 
-        _rig.BeginPose();
-        float air = grounded ? 0f : Math.Clamp(_air / 0.12f, 0f, 1f);
-        float ground = 1f - air;
-        float stand = ground * (1f - _crouch), crouchW = ground * _crouch;
-        float side = MathF.Abs(_side), back = MathF.Max(0f, -_fwd);
+        bool rifle = _g.Weapons.Current is Firearm && C("RifleAimIdle") is not null;
+        bool backClips = rifle && C("RifleWalkBack") is not null;
+        float airT = grounded ? 0f : 1f;
+        float stand = (1f - airT) * (1f - _crouch), crouchW = (1f - airT) * _crouch;
+        float side = MathF.Abs(_side), back = Math.Clamp(-_fwd, 0f, 1f);
         float fwdW = 1f - side;
-        // Standing locomotion.
-        _rig.Add(C("Idle"), (float)Time.UnscaledTotalTime, stand * (1f - move) * (1f - MathF.Abs(_turn)));
-        if (_turn > 0.05f) _rig.Add(C("TurnRight"), (float)Time.UnscaledTotalTime, stand * (1f - move) * _turn);
-        if (_turn < -0.05f) _rig.Add(C("TurnLeft"), (float)Time.UnscaledTotalTime, stand * (1f - move) * -_turn);
+        var w = _targets; w.Clear();
+        void T(string clip, float weight) { if (weight > 0f && C(clip) is not null) w[clip] = w.GetValueOrDefault(clip) + weight; }
+        float idleW = stand * (1f - move);
+        T(rifle ? "RifleAimIdle" : "Idle", idleW * (1f - MathF.Abs(_turn)));
+        T(rifle ? "RifleTurnRight45" : "TurnRight", idleW * MathF.Max(0f, _turn));
+        T(rifle ? "RifleTurnLeft" : "TurnLeft", idleW * MathF.Max(0f, -_turn));
         float mw = stand * move;
-        Gait(C("Walk"), mw * fwdW * (1f - _runBlend));
-        Gait(C("Run"), mw * fwdW * _runBlend);
-        Gait(C(_side < 0f ? "StrafeWalkLeft" : "StrafeWalkRight"), mw * side * (1f - _runBlend) * (1f - back));
-        Gait(C(_side < 0f ? "StrafeLeft" : "StrafeRight"), mw * side * _runBlend * (1f - back));
-        // Crouch.
-        _rig.Add(C("CrouchIdle") ?? C("CrouchWalk"), (float)Time.UnscaledTotalTime, crouchW * (1f - move));
-        Gait(C("CrouchWalk"), crouchW * move);
-        // Air: the jump clip's airborne section while rising, then the falling loop.
-        if (air > 0f)
+        float fb = mw * fwdW;
+        if (backClips) { T("RifleWalkBack", fb * back * (1f - _runBlend)); T("RifleRunBack", fb * back * _runBlend); fb *= 1f - back; }
+        T(rifle ? "RifleWalk" : "Walk", fb * (1f - _runBlend));
+        T(rifle ? "RifleRun" : "Run", fb * _runBlend);
+        string sl = rifle ? "RifleStrafeLeft" : "StrafeWalkLeft", sr = rifle ? "RifleStrafeRight" : "StrafeWalkRight";
+        T(_side < 0f ? sl : sr, mw * side * (rifle ? 1f : 1f - _runBlend));
+        if (!rifle) T(_side < 0f ? "StrafeLeft" : "StrafeRight", mw * side * _runBlend);
+        T("CrouchIdle", crouchW * (1f - move));
+        T("CrouchWalk", crouchW * move);
+        bool rising = p.VerticalVelocity > 0.5f;
+        T(rising || C("FallIdle") is null ? (rifle && C("RifleJump") is not null ? "RifleJump" : "Jump") : "FallIdle", airT);
+        T("FallLand", _land * 0.7f);
+
+        float fade = 1f - MathF.Exp(-dt / 0.08f); // ~0.25 s cross-fade
+        foreach (string key in _weights.Keys.Union(w.Keys).ToList())
         {
-            bool rising = p.VerticalVelocity > 0.5f;
-            YClip? jump = C("Jump"), fall = C("FallIdle");
-            if (rising || fall is null) _rig.Add(jump, 0.55f + MathF.Min(_air, 0.5f) * 0.7f, air, loop: false);
-            else _rig.Add(fall, _air, air);
+            float cur = _weights.GetValueOrDefault(key), tgt = w.GetValueOrDefault(key);
+            cur += (tgt - cur) * fade;
+            if (cur < 0.002f && tgt == 0f) _weights.Remove(key); else _weights[key] = cur;
         }
-        if (_land > 0f && C("FallLand") is { } land) _rig.Add(land, 0.45f + (1f - _land) * 0.4f, _land * 0.6f, loop: false);
+        _rig.BeginPose();
+        float now = (float)Time.UnscaledTotalTime;
+        foreach (var (key, weight) in _weights)
+        {
+            YClip c = C(key)!;
+            float time = key switch
+            {
+                "Jump" => 0.55f + MathF.Min(_air, 0.5f) * 0.7f,
+                "RifleJump" => 0.35f + MathF.Min(_air, 0.5f) * 0.7f,
+                "FallIdle" => _air,
+                "FallLand" => 0.45f + (1f - _land) * 0.45f,
+                "Idle" or "RifleAimIdle" or "CrouchIdle" => now,
+                _ when key.StartsWith("Turn") || key.StartsWith("RifleTurn") => now,
+                _ => _phase * c.Duration,
+            };
+            _rig.Add(c, time, weight, loop: key is not ("Jump" or "RifleJump" or "FallLand"));
+        }
         _rig.ApplyPose();
 
-        // Place the body: a little behind the camera in first person (legs and feet visible when looking down, the
-        // chest never in front of the lens); further back in a crouch, where the eye drops far below the model's head.
-        float back0 = firstPerson ? 0.13f + 0.32f * _crouch : 0f;
-        if (dbg.DebugOffset != Float3.Zero) back0 = 0f;
+        // Place the body. Third person: feet on the controller. First person: the camera sits at the head bone's eye
+        // point (the body is shifted so the eye lands under the camera), then 6 cm further back so looking straight
+        // down shows the thighs and feet rather than the inside of the waist.
         Transform t = _rig.Root.Transform;
-        t.Position = feet - fwd * back0 + dbg.DebugOffset;
         t.Rotation = Quaternion.LookRotation(fwd, Float3.UnitY);
+        // Look pitch spread over the spine (Spine, Spine1, Spine2): bend forward looking down, lean back looking up,
+        // smoothed so the torso follows the camera without snapping. Y Bot's right is +X, so +X rotation bends forward.
+        _pitch += (Math.Clamp(p.Pitch, -89f, 89f) - _pitch) * (1f - MathF.Exp(-dt / 0.08f));
+        float bend = (_pitch > 0f ? _pitch * 0.35f : _pitch * 0.3f) / 3f * MathF.PI / 180f;
+        Quaternion q = Quaternion.AxisAngle(Float3.UnitX, bend);
+        foreach (string sb in (string[])["Spine", "Spine1", "Spine2"])
+            if (_rig.Bone(sb) is { } bone) _rig.SetRootRotation(bone, q * _rig.RootTR(bone).Rot);
+        t.Position = feet + dbg.DebugOffset;
+        if (firstPerson && _rig.Bone("Head") is { } head)
+        {
+            Float3 eye = head.Position + t.Rotation * new Float3(0f, 0.09f, 0.1f);
+            Float3 cam = p.EyePosition;
+            // Eye under the camera (the bent spine moves the head forward, so this pulls the hips back like a real
+            // lean), then a little further back the more the player looks down so the chest doesn't fill the view.
+            t.Position += new Float3(cam.X - eye.X, 0f, cam.Z - eye.Z) - fwd * (0.04f + 0.16f * Math.Clamp(_pitch / 89f, 0f, 1f));
+        }
     }
 
     private void Gait(YClip? c, float w)

@@ -806,6 +806,11 @@ public static partial class ViewModels
             Bone("hand_l", leftParent, leftPos);
         }
         right ??= Relaxed(1);
+        // Grip data for the Y Bot hands (axis the fingers wrap around, wrist point, grip radius, open hand, trigger finger).
+        static VmGrip G(HandSpec h) => new(h.F.A, h.Wrist, (h.F.Ra + h.F.Rb) / 2f, h.F.Ra >= 0.045f, float.IsNaN(h.H[0]));
+        d.GripR = G(right); d.GripL = G(left!);
+        d.LeftOnWeapon = leftParent != "arm_l" || !freeLeft;
+        d.FreeLeft = freeLeft && leftParent == "arm_l";
         k.Hand("hand_r", right);
         k.Hand("hand_l", left!);
         Bone("wrist_r", "hand_r", right.Wrist);

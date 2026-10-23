@@ -18,8 +18,6 @@ public sealed class YClip
     public required MotionClip Clip;
     public required MotionMapping Map;
     public float Duration => Clip.Duration;
-    /// <summary>Cancels the clip's average hips yaw (Mixamo crouch/strafe takes face up to 80° off +Z).</summary>
-    public Quaternion YawFix = Quaternion.Identity;
 }
 
 /// <summary>
@@ -34,6 +32,9 @@ public static class YBot
     [
         "Idle", "Walk", "Run", "Jump", "CrouchIdle", "CrouchWalk", "FallIdle", "FallLand",
         "StrafeLeft", "StrafeRight", "StrafeWalkLeft", "StrafeWalkRight", "TurnLeft", "TurnRight", "TurnLeft90", "TurnRight90",
+        // Mixamo Basic Shooter Pack
+        "RifleAimIdle", "RifleFire", "RifleReload", "RifleJump", "RifleRun", "RifleWalk", "RifleWalkBack", "RifleRunBack",
+        "RifleStrafeLeft", "RifleStrafeRight", "RifleTurnLeft", "RifleTurnRight45", "GrenadeToss", "HitReaction",
     ];
 
     private static bool _tried;
@@ -77,7 +78,6 @@ public static class YBot
         MotionClip? clip = asset.GetClip(null);
         if (clip is null) { Console.WriteLine($"[ybot] clip {name} did not decode"); return; }
         var yc = new YClip { Name = name, Clip = clip, Map = clip.GetMappingTo(Skeleton!) };
-        if (!name.StartsWith("Turn")) yc.YawFix = MeanYawFix(yc);
         Clips[name] = yc;
     }
 
@@ -87,23 +87,6 @@ public static class YBot
         _tried = true; Error = null;
         Model = model; Skeleton = skeleton; Clips.Clear();
         foreach (var (name, clip) in clips) AddClip(name, clip);
-    }
-
-    private static Quaternion MeanYawFix(YClip c)
-    {
-        var pose = new MotionPose(Skeleton!);
-        int hips = YRig.FindBone(Skeleton!, "Hips");
-        if (hips < 0) return Quaternion.Identity;
-        Float3 sum = Float3.Zero;
-        for (int i = 0; i < 8; i++)
-        {
-            c.Clip.GetPose(c.Duration * i / 8f, pose, c.Map);
-            Float3 f = pose.GetTransform(hips).rotation * Float3.UnitZ;
-            sum += new Float3(f.X, 0f, f.Z);
-        }
-        if (Float3.Length(sum) < 1e-3f) return Quaternion.Identity;
-        float yaw = MathF.Atan2(sum.X, sum.Z);
-        return MathF.Abs(yaw) < 0.03f ? Quaternion.Identity : Quaternion.AxisAngle(Float3.UnitY, -yaw);
     }
 
     /// <summary>Called when a play session ends so a hot-reloaded or re-imported model is picked up next time.</summary>
@@ -212,7 +195,6 @@ public sealed class YRig
         for (int i = 0; i < n; i++)
         {
             Transform3D s = _sample.GetTransform(i);
-            if (i == _hips) s.rotation = clip.YawFix * s.rotation;
             if (_accWeight <= 0f) _acc[i] = s;
             else
             {
@@ -317,6 +299,129 @@ public sealed class YRig
 
     /// <summary>World rotation helper that keeps the bone's current local rotation but adds a world-space rotation.</summary>
     public static void RotateWorld(Transform bone, Quaternion delta) => bone.Rotation = delta * bone.Rotation;
+
+    // ── masked meshes (legs-only body for first person, arms-only view model) ──
+
+    private static readonly Dictionary<(Mesh, string), Mesh> s_masks = [];
+
+    /// <summary>
+    /// A copy of <paramref name="r"/>'s mesh that keeps only the triangles whose vertices are mostly skinned to bones
+    /// <paramref name="keep"/> accepts (by short bone name). Same vertex buffers and bind poses, so it skins on the same
+    /// bones; cached per source mesh and mask.
+    /// </summary>
+    public static Mesh? Masked(SkinnedMeshRenderer r, string key, Func<string, bool> keep)
+    {
+        Mesh? src = r.SharedMesh;
+        if (src is null || r.BonePaths is null) return null;
+        if (s_masks.TryGetValue((src, key), out Mesh? cached) && cached.IsValid()) return cached;
+        src.Load();
+        bool[] ok = new bool[r.BonePaths.Length];
+        for (int i = 0; i < ok.Length; i++)
+        {
+            string p = r.BonePaths[i] ?? "";
+            ok[i] = keep(Short(p.Contains('/') ? p[(p.LastIndexOf('/') + 1)..] : p));
+        }
+        Float4[] bi = src.BoneIndices, bw = src.BoneWeights;
+        uint[] idx = src.Indices;
+        bool Kept(uint v)
+        {
+            Float4 w = bw[v], b = bi[v];
+            int best = (int)b.X; float bwm = w.X;
+            if (w.Y > bwm) { bwm = w.Y; best = (int)b.Y; }
+            if (w.Z > bwm) { bwm = w.Z; best = (int)b.Z; }
+            if (w.W > bwm) { best = (int)b.W; }
+            return (uint)best < (uint)ok.Length && ok[best];
+        }
+        var outIdx = new List<uint>(idx.Length / 3);
+        for (int t = 0; t + 2 < idx.Length; t += 3)
+        {
+            int n = (Kept(idx[t]) ? 1 : 0) + (Kept(idx[t + 1]) ? 1 : 0) + (Kept(idx[t + 2]) ? 1 : 0);
+            if (n >= 2) { outIdx.Add(idx[t]); outIdx.Add(idx[t + 1]); outIdx.Add(idx[t + 2]); }
+        }
+        var m = new Mesh { Name = $"{src.Name} ({key})" };
+        m.IndexFormat = IndexFormat.UInt32;
+        m.Vertices = src.Vertices;
+        if (src.HasNormals) m.Normals = src.Normals;
+        if (src.HasTangents) m.Tangents = src.Tangents;
+        if (src.HasUV) m.UV = src.UV;
+        m.BoneIndices = bi;
+        m.BoneWeights = bw;
+        m.BindPoses = src.BindPoses;
+        m.Indices = outIdx.ToArray();
+        m.RecalculateBounds();
+        s_masks[(src, key)] = m;
+        return m;
+    }
+
+    /// <summary>Adds a renderer on a new child of the rig root that draws <paramref name="mesh"/> on the same bones.</summary>
+    public SkinnedMeshRenderer AddRenderer(SkinnedMeshRenderer like, Mesh mesh, string name, ShadowCasting shadows)
+    {
+        var go = new GameObject(name);
+        go.SetParent(Root, false);
+        SkinnedMeshRenderer r = go.AddComponent<SkinnedMeshRenderer>();
+        r.SharedMesh = mesh;
+        r.Materials = [.. like.Materials];
+        r.BonePaths = like.BonePaths;
+        r.RootBonePath = like.RootBonePath;
+        r.ShadowCasting = shadows;
+        r.MainColor = like.MainColor;
+        return r;
+    }
+
+    // ── rig-root space (for rigs under a scaled parent such as the view model root) ──
+
+    /// <summary>Position and rotation of a bone in the rig root's space, from the local transforms (unit scales).</summary>
+    public (Float3 Pos, Quaternion Rot) RootTR(Transform t)
+    {
+        if (ReferenceEquals(t, Root.Transform) || t.Parent is null) return (Float3.Zero, Quaternion.Identity);
+        var (pp, pr) = RootTR(t.Parent);
+        return (pp + pr * t.LocalPosition, pr * t.LocalRotation);
+    }
+
+    public void SetRootRotation(Transform t, Quaternion q)
+    {
+        var (_, pr) = t.Parent is null ? (Float3.Zero, Quaternion.Identity) : RootTR(t.Parent);
+        t.LocalRotation = Quaternion.Inverse(pr) * q;
+    }
+
+    /// <summary>The rotation that maps a bone's local +Y onto <paramref name="dir"/> and <paramref name="bendLocal"/> onto <paramref name="bendDir"/>.</summary>
+    public static Quaternion AimRotation(Float3 dir, Float3 bendLocal, Float3 bendDir)
+    {
+        Float3 y = Float3.Normalize(dir);
+        Float3 z = bendDir - y * Float3.Dot(bendDir, y);
+        if (Float3.Length(z) < 1e-4f) z = MathF.Abs(y.Y) < 0.9f ? Float3.Cross(y, Float3.UnitY) : Float3.Cross(y, Float3.UnitX);
+        z = Float3.Normalize(z);
+        Float3 lz = bendLocal - Float3.UnitY * bendLocal.Y;
+        if (Float3.Length(lz) < 1e-4f) lz = Float3.UnitZ;
+        lz = Float3.Normalize(lz);
+        return Quaternion.LookRotation(z, y) * Quaternion.Inverse(Quaternion.LookRotation(lz, Float3.UnitY));
+    }
+
+    /// <summary><see cref="SolveTwoBone"/> in rig-root space (target and pole given in that space).</summary>
+    public void SolveTwoBoneRoot(string upper, string lower, string end, Float3 target, Float3 pole, Float3 hingeLower)
+    {
+        int li = Index(lower), ei = Index(end);
+        Transform? u = Bone(upper), l = Bone(lower);
+        if (u is null || l is null || li < 0 || ei < 0) return;
+        float l1 = Float3.Length(_rest[li].position), l2 = Float3.Length(_rest[ei].position);
+        Float3 a = RootTR(u).Pos;
+        Float3 k = Knee(a, target, l1, l2, pole);
+        Float3 n = Float3.Cross(k - a, target - k);
+        if (Float3.Length(n) < 1e-5f) n = Float3.Cross(target - a, pole);
+        SetRootRotation(u, AimRotation(k - a, _rest[li].rotation * hingeLower, n));
+        SetRootRotation(l, AimRotation(target - k, hingeLower, n));
+    }
+
+    /// <summary>Puts every bone back to its bind (T) pose.</summary>
+    public void ResetToBind()
+    {
+        for (int i = 0; i < _bones.Length; i++)
+            if (_bones[i] is { } b && !ReferenceEquals(b, Root.Transform)) { b.LocalPosition = _rest[i].position; b.LocalRotation = _rest[i].rotation; b.LocalScale = Float3.One; }
+    }
+
+    /// <summary>Bind-pose rotation of a bone in model (rig-root) space.</summary>
+    public Quaternion BindModelRotation(int index) => (uint)index < (uint)Skeleton.BoneCount ? Skeleton.ModelSpaceReferencePose[index].rotation : Quaternion.Identity;
+    public Float3 BindModelPosition(int index) => (uint)index < (uint)Skeleton.BoneCount ? Skeleton.ModelSpaceReferencePose[index].position : Float3.Zero;
 
     public void Destroy() { if (Root.IsValid()) Root.Destroy(); }
 }
