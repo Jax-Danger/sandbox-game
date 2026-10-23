@@ -122,6 +122,26 @@
             "_enabledInHierarchy": true,
             "HideFlags": 0L,
             "Name": "NewMapLibrary"
+          },
+          {
+            "$id": 13,
+            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+            "SunScale": 0.55F,
+            "AmbientScale": 0.7F,
+            "StartTimeOfDay": 0.42F,
+            "DayCycle": false,
+            "DayLengthSeconds": 600F,
+            "Gravity": 20F,
+            "WalkSpeed": 5F,
+            "RunSpeed": 9F,
+            "JumpSpeed": 6.5F,
+            "CrouchSpeed": 2.3F,
+            "UseBakedMaps": true,
+            "_identifier": "a445b936-e8b8-4761-97b9-fcb8912c7fc2",
+            "_enabled": true,
+            "_enabledInHierarchy": true,
+            "HideFlags": 0L,
+            "Name": "NewGameTuning"
           }
         ],
         "Children": [
@@ -131,84 +151,84 @@
     ]
   },
   "Environment": {
-    "$id": 13,
+    "$id": 14,
     "SkyMaterial": {
-      "$id": 14,
+      "$id": 15,
       "_shader": {
         "$asset": "73295c5c-0e55-4550-ae74-f13cd62796d2"
       },
       "_parent": NULL,
       "_properties": {
-        "$id": 15,
+        "$id": 16,
         "_colors": {
-          "$id": 16,
-          "entries": [
-
-          ]
-        },
-        "_vectors2": {
           "$id": 17,
           "entries": [
 
           ]
         },
-        "_vectors3": {
+        "_vectors2": {
           "$id": 18,
           "entries": [
 
           ]
         },
-        "_vectors4": {
+        "_vectors3": {
           "$id": 19,
           "entries": [
 
           ]
         },
-        "_floats": {
+        "_vectors4": {
           "$id": 20,
           "entries": [
 
           ]
         },
-        "_ints": {
+        "_floats": {
           "$id": 21,
           "entries": [
 
           ]
         },
-        "_matrices": {
+        "_ints": {
           "$id": 22,
           "entries": [
 
           ]
         },
-        "_textures": {
+        "_matrices": {
           "$id": 23,
           "entries": [
 
           ]
         },
-        "_textures3D": {
+        "_textures": {
           "$id": 24,
           "entries": [
 
           ]
         },
-        "_texturesCube": {
+        "_textures3D": {
           "$id": 25,
+          "entries": [
+
+          ]
+        },
+        "_texturesCube": {
+          "$id": 26,
           "entries": [
 
           ]
         }
       },
       "_overrides": {
-        "$id": 26,
+        "$id": 27,
         "$values": [
 
         ]
       },
       "_keywords": {
-        "$id": 27,
+        "$id": 28,
         "entries": [
 
         ]
@@ -266,43 +286,43 @@
     }
   },
   "BakedLighting": {
-    "$id": 28,
+    "$id": 29,
     "Lightmaps": {
-      "$id": 29,
+      "$id": 30,
       "$values": [
 
       ]
     },
     "Placements": {
-      "$id": 30,
+      "$id": 31,
       "entries": [
 
       ]
     },
     "ProbePositions": {
-      "$id": 31,
-      "array": [
-
-      ]
-    },
-    "ProbeSH": {
       "$id": 32,
       "array": [
 
       ]
     },
-    "ProbeTetrahedra": {
+    "ProbeSH": {
       "$id": 33,
       "array": [
 
       ]
     },
+    "ProbeTetrahedra": {
+      "$id": 34,
+      "array": [
+
+      ]
+    },
     "ProbeTetNeighbours": {
-      "$id": 33
+      "$id": 34
     }
   },
   "LightmapBake": {
-    "$id": 34,
+    "$id": 35,
     "AtlasSize": 1024,
     "TexelsPerUnit": 20F,
     "DilatePixels": 2,

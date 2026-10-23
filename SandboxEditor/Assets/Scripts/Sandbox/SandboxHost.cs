@@ -34,6 +34,9 @@ public sealed class SandboxHost : Component
                     if (probe.GetComponent<PropDefinition>() is { } def) game.Props.Prefabs[def.Kind] = prefab;
                     probe.Destroy();
                 }
+        // Bring this object (and its MapLibrary/PropLibrary/GameTuning) into the game world, so it stays in the
+        // current scene and the inspector can edit GameTuning live while playing.
+        game.World.Add(GameObject);
         var go = new GameObject("~SandboxDriver");
         go.AddComponent<SandboxDriver>().Game = game;
         game.World.Add(go);

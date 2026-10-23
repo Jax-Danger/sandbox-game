@@ -63,7 +63,7 @@ public sealed class Door : Component
     /// <summary>Jobs that hold keys to a map-owned door (e.g. police for the station).</summary>
     public string[] Jobs = [];
     /// <summary>Names the owner shared keys with.</summary>
-    public readonly HashSet<string> SharedKeys = [];
+    public HashSet<string> SharedKeys = [];
     public bool ForSale => Owner == "" && Price > 0;
     public Float3 Hinge;
     public float Yaw, Width = 1.3f;

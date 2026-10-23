@@ -13,7 +13,8 @@ namespace Sandbox;
 public sealed class Player
 {
     public const float EyeHeight = 1.65f;
-    private const float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6.5f, CrouchSpeed = 2.3f;
+    /// <summary>Movement tuning (m/s); GameTuning overrides these from the editor.</summary>
+    public static float WalkSpeed = 5f, RunSpeed = 9f, JumpSpeed = 6.5f, CrouchSpeed = 2.3f;
     /// <summary>Player gravity; scaled with the world's gravity modifier (20 at Earth gravity feels right for the controller).</summary>
     public static float Gravity { get; set; } = 20f;
     public bool Crouching { get; private set; }

@@ -55,7 +55,7 @@ public static partial class MapBuilder
 
     public static void Clear(Scene scene)
     {
-        foreach (GameObject go in _objects) scene.Remove(go);
+        foreach (GameObject go in _objects) if (go.IsValid() && go.Scene == scene) scene.Remove(go);
         _objects.Clear();
         _batch.Clear();
     }
