@@ -2,6 +2,11 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.9.2 — 2026-10-23
+- Garry's Mod style world model / view model split (LocalView.cs holds the layers and the single local-only flag, ready for a later client/server split; no networking): the world model is one full Y Bot with head and normal animation that every camera sees; the view model (weapon, arms-only Y Bot, headless first-person body) is on an owner-only layer drawn only by the local player's camera. In first person the owner's camera skips the world model, which still casts the player's shadow
+- Fixed the "two heads" in camera props: the feed camera survived from an old play session/world and kept showing a stale frame (old v1.9.0 body + view model rig). It is now rebuilt in the current world, and it never draws view model layers
+- View model hands: the free left hand curls into a relaxed pose instead of the clip's flat hand; the arms rig's head bone is collapsed
+
 ## v1.9.1 — 2026-10-23
 - Y Bot rework after v1.9.0 looked like "a blob with legs". Root cause: first person shrank the head and shoulder bones (leaving a headless torso under the camera), a per-clip yaw "fix" twisted every take, and the old code-built view model sleeves/gloves were still drawn over the Y Bot arms
 - Per-clip yaw hack removed: clips play as authored; only the hips keep their vertical bob (root motion stripped)

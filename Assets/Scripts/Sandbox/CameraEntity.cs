@@ -99,7 +99,10 @@ public static class CameraFeeds
         Prop? src = Active;
         if (src is null || Application.IsHeadless || !Visible) return;
         if (++_frame % 2 != 0) return;
-        if (_rt is null)
+        // Statics outlive a play session / world reload: a feed camera left in an old world would keep drawing that
+        // world (a frozen picture). Rebuild it in the current world.
+        if (_camGo is not null && (!_camGo.IsValid() || !ReferenceEquals(_camGo.Scene, g.World))) { _camGo = null; _cam = null; }
+        if (_rt is null || _cam is null)
         {
             _rt = new RenderTexture(Width, Height, true, [TextureFormat.RGBA8]);
             _camGo = new GameObject("FeedCamera");
@@ -110,6 +113,7 @@ public static class CameraFeeds
             _cam.Background = CameraBackground.Skybox;
             _cam.Target = _rt;
             _cam.Tonemapping = Graphics.Tonemapper(); // match the main view's exposure
+            LocalView.SetupWorldCamera(_cam); // sees world models, never the owner's view model
             _cam.Enabled = false; // rendered manually, never as a scene camera
             g.World.Add(_camGo);
         }

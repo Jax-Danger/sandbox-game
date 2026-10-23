@@ -57,6 +57,7 @@ public sealed class IconRenderer
 
         var camGo = new GameObject("IconCamera");
         Camera cam = camGo.AddComponent<Camera>();
+        LocalView.SetupWorldCamera(cam);
         cam.FieldOfView = 30f;
         cam.NearClipPlane = 0.05f;
         cam.FarClipPlane = 50f;

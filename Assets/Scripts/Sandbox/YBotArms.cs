@@ -68,9 +68,9 @@ public sealed class YBotArms
     }
 
     /// <summary>Wraps the fingers around a grip: open grips (fore-ends, big handles) curl less; the trigger finger stays straighter.</summary>
-    private void Curl((Transform Bone, Quaternion Bind, Float3 Axis, int Finger, int Joint)[] joints, VmGrip g, float sign, bool trigger)
+    private void Curl((Transform Bone, Quaternion Bind, Float3 Axis, int Finger, int Joint)[] joints, VmGrip g, float sign, bool trigger, float? relaxed = null)
     {
-        float baseDeg = g.Open ? 42f : 68f;
+        float baseDeg = relaxed ?? (g.Open ? 42f : 68f);
         foreach (var (b, bind, axis, f, j) in joints)
         {
             float deg = baseDeg * (j == 1 ? 0.8f : j == 2 ? 1.15f : 0.9f) + f * 4f;
@@ -128,7 +128,9 @@ public sealed class YBotArms
         Reach(vm, "Right", "hand_r", _def.GripR, _gripToHandR, 1f, off);
         Curl(_curlR, _def.GripR, 1f, _def.GripR.Trigger);
         if (!_def.FreeLeft) { Reach(vm, "Left", "hand_l", _def.GripL, _gripToHandL, -1f, off); Curl(_curlL, _def.GripL, -1f, false); }
-        else Reach(vm, "Left", "hand_l", _def.GripL, _gripToHandL, -1f, off, keepClipHand: true);
+        else { Reach(vm, "Left", "hand_l", _def.GripL, _gripToHandL, -1f, off, keepClipHand: true); Curl(_curlL, _def.GripL, -1f, false, relaxed: 30f); }
+        // Only the arms are drawn (masked mesh), but collapse the head too so nothing of it can ever show.
+        if (_rig.Bone("Head") is { } head) head.LocalScale = new Float3(1e-4f);
     }
 
     private void Reach(ViewModel vm, string side, string vmHand, VmGrip grip, Quaternion gripToHand, float s, Float3 off, bool keepClipHand = false)

@@ -316,6 +316,7 @@ public sealed class ViewModel
 
         // Y Bot arms and hands replace the code-built sleeves and gloves entirely (see the parts loop above).
         if (UseYBotArms) _ybotArms = YBotArms.TryCreate(Root, def);
+        LocalView.SetLayer(Root, LocalView.ViewLayer); // owner-only: never drawn by other cameras
 
         // Aim offset: move vm_root so the sight sits on the screen centre line, slightly closer to the eye.
         if (def.AimShift is { } shift) AimOffset = shift;

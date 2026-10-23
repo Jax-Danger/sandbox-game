@@ -25,8 +25,10 @@ public sealed class YBotBody
 
     // First person (Unreal "true first person" style): the visible body is a masked copy (hips and legs on foot, plus
     // the arms in a vehicle), while full-body shadow-only copies keep the complete shadow.
-    private readonly List<(SkinnedMeshRenderer R, Mesh Full, Mesh? Legs, Mesh? Seated)> _parts = [];
-    private readonly List<SkinnedMeshRenderer> _shadows = [];
+    // World model: the full body (head included) every other camera sees; it also casts the player's shadow.
+    private readonly List<SkinnedMeshRenderer> _world = [];
+    // View model body: the owner's first-person copy (no head/neck/arms on foot; legs + arms seated), owner camera only.
+    private readonly List<(SkinnedMeshRenderer R, Mesh? Foot, Mesh? Seated)> _view = [];
     private int _mode = -1;
     private static bool IsLeg(string b) => b == "Hips" || b.Contains("UpLeg") || b.EndsWith("Leg") || b.Contains("Foot") || b.Contains("Toe");
     /// <summary>First person on foot: everything but the head, neck and arms (the view model arms stand in for them).</summary>
@@ -40,10 +42,12 @@ public sealed class YBotBody
         foreach (SkinnedMeshRenderer r in rig.Renderers.ToList())
         {
             if (r.SharedMesh is not { } full) continue;
-            _parts.Add((r, full, YRig.Masked(r, "torso", IsTorsoAndLegs), YRig.Masked(r, "seated", IsLegOrArm)));
-            SkinnedMeshRenderer sh = rig.AddRenderer(r, full, r.GameObject.Name + " Shadow", ShadowCasting.ShadowsOnly);
-            sh.Enabled = false;
-            _shadows.Add(sh);
+            _world.Add(r);
+            Mesh? foot = YRig.Masked(r, "torso", IsTorsoAndLegs), seated = YRig.Masked(r, "seated", IsLegOrArm);
+            SkinnedMeshRenderer v = rig.AddRenderer(r, foot ?? full, r.GameObject.Name + " (view)", ShadowCasting.Off);
+            v.GameObject.LayerIndex = LocalView.ViewLayer;
+            v.Enabled = false;
+            _view.Add((v, foot, seated));
         }
         _knee = rig.Hinge("LeftLeg", "CrouchIdle", 1f, Float3.UnitX);
         _elbow = rig.Hinge("RightForeArm", "Run", 0.2f, Float3.UnitX);
@@ -53,18 +57,24 @@ public sealed class YBotBody
     public bool Valid => _rig.Valid;
     public void Destroy() => _rig.Destroy();
 
-    /// <summary>-1 hidden, 0 full body (third person), 1 first person on foot (torso and legs, no head/neck/arms), 2 first person seated (legs + arms).</summary>
+    /// <summary>-1 hidden, 0 third person (world model only), 1 first person on foot, 2 first person seated (world model for other cameras + owner-only view body).</summary>
     private void SetMode(int mode)
     {
         if (mode == _mode) return;
         _mode = mode;
-        foreach (var (r, full, legs, seated) in _parts)
+        bool fp = mode >= 1 && LocalView.IsLocal(_g.Player);
+        foreach (SkinnedMeshRenderer r in _world)
         {
             r.Enabled = mode >= 0;
-            r.SharedMesh = mode == 1 ? legs ?? full : mode == 2 ? seated ?? full : full;
-            r.ShadowCasting = mode == 0 ? ShadowCasting.On : ShadowCasting.Off;
+            r.ShadowCasting = ShadowCasting.On;
+            // In first person the owner's camera skips the world model (other cameras still see it, head and all).
+            r.GameObject.LayerIndex = fp ? LocalView.WorldLayer : 0;
         }
-        foreach (SkinnedMeshRenderer sh in _shadows) sh.Enabled = mode >= 1;
+        foreach (var (v, foot, seated) in _view)
+        {
+            v.Enabled = fp;
+            if (fp && (mode == 2 ? seated : foot) is { } m) v.SharedMesh = m;
+        }
     }
 
     private YClip? C(string n) => YBot.Clips.GetValueOrDefault(n);
