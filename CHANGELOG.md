@@ -2,6 +2,12 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.1.0 — 2026-10-23
+- Engine upgrade to Prowl 1.0 (main 2510d8fc, Vulkan): lights, volumes, scene environment, camera background, textures, physics pairs ported
+- Bodies keep the v1.0 Jitter damping (0.002 linear / 0.005 angular); imported maps turned a half turn to match the 1.0 glTF handedness
+- Collision no-collide pairs read the per-scene PhysicsWorld layer filter; water vertical drag 3.0 -> 6.0 so floating props settle like v1.0
+- Self-test: all checks pass
+
 ## v1.0.0 — 2026-10-18
 - First official release. Self-contained builds for Windows, Linux and macOS.
 

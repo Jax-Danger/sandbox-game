@@ -329,6 +329,8 @@ public static partial class MapBuilder
         {
             var result = new Prowl.Runtime.AssetImporting.ModelImporter().Import(new FileInfo(file));
             if (result.RootGO is not { } root) return "The model has no scene.";
+            // Engine 1.0's importer converts glTF handedness by mirroring X (v1.0 mirrored Z); a half turn keeps v1.0 map layouts.
+            root.Transform.LocalRotation = Quaternion.FromEuler(new Float3(0f, 180f, 0f)) * root.Transform.LocalRotation;
             int colliders = 0;
             Float3 min = new(float.MaxValue), max = new(float.MinValue);
             var all = root.GetChildrenDeep().Prepend(root).ToList();

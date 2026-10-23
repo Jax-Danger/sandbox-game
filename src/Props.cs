@@ -204,7 +204,7 @@ public sealed class PropManager(Scene scene, Shader shader)
         MeshRenderer renderer = go.AddComponent<MeshRenderer>();
         renderer.Material = material;
 
-        Rigidbody3D body = go.AddComponent<Rigidbody3D>();
+        Rigidbody3D body = go.AddBody();
         switch (kind)
         {
             case PropKind.Cube:

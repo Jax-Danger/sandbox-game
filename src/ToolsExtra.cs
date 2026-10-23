@@ -242,7 +242,7 @@ public sealed partial class ToolGun
         CylinderCollider col = go.AddComponent<CylinderCollider>();
         col.Radius = radius;
         col.Height = width;
-        Rigidbody3D body = go.AddComponent<Rigidbody3D>();
+        Rigidbody3D body = go.AddBody();
         body.Mass = 1f;
         body.Friction = 1f;
         prop.Go.Scene!.Add(go);

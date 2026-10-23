@@ -71,7 +71,7 @@ public sealed class Ragdoll
             try { mat.SetTexture("_MainTex", Texture2D.LoadDefault(DefaultTexture.White)); } catch { }
             MeshRenderer r = go.AddComponent<MeshRenderer>();
             r.Material = mat;
-            Rigidbody3D body = go.AddComponent<Rigidbody3D>();
+            Rigidbody3D body = go.AddBody();
             if (d.Sphere)
             {
                 r.Mesh = Meshes.Sphere(d.Size.X / 2f);

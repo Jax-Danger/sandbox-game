@@ -44,8 +44,11 @@ public static class CollisionPairs
     {
         get
         {
-            var f = typeof(PhysicsWorld).Assembly.GetType("Prowl.Runtime.LayerFilter")?.GetField("_ignore", System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Static);
-            object? set = f?.GetValue(null);
+            // Engine 1.0: the ignore set lives on each scene's PhysicsWorld (_layerFilter._ignore).
+            const System.Reflection.BindingFlags NP = System.Reflection.BindingFlags.NonPublic | System.Reflection.BindingFlags.Instance;
+            PhysicsWorld? world = Prowl.Runtime.Resources.Scene.Current?.Physics;
+            object? filter = world is null ? null : typeof(PhysicsWorld).GetField("_layerFilter", NP)?.GetValue(world);
+            object? set = filter?.GetType().GetField("_ignore", NP)?.GetValue(filter);
             return set?.GetType().GetProperty("Count")?.GetValue(set) is int n ? n : -1;
         }
     }

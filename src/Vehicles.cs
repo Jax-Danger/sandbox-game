@@ -49,7 +49,7 @@ public sealed class Buggy
         MeshRenderer r = Go.AddComponent<MeshRenderer>();
         r.Mesh = jeep ? VehicleModels.JeepBody() : boat ? VehicleModels.Hull() : VehicleModels.BuggyBody();
         r.Material = mat;
-        Body = Go.AddComponent<Rigidbody3D>();
+        Body = Go.AddBody();
         Body.Mass = jeep ? 750f : boat ? 380f : 450f;
         if (jeep) { MaxEngineTorque = 170f; TopSpeedKmh = 92f; MaxSteerDeg = 30f; }
         Body.AngularDamping = 0.05f;

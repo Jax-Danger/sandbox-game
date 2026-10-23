@@ -48,8 +48,8 @@ public static class Water
         body.SetActive(true);
         Float3 vel = body.LinearVelocity;
         body.AddForce(new Float3(0f, sub * floatiness * body.Mass * g, 0f));
-        // Linear drag (stronger vertically to damp bobbing) and angular drag.
-        body.AddForce(new Float3(-vel.X * 1.2f, -vel.Y * 3.0f, -vel.Z * 1.2f) * (body.Mass * sub * dragScale));
+        // Linear drag (stronger vertically to damp bobbing; 6.0 on engine 1.0, which lost the per-step body damping v1.0 had) and angular drag.
+        body.AddForce(new Float3(-vel.X * 1.2f, -vel.Y * 6.0f, -vel.Z * 1.2f) * (body.Mass * sub * dragScale));
         body.AngularVelocity *= 1f - Math.Clamp(1.5f * sub * Time.FixedDeltaTime * dragScale, 0f, 0.5f);
         return sub;
     }

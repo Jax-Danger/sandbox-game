@@ -180,7 +180,7 @@ public sealed class Fx(SandboxGame g)
     {
         GameObject go = Prim("grenade", _nadeMesh ??= Meshes.Lathe("fxnade", [(0.0001f, -0.075f), (0.04f, -0.072f), (0.06f, -0.05f), (0.066f, -0.01f), (0.062f, 0.03f), (0.045f, 0.06f), (0.024f, 0.07f), (0.024f, 0.095f), (0.0001f, 0.1f)], 20), Mat("nade", new Color(0.25f, 0.32f, 0.20f, 1f)), from);
         go.AddComponent<SphereCollider>().Radius = 0.09f;
-        Rigidbody3D rb = go.AddComponent<Rigidbody3D>();
+        Rigidbody3D rb = go.AddBody();
         rb.Mass = 0.5f;
         rb.LinearVelocity = velocity;
         rb.Restitution = 0.4f;

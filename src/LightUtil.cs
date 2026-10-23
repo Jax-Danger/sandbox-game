@@ -12,3 +12,18 @@ public static class LightUtil
         return l;
     }
 }
+
+/// <summary>v1.0 bodies kept Jitter's default damping (0.002 linear, 0.005 angular per step); engine 1.0 zeroes it
+/// unless set, which left floating props bobbing and ragdolls/props spinning longer. Restores the v1.0 feel.</summary>
+public static class BodyUtil
+{
+    public const float V10LinearDamping = 0.002f, V10AngularDamping = 0.005f;
+
+    public static Rigidbody3D AddBody(this GameObject go)
+    {
+        Rigidbody3D b = go.AddComponent<Rigidbody3D>();
+        b.LinearDamping = V10LinearDamping;
+        b.AngularDamping = V10AngularDamping;
+        return b;
+    }
+}

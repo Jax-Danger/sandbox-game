@@ -386,7 +386,7 @@ public sealed class SelfTest
                     float ed = Float3.Length(_ea!.Go.Transform.Position - _eb!.Go.Transform.Position);
                     Check(ed < 4.5f, $"elastic pulls props together (6.0 → {ed:0.0} m)");
                     float wy = _woodP!.Go.Transform.Position.Y, my = _metalP!.Go.Transform.Position.Y;
-                    Check(wy > 1.5f && wy < 2.6f && MathF.Abs(_woodP.Body.LinearVelocity.Y) < 1f, $"wood floats at the water surface (y {wy:0.00}, surface 2.00)");
+                    Check(wy > 1.5f && wy < 2.6f && MathF.Abs(_woodP.Body.LinearVelocity.Y) < 1f, $"wood floats at the water surface (y {wy:0.00}, vy {_woodP.Body.LinearVelocity.Y:0.00}, surface 2.00)");
                     Check(my < 1.0f, $"metal sinks to the bottom (y {my:0.00})");
                     Water.Volumes.Remove(_pool!);
                     float hy = _hb!.Go.Transform.Position.Y, ht = _hb.Go.GetComponent<Hoverball>()!.Target;
