@@ -31,6 +31,7 @@ public static class SceneBaker
         finally { Environment.SetEnvironmentVariable("SANDBOX_BATCH", prevBatch); }
         if (err is not null) return "map error: " + err;
 
+        MapBuilder.CaptureInfo(scene, map);
         var spawn = new GameObject("SpawnPoint");
         spawn.Transform.Position = MapBuilder.SpawnPoint;
         scene.Add(spawn);

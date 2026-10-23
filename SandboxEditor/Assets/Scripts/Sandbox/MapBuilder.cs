@@ -69,6 +69,7 @@ public static partial class MapBuilder
         SpawnPoints.Clear();
         Current = map;
         string? error = null;
+        if (map != "custom" && TryLoadBaked(scene, map)) return null;
         switch (map)
         {
             case "hills": BuildHills(scene, shader); break;

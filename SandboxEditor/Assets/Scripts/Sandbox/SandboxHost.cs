@@ -19,6 +19,10 @@ public sealed class SandboxHost : Component
     {
         if (!Application.IsPlaying || Current is not null) return;
         DayNightCycle.ResetStatics();
+        MapBuilder.BakedScenes.Clear();
+        if (GameObject.GetComponent<MapLibrary>() is { } maps)
+            foreach (var e in maps.Maps)
+                if (e is { Scene: { } sa } && sa.IsValid() && e.Id != "") MapBuilder.BakedScenes[e.Id] = sa;
         var game = new SandboxGame();
         Current = game;
         game.Initialize();

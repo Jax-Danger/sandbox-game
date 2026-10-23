@@ -1,7 +1,7 @@
 Scenes:
   $id: 2
   $values:
-    - Path: "Scenes/Main.scene"
+    - Path: "Scenes/MainMenu.scene"
       SceneGuid: "7ac299e5-c8a6-4268-85c9-da9a4872be67"
       Enabled: true
       $id: 3

@@ -87,6 +87,41 @@
             "_enabledInHierarchy": true,
             "HideFlags": 0L,
             "Name": "NewPropLibrary"
+          },
+          {
+            "$id": 8,
+            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null",
+            "Maps": {
+              "$id": 9,
+              "$values": [
+                {
+                  "$id": 10,
+                  "Id": "flatgrass",
+                  "Scene": {
+                    "$asset": "ce2a02bc-54ed-417c-8907-c63d2f3e9274"
+                  }
+                },
+                {
+                  "$id": 11,
+                  "Id": "hills",
+                  "Scene": {
+                    "$asset": "362f0c5a-d033-4806-9909-79c5246fc520"
+                  }
+                },
+                {
+                  "$id": 12,
+                  "Id": "town",
+                  "Scene": {
+                    "$asset": "34f40f00-146e-462f-b29f-54efbe2d9035"
+                  }
+                }
+              ]
+            },
+            "_identifier": "cf4d00ff-397d-47dd-8635-7d905986cf23",
+            "_enabled": true,
+            "_enabledInHierarchy": true,
+            "HideFlags": 0L,
+            "Name": "NewMapLibrary"
           }
         ],
         "Children": [
@@ -96,84 +131,84 @@
     ]
   },
   "Environment": {
-    "$id": 8,
+    "$id": 13,
     "SkyMaterial": {
-      "$id": 9,
+      "$id": 14,
       "_shader": {
         "$asset": "73295c5c-0e55-4550-ae74-f13cd62796d2"
       },
       "_parent": NULL,
       "_properties": {
-        "$id": 10,
+        "$id": 15,
         "_colors": {
-          "$id": 11,
-          "entries": [
-
-          ]
-        },
-        "_vectors2": {
-          "$id": 12,
-          "entries": [
-
-          ]
-        },
-        "_vectors3": {
-          "$id": 13,
-          "entries": [
-
-          ]
-        },
-        "_vectors4": {
-          "$id": 14,
-          "entries": [
-
-          ]
-        },
-        "_floats": {
-          "$id": 15,
-          "entries": [
-
-          ]
-        },
-        "_ints": {
           "$id": 16,
           "entries": [
 
           ]
         },
-        "_matrices": {
+        "_vectors2": {
           "$id": 17,
           "entries": [
 
           ]
         },
-        "_textures": {
+        "_vectors3": {
           "$id": 18,
           "entries": [
 
           ]
         },
-        "_textures3D": {
+        "_vectors4": {
           "$id": 19,
           "entries": [
 
           ]
         },
-        "_texturesCube": {
+        "_floats": {
           "$id": 20,
+          "entries": [
+
+          ]
+        },
+        "_ints": {
+          "$id": 21,
+          "entries": [
+
+          ]
+        },
+        "_matrices": {
+          "$id": 22,
+          "entries": [
+
+          ]
+        },
+        "_textures": {
+          "$id": 23,
+          "entries": [
+
+          ]
+        },
+        "_textures3D": {
+          "$id": 24,
+          "entries": [
+
+          ]
+        },
+        "_texturesCube": {
+          "$id": 25,
           "entries": [
 
           ]
         }
       },
       "_overrides": {
-        "$id": 21,
+        "$id": 26,
         "$values": [
 
         ]
       },
       "_keywords": {
-        "$id": 22,
+        "$id": 27,
         "entries": [
 
         ]
@@ -231,43 +266,43 @@
     }
   },
   "BakedLighting": {
-    "$id": 23,
+    "$id": 28,
     "Lightmaps": {
-      "$id": 24,
+      "$id": 29,
       "$values": [
 
       ]
     },
     "Placements": {
-      "$id": 25,
+      "$id": 30,
       "entries": [
 
       ]
     },
     "ProbePositions": {
-      "$id": 26,
+      "$id": 31,
       "array": [
 
       ]
     },
     "ProbeSH": {
-      "$id": 27,
+      "$id": 32,
       "array": [
 
       ]
     },
     "ProbeTetrahedra": {
-      "$id": 28,
+      "$id": 33,
       "array": [
 
       ]
     },
     "ProbeTetNeighbours": {
-      "$id": 28
+      "$id": 33
     }
   },
   "LightmapBake": {
-    "$id": 29,
+    "$id": 34,
     "AtlasSize": 1024,
     "TexelsPerUnit": 20F,
     "DilatePixels": 2,
