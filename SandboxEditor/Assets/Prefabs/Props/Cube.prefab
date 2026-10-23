@@ -2,7 +2,7 @@
   "$id": 1,
   "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
   "Name": "Cube",
-  "Identifier": "0ee7a502-2246-451c-b00a-f3dbbd447744",
+  "Identifier": "abf3b3e7-1a61-413c-89f5-4d310af6e76c",
   "Static": 0B,
   "Enabled": 1B,
   "EnabledInHierarchy": 1B,
@@ -34,19 +34,19 @@
       "$id": 3,
       "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
       "mesh": {
-        "$asset": "53253d12-1dfd-4667-9694-88f4f7a6dadf"
+        "$asset": "08e18986-5b2b-43cb-a0aa-47a2e92b99ae"
       },
       "materials": {
         "$id": 4,
         "$values": [
           {
-            "$asset": "f398ce32-47d3-441c-97a0-6ca47683c9b8"
+            "$asset": "c88ca5c3-bb98-4573-b9e9-5eabab4d6e70"
           }
         ]
       },
       "shadowCasting": 1L,
       "receiveShadows": true,
-      "_identifier": "69226a3e-537a-48b5-ae23-d0816199dcb0",
+      "_identifier": "476ef6fe-ea2c-4c4e-b07c-f790e9ad0692",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -81,7 +81,7 @@
       "angularSleepThreshold": 0.1F,
       "interpolation": 1L,
       "constraints": 0L,
-      "_identifier": "83f6867e-541c-47a8-8a66-f2d897f03557",
+      "_identifier": "882cc023-25f7-4f4d-83f2-0485567dc7e7",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -105,7 +105,7 @@
         "Y": 0F,
         "Z": 0F
       },
-      "_identifier": "16ec2e2c-6db3-4f3d-88a2-9cdc99643652",
+      "_identifier": "a4820c2e-1fd5-4f0a-ba35-08ac868b5398",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -113,11 +113,11 @@
     },
     {
       "$id": 7,
-      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null",
+      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
       "Kind": 0L,
       "Surface": "Plastic",
       "HalfHeight": 0.5F,
-      "_identifier": "c0aa909e-e856-4e67-9cc0-9d6e4e6243b4",
+      "_identifier": "1e60f2b2-ccbf-4482-8902-ced219c1bfbd",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -130,7 +130,7 @@
   "Prefab": {
     "$id": 8,
     "AssetId": "00000000-0000-0000-0000-000000000000",
-    "SourceIdentifier": "0ee7a502-2246-451c-b00a-f3dbbd447744",
+    "SourceIdentifier": "abf3b3e7-1a61-413c-89f5-4d310af6e76c",
     "Overrides": {
       "$id": 9,
       "$values": [

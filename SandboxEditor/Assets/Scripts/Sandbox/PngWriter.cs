@@ -6,19 +6,21 @@ namespace Sandbox;
 public static class PngWriter
 {
     /// <summary>Writes RGBA8 pixels as an opaque RGB PNG. bottomUp = GL row order (flipped while writing).</summary>
-    public static void Write(string path, byte[] rgba, int w, int h, bool bottomUp)
+    public static void Write(string path, byte[] rgba, int w, int h, bool bottomUp, bool alpha = false)
     {
+        int bpp = alpha ? 4 : 3;
         using var raw = new MemoryStream();
         using (var z = new ZLibStream(raw, CompressionLevel.Fastest, leaveOpen: true))
         {
-            byte[] row = new byte[1 + w * 3];
+            byte[] row = new byte[1 + w * bpp];
             for (int y = 0; y < h; y++)
             {
                 int sy = bottomUp ? h - 1 - y : y;
                 for (int x = 0; x < w; x++)
                 {
                     int s = (sy * w + x) * 4;
-                    row[1 + x * 3] = rgba[s]; row[2 + x * 3] = rgba[s + 1]; row[3 + x * 3] = rgba[s + 2];
+                    row[1 + x * bpp] = rgba[s]; row[2 + x * bpp] = rgba[s + 1]; row[3 + x * bpp] = rgba[s + 2];
+                    if (alpha) row[4 + x * bpp] = rgba[s + 3];
                 }
                 z.Write(row);
             }
@@ -26,7 +28,7 @@ public static class PngWriter
         using var f = File.Create(path);
         f.Write([137, 80, 78, 71, 13, 10, 26, 10]);
         byte[] ihdr = new byte[13];
-        BE(ihdr, 0, (uint)w); BE(ihdr, 4, (uint)h); ihdr[8] = 8; ihdr[9] = 2;
+        BE(ihdr, 0, (uint)w); BE(ihdr, 4, (uint)h); ihdr[8] = 8; ihdr[9] = (byte)(alpha ? 6 : 2);
         Chunk(f, "IHDR", ihdr); Chunk(f, "IDAT", raw.ToArray()); Chunk(f, "IEND", []);
     }
 

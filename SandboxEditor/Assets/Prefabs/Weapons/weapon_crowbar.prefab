@@ -2,7 +2,7 @@
   "$id": 1,
   "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
   "Name": "weapon_crowbar",
-  "Identifier": "d746e1dd-63a1-4f9b-b820-89849d4fa91d",
+  "Identifier": "79ac3c6e-457f-4d60-9c50-63d3f2cf213c",
   "Static": 0B,
   "Enabled": 1B,
   "EnabledInHierarchy": 1B,
@@ -35,7 +35,7 @@
       "$type": "Sandbox.EntityDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
       "Category": "Weapon",
       "Id": "weapon_crowbar",
-      "_identifier": "96413efa-5062-4d59-9df5-45ca05fabc4e",
+      "_identifier": "c3103172-301c-422b-b3f9-9b4e0b7ad47c",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -46,7 +46,7 @@
     {
       "$id": 4,
       "Name": "WorldWeapon",
-      "Identifier": "4ae92457-c14f-4770-97f2-78f3bea72b2f",
+      "Identifier": "980088b8-90a6-456e-991b-0f22b10a717d",
       "Static": 0B,
       "Enabled": 1B,
       "EnabledInHierarchy": 1B,
@@ -80,7 +80,7 @@
         {
           "$id": 6,
           "Name": "part",
-          "Identifier": "b0d5ee04-6501-4cd6-ba5f-63985b088990",
+          "Identifier": "628057b7-9c6f-4eeb-878b-1529f77d69ea",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -112,19 +112,19 @@
               "$id": 8,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "410febcf-1ef0-4a76-9b6d-c7ccd3f0d08d"
+                "$asset": "1fc78f2e-4289-4c67-9148-4ab2056e02cd"
               },
               "materials": {
                 "$id": 9,
                 "$values": [
                   {
-                    "$asset": "7db7c705-c510-4719-bc86-63dee98ee268"
+                    "$asset": "71752f10-d015-47cd-8738-de577062eb2d"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "272c6143-a62e-452b-9033-77090774b154",
+              "_identifier": "cb1b5be6-4889-4b52-8c65-bae6b42ed3fb",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -137,7 +137,7 @@
           "Prefab": {
             "$id": 10,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "b0d5ee04-6501-4cd6-ba5f-63985b088990",
+            "SourceIdentifier": "628057b7-9c6f-4eeb-878b-1529f77d69ea",
             "Overrides": {
               "$id": 11,
               "$values": [
@@ -149,7 +149,7 @@
         {
           "$id": 12,
           "Name": "part",
-          "Identifier": "f4df0033-5287-4024-94a4-c7c358885c8e",
+          "Identifier": "0e246e85-c2f2-4c8f-b6c8-d6e867bad56a",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -181,19 +181,19 @@
               "$id": 14,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "32d449ef-dc04-4765-91bf-2f13379cc864"
+                "$asset": "46d4d399-0e57-4173-a7d1-a378bf66f0a1"
               },
               "materials": {
                 "$id": 15,
                 "$values": [
                   {
-                    "$asset": "1ee6ee08-eb33-4fce-9831-61014735ac87"
+                    "$asset": "1cf2c427-93c9-4d11-9863-37e4df5131dd"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "e1acc5e8-8e6f-41bb-a1b1-44edc3950f51",
+              "_identifier": "06eb9234-b14d-44aa-bfad-fa838a5b2174",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -206,7 +206,7 @@
           "Prefab": {
             "$id": 16,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "f4df0033-5287-4024-94a4-c7c358885c8e",
+            "SourceIdentifier": "0e246e85-c2f2-4c8f-b6c8-d6e867bad56a",
             "Overrides": {
               "$id": 17,
               "$values": [
@@ -219,7 +219,7 @@
       "Prefab": {
         "$id": 18,
         "AssetId": "00000000-0000-0000-0000-000000000000",
-        "SourceIdentifier": "4ae92457-c14f-4770-97f2-78f3bea72b2f",
+        "SourceIdentifier": "980088b8-90a6-456e-991b-0f22b10a717d",
         "Overrides": {
           "$id": 19,
           "$values": [
@@ -232,7 +232,7 @@
   "Prefab": {
     "$id": 20,
     "AssetId": "00000000-0000-0000-0000-000000000000",
-    "SourceIdentifier": "d746e1dd-63a1-4f9b-b820-89849d4fa91d",
+    "SourceIdentifier": "79ac3c6e-457f-4d60-9c50-63d3f2cf213c",
     "Overrides": {
       "$id": 21,
       "$values": [

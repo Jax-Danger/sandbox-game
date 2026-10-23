@@ -7,6 +7,23 @@ namespace Sandbox;
 public static class ProcTex
 {
     private static readonly Dictionary<string, Texture2D> Cache = [];
+    /// <summary>CPU pixels of every generated texture, so the editor can bake them to PNG assets.</summary>
+    public static readonly System.Runtime.CompilerServices.ConditionalWeakTable<Texture2D, Source> Sources = new();
+    public sealed record Source(string Key, int W, int H, byte[] Rgba);
+
+    /// <summary>The generator key and pixels of a ProcTex texture (read back from the GPU if it predates <see cref="Sources"/>).</summary>
+    public static bool TryGetSource(Texture2D t, out Source src)
+    {
+        if (Sources.TryGetValue(t, out src!)) return true;
+        string? key = Cache.FirstOrDefault(kv => ReferenceEquals(kv.Value, t)).Key;
+        if (key is null) return false;
+        int w = (int)t.Width, h = (int)t.Height;
+        var data = new byte[w * h * 4];
+        try { t.GetData(new Memory<byte>(data)); } catch { return false; }
+        src = new Source(key, w, h, data);
+        Sources.AddOrUpdate(t, src);
+        return true;
+    }
 
     public static Texture2D Make(string key, int w, int h, Func<int, int, (byte r, byte g, byte b, byte a)> px)
     {
@@ -24,6 +41,7 @@ public static class ProcTex
         t.SetData(new Memory<byte>(data));
         try { t.GenerateMipmaps(); } catch { }
         try { t.SetWrap(WrapMode.Repeat); } catch { }
+        Sources.AddOrUpdate(t, new Source(key, w, h, data));
         return Cache[key] = t;
     }
 

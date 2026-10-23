@@ -2,7 +2,7 @@
   "$id": 1,
   "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
   "Name": "weapon_grenade",
-  "Identifier": "17a4560b-70ad-4fff-a638-0a6c54c757d1",
+  "Identifier": "277df47a-5732-4a8a-befd-4db630b28c61",
   "Static": 0B,
   "Enabled": 1B,
   "EnabledInHierarchy": 1B,
@@ -35,7 +35,7 @@
       "$type": "Sandbox.EntityDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
       "Category": "Weapon",
       "Id": "weapon_grenade",
-      "_identifier": "f0f38d2d-ff2e-4445-b0ef-23eb0b2c4353",
+      "_identifier": "0e7a6da6-17f6-4a6a-8e91-58d0748c10ef",
       "_enabled": true,
       "_enabledInHierarchy": true,
       "HideFlags": 0L,
@@ -46,7 +46,7 @@
     {
       "$id": 4,
       "Name": "WorldWeapon",
-      "Identifier": "5bc6fba5-2a6f-42fa-ab5f-b8d9d5cd272d",
+      "Identifier": "0223866b-bf2a-46d9-885b-685bfb8cf58d",
       "Static": 0B,
       "Enabled": 1B,
       "EnabledInHierarchy": 1B,
@@ -80,7 +80,7 @@
         {
           "$id": 6,
           "Name": "part",
-          "Identifier": "0d284234-dd28-4383-a055-cc8369919d9c",
+          "Identifier": "cc4c168c-bf18-43f2-8a09-4743e113d632",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -112,19 +112,19 @@
               "$id": 8,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "2f034e01-6771-4d1a-924a-e4acb8425127"
+                "$asset": "18a96d15-2bb2-40e8-aa34-42154783b2e1"
               },
               "materials": {
                 "$id": 9,
                 "$values": [
                   {
-                    "$asset": "2e0fb800-48c1-4e51-994c-f6a1cc786e30"
+                    "$asset": "21e3d041-668b-4635-a683-095047642846"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "dd0d67f7-47f6-44a4-b719-d98a495c6b24",
+              "_identifier": "0839699f-aef8-4bfa-adfd-3d4664895f02",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -137,7 +137,7 @@
           "Prefab": {
             "$id": 10,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "0d284234-dd28-4383-a055-cc8369919d9c",
+            "SourceIdentifier": "cc4c168c-bf18-43f2-8a09-4743e113d632",
             "Overrides": {
               "$id": 11,
               "$values": [
@@ -149,7 +149,7 @@
         {
           "$id": 12,
           "Name": "part",
-          "Identifier": "ce302291-f46c-4ee0-a3a8-1828036428c4",
+          "Identifier": "6bcabf6d-13a5-416a-8249-ce7043ff293c",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -181,19 +181,19 @@
               "$id": 14,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "4316deba-a41e-4bac-8abd-00a92e29b351"
+                "$asset": "f2b6d4f9-96df-4d72-997d-f218a5b40e6e"
               },
               "materials": {
                 "$id": 15,
                 "$values": [
                   {
-                    "$asset": "ce868f03-cdbb-4fb1-bfd2-0b7b1a41dea3"
+                    "$asset": "04822cfd-088a-4e35-af92-5cb26f3ec4da"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "34588594-d97d-42e0-9a4b-ac270ce22495",
+              "_identifier": "16bbb708-ed41-45bb-8c4b-c4acdf9729c8",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -206,7 +206,7 @@
           "Prefab": {
             "$id": 16,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "ce302291-f46c-4ee0-a3a8-1828036428c4",
+            "SourceIdentifier": "6bcabf6d-13a5-416a-8249-ce7043ff293c",
             "Overrides": {
               "$id": 17,
               "$values": [
@@ -218,7 +218,7 @@
         {
           "$id": 18,
           "Name": "part",
-          "Identifier": "a5bed83b-cc59-4afb-ad43-668a650197b8",
+          "Identifier": "31810313-b9fa-423c-90f8-062ea67fb49e",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -250,19 +250,19 @@
               "$id": 20,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "7a48a874-50ce-4827-95a5-c477d0db90fb"
+                "$asset": "2bd7e582-8306-4c2b-8ad1-5d2f59a954c6"
               },
               "materials": {
                 "$id": 21,
                 "$values": [
                   {
-                    "$asset": "ce868f03-cdbb-4fb1-bfd2-0b7b1a41dea3"
+                    "$asset": "04822cfd-088a-4e35-af92-5cb26f3ec4da"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "3d1f41b3-862e-4a1e-8e93-780213b22a85",
+              "_identifier": "3762d8a7-5448-4440-8413-065ac6221f7e",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -275,7 +275,7 @@
           "Prefab": {
             "$id": 22,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "a5bed83b-cc59-4afb-ad43-668a650197b8",
+            "SourceIdentifier": "31810313-b9fa-423c-90f8-062ea67fb49e",
             "Overrides": {
               "$id": 23,
               "$values": [
@@ -287,7 +287,7 @@
         {
           "$id": 24,
           "Name": "part",
-          "Identifier": "1a2395d1-b45e-4e5d-97a3-684dad20e653",
+          "Identifier": "544b524c-4702-48cb-8596-12f44d6c01dc",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -319,19 +319,19 @@
               "$id": 26,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "1cd7d1b4-c861-4588-a8f7-f111448067b9"
+                "$asset": "36e0ae83-d0b4-4891-8c28-e280ca7912da"
               },
               "materials": {
                 "$id": 27,
                 "$values": [
                   {
-                    "$asset": "ce868f03-cdbb-4fb1-bfd2-0b7b1a41dea3"
+                    "$asset": "04822cfd-088a-4e35-af92-5cb26f3ec4da"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "42287b1d-6804-4a95-8dc7-1bd0bc21bc6e",
+              "_identifier": "7bb91df4-664d-48ec-9602-9fe0592a334e",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -344,7 +344,7 @@
           "Prefab": {
             "$id": 28,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "1a2395d1-b45e-4e5d-97a3-684dad20e653",
+            "SourceIdentifier": "544b524c-4702-48cb-8596-12f44d6c01dc",
             "Overrides": {
               "$id": 29,
               "$values": [
@@ -356,7 +356,7 @@
         {
           "$id": 30,
           "Name": "part",
-          "Identifier": "3d5f332e-56bf-45ab-8a5d-bc821dbd2d8c",
+          "Identifier": "3d5e4c82-fe05-472f-b35f-514fdde223a4",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -388,19 +388,19 @@
               "$id": 32,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "308fa61e-40c7-4acb-bd9b-0630a1ae59ac"
+                "$asset": "a3ec328c-dc4e-4f65-8124-dbf331ca63d8"
               },
               "materials": {
                 "$id": 33,
                 "$values": [
                   {
-                    "$asset": "5f89dc81-417b-4b82-9f5d-5ba4208886b3"
+                    "$asset": "7ae96081-3cf1-4c2d-87ed-05249f0ed556"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "df75d1e4-cc99-4893-b6df-5a3bbd3f8117",
+              "_identifier": "640d0da9-4325-4df7-952a-11c639fca1a4",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -413,7 +413,7 @@
           "Prefab": {
             "$id": 34,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "3d5f332e-56bf-45ab-8a5d-bc821dbd2d8c",
+            "SourceIdentifier": "3d5e4c82-fe05-472f-b35f-514fdde223a4",
             "Overrides": {
               "$id": 35,
               "$values": [
@@ -425,7 +425,7 @@
         {
           "$id": 36,
           "Name": "part",
-          "Identifier": "9f8c971f-f3ea-454b-98e6-f46322b1fc9c",
+          "Identifier": "37549c96-d619-42eb-83ef-b31174cf9bef",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -457,19 +457,19 @@
               "$id": 38,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "5a313ca1-5e82-42f2-b519-12e6ca51faf9"
+                "$asset": "d0368995-e2ef-4c4e-a648-57c69379adf6"
               },
               "materials": {
                 "$id": 39,
                 "$values": [
                   {
-                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                    "$asset": "aeeeb231-8405-4eea-a2be-463c3036a7ea"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "b84757e3-dd61-4a96-9dd3-7914d6d29045",
+              "_identifier": "9b582983-a50d-4fb9-ac85-e8bab6689e54",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -482,7 +482,7 @@
           "Prefab": {
             "$id": 40,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "9f8c971f-f3ea-454b-98e6-f46322b1fc9c",
+            "SourceIdentifier": "37549c96-d619-42eb-83ef-b31174cf9bef",
             "Overrides": {
               "$id": 41,
               "$values": [
@@ -494,7 +494,7 @@
         {
           "$id": 42,
           "Name": "part",
-          "Identifier": "66b76837-1bdc-478e-aa29-c4b3aeac161b",
+          "Identifier": "2c83f5fc-ccec-4571-bc76-aba51764eabc",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -526,19 +526,19 @@
               "$id": 44,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "a5850a61-88d3-4f71-a215-c0b1e79e416a"
+                "$asset": "4f8aa251-c644-434d-bcfd-6f23eb9e6204"
               },
               "materials": {
                 "$id": 45,
                 "$values": [
                   {
-                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                    "$asset": "aeeeb231-8405-4eea-a2be-463c3036a7ea"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "4a34314a-bb54-46fe-a61c-df885ce1ab57",
+              "_identifier": "fa93fb08-bbb7-48a5-8d36-eaf282d17899",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -551,7 +551,7 @@
           "Prefab": {
             "$id": 46,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "66b76837-1bdc-478e-aa29-c4b3aeac161b",
+            "SourceIdentifier": "2c83f5fc-ccec-4571-bc76-aba51764eabc",
             "Overrides": {
               "$id": 47,
               "$values": [
@@ -563,7 +563,7 @@
         {
           "$id": 48,
           "Name": "part",
-          "Identifier": "330c2878-3476-4355-9c5d-d89f6a0e5c18",
+          "Identifier": "334c6ba0-e5b5-4d28-92d9-f36db0cfa400",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -595,19 +595,19 @@
               "$id": 50,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "16a06a90-0734-4640-a2c7-b593143f834b"
+                "$asset": "f1c7fae0-2356-4319-8e0a-3bae1fec9356"
               },
               "materials": {
                 "$id": 51,
                 "$values": [
                   {
-                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                    "$asset": "aeeeb231-8405-4eea-a2be-463c3036a7ea"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "a56ba712-876e-480b-b066-56470ac58cd6",
+              "_identifier": "427f6d9d-1bff-4d44-982b-6e604babd3e4",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -620,7 +620,7 @@
           "Prefab": {
             "$id": 52,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "330c2878-3476-4355-9c5d-d89f6a0e5c18",
+            "SourceIdentifier": "334c6ba0-e5b5-4d28-92d9-f36db0cfa400",
             "Overrides": {
               "$id": 53,
               "$values": [
@@ -632,7 +632,7 @@
         {
           "$id": 54,
           "Name": "part",
-          "Identifier": "54f28ae6-f96d-4753-8611-1fe733994903",
+          "Identifier": "2a1cebaf-e81c-4207-b032-897c545b0202",
           "Static": 0B,
           "Enabled": 1B,
           "EnabledInHierarchy": 1B,
@@ -664,19 +664,19 @@
               "$id": 56,
               "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
               "mesh": {
-                "$asset": "60d309c7-6d91-4ef8-a9a7-1e7985409976"
+                "$asset": "0cac1dd2-a380-4a75-9872-23610151cb52"
               },
               "materials": {
                 "$id": 57,
                 "$values": [
                   {
-                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                    "$asset": "aeeeb231-8405-4eea-a2be-463c3036a7ea"
                   }
                 ]
               },
               "shadowCasting": 1L,
               "receiveShadows": true,
-              "_identifier": "2d80c2fd-44cf-487e-9180-1fefb7fd529e",
+              "_identifier": "c2b7c12b-c6d9-4b7f-9590-e308ba35245b",
               "_enabled": true,
               "_enabledInHierarchy": true,
               "HideFlags": 0L,
@@ -689,7 +689,7 @@
           "Prefab": {
             "$id": 58,
             "AssetId": "00000000-0000-0000-0000-000000000000",
-            "SourceIdentifier": "54f28ae6-f96d-4753-8611-1fe733994903",
+            "SourceIdentifier": "2a1cebaf-e81c-4207-b032-897c545b0202",
             "Overrides": {
               "$id": 59,
               "$values": [
@@ -702,7 +702,7 @@
       "Prefab": {
         "$id": 60,
         "AssetId": "00000000-0000-0000-0000-000000000000",
-        "SourceIdentifier": "5bc6fba5-2a6f-42fa-ab5f-b8d9d5cd272d",
+        "SourceIdentifier": "0223866b-bf2a-46d9-885b-685bfb8cf58d",
         "Overrides": {
           "$id": 61,
           "$values": [
@@ -715,7 +715,7 @@
   "Prefab": {
     "$id": 62,
     "AssetId": "00000000-0000-0000-0000-000000000000",
-    "SourceIdentifier": "17a4560b-70ad-4fff-a638-0a6c54c757d1",
+    "SourceIdentifier": "277df47a-5732-4a8a-befd-4db630b28c61",
     "Overrides": {
       "$id": 63,
       "$values": [

@@ -71,6 +71,7 @@ public static class SceneBaker
                 if (baked is null)
                 {
                     baked = Clone(mat);
+                    AssetBaking.BakeTextures(mat, baked);
                     db.CreateAsset(baked, Unique($"Materials/Maps/{map}", r.GameObject.Name, ".mat"));
                     mats[mat] = baked; matByHash[Hash(mat)] = baked;
                 }

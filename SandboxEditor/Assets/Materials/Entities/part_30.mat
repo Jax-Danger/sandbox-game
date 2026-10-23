@@ -72,60 +72,32 @@
         {
           "key": "_SurfaceTex",
           "value": {
-            "$id": 11,
-            "Name": "New Texture",
-            "Width": 2U,
-            "Height": 2U,
-            "Format": 0,
-            "Srgb": false,
-            "Filter": 1,
-            "WrapU": 0,
-            "WrapV": 0,
-            "Anisotropy": 0U,
-            "BorderColor": 0,
-            "Mips": [
-              [B;AL8A/wC/AP8AvwD/AL8A/w==],
-              [B;AL8A/w==]
-            ]
+            "$asset": "a123eaca-a261-440d-9e67-42baa44abcd2"
           }
         },
         {
           "key": "_EmissionTex",
           "value": {
-            "$id": 12,
-            "Name": "New Texture",
-            "Width": 2U,
-            "Height": 2U,
-            "Format": 0,
-            "Srgb": false,
-            "Filter": 1,
-            "WrapU": 0,
-            "WrapV": 0,
-            "Anisotropy": 0U,
-            "BorderColor": 0,
-            "Mips": [
-              [B;/y0e//8tHv//LR7//y0e/w==],
-              [B;/y0e/w==]
-            ]
+            "$asset": "09dffac1-63ac-419b-aa5b-913103fafa1d"
           }
         }
       ]
     },
     "_textures3D": {
-      "$id": 13,
+      "$id": 11,
       "entries": [
 
       ]
     },
     "_texturesCube": {
-      "$id": 14,
+      "$id": 12,
       "entries": [
 
       ]
     }
   },
   "_overrides": {
-    "$id": 15,
+    "$id": 13,
     "$values": [
       "_MainTex",
       "_SurfaceTex",
@@ -135,7 +107,7 @@
     ]
   },
   "_keywords": {
-    "$id": 16,
+    "$id": 14,
     "entries": [
 
     ]

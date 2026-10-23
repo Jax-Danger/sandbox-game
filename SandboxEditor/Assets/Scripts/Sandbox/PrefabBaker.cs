@@ -38,6 +38,7 @@ public static class PrefabBaker
                     db.CreateAsset(mesh, $"Meshes/Props/{kind}.mesh");
                     r.Mesh = mesh;
                     var mat = Clone(prop.Material); mat.Name = kind.ToString();
+                    AssetBaking.BakeTextures(prop.Material, mat);
                     db.CreateAsset(mat, $"Materials/Props/{kind}.mat");
                     r.Material = mat;
 

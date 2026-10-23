@@ -165,12 +165,52 @@ public sealed class AssetBaking
                 if (!_matByHash.TryGetValue(h, out var baked))
                 {
                     baked = Clone(mat);
+                    BakeTextures(mat, baked);
                     db.CreateAsset(baked, Unique(matFolder, r.GameObject.Name, ".mat"));
                     _matByHash[h] = baked;
                 }
                 r.Material = baked;
             }
         }
+    }
+
+    private static readonly Dictionary<string, Texture2D> _texByKey = [];
+    public static readonly string[] TextureSlots = ["_MainTex", "_SurfaceTex", "_EmissionTex"];
+
+    /// <summary>Replaces the clone's inline procedural textures with PNG assets under Assets/Textures/Proc (one per ProcTex key,
+    /// imported linear like the game's own upload). Returns how many slots now point at assets.</summary>
+    public static int BakeTextures(Material original, Material clone)
+    {
+        int n = 0;
+        foreach (string slot in TextureSlots)
+            if (original.GetTexture(slot) is { } t && t.AssetID == Guid.Empty && ProcTex.TryGetSource(t, out var src) && TextureAsset(src) is { } asset)
+            { clone.SetTexture(slot, asset); n++; }
+        return n;
+    }
+
+    public static Texture2D? TextureAsset(ProcTex.Source src)
+    {
+        if (_texByKey.TryGetValue(src.Key, out var have) && have.IsValid()) return have;
+        var db = Prowl.Editor.EditorAssetBackend.Instance!;
+        string rel = $"Textures/Proc/{Clean(src.Key)}.png";
+        string abs = Path.Combine(Prowl.Editor.Projects.Project.Current!.AssetsPath, rel);
+        Guid guid = db.PathToGuid(rel);
+        if (guid == Guid.Empty)
+        {
+            Directory.CreateDirectory(Path.GetDirectoryName(abs)!);
+            bool alpha = false;
+            for (int i = 3; i < src.Rgba.Length; i += 4) if (src.Rgba[i] != 255) { alpha = true; break; }
+            PngWriter.Write(abs, src.Rgba, src.W, src.H, bottomUp: false, alpha);
+            string importer = Prowl.Editor.EditorRegistries.GetImporterTypeName(".png");
+            var imp = Prowl.Editor.EditorRegistries.CreateImporterByName(importer);
+            var settings = imp?.DefaultSettings() ?? Prowl.Echo.EchoObject.NewCompound();
+            settings["srgb"] = new Prowl.Echo.EchoObject(Environment.GetEnvironmentVariable("SANDBOX_SRGBTEX") == "1");
+            Prowl.Editor.MetaFile.Write(Prowl.Editor.MetaFile.GetMetaPath(abs), Prowl.Editor.MetaFile.CreateNew(importer, imp?.Version ?? 1, settings));
+            guid = db.ImportFile(rel);
+        }
+        var tex = AssetDatabase.Load<Texture2D>(guid);
+        if (tex is not null) _texByKey[src.Key] = tex;
+        return tex;
     }
 
     private static string Hash(object asset) => Convert.ToHexString(System.Security.Cryptography.SHA1.HashData(

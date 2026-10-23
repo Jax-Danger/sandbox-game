@@ -13,9 +13,9 @@
         {
           "key": "_MainColor",
           "value": {
-            "R": 0.62F,
-            "G": 0.46F,
-            "B": 0.24F,
+            "R": 0.12F,
+            "G": 0.08F,
+            "B": 0.05F,
             "A": 1F
           }
         }
@@ -69,40 +69,26 @@
         {
           "key": "_SurfaceTex",
           "value": {
-            "$id": 11,
-            "Name": "New Texture",
-            "Width": 2U,
-            "Height": 2U,
-            "Format": 0,
-            "Srgb": false,
-            "Filter": 1,
-            "WrapU": 0,
-            "WrapV": 0,
-            "Anisotropy": 0U,
-            "BorderColor": 0,
-            "Mips": [
-              [B;AL8A/wC/AP8AvwD/AL8A/w==],
-              [B;AL8A/w==]
-            ]
+            "$asset": "a123eaca-a261-440d-9e67-42baa44abcd2"
           }
         }
       ]
     },
     "_textures3D": {
-      "$id": 12,
+      "$id": 11,
       "entries": [
 
       ]
     },
     "_texturesCube": {
-      "$id": 13,
+      "$id": 12,
       "entries": [
 
       ]
     }
   },
   "_overrides": {
-    "$id": 14,
+    "$id": 13,
     "$values": [
       "_MainTex",
       "_SurfaceTex",
@@ -110,7 +96,7 @@
     ]
   },
   "_keywords": {
-    "$id": 15,
+    "$id": 14,
     "entries": [
 
     ]
