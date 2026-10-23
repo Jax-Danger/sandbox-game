@@ -65,5 +65,5 @@ at the spawn point. Spawns and water work in every mode. Buying doors, the bank 
 - [ ] Applied scale on your *meshes* (Ctrl+A → Scale). On markers, scale is the size, so don't apply it there.
 - [ ] Exported with +Y Up.
 
-This is checked by the headless self-test (`MarkersTest` in `src/SelfTest.cs`), which writes a small glTF with
+This is checked by the headless self-test (`MarkersTest` in `Assets/Scripts/Sandbox/SelfTest.cs`), which writes a small glTF with
 every marker type, imports it and checks each one.

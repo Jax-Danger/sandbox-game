@@ -21,10 +21,11 @@ public static class AssetRegistry
         public Dictionary<string, float> ModelScale { get; set; } = [];
     }
 
-    /// <summary>Game data folder: next to the exe when standalone; in the editor, the repo's assets/ beside the project (until stage 3 moves it into Assets/).</summary>
+    /// <summary>Game data folder: next to the exe when standalone (assets/); in the editor, GameData/ in the project root
+    /// (outside Assets/ so the editor doesn't import the raw fonts/shaders/manifest).</summary>
 #if PROWL_EDITOR
     public static string Root => Prowl.Editor.Projects.Project.Current is { } p
-        ? Path.GetFullPath(Path.Combine(new DirectoryInfo(p.RootPath).ResolveLinkTarget(true)?.FullName ?? p.RootPath, "..", "assets")) : Path.Combine(AppContext.BaseDirectory, "assets");
+        ? Path.Combine(new DirectoryInfo(p.RootPath).ResolveLinkTarget(true)?.FullName ?? p.RootPath, "GameData") : Path.Combine(AppContext.BaseDirectory, "assets");
 #else
     public static string Root => Path.Combine(AppContext.BaseDirectory, "assets");
 #endif

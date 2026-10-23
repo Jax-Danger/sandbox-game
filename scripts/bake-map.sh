@@ -1,12 +1,12 @@
 #!/bin/sh
 # Bakes a game map into an editor scene (stage 5). The editor must have this project open.
-# usage: ./bake-map.sh <mapid: flatgrass|hills|town> <SceneName>   (PROWL_CLI = path to Prowl.Cli, default ~/Projects/Prowl/Build/Cli/Prowl.Cli)
+# usage: scripts/bake-map.sh <mapid: flatgrass|hills|town> [SceneName]   (PROWL_CLI = path to Prowl.Cli, default: found under ~/Projects/Prowl/Build/Cli)
 # Afterwards Scenes/MainMenu.scene is open and its MapLibrary points at the new scene.
 set -e
 # Scene name defaults from the map id; an empty name used to write Scenes/Maps/.scene.
 case "$1" in flatgrass) D=Flatgrass;; hills) D=Hills;; town) D=Town;; *) echo "usage: $0 flatgrass|hills|town [SceneName]" >&2; exit 2;; esac
 set -- "$1" "${2:-$D}"
-PROJ=$(cd "$(dirname "$0")" && pwd)
+PROJ=$(cd "$(dirname "$0")/.." && pwd)
 export DOTNET_ROOT="${DOTNET_ROOT:-$HOME/.dotnet}" PATH="$HOME/.dotnet:$PATH"
 # Build/Cli/Prowl.Cli (older Prowl builds) or Build/Cli/<Config>/<tfm>/Prowl.Cli (newer layout, e.g. the Fedora desktop).
 C="${PROWL_CLI:-$(find "$HOME/Projects/Prowl/Build/Cli" -maxdepth 3 -name Prowl.Cli -type f 2>/dev/null | head -1)}"; P="--project $PROJ"

@@ -1,0 +1,23 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Headless self-test / soak runner (not part of the Prowl project). Compiles the project's game scripts against
+       Prowl.Runtime from a local Prowl clone (default ~/Projects/Prowl, override with -p:ProwlDir=...).
+       Run: scripts/selftest.sh -->
+  <PropertyGroup>
+    <OutputType>Exe</OutputType>
+    <TargetFramework>net10.0</TargetFramework>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>enable</Nullable>
+    <RootNamespace>Sandbox</RootNamespace>
+    <AssemblyName>Sandbox</AssemblyName>
+    <Version>1.8.3</Version>
+    <ServerGarbageCollection>false</ServerGarbageCollection>
+    <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
+    <ProwlDir Condition="'$(ProwlDir)' == ''">$(HOME)/Projects/Prowl</ProwlDir>
+    <NoWarn>$(NoWarn);CS8600;CS8601;CS8602;CS8603;CS8604;CS8618;CS8625</NoWarn>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Include="../../Assets/Scripts/**/*.cs" />
+    <None Include="../../GameData/**" Link="assets/%(RecursiveDir)%(Filename)%(Extension)" CopyToOutputDirectory="PreserveNewest" />
+    <ProjectReference Include="$(ProwlDir)/Prowl.Runtime/Prowl.Runtime.csproj" />
+  </ItemGroup>
+</Project>

@@ -1,7 +1,7 @@
 #!/bin/sh
 # Reproduces the Fedora desktop setup for the editor-migration branch:
 #   packages (git, gh, Vulkan/Mesa + vulkan-tools), .NET SDK in ~/.dotnet, Prowl built in ~/Projects/Prowl,
-#   this repo in ~/Projects/sandbox-game (branch editor-migration), ~/Projects/SandboxEditor symlink, ~/Projects/run-editor.sh.
+#   this repo (= the Prowl project) in ~/Projects/sandbox-game (branch editor-migration), ~/Projects/run-editor.sh.
 # Usage: sh scripts/setup-fedora.sh            (re-runnable; skips what is already there)
 # Env:   DOTNET_SDK=10.0.402  PROWL_REF=2510d8fc  SKIP_DNF=1
 # Prowl is pinned to 2510d8fc (same as the laptop and external/Prowl). Current Prowl main (tested 2026-10-23, d13446a6)
@@ -37,11 +37,10 @@ if [ ! -d "$P/sandbox-game/.git" ]; then
 else
   git -C "$P/sandbox-game" checkout -q editor-migration && git -C "$P/sandbox-game" pull --ff-only
 fi
-ln -sfn "$P/sandbox-game/SandboxEditor" "$P/SandboxEditor"
 
 cat > "$P/run-editor.sh" <<'EOF'
 #!/bin/sh
-# Launches the Prowl editor on SandboxEditor (symlink -> ~/Projects/sandbox-game/SandboxEditor), detached.
+# Launches the Prowl editor on ~/Projects/sandbox-game (the repo root is the Prowl project), detached.
 # Log: ~/Projects/editor.log (previous run kept as editor.prev.log). Crash dumps: ~/Projects/dumps.
 export DISPLAY=${DISPLAY:-:0} WAYLAND_DISPLAY=${WAYLAND_DISPLAY:-wayland-0} XDG_RUNTIME_DIR=${XDG_RUNTIME_DIR:-/run/user/$(id -u)}
 [ -z "$XAUTHORITY" ] && XAUTHORITY=$(ls $XDG_RUNTIME_DIR/xauth_* 2>/dev/null | head -1) && export XAUTHORITY
@@ -54,7 +53,7 @@ mkdir -p $HOME/Projects/dumps
 # Newer Prowl puts the editor in Build/Editor/<Config>/<tfm>/; older builds in Build/Editor.
 ED=$(dirname "$(find $HOME/Projects/Prowl/Build/Editor -maxdepth 3 -name Prowl.Editor -type f | head -1)")
 cd "$ED"
-setsid nohup sh -c './Prowl.Editor --project $HOME/Projects/SandboxEditor; rc=$?; echo "[run-editor] editor exited rc=$rc ($( [ $rc -gt 128 ] && kill -l $((rc-128)) )) at $(date)"' > $HOME/Projects/editor.log 2>&1 < /dev/null &
+setsid nohup sh -c './Prowl.Editor --project $HOME/Projects/sandbox-game; rc=$?; echo "[run-editor] editor exited rc=$rc ($( [ $rc -gt 128 ] && kill -l $((rc-128)) )) at $(date)"' > $HOME/Projects/editor.log 2>&1 < /dev/null &
 EOF
 chmod +x "$P/run-editor.sh"
 
@@ -62,5 +61,5 @@ command -v vulkaninfo >/dev/null && vulkaninfo --summary 2>/dev/null | grep -E "
 echo
 echo "Done. Start the editor: ~/Projects/run-editor.sh   (log: ~/Projects/editor.log)"
 echo "Hills and Town map scenes are git-ignored (large): with the editor open run"
-echo "  cd ~/Projects/SandboxEditor && ./bake-map.sh hills && ./bake-map.sh town"
+echo "  cd ~/Projects/sandbox-game && scripts/bake-map.sh hills && scripts/bake-map.sh town"
 echo "Then just 'git pull' in ~/Projects/sandbox-game to update."

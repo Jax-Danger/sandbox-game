@@ -1081,7 +1081,7 @@ public sealed class SelfTest
             $"\"buffers\":[{{\"byteLength\":60,\"uri\":\"data:application/octet-stream;base64,{b64}\"}}]}}";
     }
 
-    /// <summary>One check per bug the soak test (src/Soak.cs) found, so none of them can come back.</summary>
+    /// <summary>One check per bug the soak test (Soak.cs) found, so none of them can come back.</summary>
     /// <summary>Console commands drive the real systems; bad input reports an error instead of throwing; PNG writer round-trips.</summary>
     private void ConsoleTest(SandboxGame g)
     {

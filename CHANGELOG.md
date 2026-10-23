@@ -2,6 +2,12 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.8.3 — 2026-10-23
+- Repo is now just the Prowl editor project: SandboxEditor/ moved to the root (open the repo folder in the editor)
+- Removed the old code-only launcher: src/, Sandbox.csproj, build-all.sh/.ps1, packaging/, the external/Prowl submodule and the CI workflow that built them
+- assets/ renamed GameData/ (fonts, sky shader, manifest; read by the game in the editor and copied to assets/ by package-linux.sh)
+- Helper scripts in scripts/: bake-map.sh (moved), package-linux.sh, setup-fedora.sh, selftest.sh + scripts/selftest (headless self-test runner against a local Prowl clone)
+
 ## v1.8.2 — 2026-10-23
 - .NET SDK 10.0.402 (latest stable; global.json pins it with latestFeature roll-forward, no previews). Target stays net10.0 (.NET 11 is still RC)
 - Town (RP Downtown) map rebaked: the Mailbox meshes/materials and other missing-asset warnings are gone; bake-map.sh defaults the scene name, finds Prowl.Cli in either Build layout and refuses to delete the old bake if the editor isn't reachable

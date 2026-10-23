@@ -37,7 +37,7 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.8.2.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,
@@ -46,7 +46,7 @@
           },
           {
             "$id": 6,
-            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.8.2.0, Culture=neutral, PublicKeyToken=null",
             "Props": {
               "$id": 7,
               "$values": [
@@ -90,7 +90,7 @@
           },
           {
             "$id": 8,
-            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.8.2.0, Culture=neutral, PublicKeyToken=null",
             "Maps": {
               "$id": 9,
               "$values": [
@@ -125,7 +125,7 @@
           },
           {
             "$id": 13,
-            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.8.2.0, Culture=neutral, PublicKeyToken=null",
             "SunScale": 0.55F,
             "AmbientScale": 0.7F,
             "StartTimeOfDay": 0.42F,
@@ -145,7 +145,7 @@
           },
           {
             "$id": 14,
-            "$type": "Sandbox.EntityLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.EntityLibrary, SandboxEditor.Game, Version=1.8.2.0, Culture=neutral, PublicKeyToken=null",
             "Entities": {
               "$id": 15,
               "$values": [

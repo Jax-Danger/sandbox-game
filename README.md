@@ -23,14 +23,18 @@ A Garry's Mod-style physics sandbox with a DarkRP-style Roleplay mode, built in 
 | ![RP shop (v1.0)](docs/screenshots/09-shop.jpg) | ![NPCs & ragdolls (v1.0)](docs/screenshots/10-npcs.jpg) |
 | ![Town at night (v1.0)](docs/screenshots/11-night.jpg) | ![Settings / keybinds (v1.0)](docs/screenshots/12-keybinds.jpg) |
 
-## Installation
+## Project layout
 
-Download the zip for your platform from [Releases](https://github.com/Jax-Danger/sandbox-game/releases). Builds are self-contained (no .NET install needed).
+This repo **is the Prowl editor project** (`SandboxEditor.prowl`): open the repo folder in the Prowl editor.
 
-| Platform | Run |
+| Path | What |
 |---|---|
-| **Windows** | Unzip and run `Sandbox.exe`. If SmartScreen warns, choose *More info → Run anyway*. |
-| **Linux** | `chmod +x Sandbox && ./Sandbox` (needs OpenGL 4.1+). |
-| **macOS** | Open `Sandbox.app`. The app is unsigned: right-click → **Open**, or `xattr -dr com.apple.quarantine Sandbox.app`. |
+| `Assets/` | Scenes, prefabs, baked meshes/materials/textures, game scripts (`Assets/Scripts/Sandbox`) |
+| `ProjectSettings/`, `Packages/` | Prowl project settings |
+| `GameData/` | Loose runtime files the game reads (fonts, sky shader, manifest, view model clips); copied to `assets/` next to a packaged build |
+| `scripts/` | `bake-map.sh` (bake Hills/Town, which are git-ignored), `package-linux.sh`, `selftest.sh` (headless self-test), `setup-fedora.sh` |
+| `docs/` | Development notes, custom maps |
 
-Building from source, asset mods, view models, and the headless self-test are in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**. Custom map empties: **[docs/MAPS.md](docs/MAPS.md)**.
+Needs the .NET 10 SDK (`global.json`) and a Prowl editor build (pinned to Prowl `2510d8fc`). After cloning, bake the large maps once with the editor open: `scripts/bake-map.sh hills && scripts/bake-map.sh town`.
+
+More in **[docs/DEVELOPMENT.md](docs/DEVELOPMENT.md)**. Custom map empties: **[docs/MAPS.md](docs/MAPS.md)**.

@@ -2,52 +2,23 @@
 
 Build from source, asset workflow, view models, headless tests, and code layout. For players, see the [README](../README.md).
 
-## Building from source
+## Opening the project
 
-1. Install the [.NET 10 SDK](https://dotnet.microsoft.com/download/dotnet/10.0).
-2. Clone **with submodules**:
+1. Install the .NET SDK from `global.json` (10.0.402; `scripts/setup-fedora.sh` does everything on Fedora).
+2. Build Prowl at commit `2510d8fc` (`dotnet build Prowl.Editor/Prowl.Editor.csproj` and `Prowl.Cli/Prowl.Cli.csproj`). Newer Prowl main does not compile the scripts yet and migrates the project format.
+3. Open this repo folder in the Prowl editor (`Prowl.Editor --project <repo>`). Press Play on `Scenes/MainMenu.scene`.
+4. Hills and Town scenes are git-ignored (large): with the editor open run `scripts/bake-map.sh hills` and `scripts/bake-map.sh town`.
 
-```bash
-git clone --recurse-submodules https://github.com/Jax-Danger/sandbox-game.git
-cd sandbox-game
-```
-
-Already cloned without them? `git submodule update --init --recursive`.
-
-3. From the repo root: `dotnet run`
-
-`Prowl.Runtime` is not on NuGet; it is vendored as a git submodule at `external/Prowl`, pinned to the `v1.0-preview` tag.
-
-### Building release zips
-
-```bash
-./build-all.sh 1.0.0                # win-x64, linux-x64, osx-x64, osx-arm64 → dist/
-./build-all.sh 1.0.0 linux-x64      # just one
-```
-
-```powershell
-./build-all.ps1 -Version 1.0.0
-```
-
-Build macOS on a Mac when you can (`build-all.sh` ad-hoc codesigns the `.app`). CI (`.github/workflows/build.yml`) builds all four on every push, runs the headless self-test and an xvfb smoke run on Linux, and uploads artifacts. Pushing a `v*` tag publishes a GitHub Release with the zips.
+Linux player build: `scripts/package-linux.sh [out-dir]` (editor open).
 
 ## Headless self-test
 
 ```bash
-dotnet run -- --headless
+scripts/selftest.sh                 # builds scripts/selftest against ~/Projects/Prowl (PROWL_DIR=... to override)
+scripts/selftest.sh --soak 300 6    # soak/fuzz
 ```
 
-Runs ~25 seconds without a window: spawn, physgun, tools, vehicles, weapons, entities, dupes, sessions, roleplay/town, prints PASS/FAIL, exits 0 when everything passes.
-
-Soak/fuzz: `dotnet run -- --headless --soak 300 6`
-
-## Screenshot mode
-
-```bash
-SANDBOX_RES=1920x1080 dotnet bin/Debug/net10.0/Sandbox.dll --shot <state>
-```
-
-Useful states include `main`, `worlds`, `props`, `physgun`, `drive`, `vm_<weapon>[_aim]`, `town`, `jobs`, `shop`, `keybinds`, `gal_npcs`, `townat_x_y_z_yaw_pitch[_time]`, `night`. Helpers under `/workspace/shot.sh` (and similar) grab the window via xvfb.
+Runs ~25 seconds without a window and prints PASS/FAIL; exits 0 when everything passes.
 
 ## Custom maps
 
@@ -55,7 +26,7 @@ Build in Blender and mark spawns, jail, ATMs, doors, NPC paths and water with na
 
 ## Adding models and sounds
 
-Assets live in `assets/` and are copied next to the exe on build. Drop `assets/models/<id>.glb` (or gltf/fbx/obj), `assets/sounds/<id>.wav`, and optional `assets/viewmodels/<weapon>.clips.json`. Map alternate filenames in `assets/manifest.json`. Missing files fall back to placeholders.
+Loose game files live in `GameData/` (copied to `assets/` next to a packaged build). Drop `GameData/models/<id>.glb` (or gltf/fbx/obj), `GameData/sounds/<id>.wav`, and optional `GameData/viewmodels/<weapon>.clips.json`. Map alternate filenames in `GameData/manifest.json`. Missing files fall back to placeholders.
 
 ### View models
 
@@ -65,17 +36,17 @@ Bone hierarchy (camera space, +Z forward, +Y up, metres): `vm_root` → `arm_r`/
 
 | File | Purpose |
 | --- | --- |
-| `SandboxEditor/Assets/Scripts/Sandbox/Program.cs` (standalone exe) | Entry (`--headless` / `--shot`) |
-| `SandboxEditor/Assets/Scripts/Sandbox/SandboxGame.cs` | Loop, input, menus, shot states |
-| `SandboxEditor/Assets/Scripts/Sandbox/MapBuilder.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Town.cs` | Maps (Flatgrass, Hills, RP Town, custom) |
-| `SandboxEditor/Assets/Scripts/Sandbox/ModelProps.cs`, `SandboxEditor/Assets/Scripts/Sandbox/IconRenderer.cs` | Model props and spawn-menu thumbs |
-| `SandboxEditor/Assets/Scripts/Sandbox/ToolsMore.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Dupes.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Vehicles.cs` | Tools, dupes, vehicles |
-| `SandboxEditor/Assets/Scripts/Sandbox/Worlds.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Session.cs`, `SandboxEditor/Assets/Scripts/Sandbox/WorldsMenu.cs` | Sessions, autosave, UI screens |
-| `SandboxEditor/Assets/Scripts/Sandbox/Roleplay.cs` | Jobs, economy, printers, shipments |
-| `SandboxEditor/Assets/Scripts/Sandbox/Player.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Props.cs`, `SandboxEditor/Assets/Scripts/Sandbox/PhysGun.cs` | Movement, props, physgun |
-| `SandboxEditor/Assets/Scripts/Sandbox/SelfTest.cs` | Headless checks |
+| `scripts/selftest/Program.cs` | Headless self-test entry (`--headless`, `--soak`) |
+| `Assets/Scripts/Sandbox/SandboxHost.cs` | Editor/player entry component on `/Sandbox` |
+| `Assets/Scripts/Sandbox/SandboxGame.cs` | Loop, input, menus, shot states |
+| `Assets/Scripts/Sandbox/MapBuilder.cs`, `Assets/Scripts/Sandbox/Town.cs` | Maps (Flatgrass, Hills, RP Town, custom) |
+| `Assets/Scripts/Sandbox/ModelProps.cs`, `Assets/Scripts/Sandbox/IconRenderer.cs` | Model props and spawn-menu thumbs |
+| `Assets/Scripts/Sandbox/ToolsMore.cs`, `Assets/Scripts/Sandbox/Dupes.cs`, `Assets/Scripts/Sandbox/Vehicles.cs` | Tools, dupes, vehicles |
+| `Assets/Scripts/Sandbox/Worlds.cs`, `Assets/Scripts/Sandbox/Session.cs`, `Assets/Scripts/Sandbox/WorldsMenu.cs` | Sessions, autosave, UI screens |
+| `Assets/Scripts/Sandbox/Roleplay.cs` | Jobs, economy, printers, shipments |
+| `Assets/Scripts/Sandbox/Player.cs`, `Assets/Scripts/Sandbox/Props.cs`, `Assets/Scripts/Sandbox/PhysGun.cs` | Movement, props, physgun |
+| `Assets/Scripts/Sandbox/SelfTest.cs` | Headless checks |
 
 ## Requirements
 
-- GPU/driver with OpenGL 4.1 (Prowl requests a 4.1 core context).
-- Native libraries under `external/Prowl/Libraries` (copied next to the build). Do not delete the submodule.
+- Vulkan-capable GPU/driver (Prowl 1.0 renders with Vulkan).
