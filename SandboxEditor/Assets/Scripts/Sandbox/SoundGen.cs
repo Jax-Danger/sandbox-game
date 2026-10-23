@@ -8,7 +8,7 @@ public static class SoundGen
 {
     public const int Rate = 22050;
     private const int Version = 2;
-    public static string Dir => Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", $"sounds-gen-v{Version}");
+    public static string Dir => Path.Combine(DataPaths.Root, $"sounds-gen-v{Version}");
 
     public static readonly string[] Ids =
     [

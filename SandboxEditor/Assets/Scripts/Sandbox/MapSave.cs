@@ -56,7 +56,7 @@ public static class MapSave
     }
 
     public static string DefaultPath { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "saves", "quicksave.json");
+        DataPaths.Root, "saves", "quicksave.json");
 
     /// <summary>Normalises an angle to [0, 360) so 360 and 0 save identically.</summary>
     private static float Deg(float a) { a %= 360f; if (a < 0f) a += 360f; return a > 359.995f ? 0f : a; }

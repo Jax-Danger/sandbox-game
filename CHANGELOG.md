@@ -2,6 +2,10 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.2.2 — 2026-10-23
+- Saves, settings, logs and sound caches go through DataPaths (SANDBOX_DATA_DIR override); editor play tests use the project's Library/SandboxData, never the player's ~/.config/ProwlSandbox
+- Editor: game data path follows the project symlink (custom sky and fonts load), menu shows the real version
+
 ## v1.2.1 — 2026-10-23
 - Editor: Scenes/Main.scene with a SandboxHost bootstrap; pressing Play in the Prowl editor builds and runs the game (main menu verified on RADV)
 - Game data path resolves to the repo assets/ folder when running inside the editor; Main.scene added to the build scene list

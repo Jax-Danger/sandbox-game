@@ -48,7 +48,7 @@ public sealed class Settings
 
     /// <summary>Overridable for tests.</summary>
     public static string FilePath { get; set; } = Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "settings.json");
+        DataPaths.Root, "settings.json");
 
     private static readonly JsonSerializerOptions Json = new() { WriteIndented = true, Converters = { new System.Text.Json.Serialization.JsonStringEnumConverter() } };
 

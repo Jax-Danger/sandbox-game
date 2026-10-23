@@ -76,7 +76,7 @@ public static class Worlds
     public static readonly JsonSerializerOptions Json = new() { WriteIndented = true };
 
     public static string Root { get; set; } = Environment.GetEnvironmentVariable("SANDBOX_SAVES") is { Length: > 0 } env ? env : Path.Combine(
-        Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "saves");
+        DataPaths.Root, "saves");
 
     public static List<WorldEntry> List()
     {

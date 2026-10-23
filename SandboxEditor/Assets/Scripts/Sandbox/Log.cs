@@ -11,7 +11,7 @@ namespace Sandbox;
 /// </summary>
 public static class Log
 {
-    public static string Dir { get; } = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "ProwlSandbox", "logs");
+    public static string Dir { get; } = Path.Combine(DataPaths.Root, "logs");
     public static string? FilePath { get; private set; }
     private static StreamWriter? _file;
 
