@@ -43,7 +43,7 @@ public sealed class YBotBody
         {
             if (r.SharedMesh is not { } full) continue;
             _world.Add(r);
-            Mesh? foot = YRig.Masked(r, "torso", IsTorsoAndLegs), seated = YRig.Masked(r, "seated", IsLegOrArm);
+            Mesh? foot = YRig.Masked(r, "torso-strict", IsTorsoAndLegs, strict: true), seated = YRig.Masked(r, "seated", IsLegOrArm);
             SkinnedMeshRenderer v = rig.AddRenderer(r, foot ?? full, r.GameObject.Name + " (view)", ShadowCasting.Off);
             v.GameObject.LayerIndex = LocalView.ViewLayer;
             v.Enabled = false;
@@ -203,6 +203,10 @@ public sealed class YBotBody
             // Eye under the camera (the bent spine moves the head forward, so this pulls the hips back like a real
             // lean), then a little further back the more the player looks down so the chest doesn't fill the view.
             t.Position += new Float3(cam.X - eye.X, 0f, cam.Z - eye.Z) - fwd * (0.04f + 0.16f * Math.Clamp(_pitch / 89f, 0f, 1f));
+            // Never let the head rise to the camera (jumping or falling while looking down, crouch transitions): drop
+            // the body so the eye never sits above it. The view body has no head/neck triangles anyway.
+            float above = eye.Y - cam.Y;
+            if (above > 0f) t.Position -= new Float3(0f, above, 0f);
         }
     }
 

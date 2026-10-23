@@ -93,16 +93,13 @@ public sealed class YBotArms
     /// <summary>Debug: -1 curls every finger; 0..4 (index, middle, ring, pinky, thumb) curls only that one.</summary>
     public static int FingerTest = -1;
 
-    /// <summary>Closes the hand: a closed grip round a handle (index on the trigger for the right hand), a looser one
-    /// round fore-ends, or a relaxed, slightly curled idle hand.</summary>
-    private static void Curl((Transform Bone, Quaternion Bind, Float3 Axis, int Finger, int Joint)[] joints, VmGrip g, float sign, bool trigger, bool relaxed = false)
+    /// <summary>Applies per-finger curls (degrees per joint: X knuckle, Y middle, Z tip) from the pose component.</summary>
+    private static void Curl((Transform Bone, Quaternion Bind, Float3 Axis, int Finger, int Joint)[] joints, float sign, Float3 thumb, Float3 index, Float3 middle, Float3 ring, Float3 pinky)
     {
-        Float3 c = relaxed ? RelaxedCurl : g.Open ? OpenCurl : ClosedCurl;
         foreach (var (b, bind, axis, f, j) in joints)
         {
-            Float3 k = f == 4 ? (relaxed ? ThumbRelaxed : ThumbCurl) : trigger && f == 0 ? TriggerCurl : c;
+            Float3 k = f switch { 0 => index, 1 => middle, 2 => ring, 3 => pinky, _ => thumb };
             float deg = j == 1 ? k.X : j == 2 ? k.Y : k.Z;
-            if (f is 1 or 2 or 3 && !relaxed) deg += f * 3f; // ring and pinky close a little more
             if (FingerTest >= 0 && f != FingerTest) deg = 0f;
             b.LocalRotation = bind * Quaternion.AxisAngle(axis, (f == 4 ? 1f : sign) * CurlSign * deg * MathF.PI / 180f);
         }
@@ -137,57 +134,85 @@ public sealed class YBotArms
     public void SetVisible(bool on) => _rig.SetVisible(on);
     public void Destroy() => _rig.Destroy();
 
-    /// <summary>Call after the view model has posed its bones this frame. Bones are looked up by the view model's names.</summary>
+    /// <summary>Fills a pose component with this weapon's built-in pose (the v1.9.3 values), then the saved file on top.</summary>
+    private void Defaults(ViewModelPose p)
+    {
+        Float3 lift(VmGrip g) => _hands ? Float3.Zero : Float3.Normalize(g.Axis) * GripLift;
+        p.WeaponId = string.IsNullOrEmpty(_def.Id) ? "hands" : _def.Id;
+        p.SourceClip = "RifleAimIdle"; p.SourceFrame = -1f;
+        p.ArmsPosition = ShoulderMid; p.ArmsRotation = Float3.Zero; p.ArmsScale = ArmsScale; p.HideHandsAbovePitch = HandsHidePitch;
+        p.RightGripSocket = _def.GripR.Wrist + lift(_def.GripR);
+        p.RightWristOffset = _hands ? HandsOffset : Float3.Zero; p.RightWristRotation = Float3.Zero;
+        p.LeftOnWeapon = !_def.FreeLeft;
+        p.LeftForegripSocket = _def.GripL.Wrist + lift(_def.GripL);
+        p.LeftWristOffset = _hands ? new Float3(-HandsOffset.X, HandsOffset.Y, HandsOffset.Z) : Float3.Zero; p.LeftWristRotation = Float3.Zero;
+        Float3 Fing(VmGrip g, bool relaxed, int f) => (relaxed ? RelaxedCurl : g.Open ? OpenCurl : ClosedCurl) + (relaxed ? Float3.Zero : new Float3(f * 3f));
+        bool rr = _hands, lr = _def.FreeLeft;
+        p.RightThumb = rr ? ThumbRelaxed : ThumbCurl;
+        p.RightIndex = !_def.GripR.Open && !_hands ? TriggerCurl : Fing(_def.GripR, rr, 0);
+        p.RightMiddle = Fing(_def.GripR, rr, 1); p.RightRing = Fing(_def.GripR, rr, 2); p.RightPinky = Fing(_def.GripR, rr, 3);
+        p.LeftThumb = lr ? ThumbRelaxed : ThumbCurl;
+        p.LeftIndex = Fing(_def.GripL, lr, 0); p.LeftMiddle = Fing(_def.GripL, lr, 1); p.LeftRing = Fing(_def.GripL, lr, 2); p.LeftPinky = Fing(_def.GripL, lr, 3);
+        if (p.SkipFileOnce) p.SkipFileOnce = false;
+        else p.Status = p.TryLoad() ? "Loaded saved pose" : "Built-in defaults (not saved yet)";
+        p.Initialized = true;
+    }
+
+    private static Quaternion Euler(Float3 deg) => Quaternion.FromEuler(deg * (MathF.PI / 180f));
+
+    /// <summary>Call after the view model has posed its bones this frame. Every value comes from the view model's
+    /// <see cref="ViewModelPose"/> component, read each frame so inspector edits apply live.</summary>
     public void Pose(ViewModel vm, float time)
     {
-        if (!_rig.Valid) return;
+        if (!_rig.Valid || vm.PoseSettings is not { } p) return;
+        if (!p.Initialized) Defaults(p);
         _rig.ResetToBind();
-        // Base pose: the rifle aim (both hands gripping); a free left arm hangs in the idle pose instead.
         _rig.BeginPose();
-        _rig.Add(YBot.Clips.GetValueOrDefault("RifleAimIdle") ?? YBot.Clips.GetValueOrDefault("Idle"), time, 1f);
+        YClip? clip = YBot.Clips.GetValueOrDefault(p.SourceClip ?? "") ?? YBot.Clips.GetValueOrDefault("RifleAimIdle") ?? YBot.Clips.GetValueOrDefault("Idle");
+        _rig.Add(clip, p.SourceFrame >= 0f ? p.SourceFrame : time, 1f);
         _rig.ApplyPose();
-        // Place the rig so its shoulders sit at ShoulderMid (rig root has no rotation inside the view model root).
         Transform? ls = _rig.Bone("LeftArm"), rs = _rig.Bone("RightArm");
         if (ls is null || rs is null) return;
         // The view model root is scaled (FovScale, FovScale, 1) to fake its FOV; undo that on the arms so they keep human
-        // proportions (no stretched, oversized hands), then apply one uniform ArmsScale.
+        // proportions, then apply the uniform ArmsScale.
         float fs = MathF.Max(vm.FovScale, 0.01f);
-        Float3 sc = new Float3(ArmsScale / fs, ArmsScale / fs, ArmsScale);
-        _rig.Root.Transform.LocalScale = sc;
-        _scale = sc;
-        _rig.Root.Transform.LocalPosition = Float3.Zero;
+        Float3 sc = new Float3(p.ArmsScale / fs, p.ArmsScale / fs, p.ArmsScale);
+        Quaternion rot = Euler(p.ArmsRotation);
+        Transform root = _rig.Root.Transform;
+        root.LocalScale = sc; root.LocalRotation = rot; _scale = sc; _rot = rot;
+        root.LocalPosition = Float3.Zero;
+        // Place the rig so its shoulders sit at ArmsPosition.
         Float3 mid = (_rig.RootTR(ls).Pos + _rig.RootTR(rs).Pos) * 0.5f;
-        _rig.Root.Transform.LocalPosition = ShoulderMid - mid * sc;
-        Float3 off = _rig.Root.Transform.LocalPosition;
+        root.LocalPosition = p.ArmsPosition - rot * (mid * sc);
+        Float3 off = root.LocalPosition;
         // Camera pitch from the view model root (it rides the camera): positive looking down.
         float pitch = MathF.Asin(Math.Clamp(-vm.Root.Transform.Forward.Y, -1f, 1f)) * 180f / MathF.PI;
-        float sink = Math.Clamp((pitch - HandsHidePitch) / 25f, 0f, 1f);
-        _drop = new Float3(0f, -0.35f * sink, -0.15f * sink);
-        Reach(vm, "Right", "hand_r", _def.GripR, _gripToHandR, 1f, off);
-        Curl(_curlR, _def.GripR, 1f, trigger: !_def.GripR.Open && !_hands, relaxed: _hands);
-        if (!_def.FreeLeft) { Reach(vm, "Left", "hand_l", _def.GripL, _gripToHandL, -1f, off); Curl(_curlL, _def.GripL, LeftSign, false); }
-        else { Reach(vm, "Left", "hand_l", _def.GripL, _gripToHandL, -1f, off, keepClipHand: true); Curl(_curlL, _def.GripL, LeftSign, false, relaxed: true); }
+        float sink = Math.Clamp((pitch - p.HideHandsAbovePitch) / 25f, 0f, 1f);
+        _drop = _hands ? new Float3(0f, -0.35f * sink, -0.15f * sink) : Float3.Zero;
+        Reach(vm, "Right", "hand_r", p.RightGripSocket, p.RightWristOffset, p.RightWristRotation, _gripToHandR, 1f, off, false);
+        Curl(_curlR, 1f, p.RightThumb, p.RightIndex, p.RightMiddle, p.RightRing, p.RightPinky);
+        Reach(vm, "Left", "hand_l", p.LeftForegripSocket, p.LeftWristOffset, p.LeftWristRotation, _gripToHandL, -1f, off, keepClipHand: !p.LeftOnWeapon);
+        Curl(_curlL, LeftSign, p.LeftThumb, p.LeftIndex, p.LeftMiddle, p.LeftRing, p.LeftPinky);
         // Only the arms are drawn (masked mesh), but collapse the head too so nothing of it can ever show.
         if (_rig.Bone("Head") is { } head) head.LocalScale = new Float3(1e-4f);
     }
 
-    private void Reach(ViewModel vm, string side, string vmHand, VmGrip grip, Quaternion gripToHand, float s, Float3 off, bool keepClipHand = false)
+    private Quaternion _rot = Quaternion.Identity;
+
+    private void Reach(ViewModel vm, string side, string vmHand, Float3 socket, Float3 viewOffset, Float3 wristRot, Quaternion gripToHand, float s, Float3 off, bool keepClipHand)
     {
         if (!vm.Bones.TryGetValue(vmHand, out GameObject? hb) || _rig.Bone($"{side}Hand") is not { } hand) return;
         // The view model hand's pose in vm_root space, from its local chain (vm_root carries the FOV scale).
         var (hp, hr) = VmSpace(vm, hb);
-        // Y Bot's palm is longer than the view model's glove, so slide the wrist up the grip axis to seat the hand
-        // under the slide instead of on the bottom of the grip.
-        Float3 lift = _hands ? Float3.Zero : hr * (Float3.Normalize(grip.Axis) * GripLift);
-        Float3 wrist = (hp + hr * grip.Wrist + lift + Extra(s) - off) / _scale;
+        Float3 target = hp + hr * socket + viewOffset + _drop;
+        Float3 wrist = (Quaternion.Inverse(_rot) * (target - off)) / _scale;
         Quaternion fingersFromClip = hand.LocalRotation;
         _rig.SolveTwoBoneRoot($"{side}Arm", $"{side}ForeArm", $"{side}Hand", wrist, new Float3(0.6f * s, -1f, -0.4f), _elbow);
-        if (!keepClipHand) _rig.SetRootRotation(hand, hr * gripToHand);
-        else hand.LocalRotation = fingersFromClip;
+        if (!keepClipHand) _rig.SetRootRotation(hand, Quaternion.Inverse(_rot) * hr * gripToHand * Euler(wristRot));
+        else hand.LocalRotation = fingersFromClip * Euler(wristRot);
     }
 
     private Float3 _drop;
-    private Float3 Extra(float side) => _hands ? new Float3(HandsOffset.X * side, HandsOffset.Y, HandsOffset.Z) + _drop : Float3.Zero;
 
     private static (Float3, Quaternion) VmSpace(ViewModel vm, GameObject bone)
     {

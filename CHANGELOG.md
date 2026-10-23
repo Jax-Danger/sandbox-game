@@ -2,6 +2,11 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.9.4 — 2026-10-23
+- Hand posing is now yours: every view model (physgun, toolgun, pistol, SMG, shotgun, bare hands, ...) gets a **ViewModelPose** component on its `vm_<id>` object under Main Camera, with clearly named Inspector fields: source clip and frame, arms position, rotation and scale, right grip socket and left foregrip socket, each wrist's offset and rotation, and per-finger curls (thumb, index, middle, ring, pinky; knuckle/middle/tip degrees) for both hands. The arms read it every frame, so edits show live in Play
+- Save Pose / Reload Saved / Reset To Defaults buttons. Save writes `GameData/viewmodels/<id>.pose.json`, which is loaded whenever that view model is built, so poses survive leaving Play. Defaults are exactly the v1.9.3 poses
+- Your own head never shows in first person: the first-person body mesh now drops every triangle touched by head or neck weights (no seam left at the collar), and the body is pulled down whenever the head's eye would rise above the camera (jumping or falling while looking down)
+
 ## v1.9.3 — 2026-10-23
 - View model hands reworked (checked finger by finger on screen). Y Bot finger joints share the hand's frame (+Y along the finger, index → pinky on X), so fingers now flex about that axis with the correct sign (v1.9.1/2 bent them backwards, leaving flat, splayed hands); the thumb flexes about thumb × palm normal
 - Grips: closed grip round pistol/physgun/toolgun/rifle handles with the index on the trigger, a looser wrap round fore-ends, and the hand seated higher on the grip; bare hands use a relaxed, slightly curled pose held lower and wider, partly out of view

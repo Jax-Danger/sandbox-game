@@ -177,6 +177,8 @@ public sealed class ViewModel
     /// <summary>Y Bot arms following the hands (null: code-built sleeves / headless).</summary>
     private readonly YBotArms? _ybotArms;
     public bool UsingYBotArms => _ybotArms is not null;
+    /// <summary>Editable first-person arms pose for this weapon (null without Y Bot arms).</summary>
+    public ViewModelPose? PoseSettings { get; }
     private readonly bool UseYBotArms;
     private static readonly HashSet<string> ArmBones = ["hand_r", "hand_l", "forearm_r", "forearm_l", "wrist_r", "wrist_l", "arm_r", "arm_l"];
     /// <summary>Primitive parts are authored at roughly real-world size and shrunk to sit nicely on screen.</summary>
@@ -316,6 +318,8 @@ public sealed class ViewModel
 
         // Y Bot arms and hands replace the code-built sleeves and gloves entirely (see the parts loop above).
         if (UseYBotArms) _ybotArms = YBotArms.TryCreate(Root, def);
+        // Hand-posing controls for this weapon (inspector, live in Play; Save Pose writes GameData/viewmodels/<id>.pose.json).
+        if (_ybotArms is not null) PoseSettings = Root.AddComponent<ViewModelPose>();
         LocalView.SetLayer(Root, LocalView.ViewLayer); // owner-only: never drawn by other cameras
 
         // Aim offset: move vm_root so the sight sits on the screen centre line, slightly closer to the eye.

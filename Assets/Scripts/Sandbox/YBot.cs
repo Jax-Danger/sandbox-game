@@ -309,7 +309,9 @@ public sealed class YRig
     /// <paramref name="keep"/> accepts (by short bone name). Same vertex buffers and bind poses, so it skins on the same
     /// bones; cached per source mesh and mask.
     /// </summary>
-    public static Mesh? Masked(SkinnedMeshRenderer r, string key, Func<string, bool> keep)
+    /// <param name="strict">Keep only triangles whose every vertex is weighted solely to kept bones (no blended seams,
+    /// e.g. no neck skin left on a headless torso).</param>
+    public static Mesh? Masked(SkinnedMeshRenderer r, string key, Func<string, bool> keep, bool strict = false)
     {
         Mesh? src = r.SharedMesh;
         if (src is null || r.BonePaths is null) return null;
@@ -330,13 +332,16 @@ public sealed class YRig
             if (w.Y > bwm) { bwm = w.Y; best = (int)b.Y; }
             if (w.Z > bwm) { bwm = w.Z; best = (int)b.Z; }
             if (w.W > bwm) { best = (int)b.W; }
+            if (strict)
+                for (int k = 0; k < 4; k++)
+                    if (w[k] > 0.01f && ((uint)(int)b[k] >= (uint)ok.Length || !ok[(int)b[k]])) return false;
             return (uint)best < (uint)ok.Length && ok[best];
         }
         var outIdx = new List<uint>(idx.Length / 3);
         for (int t = 0; t + 2 < idx.Length; t += 3)
         {
             int n = (Kept(idx[t]) ? 1 : 0) + (Kept(idx[t + 1]) ? 1 : 0) + (Kept(idx[t + 2]) ? 1 : 0);
-            if (n >= 2) { outIdx.Add(idx[t]); outIdx.Add(idx[t + 1]); outIdx.Add(idx[t + 2]); }
+            if (n >= (strict ? 3 : 2)) { outIdx.Add(idx[t]); outIdx.Add(idx[t + 1]); outIdx.Add(idx[t + 2]); }
         }
         var m = new Mesh { Name = $"{src.Name} ({key})" };
         m.IndexFormat = IndexFormat.UInt32;
