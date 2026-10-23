@@ -2,6 +2,9 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.5.2 — 2026-10-23
+- Daylight retune for engine 1.0 now that the sun shines down: full-day sun 1.5 -> 0.83, ambient 1.05 -> 0.74 (night levels unchanged); the floor no longer washes out to white
+
 ## v1.5.1 — 2026-10-23
 - Fix (engine 1.0 regression): the sun pointed up, so daylight was ambient-only with no sun shadows; positive pitch now aims lights down (DayNight, default sun, icon lights)
 - Custom sky shader ported to the Graphite 1.0 shader format (LightMode "Sky"); it had silently fallen back to the engine sky since the upgrade

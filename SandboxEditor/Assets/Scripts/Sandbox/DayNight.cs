@@ -32,7 +32,7 @@ public sealed class DayNightCycle
         float pitch = -(elev > 0.08f ? -MathF.Max(6f, elev * 75f) : MathF.Min(30f, (0.08f - elev) * 60f) - 4.8f);
         float yaw = 30f + t * 360f;
         g.Sun.Transform.LocalEulerAngles = new Float3(pitch, yaw, 0f);
-        g.Sun.Intensity = 0.45f + 1.05f * day; // brighter moon: the ACES toe crushed 0.15 to black
+        g.Sun.Intensity = 0.45f + (1.5f * SunScale - 0.45f) * day; // night (moon) level unchanged; // brighter moon: the ACES toe crushed 0.15 to black
         g.Sun.Color = Lerp(new Color(0.55f, 0.62f, 0.95f, 1f), Lerp(new Color(1f, 0.97f, 0.92f, 1f), new Color(1f, 0.62f, 0.35f, 1f), warm), day);
 
         Prowl.Runtime.Resources.Scene w = g.World;
@@ -58,7 +58,7 @@ public sealed class DayNightCycle
             }
         }
         w.Environment.Ambient.GroundColor = C(L4(new Float4(0.12f, 0.12f, 0.16f, 1f), new Float4(0.30f, 0.28f, 0.26f, 1f), day));
-        w.Environment.Ambient.Intensity = 0.8f + 0.25f * day; // ACES deepens shadow sides; lift sky fill a little
+        w.Environment.Ambient.Intensity = 0.8f + (1.05f * AmbientScale - 0.8f) * day; // night level unchanged; // ACES deepens shadow sides; lift sky fill a little
         // Town lamps: glass glows and a warm point light fades in as the sun goes down.
         float lit = Math.Clamp(1f - day * 1.6f, 0f, 1f);
         foreach (var (glass, light) in Town.NightLamps)
@@ -70,6 +70,9 @@ public sealed class DayNightCycle
         g.HorizonColor(fog);
     }
 
+    /// <summary>Engine 1.0 retune (once the sun pointed down again): v1.0 intensities washed the floor out to near white
+    /// (floor luma 227 vs 172 in the v1.0 reference shot); these scale the full-day values (night levels unchanged) to bring it to ~200 with crisp sun shadows.</summary>
+    public static float SunScale = 0.55f, AmbientScale = 0.7f;
     private static Material? _sky; private static bool _skyTried;
     /// <summary>Editor play sessions share statics; forget the previous session's sky material.</summary>
     internal static void ResetStatics() { _sky = null; _skyTried = false; }
