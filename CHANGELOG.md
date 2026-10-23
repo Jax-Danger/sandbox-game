@@ -2,6 +2,13 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.8.2 — 2026-10-23
+- .NET SDK 10.0.402 (latest stable; global.json pins it with latestFeature roll-forward, no previews). Target stays net10.0 (.NET 11 is still RC)
+- Town (RP Downtown) map rebaked: the Mailbox meshes/materials and other missing-asset warnings are gone; bake-map.sh defaults the scene name, finds Prowl.Cli in either Build layout and refuses to delete the old bake if the editor isn't reachable
+- New scripts/setup-fedora.sh reproduces the Fedora desktop setup (packages, ~/.dotnet SDK, Prowl @2510d8fc, repo, run-editor.sh)
+- Inspector: ranges and tooltips on GameTuning, PropDefinition, EntityDefinition/EntityLibrary
+- Editor compile warnings fixed (EntityLibrary.Enabled -> RegistryEnabled, RopeVisual.Destroy marked new, unused fields/locals removed)
+
 ## v1.6.0 — 2026-10-23
 - Stage 6 (part 1): in the editor the game spawns props from the prop prefabs. New PropLibrary component on /Sandbox in Main.scene lists Assets/Prefabs/Props/*.prefab; each prefab's PropDefinition (kind, surface, half height) is editable in the inspector
 - PropManager.Spawn instantiates the kind's prefab when there is one and falls back to the code-built prop otherwise (always in the standalone exe)

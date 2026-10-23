@@ -585,7 +585,7 @@ public static partial class ViewModels
                 k.Bar("weapon", new Color(0.03f, 0.07f, 0.11f, 1f), Finish.Gloss, V(0, 0.101f, -0.079f), V(0, 0.083f, -0.083f), 0.017f, 0.0008f, 6f, 0.2f, null, true);
                 // Screen content: tool name, a charge bar and a crosshair, glowing cyan (read through the glass from behind).
                 {
-                    Float3 rot = V(-12.5f, 0f, 0f), cyan = default;
+                    Float3 rot = V(-12.5f, 0f, 0f);
                     var c = new Color(0.4f, 0.9f, 1f, 1f);
                     d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(0, 0.0955f, -0.0828f), c, rot, true, Finish.Gloss, null, Glyphs.Text("TOOLGUN", 0.0042f, -0.0003f, 0f)));
                     d.Parts.Add(new VmPart("weapon", 'm', V(1, 1, 1), V(-0.004f, 0.0878f, -0.0845f), c, rot, true, Finish.Gloss, null, Meshes.RoundedBox(V(0.02f, 0.0018f, 0.0004f), 0.0002f)));

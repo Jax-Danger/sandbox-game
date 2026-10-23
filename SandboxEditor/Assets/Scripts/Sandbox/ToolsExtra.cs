@@ -306,7 +306,8 @@ public sealed class RopeVisual : Component
         Update();
     }
 
-    public void Destroy()
+    /// <summary>Removes the line and this component (hides EngineObject.Destroy on purpose: callers want the rope gone, not the GameObject).</summary>
+    public new void Destroy()
     {
         RemoveLine();
         if (GameObject.IsValid()) GameObject.RemoveComponent(this);

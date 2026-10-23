@@ -19,8 +19,8 @@ public static class EntityBaker
     {
         var g = SandboxHost.Current ?? throw new InvalidOperationException("Start play mode first.");
         Pending.Clear();
-        EntityLibrary.Enabled = false; // bake from the code-built models, never from earlier prefabs
-        try { return BakeAllCore(g, overwrite); } finally { EntityLibrary.Enabled = true; }
+        EntityLibrary.RegistryEnabled = false; // bake from the code-built models, never from earlier prefabs
+        try { return BakeAllCore(g, overwrite); } finally { EntityLibrary.RegistryEnabled = true; }
     }
 
     private static string BakeAllCore(SandboxGame g, bool overwrite)

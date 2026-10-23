@@ -98,7 +98,7 @@ public static partial class MapBuilder
             {
                 // Wedge clapboard (thin top tucked under the board above, thick drip edge below) with flat faces and no
                 // bevel: the old rounded boards' 6 mm highlight edges and wall-coloured gaps aliased into moiré at range.
-                Mesh Board(float len) { float L = len / 2f, t = 0.11f, bt = -0.1f, zt = 0.006f, zb = -0.016f, zw = 0.012f;
+                Mesh Board(float len) { float L = len / 2f, t = 0.11f, bt = -0.1f, zt = 0.006f, zb = -0.016f;
                     return Meshes.Faces([L3(-L, t, zt), L3(L, t, zt), L3(L, bt, zb), L3(-L, bt, zb)]); }
                 Mesh Drip(float len) { float L = len / 2f, bt = -0.1f, zb = -0.016f, zw = 0.012f;
                     return Meshes.Faces([L3(-L, bt + 0.045f, zb + 0.0047f), L3(L, bt + 0.045f, zb + 0.0047f), L3(L, bt, zb), L3(-L, bt, zb)], [L3(-L, bt, zb), L3(L, bt, zb), L3(L, bt, zw), L3(-L, bt, zw)]); }

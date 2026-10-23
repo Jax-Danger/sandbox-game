@@ -49,7 +49,6 @@ public sealed class Player
     public float VerticalVelocity => _verticalVelocity;
     private bool _wasGrounded = true;
     private float _jumpBuffer, _coyote, _jumpLock;
-    private bool _justJumped;
     /// <summary>Programmatic jump (self-test); consumed on the next grounded update.</summary>
     public bool JumpRequested;
     public int Jumps { get; private set; }
@@ -161,7 +160,7 @@ public sealed class Player
         _jumpBuffer -= dt; _coyote = groundedNow ? 0.1f : _coyote - dt; _jumpLock -= dt;
         if ((_jumpBuffer > 0f || JumpRequested) && _coyote > 0f && _jumpLock <= 0f)
         {
-            _verticalVelocity = JumpSpeed - Gravity * dt; _jumpBuffer = 0f; _coyote = 0f; _jumpLock = 0.25f; JumpRequested = false; Jumps++; _justJumped = true;
+            _verticalVelocity = JumpSpeed - Gravity * dt; _jumpBuffer = 0f; _coyote = 0f; _jumpLock = 0.25f; JumpRequested = false; Jumps++;
         }
         else if (_controller.IsGrounded && _jumpLock <= 0f)
         {
@@ -169,7 +168,6 @@ public sealed class Player
         }
         else
         {
-            _justJumped = false;
             _verticalVelocity -= Gravity * dt;
         }
 

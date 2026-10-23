@@ -55,7 +55,7 @@ public sealed partial class SandboxGame : Game
         if (_onWindowClosing is not null) { Window.Closing -= _onWindowClosing; _onWindowClosing = null; }
     }
     private Light? _flashlight;
-    private float _zoom, _frameStart;
+    private float _zoom;
     public bool AimingAtProp { get; private set; }
     public bool InVehicle => Vehicles.InVehicle;
     public Shader Shader { get; private set; } = null!;
