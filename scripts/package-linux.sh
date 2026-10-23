@@ -6,6 +6,7 @@ set -e
 REPO=$(cd "$(dirname "$0")/.." && pwd)
 OUT=${1:-$HOME/Projects/SandboxBuild}
 CLI=${PROWL_CLI:-$HOME/Projects/Prowl/Build/Cli/Prowl.Cli}
+rm -rf "$OUT/SandboxEditor"
 "$CLI" --timeout 900 command build --project "${SANDBOX_PROJECT:-$HOME/Projects/SandboxEditor}" "$OUT"
 rm -rf "$OUT/SandboxEditor/assets"
 cp -r "$REPO/assets" "$OUT/SandboxEditor/assets"
