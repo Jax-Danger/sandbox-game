@@ -40,7 +40,7 @@ public static partial class MapBuilder
         light.Color = Color.White;
         light.Intensity = 1.4f;
         light.ShadowFilter = ShadowFilter.ContactHardening;
-        lightGo.Transform.LocalEulerAngles = new Float3(-50f, 30f, 0f);
+        lightGo.Transform.LocalEulerAngles = new Float3(50f, 30f, 0f); // positive pitch = shining down on engine 1.0
         scene.Add(lightGo);
         return light;
     }

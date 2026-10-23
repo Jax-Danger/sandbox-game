@@ -22,8 +22,7 @@ public static class SceneBaker
         var sky = scene.Environment.SkyMaterial; // the editor's default sky is an asset; a runtime-made one would not save
         SandboxGame.ApplyAtmosphere(scene);
         if (sky is not null) scene.Environment.SkyMaterial = sky;
-        // In game DayNight drives the sun; the baked scene gets a mid-morning sun (MapBuilder's default points below the horizon on 1.0, so the procedural sky went black).
-        MapBuilder.CreateSun(scene).GameObject.Transform.LocalEulerAngles = new Prowl.Vector.Float3(50f, 30f, 0f);
+        MapBuilder.CreateSun(scene);
         // Keep objects individual (editable) instead of the game's runtime static batches, which also bloat the assets.
         string? prevBatch = Environment.GetEnvironmentVariable("SANDBOX_BATCH");
         Environment.SetEnvironmentVariable("SANDBOX_BATCH", "0");

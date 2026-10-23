@@ -18,6 +18,7 @@ public sealed class SandboxHost : Component
     public override void Start()
     {
         if (!Application.IsPlaying || Current is not null) return;
+        DayNightCycle.ResetStatics();
         var game = new SandboxGame();
         Current = game;
         game.Initialize();

@@ -37,7 +37,7 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=0.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.5.0.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,

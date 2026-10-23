@@ -1,41 +1,30 @@
 Shader "Sandbox/Sky"
-
-Properties
 {
-}
+    // Engine 1.0 (Graphite) sky: drawn by the "Sky" light mode pass; Graphite/Sky.glsl supplies the view direction.
+    Properties
+    {
+        _Zenith("Zenith", Color) = (0.25, 0.45, 0.8, 1.0)
+        _Horizon("Horizon", Color) = (0.72, 0.8, 0.88, 1.0)
+        _Glow("Glow", Color) = (1.0, 0.48, 0.22, 1.0)
+        _SunDir("Sun Direction", Vector) = (0.3, 0.8, 0.2, 0.0)
+        _MoonDir("Moon Direction", Vector) = (-0.3, 0.6, 0.4, 0.0)
+        _Night("Night", Float) = 0.0
+        _GlowAmt("Glow Amount", Float) = 0.0
+    }
 
-Pass "SandboxSky"
-{
-    Tags { "RenderOrder" = "Opaque" }
-    Cull Front
-    ZWrite Off
-    ZTest LEqual
-
-    GLSLPROGRAM
-
+    Pass
+    {
+        Tags { "LightMode" = "Sky" }
+        GLSLPROGRAM
         Vertex
         {
-            #include "ProwlCG"
-            #include "VertexAttributes"
-
-            out vec3 vDirection;
-
-            void main()
-            {
-                mat4 v = PROWL_MATRIX_V;
-                v[3][0] = 0.0; v[3][1] = 0.0; v[3][2] = 0.0;
-                vec4 pos = PROWL_MATRIX_P * v * vec4(vertexPosition, 1.0);
-                gl_Position = pos.xyww;
-                vDirection = vertexPosition;
-            }
+            #include "Graphite/Sky.glsl"
+            void main() { }
         }
-
         Fragment
         {
-            #include "ProwlCG"
-
-            layout (location = 0) out vec4 fragColor;
-            in vec3 vDirection;
+            #include "Graphite/Sky.glsl"
+            layout(location = 0) out vec4 fragColor;
 
             uniform vec4 _Zenith;
             uniform vec4 _Horizon;
@@ -49,7 +38,7 @@ Pass "SandboxSky"
 
             void main()
             {
-                vec3 d = normalize(vDirection);
+                vec3 d = normalize(Graphite_SkyDirection());
                 float h = max(d.y, 0.0);
                 // Horizon colour == fog colour, so the fogged world and the horizon skirt meet it without a seam.
                 vec3 col = mix(_Horizon.rgb, _Zenith.rgb, pow(h, 0.55));
@@ -98,5 +87,6 @@ Pass "SandboxSky"
                 fragColor = vec4(col, 1.0);
             }
         }
-    ENDGLSL
+        ENDGLSL
+    }
 }

@@ -2,6 +2,11 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.5.1 — 2026-10-23
+- Fix (engine 1.0 regression): the sun pointed up, so daylight was ambient-only with no sun shadows; positive pitch now aims lights down (DayNight, default sun, icon lights)
+- Custom sky shader ported to the Graphite 1.0 shader format (LightMode "Sky"); it had silently fallen back to the engine sky since the upgrade
+- Editor play sessions reset the cached sky material
+
 ## v1.5.0 — 2026-10-23
 - Stage 5 scenes: SceneBaker builds a map with MapBuilder into the open editor scene (unbatched, editable objects), bakes its meshes and materials as assets deduplicated by content, adds the sun and a SpawnPoint; SandboxEditor/bake-map.sh drives it
 - Scenes/Maps/Flatgrass.scene committed (54 objects, 25 meshes, 11 materials); Hills (435 objects) and Town (1001 objects, ~180 MB of meshes) bake locally and are git-ignored

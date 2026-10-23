@@ -28,7 +28,8 @@ public sealed class DayNightCycle
         float warm = Math.Clamp(1f - MathF.Abs(elev) * 3.2f, 0f, 1f) * (elev > -0.15f ? 1f : 0f); // sunrise/sunset tint
 
         // Above the horizon the sun points down; below it, it dips under so the procedural sky darkens for night.
-        float pitch = elev > 0.08f ? -MathF.Max(6f, elev * 75f) : MathF.Min(30f, (0.08f - elev) * 60f) - 4.8f;
+        // Engine 1.0: positive pitch tilts Forward down (v1.0 was the opposite), so the v1.0 angles are negated.
+        float pitch = -(elev > 0.08f ? -MathF.Max(6f, elev * 75f) : MathF.Min(30f, (0.08f - elev) * 60f) - 4.8f);
         float yaw = 30f + t * 360f;
         g.Sun.Transform.LocalEulerAngles = new Float3(pitch, yaw, 0f);
         g.Sun.Intensity = 0.45f + 1.05f * day; // brighter moon: the ACES toe crushed 0.15 to black
@@ -70,6 +71,8 @@ public sealed class DayNightCycle
     }
 
     private static Material? _sky; private static bool _skyTried;
+    /// <summary>Editor play sessions share statics; forget the previous session's sky material.</summary>
+    internal static void ResetStatics() { _sky = null; _skyTried = false; }
     /// <summary>Our own sky shader (gradient matched to fog, sun glow, stars, moon) replaces the engine's procedural sky.</summary>
     private static Material? Sky(SandboxGame g)
     {

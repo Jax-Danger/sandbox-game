@@ -64,8 +64,9 @@ public sealed class IconRenderer
         cam.BackgroundColor = new Color(0f, 0f, 0f, 0f);
         scene.Add(camGo);
 
+        // Engine 1.0: positive pitch points a light down (v1.0 used negative).
         var lightGo = new GameObject("IconLight");
-        lightGo.Transform.LocalEulerAngles = new Float3(-40f, 35f, 0f);
+        lightGo.Transform.LocalEulerAngles = new Float3(40f, 35f, 0f);
         Light light = lightGo.AddLight(LightType.Directional);
         light.Intensity = 1.6f;
         light.CastShadows = false;
@@ -73,12 +74,12 @@ public sealed class IconRenderer
 
         // Soft fill from the opposite side and a cool rim from behind, so dark guns and props don't read as silhouettes.
         var fillGo = new GameObject("IconFill");
-        fillGo.Transform.LocalEulerAngles = new Float3(-15f, -140f, 0f);
+        fillGo.Transform.LocalEulerAngles = new Float3(15f, -140f, 0f);
         Light fill = fillGo.AddLight(LightType.Directional);
         fill.Intensity = 0.55f; fill.CastShadows = false; fill.Color = new Color(0.85f, 0.9f, 1f, 1f);
         scene.Add(fillGo);
         var rimGo = new GameObject("IconRim");
-        rimGo.Transform.LocalEulerAngles = new Float3(-25f, 200f, 0f);
+        rimGo.Transform.LocalEulerAngles = new Float3(25f, 200f, 0f);
         Light rim = rimGo.AddLight(LightType.Directional);
         rim.Intensity = weapon ? 1.1f : 0.6f; rim.CastShadows = false; rim.Color = new Color(0.8f, 0.9f, 1f, 1f);
         scene.Add(rimGo);
