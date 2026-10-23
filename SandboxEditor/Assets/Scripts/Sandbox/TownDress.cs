@@ -1,0 +1,371 @@
+// Legacy code-built game objects are never destroyed while cached; ?./?? on them predates the 1.0 analyzer (revisit in stage 6).
+#pragma warning disable PROWLEO001, PROWLEO002
+using Prowl.Runtime;
+using Prowl.Runtime.Resources;
+using Prowl.Vector;
+
+namespace Sandbox;
+
+/// <summary>Building facades: real window assemblies (casing, sashes, glazing bars, sheen, sill, lintel, shutters)
+/// on every wall, lap siding and corner boards on houses, pilasters/dentil cornices on commercial blocks, lettered signs.
+/// Everything is baked per colour into one mesh per building (local space, rotated with the building).</summary>
+public static partial class MapBuilder
+{
+    private sealed class Bucket : Dictionary<Color, List<Mesh>>
+    {
+        public void Add(Color c, Mesh m) { if (!TryGetValue(c, out var l)) this[c] = l = []; l.Add(m); }
+    }
+
+    private static Float3 L3(float x, float y, float z) => new(x, y, z);
+
+    /// <summary>Rotate a mesh about Y by a (degrees, same convention as the building's local→world) and move it.</summary>
+    private static Mesh Xf(Mesh m, float a, Float3 o)
+    {
+        float r = a * MathF.PI / 180f, c = MathF.Cos(r), s = MathF.Sin(r);
+        Float3 R(Float3 v) => new(v.X * c + v.Z * s, v.Y, -v.X * s + v.Z * c);
+        var mm = new Mesh { IndexFormat = m.IndexFormat, Vertices = m.Vertices.Select(v => R(v) + o).ToArray(), Normals = m.Normals.Select(R).ToArray(), UV = m.UV, Indices = m.Indices };
+        mm.RecalculateBounds(); return mm;
+    }
+    private static Mesh Bx(float x, float y, float z, float ox, float oy, float oz, float r = 0.01f) => Xf(Meshes.RoundedBox(L3(x, y, z), r), 0f, L3(ox, oy, oz));
+
+    /// <summary>One window, built facing -Z with the wall face at z = 0, then turned by a and moved to o.</summary>
+    private static int _winSeq;
+    private static Color LitGlass(Color g) => new(g.R, g.G, g.B + 0.004f, 1f);
+    /// <summary>Pale diagonal glass streak colour. Lit panes put it in its own emissive bucket, so at night the streak
+    /// glows with the room instead of cutting a dark diagonal bar across the lit window.</summary>
+    /// <summary>Wall-lantern glass colour; facade buckets of this colour glow at night like lit windows.</summary>
+    private static readonly Color LanternGlass = new(1f, 0.85f, 0.551f, 1f);
+    private static Color Sheen(Color g) => new(g.R + 0.1f, g.G + 0.1f, g.B + 0.08f, 1f);
+    private static void Window(Bucket b, float a, Float3 o, float w, float h, bool house, Color frame, Color trim, Color glass, Color shutter)
+    {
+        var parts = new List<(Color, Mesh)>();
+        float hw = w / 2f, hh = h / 2f;
+        // Dark reveal behind the glass fakes the wall depth of a real opening.
+        parts.Add((new Color(0.12f, 0.13f, 0.15f, 1f), Bx(w + 0.04f, h + 0.04f, 0.02f, 0, 0, -0.01f)));
+        // About half the panes are "lit rooms": same daytime colour (a hair off so they bucket separately), warm glow at night.
+        bool lit = (uint)(_winSeq++ * 2654435761u) % 100 < 55;
+        parts.Add((lit ? LitGlass(glass) : glass, Bx(w - 0.08f, h - 0.08f, 0.01f, 0, 0, -0.035f, 0.002f)));
+        // Sheen: two diagonal pale streaks per pane (reads as glass, not blue paint).
+        foreach (float sx in new[] { hw * 0.35f })
+            parts.Add((lit ? LitGlass(Sheen(glass)) : Sheen(glass), Meshes.Faces(new Float3[] { L3(sx - 0.2f, -hh * 0.7f, -0.041f), L3(sx - 0.2f + 0.1f, -hh * 0.7f, -0.041f), L3(sx + 0.15f, hh * 0.7f, -0.041f), L3(sx + 0.05f, hh * 0.7f, -0.041f) }.Reverse().ToArray())));
+        // Casing (proud of the wall), sash frame, mullion and transom.
+        parts.Add((frame, Bx(w + 0.16f, 0.09f, 0.07f, 0, hh + 0.02f, -0.045f))); parts.Add((frame, Bx(0.09f, h + 0.13f, 0.07f, -hw - 0.035f, 0, -0.045f))); parts.Add((frame, Bx(0.09f, h + 0.13f, 0.07f, hw + 0.035f, 0, -0.045f)));
+        parts.Add((frame, Bx(w, 0.05f, 0.05f, 0, -hh + 0.025f, -0.05f)));
+        parts.Add((frame, Bx(0.05f, h, 0.05f, 0, 0, -0.05f)));
+        parts.Add((frame, Bx(w, 0.045f, 0.05f, 0, house ? 0f : hh * 0.35f, -0.05f)));
+        if (house) foreach (float gx in new[] { -hw / 2f, hw / 2f }) parts.Add((frame, Bx(0.025f, h - 0.06f, 0.03f, gx, 0, -0.05f, 0.005f)));
+        // Sloped sill with a drip lip, and a lintel (with a keystone on houses).
+        parts.Add((trim, Xf(Meshes.RoundedBox(L3(w + 0.3f, 0.07f, 0.2f), 0.015f), 0f, L3(0, -hh - 0.06f, -0.09f))));
+        parts.Add((trim, Bx(w + 0.26f, 0.03f, 0.03f, 0, -hh - 0.11f, -0.18f)));
+        parts.Add((trim, Bx(w + 0.36f, 0.16f, 0.09f, 0, hh + 0.15f, -0.05f, 0.015f)));
+        if (house)
+        {
+            parts.Add((trim, Meshes.Faces(new Float3[] { L3(-0.09f, hh + 0.06f, -0.11f), L3(0.09f, hh + 0.06f, -0.11f), L3(0.12f, hh + 0.28f, -0.11f), L3(-0.12f, hh + 0.28f, -0.11f) }.Reverse().ToArray())));
+            // Louvred shutters either side.
+            foreach (float sd in new[] { -1f, 1f })
+            {
+                float cx = sd * (hw + 0.1f + w * 0.22f), sw = w * 0.42f;
+                parts.Add((shutter, Bx(sw, h + 0.1f, 0.035f, cx, 0, -0.03f)));
+                for (int i = 0; i < 9; i++) parts.Add((new Color(shutter.R * 0.75f, shutter.G * 0.75f, shutter.B * 0.75f, 1f), Xf(Meshes.RoundedBox(L3(sw - 0.08f, 0.035f, 0.02f), 0.006f), 0f, L3(cx, -hh + 0.12f + i * (h - 0.2f) / 8.5f, -0.055f))));
+            }
+        }
+        foreach (var (c, m) in parts) b.Add(c, Xf(m, a, o));
+    }
+
+    private static void DressBuilding(Scene scene, Shader shader, string tag, string title, Float3 c, Float3 s, float yaw, Color wall, Color trim, Color plate, float dw, float dh)
+    {
+        var b = new Bucket();
+        bool house = title.StartsWith("House");
+        float hw = s.X / 2f, hd = s.Z / 2f, h = s.Y, face = 0.15f;
+        Color frame = new(0.95f, 0.95f, 0.93f, 1f), glass = new(0.33f, 0.47f, 0.6f, 1f), stone = new(0.78f, 0.76f, 0.7f, 1f);
+        Color shutter = title switch { "House 1" => new(0.16f, 0.32f, 0.22f, 1f), "House 2" => new(0.2f, 0.25f, 0.42f, 1f), _ => new(0.45f, 0.2f, 0.18f, 1f) };
+        Color lintel = house ? frame : stone;
+        int floors = h > 6f ? 2 : 1;
+        float ww = house ? 1.3f : 1.7f, wh = house ? 1.25f : 1.5f;
+        IEnumerable<float> Span(float half, bool door) { int n = Math.Max(1, (int)((half * 2f - 2f) / 3.4f)); for (int i = 0; i < n; i++) { float x = -half + 1.6f + (half * 2f - 3.2f) * (n == 1 ? 0.5f : i / (float)(n - 1)); if (!door || MathF.Abs(x) > dw / 2f + ww / 2f + (house ? 0.9f : 0.4f)) yield return x; } }
+        for (int f = 0; f < floors; f++)
+        {
+            float wy = 1.65f + f * 3f;
+            foreach (float x in Span(hw, true)) if (title != "Garage" || x < 0f || f > 0) Window(b, 0f, L3(x, wy, -hd - face), ww, wh, house, frame, lintel, glass, shutter);
+            foreach (float x in Span(hw, false)) Window(b, 180f, L3(x, wy, hd + face), ww, wh, house, frame, lintel, glass, shutter);
+            foreach (float z in Span(hd, false)) { Window(b, -90f, L3(hw + face, wy, z), ww, wh, house, frame, lintel, glass, shutter); Window(b, 90f, L3(-hw - face, wy, z), ww, wh, house, frame, lintel, glass, shutter); }
+        }
+        if (house)
+        {
+            // Lap siding: overlapping boards on all four faces (front boards stop at the doorway), white corner boards, stone plinth.
+            Color siding = new(wall.R * 0.96f, wall.G * 0.96f, wall.B * 0.96f, 1f); Color drip = new(wall.R * 0.88f, wall.G * 0.88f, wall.B * 0.88f, 1f); // soft shadow line under each board
+            for (float y = 0.55f; y < h - 0.05f; y += 0.2f)
+            {
+                // Wedge clapboard (thin top tucked under the board above, thick drip edge below) with flat faces and no
+                // bevel: the old rounded boards' 6 mm highlight edges and wall-coloured gaps aliased into moiré at range.
+                Mesh Board(float len) { float L = len / 2f, t = 0.11f, bt = -0.1f, zt = 0.006f, zb = -0.016f, zw = 0.012f;
+                    return Meshes.Faces([L3(-L, t, zt), L3(L, t, zt), L3(L, bt, zb), L3(-L, bt, zb)]); }
+                Mesh Drip(float len) { float L = len / 2f, bt = -0.1f, zb = -0.016f, zw = 0.012f;
+                    return Meshes.Faces([L3(-L, bt + 0.045f, zb + 0.0047f), L3(L, bt + 0.045f, zb + 0.0047f), L3(L, bt, zb), L3(-L, bt, zb)], [L3(-L, bt, zb), L3(L, bt, zb), L3(L, bt, zw), L3(-L, bt, zw)]); }
+                void Run(float a, Float3 o, float len) { b.Add(siding, Xf(Board(len), a, o)); b.Add(drip, Xf(Drip(len), a, o)); }
+                if (y < dh + 0.1f) { float side = hw - dw / 2f - 0.12f; Run(0f, L3(-hw + side / 2f, y, -hd - face - 0.012f), side); Run(0f, L3(hw - side / 2f, y, -hd - face - 0.012f), side); }
+                else Run(0f, L3(0, y, -hd - face - 0.012f), s.X);
+                Run(180f, L3(0, y, hd + face + 0.012f), s.X);
+                Run(-90f, L3(hw + face + 0.012f, y, 0), s.Z); Run(90f, L3(-hw - face - 0.012f, y, 0), s.Z);
+            }
+            foreach (float x in new[] { -1f, 1f }) foreach (float z in new[] { -1f, 1f })
+                b.Add(frame, Bx(0.16f, h - 0.4f, 0.16f, x * (hw + face), 0.4f + (h - 0.4f) / 2f, z * (hd + face)));
+            b.Add(stone, Bx(s.X + 0.36f, 0.45f, 0.08f, 0, 0.225f, -hd - face - 0.03f)); b.Add(stone, Bx(s.X + 0.36f, 0.45f, 0.08f, 0, 0.225f, hd + face + 0.03f));
+            b.Add(stone, Bx(0.08f, 0.45f, s.Z + 0.36f, hw + face + 0.03f, 0.225f, 0)); b.Add(stone, Bx(0.08f, 0.45f, s.Z + 0.36f, -hw - face - 0.03f, 0.225f, 0));
+            // House number plaque by the door.
+            string num = title[^1..];
+            b.Add(new Color(0.1f, 0.1f, 0.12f, 1f), Bx(0.3f, 0.36f, 0.03f, dw / 2f + 0.45f, 1.75f, -hd - face - 0.03f));
+            b.Add(new Color(0.9f, 0.82f, 0.5f, 1f), Glyphs.Text(num, 0.22f, -hd - face - 0.06f, -hd - face - 0.045f, mirror: false) is { } nm ? Xf(nm, 0f, L3(dw / 2f + 0.45f, 1.75f, 0)) : null!);
+        }
+        else
+        {
+            // Pilasters with bases and capitals, a plinth, and a dentil course under the cornice.
+            int np = Math.Max(2, (int)(s.X / 4f) + 1);
+            for (int i = 0; i < np; i++)
+            {
+                float x = -hw + 0.25f + (s.X - 0.5f) * i / (np - 1f);
+                if (MathF.Abs(x) < dw / 2f + 0.5f) continue;
+                b.Add(trim, Bx(0.42f, h - 0.6f, 0.12f, x, 0.45f + (h - 0.6f) / 2f, -hd - face - 0.05f));
+                b.Add(stone, Bx(0.54f, 0.3f, 0.18f, x, 0.3f, -hd - face - 0.07f)); b.Add(stone, Bx(0.54f, 0.16f, 0.18f, x, h - 0.28f, -hd - face - 0.07f));
+            }
+            b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, -hd - face - 0.04f));
+            if (title == "Garage")
+            {
+                // Service bay: a ribbed roller shutter in a steel frame with a hood box, guide rails, a handle and bollards.
+                float gx = hw * 0.5f + 0.35f, gw = 3.2f, gh = 3.0f, z0 = -hd - face;
+                Color steelC = new(0.46f, 0.48f, 0.5f, 1f), slat = new(0.5f, 0.54f, 0.57f, 1f), slatLow = new(0.42f, 0.44f, 0.45f, 1f), dark = new(0.2f, 0.21f, 0.23f, 1f), yellow = new(0.9f, 0.72f, 0.1f, 1f);
+                b.Add(dark, Bx(gw, gh, 0.05f, gx, gh / 2f, z0 - 0.01f));
+                for (float y = 0.1f; y < gh - 0.05f; y += 0.16f) b.Add(y < 0.5f ? slatLow : slat, Bx(gw - 0.04f, 0.13f, 0.04f, gx, y + 0.065f, z0 - 0.05f, 0.02f));
+                foreach (float sx in new[] { -1f, 1f }) b.Add(steelC, Bx(0.14f, gh + 0.1f, 0.14f, gx + sx * (gw / 2f + 0.07f), (gh + 0.1f) / 2f, z0 - 0.06f));
+                b.Add(steelC, Bx(gw + 0.5f, 0.45f, 0.4f, gx, gh + 0.25f, z0 - 0.18f, 0.03f));
+                b.Add(dark, Bx(0.3f, 0.04f, 0.05f, gx, 0.35f, z0 - 0.1f));
+                b.Add(new Color(0.42f, 0.42f, 0.41f, 1f), Bx(gw + 1.4f, 0.05f, 4.5f, gx, 0.025f, z0 - 2.25f)); // concrete apron
+                foreach (float sx in new[] { -1f, 1f })
+                {
+                    b.Add(yellow, Xf(Meshes.Lathe("bollard", [(0.0001f, 0f), (0.1f, 0f), (0.1f, 0.85f), (0.07f, 0.95f), (0.0001f, 0.97f)], 20), 0f, L3(gx + sx * (gw / 2f + 0.45f), 0f, z0 - 0.5f)));
+                    b.Add(dark, Xf(Meshes.Lathe("bolband", [(0.102f, 0f), (0.102f, 0.1f)], 20), 0f, L3(gx + sx * (gw / 2f + 0.45f), 0.6f, z0 - 0.5f)));
+                }
+            }
+            // Sides and back: plinth, corner quoin pilasters, a cornice band under the parapet and a belt course between floors.
+            b.Add(stone, Bx(s.X + 0.1f, 0.45f, 0.1f, 0, 0.225f, hd + face + 0.04f));
+            b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, hw + face + 0.04f, 0.225f, 0)); b.Add(stone, Bx(0.1f, 0.45f, s.Z + 0.1f, -hw - face - 0.04f, 0.225f, 0));
+            foreach (float x in new[] { -1f, 1f }) foreach (float z in new[] { -1f, 1f })
+            {
+                b.Add(trim, Bx(0.36f, h - 0.6f, 0.36f, x * (hw + face - 0.1f), 0.45f + (h - 0.6f) / 2f, z * (hd + face - 0.1f)));
+                for (float qy = 0.75f; qy < h - 0.6f; qy += 0.9f) b.Add(stone, Bx(0.42f, 0.3f, 0.42f, x * (hw + face - 0.1f), qy, z * (hd + face - 0.1f), 0.02f));
+            }
+            foreach (float yy in floors > 1 ? new[] { h - 0.22f, 3.05f } : new[] { h - 0.22f })
+            {
+                b.Add(stone, Bx(s.X + 0.5f, 0.14f, 0.14f, 0, yy, hd + face + 0.05f)); b.Add(stone, Bx(s.X + 0.5f, 0.14f, 0.14f, 0, yy, -hd - face - 0.05f));
+                b.Add(stone, Bx(0.14f, 0.14f, s.Z + 0.5f, hw + face + 0.05f, yy, 0)); b.Add(stone, Bx(0.14f, 0.14f, s.Z + 0.5f, -hw - face - 0.05f, yy, 0));
+            }
+            // Lettered sign board over the entrance (sits just above the awning; the dentils stop either side of it).
+            string word = title switch { "Police Station" => "POLICE", "General Store" => "GENERAL STORE", "Apartment" => "APARTMENTS", "Garage" => "GARAGE", _ => title.ToUpperInvariant() };
+            float sw = MathF.Min(s.X - 1f, word.Length * 0.36f + 0.8f), sy = MathF.Min(dh + 1.35f, h - 0.62f);
+            for (float x = -hw + 0.1f; x <= hw - 0.1f; x += 0.3f) if (MathF.Abs(x) > sw / 2f + 0.15f) b.Add(trim, Bx(0.13f, 0.12f, 0.1f, x, h - 0.32f, -hd - face - 0.08f, 0.01f));
+            b.Add(plate, Bx(sw, 0.5f, 0.08f, 0, sy, -hd - face - 0.05f));
+            b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy + 0.27f, -hd - face - 0.05f)); b.Add(frame, Bx(sw + 0.08f, 0.05f, 0.1f, 0, sy - 0.27f, -hd - face - 0.05f));
+            b.Add(frame, Xf(Glyphs.Text(word, 0.3f, -hd - face - 0.12f, -hd - face - 0.09f, mirror: false), 0f, L3(0, sy, 0)));
+            if (title == "Apartment")
+            {
+                // Upper floor centre bay: a French door onto a little balcony (slab, railing on turned balusters),
+                // and flower boxes under the upper side windows.
+                float z0 = -hd - face;
+                Window(b, 0f, L3(0f, 5.0f, z0), 1.2f, 1.9f, false, frame, lintel, glass, shutter);
+                b.Add(stone, Bx(1.9f, 0.12f, 0.38f, 0f, 4.0f, z0 - 0.19f, 0.02f));
+                foreach (float bz in new[] { 0.0f }) b.Add(stone, Bx(1.95f, 0.06f, 0.07f, 0f, 4.89f, z0 - 0.34f + bz));
+                foreach (float sx in new[] { -0.95f, 0.95f }) b.Add(stone, Bx(0.07f, 0.06f, 0.36f, sx, 4.89f, z0 - 0.18f));
+                Mesh bal = Meshes.Lathe("baluster", [(0.0001f, 0f), (0.035f, 0f), (0.035f, 0.06f), (0.025f, 0.12f), (0.045f, 0.4f), (0.022f, 0.68f), (0.035f, 0.78f), (0.035f, 0.85f), (0.0001f, 0.85f)], 10);
+                for (float x = -0.88f; x <= 0.89f; x += 0.16f) b.Add(frame, Xf(bal, 0f, L3(x, 4.04f, z0 - 0.33f)));
+                for (float zz = z0 - 0.2f; zz < z0 - 0.05f; zz += 0.14f) foreach (float sx in new[] { -0.93f, 0.93f }) b.Add(frame, Xf(bal, 0f, L3(sx, 4.04f, zz)));
+                foreach (float x in Span(hw, true))
+                {
+                    b.Add(new Color(0.45f, 0.28f, 0.18f, 1f), Bx(ww + 0.1f, 0.22f, 0.26f, x, 3.78f, z0 - 0.16f, 0.02f));
+                    for (int i = 0; i < 6; i++) b.Add(i % 2 == 0 ? new Color(0.85f, 0.25f, 0.35f, 1f) : new Color(0.25f, 0.45f, 0.2f, 1f), Xf(Meshes.Blob(0.11f, 60 + i, 0.2f), 0f, L3(x - ww / 2f + 0.12f + i * (ww - 0.15f) / 5f, 3.95f, z0 - 0.17f)));
+                }
+            }
+            if (title == "General Store")
+            {
+                // Striped canvas awnings over each shop window (sloped, with a scalloped valance) and a produce stand by the door.
+                Color sa = new(0.2f, 0.5f, 0.3f, 1f), sb = new(0.94f, 0.93f, 0.88f, 1f);
+                float z0 = -hd - face - 0.02f;
+                foreach (float x in Span(hw, true))
+                {
+                    float aw = ww + 0.5f; int n = 7;
+                    for (int i = 0; i < n; i++)
+                    {
+                        float x0 = x - aw / 2f + aw * i / n, x1 = x - aw / 2f + aw * (i + 1) / n;
+                        Color col = i % 2 == 0 ? sa : sb;
+                        b.Add(col, Meshes.Faces(
+                            [L3(x0, 2.95f, z0), L3(x1, 2.95f, z0), L3(x1, 2.55f, z0 - 0.9f), L3(x0, 2.55f, z0 - 0.9f)],
+                            [L3(x1, 2.93f, z0), L3(x0, 2.93f, z0), L3(x0, 2.53f, z0 - 0.9f), L3(x1, 2.53f, z0 - 0.9f)],
+                            [L3(x0, 2.55f, z0 - 0.9f), L3(x1, 2.55f, z0 - 0.9f), L3(x1, 2.4f, z0 - 0.905f), L3((x0 + x1) / 2f, 2.33f, z0 - 0.905f), L3(x0, 2.4f, z0 - 0.905f)],
+                            [L3(x1, 2.55f, z0 - 0.895f), L3(x0, 2.55f, z0 - 0.895f), L3(x0, 2.4f, z0 - 0.895f), L3((x0 + x1) / 2f, 2.33f, z0 - 0.895f), L3(x1, 2.4f, z0 - 0.895f)]));
+                    }
+                    b.Add(new Color(0.3f, 0.3f, 0.32f, 1f), Bx(aw + 0.06f, 0.05f, 0.05f, x, 2.96f, z0 - 0.02f));
+                }
+                // Produce stand: slatted crate table, three trays of fruit, a little price board.
+                float px = -dw / 2f - 0.9f, pz = z0 - 0.75f;
+                Color wood = new(0.55f, 0.38f, 0.22f, 1f);
+                b.Add(wood, Bx(1.3f, 0.06f, 0.6f, px, 0.78f, pz));
+                foreach (float lx in new[] { -0.6f, 0.6f }) foreach (float lz in new[] { -0.25f, 0.25f }) b.Add(wood, Bx(0.06f, 0.78f, 0.06f, px + lx, 0.39f, pz + lz));
+                var fruit = new[] { new Color(0.85f, 0.15f, 0.12f, 1f), new Color(0.98f, 0.6f, 0.1f, 1f), new Color(0.55f, 0.75f, 0.2f, 1f) };
+                for (int t = 0; t < 3; t++)
+                {
+                    float tx = px - 0.42f + t * 0.42f;
+                    b.Add(wood, Bx(0.38f, 0.1f, 0.5f, tx, 0.86f, pz));
+                    for (int fx = 0; fx < 3; fx++) for (int fz = 0; fz < 4; fz++) b.Add(fruit[t], Xf(Meshes.Sphere(0.052f), 0f, L3(tx - 0.11f + fx * 0.11f, 0.95f + (fx + fz) % 2 * 0.02f, pz - 0.18f + fz * 0.12f)));
+                }
+                b.Add(new Color(0.15f, 0.16f, 0.15f, 1f), Bx(0.4f, 0.28f, 0.03f, px + 0.5f, 1.15f, pz + 0.2f));
+            }
+            if (title == "Police Station")
+            {
+                // Flagpole on the front lawn: lathed pole on a concrete footing, gold finial, rippled blue-and-white flag.
+                float px = -hw + 2.2f, pz = -hd - face - 3.2f;
+                b.Add(stone, Xf(Meshes.Lathe("pfoot", [(0.0001f, 0f), (0.45f, 0f), (0.45f, 0.12f), (0.38f, 0.18f), (0.0001f, 0.18f)], 20), 0f, L3(px, 0f, pz)));
+                b.Add(new Color(0.85f, 0.86f, 0.88f, 1f), Xf(Meshes.Lathe("ppole", [(0.0001f, 0.15f), (0.07f, 0.15f), (0.06f, 3f), (0.04f, 7.6f), (0.0001f, 7.62f)], 14), 0f, L3(px, 0f, pz)));
+                b.Add(new Color(0.9f, 0.72f, 0.25f, 1f), Xf(Meshes.Sphere(0.09f), 0f, L3(px, 7.68f, pz)));
+                Float3 F(float u, float v) => L3(px + 0.06f + u * 1.5f, 7.45f - v * 0.95f, pz + 0.08f * MathF.Sin(u * 7f) * u);
+                var bands = new[] { (0f, 0.36f, new Color(0.16f, 0.27f, 0.6f, 1f)), (0.36f, 0.5f, new Color(0.95f, 0.95f, 0.95f, 1f)), (0.5f, 1f, new Color(0.16f, 0.27f, 0.6f, 1f)) };
+                foreach (var (v0, v1, bc) in bands)
+                {
+                    var quads = new List<Float3[]>();
+                    for (int i = 0; i < 8; i++)
+                    {
+                        float u0 = i / 8f, u1 = (i + 1) / 8f;
+                        quads.Add([F(u0, v0), F(u1, v0), F(u1, v1), F(u0, v1)]);
+                        quads.Add([F(u1, v0), F(u0, v0), F(u0, v1), F(u1, v1)]); // back face
+                    }
+                    b.Add(bc, Meshes.Faces(quads.ToArray()));
+                }
+            }
+        }
+        // Services on every building: front downpipes with wall brackets and a kick-out shoe, a wall lantern beside the
+        // door (dark cage, warm glass), and on commercial buildings an AC condenser with a fan grille on one side wall.
+        {
+            Color pipe = house ? new Color(0.92f, 0.92f, 0.9f, 1f) : new Color(0.3f, 0.31f, 0.33f, 1f), metal = new(0.12f, 0.12f, 0.13f, 1f), warm = LanternGlass;
+            float zf = -hd - face - (house ? 0.09f : 0.12f);
+            foreach (float sx in new[] { -1f, 1f })
+            {
+                float px = sx * (hw + face - (house ? 0.32f : 0.5f));
+                b.Add(pipe, Xf(Meshes.Lathe(house ? "dpipeh" : "dpipe", [(0.05f, 0.25f), (0.05f, house ? h - 0.5f : h - 0.15f)], 12), 0f, L3(px, 0f, zf)));
+                b.Add(pipe, VehicleModels.Pipe(0.05f, Float3.UnitX, L3(px, 0.3f, zf), L3(px, 0.16f, zf - 0.08f), L3(px, 0.12f, zf - 0.22f)));
+                for (float by = 1.2f; by < h - 0.4f; by += 1.6f) b.Add(metal, Bx(0.14f, 0.04f, 0.1f, px, by, zf + 0.04f, 0.008f));
+            }
+            float lx = -(dw / 2f + 0.5f), ly = dh - 0.55f; // beside the upper door frame, clear of canopies
+            b.Add(metal, Bx(0.08f, 0.16f, 0.06f, lx, ly + 0.02f, -hd - face - 0.04f, 0.01f));
+            b.Add(metal, Bx(0.2f, 0.03f, 0.2f, lx, ly + 0.2f, -hd - face - 0.14f, 0.008f));
+            b.Add(warm, Bx(0.15f, 0.2f, 0.15f, lx, ly + 0.08f, -hd - face - 0.14f, 0.01f));
+            foreach (float sx in new[] { -1f, 1f }) foreach (float sz in new[] { -1f, 1f })
+                b.Add(metal, Bx(0.018f, 0.22f, 0.018f, lx + sx * 0.085f, ly + 0.08f, -hd - face - 0.14f + sz * 0.085f, 0.004f));
+            if (!house)
+            {
+                float ax = hw + face + 0.42f, az = hd * 0.3f;
+                b.Add(new Color(0.82f, 0.83f, 0.82f, 1f), Bx(0.75f, 0.8f, 0.9f, ax, 0.55f, az, 0.04f));
+                b.Add(metal, Xf(Meshes.Lathe("acgrille", [(0.0001f, 0f), (0.3f, 0f), (0.3f, 0.01f), (0.0001f, 0.01f)], 24), 0f, Float3.Zero) is { } gr ? Xf(new Mesh { IndexFormat = gr.IndexFormat, Vertices = gr.Vertices.Select(v => L3(v.Y, v.X, v.Z)).ToArray(), Normals = gr.Normals.Select(v => L3(v.Y, v.X, v.Z)).ToArray(), UV = gr.UV, Indices = gr.Indices }, 0f, L3(ax + 0.375f, 0.6f, az)) : null!);
+                for (int i = -2; i <= 2; i++) b.Add(new Color(0.55f, 0.56f, 0.57f, 1f), Bx(0.02f, 0.012f, 0.6f, ax + 0.39f, 0.6f + i * 0.11f, az, 0.004f));
+                b.Add(new Color(0.4f, 0.41f, 0.42f, 1f), Bx(0.9f, 0.1f, 1.05f, ax, 0.1f, az, 0.02f));
+                b.Add(metal, VehicleModels.Pipe(0.025f, Float3.UnitY, L3(ax - 0.375f, 0.7f, az + 0.3f), L3(hw + face + 0.02f, 0.7f, az + 0.3f)));
+            }
+        }
+        Float3 eul = new(0f, yaw, 0f);
+        int k = 0;
+        foreach (var (col, list) in b)
+        {
+            var fgo = Shape(scene, shader, $"~{tag} facade {k++}", Meshes.Merge(list.Where(m => m is not null).ToArray()), c, col, euler: eul);
+            if ((col.Equals(LitGlass(glass)) || col.Equals(LitGlass(Sheen(glass))) || col.Equals(LanternGlass)) && !Application.IsHeadless && fgo.GetComponent<MeshRenderer>()?.Material is { } wm)
+            {
+                _batch.Remove(fgo);
+                try { wm.SetTexture("_EmissionTex", ProcTex.Solid(255, 168, 86)); wm.SetFloat("_EmissionIntensity", 0f); } catch { }
+                Town.NightLamps.Add((wm, null));
+            }
+        }
+    }
+
+    /// <summary>Interior finish (render only): plank floor with staggered butt joints, plaster wall linings, skirting boards,
+    /// an off-white ceiling with a cove line and a pendant light. Local frame as DressBuilding (front wall at -Z, door at x = 0).</summary>
+    private static void DressInterior(Scene scene, Shader shader, string tag, string title, Float3 c, Float3 s, float yaw, float dw, float dh)
+    {
+        var b = new Bucket();
+        bool house = title.StartsWith("House");
+        const float t = 0.3f;
+        float ix = s.X / 2f - t / 2f, iz = s.Z / 2f - t / 2f, h = s.Y;
+        Color[] planks = house ? [new(0.56f, 0.4f, 0.26f, 1f), new(0.53f, 0.38f, 0.24f, 1f), new(0.59f, 0.43f, 0.28f, 1f)] : [new(0.6f, 0.6f, 0.58f, 1f), new(0.63f, 0.63f, 0.61f, 1f), new(0.58f, 0.58f, 0.56f, 1f)];
+        Color plaster = house ? new(0.88f, 0.85f, 0.78f, 1f) : new(0.8f, 0.82f, 0.83f, 1f), skirt = new(0.94f, 0.94f, 0.92f, 1f), ceil = new(0.93f, 0.93f, 0.91f, 1f);
+        var rnd = new Random(tag.Length * 31 + (int)s.X);
+        b.Add(house ? new Color(0.3f, 0.21f, 0.14f, 1f) : new Color(0.36f, 0.36f, 0.35f, 1f), Bx(ix * 2f, 0.01f, iz * 2f, 0f, 0.081f, 0f, 0.002f)); // joint / grout bed
+        float pw = house ? 0.18f : 0.6f; // shops/offices: large floor tiles instead of planks
+        int row = 0;
+        for (float z = -iz + 0.02f; z < iz - pw * 0.5f; z += pw, row++)
+        {
+            float x = -ix + 0.02f + (row % 3) * (house ? 0.6f : pw * 0.5f) * (house ? 1f : 1f) - (house ? 1.8f : pw);
+            while (x < ix - 0.02f)
+            {
+                float len = house ? 1.8f : pw, x0 = MathF.Max(x, -ix + 0.02f), x1 = MathF.Min(x + len, ix - 0.02f);
+                if (x1 - x0 > 0.05f) b.Add(planks[rnd.Next(planks.Length)], Bx(x1 - x0 - 0.006f, 0.012f, pw - 0.006f, (x0 + x1) / 2f, 0.086f, z + pw / 2f, 0.003f));
+                x += len;
+            }
+        }
+        // Wall linings + skirting: back, sides, and the front either side of / above the door.
+        void Wall(float len, float hgt, float cx, float cy, float cz, bool alongX)
+        {
+            b.Add(plaster, Bx(alongX ? len : 0.012f, hgt, alongX ? 0.012f : len, cx, cy, cz, 0.004f));
+        }
+        float wy = (h - 0.08f) / 2f + 0.08f, wh = h - 0.1f;
+        Wall(ix * 2f, wh, 0f, wy, iz - 0.006f, true);
+        Wall(iz * 2f, wh, ix - 0.006f, wy, 0f, false); Wall(iz * 2f, wh, -ix + 0.006f, wy, 0f, false);
+        float sideLen = ix - dw / 2f;
+        Wall(sideLen, wh, -(dw / 2f + sideLen / 2f), wy, -iz + 0.006f, true); Wall(sideLen, wh, dw / 2f + sideLen / 2f, wy, -iz + 0.006f, true);
+        Wall(dw, h - dh - 0.02f, 0f, dh + (h - dh) / 2f, -iz + 0.006f, true);
+        b.Add(skirt, Bx(ix * 2f, 0.11f, 0.025f, 0f, 0.135f, iz - 0.02f));
+        b.Add(skirt, Bx(0.025f, 0.11f, iz * 2f, ix - 0.02f, 0.135f, 0f)); b.Add(skirt, Bx(0.025f, 0.11f, iz * 2f, -ix + 0.02f, 0.135f, 0f));
+        b.Add(skirt, Bx(sideLen, 0.11f, 0.025f, -(dw / 2f + sideLen / 2f), 0.135f, -iz + 0.02f)); b.Add(skirt, Bx(sideLen, 0.11f, 0.025f, dw / 2f + sideLen / 2f, 0.135f, -iz + 0.02f));
+        // Ceiling with a cove line round the edge and a pendant light (rod, shade, warm bulb).
+        b.Add(ceil, Bx(ix * 2f, 0.02f, iz * 2f, 0f, h - 0.012f, 0f, 0.005f));
+        b.Add(skirt, Bx(ix * 2f, 0.06f, 0.06f, 0f, h - 0.05f, iz - 0.03f)); b.Add(skirt, Bx(ix * 2f, 0.06f, 0.06f, 0f, h - 0.05f, -iz + 0.03f));
+        b.Add(skirt, Bx(0.06f, 0.06f, iz * 2f, ix - 0.03f, h - 0.05f, 0f)); b.Add(skirt, Bx(0.06f, 0.06f, iz * 2f, -ix + 0.03f, h - 0.05f, 0f));
+        Color shade = new(0.15f, 0.15f, 0.16f, 1f), bulb = new(1f, 0.9f, 0.7f, 1f);
+        float ly = MathF.Min(h - 0.7f, 2.6f);
+        b.Add(shade, Xf(Meshes.Lathe("pendrod", [(0.008f, 0f), (0.008f, h - ly)], 8), 0f, L3(0f, ly, 0f)));
+        b.Add(shade, Xf(Meshes.Lathe("pendshade", [(0.2f, -0.18f), (0.19f, -0.17f), (0.08f, -0.02f), (0.02f, 0f), (0.0001f, 0.005f)], 24), 0f, L3(0f, ly, 0f)));
+        b.Add(bulb, Xf(Meshes.Lathe("pendbulb", [(0.0001f, -0.17f), (0.05f, -0.15f), (0.06f, -0.11f), (0.03f, -0.06f), (0.0001f, -0.05f)], 16), 0f, L3(0f, ly, 0f)));
+        // Window reveals on the inside, at the same spots as the facade windows: daylight glass, glazing bars, a white
+        // frame and a sill, so rooms read as lit from outside instead of sealed boxes.
+        {
+            float ww = house ? 1.3f : 1.7f, wh2 = house ? 1.25f : 1.5f;
+            int floors = h > 6f ? 2 : 1;
+            Color sky = new(0.72f, 0.84f, 0.95f, 1f), frame = new(0.95f, 0.95f, 0.93f, 1f);
+            IEnumerable<float> Span(float half, bool door) { int n = Math.Max(1, (int)((half * 2f - 2f) / 3.4f)); for (int i = 0; i < n; i++) { float x = -half + 1.6f + (half * 2f - 3.2f) * (n == 1 ? 0.5f : i / (float)(n - 1)); if (!door || MathF.Abs(x) > dw / 2f + ww / 2f + (house ? 0.9f : 0.4f)) yield return x; } }
+            void Win(float a, float x, float y, float zIn)
+            {
+                // Built facing +Z (into the room) at the inner wall face, then turned by a about Y.
+                void P(Color col, float w, float hh, float d, float ox, float oy, float oz) => b.Add(col, Xf(Meshes.RoundedBox(L3(w, hh, d), 0.006f), a, Rot(L3(ox, oy, oz), a)));
+                P(sky, ww, wh2, 0.01f, x, y, zIn + 0.014f);
+                P(frame, ww + 0.16f, 0.08f, 0.04f, x, y + wh2 / 2f + 0.04f, zIn + 0.02f); P(frame, ww + 0.16f, 0.08f, 0.04f, x, y - wh2 / 2f - 0.04f, zIn + 0.02f);
+                P(frame, 0.08f, wh2, 0.04f, x - ww / 2f - 0.04f, y, zIn + 0.02f); P(frame, 0.08f, wh2, 0.04f, x + ww / 2f + 0.04f, y, zIn + 0.02f);
+                P(frame, 0.035f, wh2, 0.03f, x, y, zIn + 0.02f); P(frame, ww, 0.035f, 0.03f, x, y, zIn + 0.02f);
+                P(frame, ww + 0.3f, 0.04f, 0.16f, x, y - wh2 / 2f - 0.09f, zIn + 0.07f);
+            }
+            static Float3 Rot(Float3 v, float a) { float r = a * MathF.PI / 180f, cc = MathF.Cos(r), ss = MathF.Sin(r); return new Float3(v.X * cc + v.Z * ss, v.Y, -v.X * ss + v.Z * cc); }
+            if (title == "Garage")
+            {
+                // Inside face of the roller shutter: slats, guide rails and the drum box, matching the facade bay.
+                float gx = s.X / 4f + 0.35f, gw = 3.2f, gh = 3.0f;
+                Color slat = new(0.5f, 0.53f, 0.56f, 1f), rail = new(0.36f, 0.38f, 0.4f, 1f);
+                for (float y = 0.1f; y < gh - 0.05f; y += 0.16f) b.Add(slat, Bx(gw - 0.04f, 0.13f, 0.03f, gx, y + 0.065f, -iz + 0.03f, 0.015f));
+                foreach (float sx in new[] { -1f, 1f }) b.Add(rail, Bx(0.12f, gh + 0.1f, 0.1f, gx + sx * (gw / 2f + 0.06f), (gh + 0.1f) / 2f, -iz + 0.05f));
+                b.Add(rail, Bx(gw + 0.4f, 0.5f, 0.5f, gx, gh + 0.3f, -iz + 0.25f, 0.03f));
+            }
+            for (int f = 0; f < floors; f++)
+            {
+                float y = 1.65f + f * 3f;
+                foreach (float x in Span(s.X / 2f, true)) if (title != "Garage" || x < 0f || f > 0) Win(0f, x, y, -iz + 0.012f);
+                foreach (float x in Span(s.X / 2f, false)) Win(180f, -x, y, -iz + 0.012f);
+                foreach (float z in Span(s.Z / 2f, false)) { Win(-90f, z, y, -ix + 0.012f); Win(90f, -z, y, -ix + 0.012f); }
+            }
+        }
+        Float3 eul = new(0f, yaw, 0f);
+        int k = 0;
+        foreach (var (col, list) in b) Shape(scene, shader, $"~{tag} interior {k++}", Meshes.Merge(list.ToArray()), c, col, euler: eul);
+    }
+}

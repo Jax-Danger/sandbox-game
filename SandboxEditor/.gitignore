@@ -1,0 +1,10 @@
+Library/
+Temp/
+Logs/
+Backups/
+Builds/
+*.csproj
+*.slnx
+.claude/
+AGENTS.md
+CLAUDE.md

@@ -2,6 +2,10 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.2.0 — 2026-10-23
+- Editor project layout: new Prowl editor project SandboxEditor/ (SandboxEditor.prowl, ProjectSettings with the linux-x64 build target)
+- Game code moved to SandboxEditor/Assets/Scripts/Sandbox and compiles in the editor (0 errors); the standalone exe (src/Program.cs) builds from the same files
+
 ## v1.1.1 — 2026-10-23
 - Screenshots, world thumbnails and the self-test PNG check use a built-in PNG writer; Magick.NET dependency removed (editor script assemblies cannot reference it)
 

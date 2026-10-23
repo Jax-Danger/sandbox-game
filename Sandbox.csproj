@@ -7,7 +7,7 @@
     <Nullable>enable</Nullable>
     <RootNamespace>Sandbox</RootNamespace>
     <AssemblyName>Sandbox</AssemblyName>
-    <Version>1.1.1</Version>
+    <Version>1.2.0</Version>
     <!-- Desktop game, not a server: workstation non-concurrent GC (no background GC thread) and a tighter heap. -->
     <ServerGarbageCollection>false</ServerGarbageCollection>
     <ConcurrentGarbageCollection>false</ConcurrentGarbageCollection>
@@ -23,6 +23,10 @@
 
   <ItemGroup>
     <Compile Remove="external/**" />
+    <Compile Remove="SandboxEditor/**" />
+    <None Remove="SandboxEditor/**" />
+    <!-- Game code lives in the editor project (SandboxEditor/Assets/Scripts); the standalone exe shares it. -->
+    <Compile Include="SandboxEditor/Assets/Scripts/**/*.cs" />
     <None Remove="external/**" />
     <EmbeddedResource Remove="external/**" />
   </ItemGroup>

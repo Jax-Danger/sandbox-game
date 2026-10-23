@@ -65,15 +65,15 @@ Bone hierarchy (camera space, +Z forward, +Y up, metres): `vm_root` → `arm_r`/
 
 | File | Purpose |
 | --- | --- |
-| `src/Program.cs` | Entry (`--headless` / `--shot`) |
-| `src/SandboxGame.cs` | Loop, input, menus, shot states |
-| `src/MapBuilder.cs`, `src/Town.cs` | Maps (Flatgrass, Hills, RP Town, custom) |
-| `src/ModelProps.cs`, `src/IconRenderer.cs` | Model props and spawn-menu thumbs |
-| `src/ToolsMore.cs`, `src/Dupes.cs`, `src/Vehicles.cs` | Tools, dupes, vehicles |
-| `src/Worlds.cs`, `src/Session.cs`, `src/WorldsMenu.cs` | Sessions, autosave, UI screens |
-| `src/Roleplay.cs` | Jobs, economy, printers, shipments |
-| `src/Player.cs`, `src/Props.cs`, `src/PhysGun.cs` | Movement, props, physgun |
-| `src/SelfTest.cs` | Headless checks |
+| `SandboxEditor/Assets/Scripts/Sandbox/Program.cs` (standalone exe) | Entry (`--headless` / `--shot`) |
+| `SandboxEditor/Assets/Scripts/Sandbox/SandboxGame.cs` | Loop, input, menus, shot states |
+| `SandboxEditor/Assets/Scripts/Sandbox/MapBuilder.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Town.cs` | Maps (Flatgrass, Hills, RP Town, custom) |
+| `SandboxEditor/Assets/Scripts/Sandbox/ModelProps.cs`, `SandboxEditor/Assets/Scripts/Sandbox/IconRenderer.cs` | Model props and spawn-menu thumbs |
+| `SandboxEditor/Assets/Scripts/Sandbox/ToolsMore.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Dupes.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Vehicles.cs` | Tools, dupes, vehicles |
+| `SandboxEditor/Assets/Scripts/Sandbox/Worlds.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Session.cs`, `SandboxEditor/Assets/Scripts/Sandbox/WorldsMenu.cs` | Sessions, autosave, UI screens |
+| `SandboxEditor/Assets/Scripts/Sandbox/Roleplay.cs` | Jobs, economy, printers, shipments |
+| `SandboxEditor/Assets/Scripts/Sandbox/Player.cs`, `SandboxEditor/Assets/Scripts/Sandbox/Props.cs`, `SandboxEditor/Assets/Scripts/Sandbox/PhysGun.cs` | Movement, props, physgun |
+| `SandboxEditor/Assets/Scripts/Sandbox/SelfTest.cs` | Headless checks |
 
 ## Requirements
 

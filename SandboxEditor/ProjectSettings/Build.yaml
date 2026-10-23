@@ -1,0 +1,23 @@
+Scenes:
+  $id: 2
+  $values: []
+Config: 1
+OutputDirectory: "Builds"
+PackagingMode: 1
+AssetMode: 1
+MaxPakSizeMB: 2048
+SelectedPipeline: ""
+PlatformProfiles:
+  $id: 3
+  $values:
+    - Platform: 0
+      SelectedTargetId: "linux-x64"
+      SelfContained: false
+      PublishTrimmed: false
+      PublishAot: false
+      WindowWidth: 1280
+      WindowHeight: 720
+      $id: 4
+      $type: "Prowl.Editor.Build.DesktopBuildProfile, Prowl.Editor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
+$id: 1
+$type: "Prowl.Editor.Projects.Settings.BuildSettings, Prowl.Editor, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null"
