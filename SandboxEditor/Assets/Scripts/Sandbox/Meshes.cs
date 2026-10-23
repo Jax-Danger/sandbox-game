@@ -14,6 +14,23 @@ public static class Meshes
     private static readonly Dictionary<string, Mesh> _cache = [];
 
     /// <summary>Box with rounded edges and corners (radius r) and smooth normals. UVs are planar per face, in metres / 1 m.</summary>
+    private static readonly Dictionary<(Mesh, Float2), Mesh> _scaledUv = [];
+
+    /// <summary>
+    /// Engine 1.0's Lit shader has no _Tiling property (v1.0's had), so a material's tiling is baked into a copy of the
+    /// mesh's UVs instead. Cached per (mesh, tiling). Identity tiling returns the mesh itself.
+    /// </summary>
+    public static Mesh ScaledUv(Mesh m, Float2 tiling)
+    {
+        if (tiling.X == 1f && tiling.Y == 1f) return m;
+        if (_scaledUv.TryGetValue((m, tiling), out var have) && have.IsValid()) return have;
+        var uv = m.UV.Select(u => new Float2(u.X * tiling.X, u.Y * tiling.Y)).ToArray();
+        var mm = new Mesh { Name = m.Name, IndexFormat = m.IndexFormat, Vertices = m.Vertices, Normals = m.Normals, UV = uv, Indices = m.Indices };
+        mm.RecalculateBounds();
+        if (m.HasTangents) mm.RecalculateTangents();
+        return _scaledUv[(m, tiling)] = mm;
+    }
+
     public static Mesh RoundedBox(Float3 size, float r, int bands = 3, bool worldUv = false)
     {
         Float3 h = size / 2f;

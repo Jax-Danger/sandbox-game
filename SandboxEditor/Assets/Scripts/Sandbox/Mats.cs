@@ -9,6 +9,13 @@ namespace Sandbox;
 public static class Mats
 {
     private static Texture2D? _white;
+    /// <summary>Sets a material's texture tiling the engine-1.0 way: stores _Tiling (for reference) and scales the renderer's mesh UVs.</summary>
+    public static void Tile(MeshRenderer r, Material m, Prowl.Vector.Float2 tiling)
+    {
+        m.SetVector("_Tiling", tiling);
+        if (r.Mesh is { } mesh) r.Mesh = Meshes.ScaledUv(mesh, tiling);
+    }
+
     public static Material New(Shader shader)
     {
         var m = new Material(shader);

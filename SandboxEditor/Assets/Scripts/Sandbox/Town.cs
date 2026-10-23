@@ -136,7 +136,7 @@ public static partial class MapBuilder
         gr.Mesh = Mesh.CreateCube(new Float3(200f, 1f, 200f));
         var gm = Mats.New(shader);
         gm.SetColor("_MainColor", new Color(0.43f, 0.48f, 0.34f, 1f));
-        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0") { gm.SetTexture("_MainTex", ProcTex.Grass()); gm.SetVector("_Tiling", new Float2(50f, 50f)); }
+        if (!Application.IsHeadless && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0") { gm.SetTexture("_MainTex", ProcTex.Grass()); Mats.Tile(gr, gm, new Float2(50f, 50f)); }
         gr.Material = gm;
         ground.AddComponent<BoxCollider>().Size = new Float3(200f, 1f, 200f);
         Add(scene, ground);
@@ -147,7 +147,7 @@ public static partial class MapBuilder
         {
             var outer = Shape(scene, shader, "~Outskirts", Mesh.CreateCube(new Float3(1400f, 0.02f, 1400f)), new Float3(0f, -0.04f, 0f), new Color(0.4f, 0.46f, 0.31f, 1f));
             if (outer.GetComponent<MeshRenderer>() is { } om && Environment.GetEnvironmentVariable("SANDBOX_PROCTEX") != "0")
-            { om.Material?.SetTexture("_MainTex", ProcTex.Grass()); om.Material?.SetVector("_Tiling", new Float2(350f, 350f)); }
+            { om.Material?.SetTexture("_MainTex", ProcTex.Grass()); if (om.Material is { } omm) Mats.Tile(om, omm, new Float2(350f, 350f)); }
             var rng = new Random(77);
             var crowns = new[] { new List<Mesh>(), new List<Mesh>(), new List<Mesh>() }; var trunks = new List<Mesh>(); // merged: 4 draws, not 300
             for (int i = 0; i < 150; i++)

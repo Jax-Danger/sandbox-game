@@ -37,7 +37,7 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,
@@ -46,7 +46,7 @@
           },
           {
             "$id": 6,
-            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
             "Props": {
               "$id": 7,
               "$values": [
@@ -90,7 +90,7 @@
           },
           {
             "$id": 8,
-            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
             "Maps": {
               "$id": 9,
               "$values": [
@@ -98,21 +98,21 @@
                   "$id": 10,
                   "Id": "flatgrass",
                   "Scene": {
-                    "$asset": "9ee4c75e-d7da-4258-856f-b038aaf67aab"
+                    "$asset": "361342a0-8088-4e56-ba25-7d92cd417ea3"
                   }
                 },
                 {
                   "$id": 11,
                   "Id": "hills",
                   "Scene": {
-                    "$asset": "752d085a-edc2-4ffe-9e28-1725111c83f4"
+                    "$asset": "dfb48253-3445-435a-9a55-e75787937562"
                   }
                 },
                 {
                   "$id": 12,
                   "Id": "town",
                   "Scene": {
-                    "$asset": "7f743afd-f464-4f99-bd45-c9a32da4a2e7"
+                    "$asset": "0a681097-23b1-4e56-948b-792fca658690"
                   }
                 }
               ]
@@ -125,7 +125,7 @@
           },
           {
             "$id": 13,
-            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.GameTuning, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
             "SunScale": 0.55F,
             "AmbientScale": 0.7F,
             "StartTimeOfDay": 0.42F,
@@ -145,7 +145,7 @@
           },
           {
             "$id": 14,
-            "$type": "Sandbox.EntityLibrary, SandboxEditor.Game, Version=1.8.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.EntityLibrary, SandboxEditor.Game, Version=1.8.1.0, Culture=neutral, PublicKeyToken=null",
             "Entities": {
               "$id": 15,
               "$values": [
