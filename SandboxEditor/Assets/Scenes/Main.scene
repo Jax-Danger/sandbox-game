@@ -37,12 +37,56 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.5.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.5.2.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,
             "HideFlags": 0L,
             "Name": "NewSandboxHost"
+          },
+          {
+            "$id": 6,
+            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.5.2.0, Culture=neutral, PublicKeyToken=null",
+            "Props": {
+              "$id": 7,
+              "$values": [
+                {
+                  "$asset": "c7bf9047-6cbc-4a68-be5e-07cbef8127d1"
+                },
+                {
+                  "$asset": "68c383f6-60f6-44ab-88c3-7e7dfee4f79b"
+                },
+                {
+                  "$asset": "c642c4fe-555a-4bca-9585-c9cc4d35fc6a"
+                },
+                {
+                  "$asset": "5acf3aeb-7596-4c08-a38b-229ba84ca062"
+                },
+                {
+                  "$asset": "daa4a0c1-1b62-4a8d-b4a2-f48c8228c08f"
+                },
+                {
+                  "$asset": "598af84d-08bc-44b1-9fe3-4ea3d3ab4df1"
+                },
+                {
+                  "$asset": "4ba86763-77a7-4a00-a5c7-f93ab152845a"
+                },
+                {
+                  "$asset": "94b7654c-53b7-4595-8281-2d9fb071cf81"
+                },
+                {
+                  "$asset": "58eda93b-feb5-4c14-a223-f09da935eaa2"
+                },
+                {
+                  "$asset": "b0658c05-bb6a-495e-8ec1-f229490d35fa"
+                }
+              ]
+            },
+            "_identifier": "77e9cf4e-8143-4428-8c16-ad013d1c6038",
+            "_enabled": true,
+            "_enabledInHierarchy": true,
+            "HideFlags": 0L,
+            "Name": "NewPropLibrary"
           }
         ],
         "Children": [
@@ -52,84 +96,84 @@
     ]
   },
   "Environment": {
-    "$id": 6,
+    "$id": 8,
     "SkyMaterial": {
-      "$id": 7,
+      "$id": 9,
       "_shader": {
         "$asset": "73295c5c-0e55-4550-ae74-f13cd62796d2"
       },
       "_parent": NULL,
       "_properties": {
-        "$id": 8,
+        "$id": 10,
         "_colors": {
-          "$id": 9,
-          "entries": [
-
-          ]
-        },
-        "_vectors2": {
-          "$id": 10,
-          "entries": [
-
-          ]
-        },
-        "_vectors3": {
           "$id": 11,
           "entries": [
 
           ]
         },
-        "_vectors4": {
+        "_vectors2": {
           "$id": 12,
           "entries": [
 
           ]
         },
-        "_floats": {
+        "_vectors3": {
           "$id": 13,
           "entries": [
 
           ]
         },
-        "_ints": {
+        "_vectors4": {
           "$id": 14,
           "entries": [
 
           ]
         },
-        "_matrices": {
+        "_floats": {
           "$id": 15,
           "entries": [
 
           ]
         },
-        "_textures": {
+        "_ints": {
           "$id": 16,
           "entries": [
 
           ]
         },
-        "_textures3D": {
+        "_matrices": {
           "$id": 17,
           "entries": [
 
           ]
         },
-        "_texturesCube": {
+        "_textures": {
           "$id": 18,
+          "entries": [
+
+          ]
+        },
+        "_textures3D": {
+          "$id": 19,
+          "entries": [
+
+          ]
+        },
+        "_texturesCube": {
+          "$id": 20,
           "entries": [
 
           ]
         }
       },
       "_overrides": {
-        "$id": 19,
+        "$id": 21,
         "$values": [
 
         ]
       },
       "_keywords": {
-        "$id": 20,
+        "$id": 22,
         "entries": [
 
         ]
@@ -187,43 +231,43 @@
     }
   },
   "BakedLighting": {
-    "$id": 21,
+    "$id": 23,
     "Lightmaps": {
-      "$id": 22,
+      "$id": 24,
       "$values": [
 
       ]
     },
     "Placements": {
-      "$id": 23,
+      "$id": 25,
       "entries": [
 
       ]
     },
     "ProbePositions": {
-      "$id": 24,
-      "array": [
-
-      ]
-    },
-    "ProbeSH": {
-      "$id": 25,
-      "array": [
-
-      ]
-    },
-    "ProbeTetrahedra": {
       "$id": 26,
       "array": [
 
       ]
     },
+    "ProbeSH": {
+      "$id": 27,
+      "array": [
+
+      ]
+    },
+    "ProbeTetrahedra": {
+      "$id": 28,
+      "array": [
+
+      ]
+    },
     "ProbeTetNeighbours": {
-      "$id": 26
+      "$id": 28
     }
   },
   "LightmapBake": {
-    "$id": 27,
+    "$id": 29,
     "AtlasSize": 1024,
     "TexelsPerUnit": 20F,
     "DilatePixels": 2,

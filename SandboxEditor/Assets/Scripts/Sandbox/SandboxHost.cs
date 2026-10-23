@@ -22,6 +22,14 @@ public sealed class SandboxHost : Component
         var game = new SandboxGame();
         Current = game;
         game.Initialize();
+        if (GameObject.GetComponent<PropLibrary>() is { } lib)
+            foreach (var prefab in lib.Props)
+                if (prefab.IsValid() && GameObject.InstantiateDetached(prefab) is { } probe)
+                {
+                    // Read the kind off the prefab's PropDefinition (an unplaced instance, discarded right away).
+                    if (probe.GetComponent<PropDefinition>() is { } def) game.Props.Prefabs[def.Kind] = prefab;
+                    probe.Destroy();
+                }
         var go = new GameObject("~SandboxDriver");
         go.AddComponent<SandboxDriver>().Game = game;
         game.World.Add(go);

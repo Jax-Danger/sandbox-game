@@ -191,9 +191,48 @@ public sealed class PropManager(Scene scene, Shader shader)
         _ => 0.5f,
     };
 
+    /// <summary>Prefabs per kind from the editor's PropLibrary (empty in the standalone exe).</summary>
+    public Dictionary<PropKind, PrefabAsset> Prefabs { get; } = [];
+
+    /// <summary>Instantiates a kind's prefab (stage 6); its colliders, body settings and PropDefinition come from the asset.</summary>
+    private (GameObject Go, MeshRenderer Renderer, Rigidbody3D Body, PropDefinition? Def)? FromPrefab(PropKind kind, Float3 position, Quaternion rotation)
+    {
+        if (!Prefabs.TryGetValue(kind, out PrefabAsset? prefab) || !prefab.IsValid()) return null;
+        GameObject? go = GameObject.Instantiate(prefab, Scene, position, rotation);
+        if (!go.IsValid()) return null;
+        if (go!.GetComponent<MeshRenderer>() is not { } r || go.GetComponent<Rigidbody3D>() is not { } b)
+        {
+            Scene.Remove(go);
+            Log.Warn($"Prop prefab for {kind} lacks a MeshRenderer or Rigidbody3D; using the built-in prop.");
+            return null;
+        }
+        return (go, r, b, go.GetComponent<PropDefinition>());
+    }
+
     public Prop Spawn(PropKind kind, Float3 position, float yawDegrees, bool recordUndo = true)
     {
         _counter++;
+        Float3 euler = new(kind == PropKind.Ramp ? -20f : 0f, yawDegrees, 0f);
+        if (FromPrefab(kind, position, Quaternion.FromEuler(euler)) is var (pgo, pr, pb, pdef))
+        {
+            pgo.Name = $"{DisplayName(kind)} #{_counter}";
+            pgo.Transform.LocalEulerAngles = euler;
+            Color pcolor = ColorFor(kind, _counter);
+            var pmat = Mats.New(Shader);
+            pmat.SetColor("_MainColor", pcolor);
+            pr.Material = pmat;
+            bool hasDef = pdef.IsValid();
+            var fromPrefab = new Prop
+            {
+                Go = pgo, Body = pb, Kind = kind, Material = pmat, BaseColor = pcolor,
+                HalfHeight = hasDef ? pdef!.HalfHeight : HalfHeightOf(kind), Owner = SpawnOwner,
+            };
+            fromPrefab.SetSurface(SurfaceMaterial.Get(hasDef && pdef!.Surface.Length > 0 ? pdef.Surface : DefaultSurface(kind)));
+            _props.Add(fromPrefab);
+            if (recordUndo) _undo.Push(new SpawnUndo(this, fromPrefab));
+            return fromPrefab;
+        }
+
         GameObject go = new($"{DisplayName(kind)} #{_counter}");
         go.Transform.Position = position;
         go.Transform.LocalEulerAngles = new Float3(kind == PropKind.Ramp ? -20f : 0f, yawDegrees, 0f);

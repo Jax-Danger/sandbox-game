@@ -2,6 +2,10 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.6.0 — 2026-10-23
+- Stage 6 (part 1): in the editor the game spawns props from the prop prefabs. New PropLibrary component on /Sandbox in Main.scene lists Assets/Prefabs/Props/*.prefab; each prefab's PropDefinition (kind, surface, half height) is editable in the inspector
+- PropManager.Spawn instantiates the kind's prefab when there is one and falls back to the code-built prop otherwise (always in the standalone exe)
+
 ## v1.5.2 — 2026-10-23
 - Daylight retune for engine 1.0 now that the sun shines down: full-day sun 1.5 -> 0.83, ambient 1.05 -> 0.74 (night levels unchanged); the floor no longer washes out to white
 
