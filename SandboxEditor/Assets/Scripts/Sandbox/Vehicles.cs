@@ -189,7 +189,11 @@ public sealed class Buggy
         if (!boat) BuildUnderbody(g, jeep, wx, wy, wz, jeep ? 0.38f : 0.32f);
         if (!boat) AddSteeringWheel(g);
         Prop = g.Props.Adopt(Go, Body, mat, paint, PropKind.Limb, 0.5f);
+        // Stage 4c: look from Prefabs/Vehicles/<Title>.prefab; the painted body keeps its own material.
+        LookFromPrefab = EntityLibrary.ApplyLook(g.World, [Go], "Vehicle", kind, go => go != Go);
     }
+    /// <summary>Renderers that took their mesh from the vehicle prefab (0 = code-built look).</summary>
+    public int LookFromPrefab { get; }
 
     /// <summary>Headlamp: lens dome, chrome bezel ring, and fresnel rings moulded into the glass.</summary>
     private void HeadLamp(SandboxGame g, Mesh lamp, float r, Float3 at, Float3 eul)

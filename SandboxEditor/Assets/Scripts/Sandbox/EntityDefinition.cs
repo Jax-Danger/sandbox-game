@@ -22,4 +22,48 @@ public sealed class EntityLibrary : Component
     /// <summary>Off while EntityBaker builds the prefabs from code.</summary>
     public static bool Enabled = true;
     public static Prowl.Runtime.Resources.PrefabAsset? Find(string category, string id) => Enabled && Registry.TryGetValue((category, id), out var p) ? p : null;
+
+    /// <summary>Logic, physics and save data stay code-built (save format unchanged); the look comes from the prefab.
+    /// Walks the code-built hierarchy and the prefab's in parallel (by name and sibling order) and copies each renderer's
+    /// mesh and the local transform, plus the material where <paramref name="materials"/> allows (vehicle paint and NPC
+    /// clothes stay per-instance). Returns how many renderers took the prefab's look; 0 = no prefab / headless.</summary>
+    public static int ApplyLook(Prowl.Runtime.Resources.Scene scene, IReadOnlyList<GameObject> codeRoots, string category, string id, Func<GameObject, bool>? materials = null)
+    {
+        if (Application.IsHeadless || Find(category, id) is not { } prefab || !scene.IsValid()) return 0;
+        // Instantiated into a private, never-simulated scene so wheel colliders/bodies of the prefab stay inert.
+        if (!_lookScene.IsValid()) _lookScene = new Prowl.Runtime.Resources.Scene();
+        GameObject inst = GameObject.Instantiate(prefab, _lookScene!, new Prowl.Vector.Float3(0f, -500f, 0f), Prowl.Vector.Quaternion.Identity);
+        int n = 0;
+        try
+        {
+            IReadOnlyList<GameObject> srcRoots = codeRoots.Count == 1 ? [inst] : inst.Children.ToList();
+            for (int i = 0; i < codeRoots.Count && i < srcRoots.Count; i++) n += Copy(srcRoots[i], codeRoots[i], true, materials);
+        }
+        finally { inst.Destroy(); }
+        return n;
+    }
+
+    private static Prowl.Runtime.Resources.Scene? _lookScene;
+    /// <summary>Called by MapBuilder.ReleaseSession on Stop.</summary>
+    public static void ReleaseLookScene() { if (_lookScene.IsValid()) _lookScene!.Dispose(); _lookScene = null; }
+
+    private static int Copy(GameObject src, GameObject dst, bool root, Func<GameObject, bool>? materials)
+    {
+        int n = 0;
+        if (!root) { dst.Transform.LocalPosition = src.Transform.LocalPosition; dst.Transform.LocalRotation = src.Transform.LocalRotation; dst.Transform.LocalScale = src.Transform.LocalScale; }
+        if (src.GetComponent<MeshRenderer>() is { } sr && dst.GetComponent<MeshRenderer>() is { } dr && sr.Mesh is { } m)
+        {
+            dr.Mesh = m;
+            if (materials?.Invoke(dst) == true && sr.Material is { } mat) dr.Material = mat;
+            n++;
+        }
+        var used = new Dictionary<string, int>();
+        foreach (GameObject dc in dst.Children.ToList())
+        {
+            int k = used.GetValueOrDefault(dc.Name); used[dc.Name] = k + 1;
+            GameObject? sc = src.Children.Where(c => c.Name == dc.Name).Skip(k).FirstOrDefault();
+            if (sc is not null) n += Copy(sc, dc, false, materials);
+        }
+        return n;
+    }
 }

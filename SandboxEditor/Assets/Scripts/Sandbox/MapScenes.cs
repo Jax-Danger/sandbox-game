@@ -67,6 +67,7 @@ public static partial class MapBuilder
     /// <summary>Editor play stop: forgets the map statics that point into the stopped session's world.</summary>
     public static void ReleaseSession()
     {
+        EntityLibrary.ReleaseLookScene();
         _objects.Clear(); _batch.Clear(); SpawnPoints.Clear();
         Town.Reset(); Water.Clear(); Ragdoll.All.Clear();
         BakedScenes.Clear();

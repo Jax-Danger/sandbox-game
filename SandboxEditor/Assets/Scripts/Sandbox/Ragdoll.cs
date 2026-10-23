@@ -12,6 +12,8 @@ namespace Sandbox;
 public sealed class Ragdoll
 {
     public List<Prop> Limbs { get; } = [];
+    /// <summary>Renderers that took their mesh from the NPC/ragdoll prefab (0 = code-built look).</summary>
+    public int LookFromPrefab { get; private set; }
     public string Name { get; private set; } = "Ragdoll";
     public bool IsDummy { get; set; }
     public NpcTeam Team { get; set; } = NpcTeam.Dummy;
@@ -233,6 +235,8 @@ public sealed class Ragdoll
 
         All.Add(rd);
         if (recordUndo) g.Props.PushUndo(new RagdollUndo(g.Props, rd));
+        // Stage 4c: meshes/proportions from Prefabs/Npcs (or Ragdolls); clothes and skin stay per-NPC.
+        rd.LookFromPrefab = EntityLibrary.ApplyLook(g.World, rd.Limbs.Select(l => l.Go).ToList(), team == NpcTeam.Dummy ? "Ragdoll" : "Npc", team.ToString());
         return rd;
     }
 
