@@ -26,9 +26,10 @@ public static class SceneBaker
         // Keep objects individual (editable) instead of the game's runtime static batches, which also bloat the assets.
         string? prevBatch = Environment.GetEnvironmentVariable("SANDBOX_BATCH");
         Environment.SetEnvironmentVariable("SANDBOX_BATCH", "0");
+        Environment.SetEnvironmentVariable("SANDBOX_MAPSCENES", "0"); // build from code, never from a previous bake
         string? err;
         try { err = MapBuilder.Load(scene, shader, map, null); }
-        finally { Environment.SetEnvironmentVariable("SANDBOX_BATCH", prevBatch); }
+        finally { Environment.SetEnvironmentVariable("SANDBOX_BATCH", prevBatch); Environment.SetEnvironmentVariable("SANDBOX_MAPSCENES", null); }
         if (err is not null) return "map error: " + err;
 
         MapBuilder.CaptureInfo(scene, map);

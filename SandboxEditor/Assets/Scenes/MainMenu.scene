@@ -37,7 +37,7 @@
         "Components": [
           {
             "$id": 5,
-            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.SandboxHost, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
             "_identifier": "a97d86c4-b598-4b90-b050-f449c734003c",
             "_enabled": true,
             "_enabledInHierarchy": true,
@@ -46,7 +46,7 @@
           },
           {
             "$id": 6,
-            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.PropLibrary, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
             "Props": {
               "$id": 7,
               "$values": [
@@ -90,7 +90,7 @@
           },
           {
             "$id": 8,
-            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.6.0.0, Culture=neutral, PublicKeyToken=null",
+            "$type": "Sandbox.MapLibrary, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
             "Maps": {
               "$id": 9,
               "$values": [
@@ -98,21 +98,21 @@
                   "$id": 10,
                   "Id": "flatgrass",
                   "Scene": {
-                    "$asset": "ce2a02bc-54ed-417c-8907-c63d2f3e9274"
+                    "$asset": "fab53820-c64b-41b5-9e93-ac30a02d36e4"
                   }
                 },
                 {
                   "$id": 11,
                   "Id": "hills",
                   "Scene": {
-                    "$asset": "362f0c5a-d033-4806-9909-79c5246fc520"
+                    "$asset": "8f1c7ea2-1e66-46e5-8e00-eae06041e12b"
                   }
                 },
                 {
                   "$id": 12,
                   "Id": "town",
                   "Scene": {
-                    "$asset": "34f40f00-146e-462f-b29f-54efbe2d9035"
+                    "$asset": "5cc8ec49-3f4e-44a6-b98d-b022da81b698"
                   }
                 }
               ]
@@ -314,5 +314,5 @@
     "BakeSkyLighting": false,
     "IgnoreAlbedo": false
   },
-  "Name": "Main"
+  "Name": "MainMenu"
 }
