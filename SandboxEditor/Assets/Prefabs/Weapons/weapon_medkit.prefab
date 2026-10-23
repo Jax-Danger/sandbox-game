@@ -1,0 +1,1278 @@
+{
+  "$id": 1,
+  "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Name": "weapon_medkit",
+  "Identifier": "fa035b6d-05c7-4967-8419-e4a6024b8713",
+  "Static": 0B,
+  "Enabled": 1B,
+  "EnabledInHierarchy": 1B,
+  "TagIndex": 0,
+  "LayerIndex": 0,
+  "HideFlags": 0,
+  "Transform": {
+    "$id": 2,
+    "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "_localPosition": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F
+    },
+    "_localScale": {
+      "X": 1F,
+      "Y": 1F,
+      "Z": 1F
+    },
+    "_localRotation": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F,
+      "W": 1F
+    }
+  },
+  "Components": [
+    {
+      "$id": 3,
+      "$type": "Sandbox.EntityDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+      "Category": "Weapon",
+      "Id": "weapon_medkit",
+      "_identifier": "4a75f1d7-e5b4-4b19-8f1b-c507fcce75a3",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewEntityDefinition"
+    }
+  ],
+  "Children": [
+    {
+      "$id": 4,
+      "Name": "WorldWeapon",
+      "Identifier": "8035e902-7512-4996-911d-836405b8cb21",
+      "Static": 0B,
+      "Enabled": 1B,
+      "EnabledInHierarchy": 1B,
+      "TagIndex": 0,
+      "LayerIndex": 0,
+      "HideFlags": 0,
+      "Transform": {
+        "$id": 5,
+        "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "_localPosition": {
+          "X": 0F,
+          "Y": 0F,
+          "Z": 0F
+        },
+        "_localScale": {
+          "X": 0.25F,
+          "Y": 0.25F,
+          "Z": 0.25F
+        },
+        "_localRotation": {
+          "X": 0F,
+          "Y": 0F,
+          "Z": 0F,
+          "W": 1F
+        }
+      },
+      "Components": [
+
+      ],
+      "Children": [
+        {
+          "$id": 6,
+          "Name": "part",
+          "Identifier": "39b465b6-bb56-4313-9c72-ee20f89fd043",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 7,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": -0.081F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 8,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "92a82714-9f18-44f4-802d-bd964dcbbcbc"
+              },
+              "materials": {
+                "$id": 9,
+                "$values": [
+                  {
+                    "$asset": "79ac8fbf-5ae4-4366-9348-c6a3edfe1cd0"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "cba80a34-ce6b-4c20-a069-15308b11b76b",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 10,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "39b465b6-bb56-4313-9c72-ee20f89fd043",
+            "Overrides": {
+              "$id": 11,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 12,
+          "Name": "part",
+          "Identifier": "f07fb98f-e0d9-41eb-8dfa-337f1cd98596",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 13,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": -0.04100001F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 14,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "38f1da61-2c04-4817-aa04-4ef497956e99"
+              },
+              "materials": {
+                "$id": 15,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "0a3d64bd-7ac9-44d5-91aa-41de999d4c22",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 16,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "f07fb98f-e0d9-41eb-8dfa-337f1cd98596",
+            "Overrides": {
+              "$id": 17,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 18,
+          "Name": "part",
+          "Identifier": "220bd3d3-3d06-44af-9064-f1848679a75c",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 19,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": -0.373F,
+              "Z": -0.47199997F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 20,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6dd117d0-9e99-4ad4-ac0d-8038ab273178"
+              },
+              "materials": {
+                "$id": 21,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "79e454d5-c464-40b3-8b41-3f0155f24c10",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 22,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "220bd3d3-3d06-44af-9064-f1848679a75c",
+            "Overrides": {
+              "$id": 23,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 24,
+          "Name": "part",
+          "Identifier": "45831a4f-80a4-459f-8b22-1d3a3f6b7c46",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 25,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.211F,
+              "Z": -0.47199997F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 26,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6dd117d0-9e99-4ad4-ac0d-8038ab273178"
+              },
+              "materials": {
+                "$id": 27,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "c4219b94-5260-425a-b3c8-3023be07d1cd",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 28,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "45831a4f-80a4-459f-8b22-1d3a3f6b7c46",
+            "Overrides": {
+              "$id": 29,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 30,
+          "Name": "part",
+          "Identifier": "9364a1ae-cd62-4d46-bbfc-0102f995c861",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 31,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": -0.373F,
+              "Z": 0.47199997F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 32,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6dd117d0-9e99-4ad4-ac0d-8038ab273178"
+              },
+              "materials": {
+                "$id": 33,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "94636315-ed83-49ec-a9db-d7760986cdaf",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 34,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "9364a1ae-cd62-4d46-bbfc-0102f995c861",
+            "Overrides": {
+              "$id": 35,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 36,
+          "Name": "part",
+          "Identifier": "1e9da19a-c14a-4ec0-9d39-45c788a682c8",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 37,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.211F,
+              "Z": 0.47199997F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 38,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6dd117d0-9e99-4ad4-ac0d-8038ab273178"
+              },
+              "materials": {
+                "$id": 39,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "b4fc2de0-2b71-4a31-a254-81a6a3e43d1a",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 40,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "1e9da19a-c14a-4ec0-9d39-45c788a682c8",
+            "Overrides": {
+              "$id": 41,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 42,
+          "Name": "part",
+          "Identifier": "969a85d7-d4d2-4eed-ad54-52e09335ac4d",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 43,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": -0.1348F,
+              "Y": -0.12899998F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 44,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "fea238db-bd01-4967-a3b3-a68a707771c0"
+              },
+              "materials": {
+                "$id": 45,
+                "$values": [
+                  {
+                    "$asset": "10c4e296-acf1-44b3-91fc-4395009e5203"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "65a47f55-37ac-41af-9c12-864b7676c051",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 46,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "969a85d7-d4d2-4eed-ad54-52e09335ac4d",
+            "Overrides": {
+              "$id": 47,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 48,
+          "Name": "part",
+          "Identifier": "0aeb890b-763f-4448-9a76-500e16e766ae",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 49,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": -0.1348F,
+              "Y": -0.12899998F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 50,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "8819da1c-9ffb-460d-8e8c-15c9555737e5"
+              },
+              "materials": {
+                "$id": 51,
+                "$values": [
+                  {
+                    "$asset": "10c4e296-acf1-44b3-91fc-4395009e5203"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "089a4f6e-6ee0-409c-b732-feb48833649d",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 52,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "0aeb890b-763f-4448-9a76-500e16e766ae",
+            "Overrides": {
+              "$id": 53,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 54,
+          "Name": "part",
+          "Identifier": "845bd293-534b-481f-9527-47170a8e925b",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 55,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.1628F,
+              "Y": -0.12899998F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 56,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "fea238db-bd01-4967-a3b3-a68a707771c0"
+              },
+              "materials": {
+                "$id": 57,
+                "$values": [
+                  {
+                    "$asset": "10c4e296-acf1-44b3-91fc-4395009e5203"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "0104df5b-f2cb-477c-b0cb-35c12baddf10",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 58,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "845bd293-534b-481f-9527-47170a8e925b",
+            "Overrides": {
+              "$id": 59,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 60,
+          "Name": "part",
+          "Identifier": "4c1f2b80-d4ac-440e-b628-e93dc39e281f",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 61,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.1628F,
+              "Y": -0.12899998F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 62,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "8819da1c-9ffb-460d-8e8c-15c9555737e5"
+              },
+              "materials": {
+                "$id": 63,
+                "$values": [
+                  {
+                    "$asset": "10c4e296-acf1-44b3-91fc-4395009e5203"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "6f0a9210-a1a2-4b93-83e9-cbef5387e074",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 64,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "4c1f2b80-d4ac-440e-b628-e93dc39e281f",
+            "Overrides": {
+              "$id": 65,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 66,
+          "Name": "part",
+          "Identifier": "e70d8d98-7574-4feb-be1a-30765c033634",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 67,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": -0.14199999F,
+              "Y": -0.04100001F,
+              "Z": -0.28F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 68,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "65b87eea-8e89-45fc-ad54-c4ccb3da5369"
+              },
+              "materials": {
+                "$id": 69,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "67328e34-3cdb-4ac3-ae00-4327feb66998",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 70,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "e70d8d98-7574-4feb-be1a-30765c033634",
+            "Overrides": {
+              "$id": 71,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 72,
+          "Name": "part",
+          "Identifier": "b115ded9-d5f3-4e3e-848a-cb1dfbf68a3e",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 73,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.26700002F,
+              "Z": -0.252F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 74,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6d4da12a-b6db-40d5-a745-7a9a14026c68"
+              },
+              "materials": {
+                "$id": 75,
+                "$values": [
+                  {
+                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "70b205c9-78a4-43f9-a8fd-4eb4c688540f",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 76,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "b115ded9-d5f3-4e3e-848a-cb1dfbf68a3e",
+            "Overrides": {
+              "$id": 77,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 78,
+          "Name": "part",
+          "Identifier": "1036b02b-6e7c-4c56-945c-d00c0d0c08b3",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 79,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": -0.14199999F,
+              "Y": -0.04100001F,
+              "Z": 0.28F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 80,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "65b87eea-8e89-45fc-ad54-c4ccb3da5369"
+              },
+              "materials": {
+                "$id": 81,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "a0816aa3-5d9e-4aa8-8bfc-304a3a1630c6",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 82,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "1036b02b-6e7c-4c56-945c-d00c0d0c08b3",
+            "Overrides": {
+              "$id": 83,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 84,
+          "Name": "part",
+          "Identifier": "2d15cc6a-a643-4bd4-bf65-c2c89801bea5",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 85,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.26700002F,
+              "Z": 0.252F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 86,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "6d4da12a-b6db-40d5-a745-7a9a14026c68"
+              },
+              "materials": {
+                "$id": 87,
+                "$values": [
+                  {
+                    "$asset": "741b32c4-44d6-43a0-9e07-a83d36784276"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "1df46a80-3791-4104-be79-96540fb94a96",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 88,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "2d15cc6a-a643-4bd4-bf65-c2c89801bea5",
+            "Overrides": {
+              "$id": 89,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 90,
+          "Name": "part",
+          "Identifier": "4102159f-773e-47e7-91b1-46380b88906c",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 91,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.391F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 92,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "137b4d6b-3da4-4f6d-bef3-37ddbeead94e"
+              },
+              "materials": {
+                "$id": 93,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "39b04e63-a898-4e89-9c9a-0b1d998ebf90",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 94,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "4102159f-773e-47e7-91b1-46380b88906c",
+            "Overrides": {
+              "$id": 95,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 96,
+          "Name": "part",
+          "Identifier": "b0494256-4a27-46ac-be47-eb83f098a560",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 97,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.391F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 98,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "ffdbe88f-732d-4018-b00a-9fdd677870c3"
+              },
+              "materials": {
+                "$id": 99,
+                "$values": [
+                  {
+                    "$asset": "78e66723-5cf8-4e7a-852c-c49be4d7db21"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "b9ae87c1-9bd7-45cd-b367-f8da87c31457",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 100,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "b0494256-4a27-46ac-be47-eb83f098a560",
+            "Overrides": {
+              "$id": 101,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 102,
+          "Name": "part",
+          "Identifier": "21bc0575-80ce-40fe-998e-e8d475906a0b",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 103,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0.013999999F,
+              "Y": 0.391F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F,
+              "W": 1F
+            }
+          },
+          "Components": [
+            {
+              "$id": 104,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "04e6f0e5-4903-49a3-a088-4258a7e1fbbe"
+              },
+              "materials": {
+                "$id": 105,
+                "$values": [
+                  {
+                    "$asset": "a58885e9-944a-4447-8825-15b08306de25"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "188413bd-f3fe-4b17-bb50-51fccea72510",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 106,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "21bc0575-80ce-40fe-998e-e8d475906a0b",
+            "Overrides": {
+              "$id": 107,
+              "$values": [
+
+              ]
+            }
+          }
+        }
+      ],
+      "Prefab": {
+        "$id": 108,
+        "AssetId": "00000000-0000-0000-0000-000000000000",
+        "SourceIdentifier": "8035e902-7512-4996-911d-836405b8cb21",
+        "Overrides": {
+          "$id": 109,
+          "$values": [
+
+          ]
+        }
+      }
+    }
+  ],
+  "Prefab": {
+    "$id": 110,
+    "AssetId": "00000000-0000-0000-0000-000000000000",
+    "SourceIdentifier": "fa035b6d-05c7-4967-8419-e4a6024b8713",
+    "Overrides": {
+      "$id": 111,
+      "$values": [
+
+      ]
+    }
+  }
+}

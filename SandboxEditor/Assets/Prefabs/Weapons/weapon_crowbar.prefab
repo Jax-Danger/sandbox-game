@@ -1,0 +1,243 @@
+{
+  "$id": 1,
+  "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Name": "weapon_crowbar",
+  "Identifier": "d746e1dd-63a1-4f9b-b820-89849d4fa91d",
+  "Static": 0B,
+  "Enabled": 1B,
+  "EnabledInHierarchy": 1B,
+  "TagIndex": 0,
+  "LayerIndex": 0,
+  "HideFlags": 0,
+  "Transform": {
+    "$id": 2,
+    "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "_localPosition": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F
+    },
+    "_localScale": {
+      "X": 1F,
+      "Y": 1F,
+      "Z": 1F
+    },
+    "_localRotation": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F,
+      "W": 1F
+    }
+  },
+  "Components": [
+    {
+      "$id": 3,
+      "$type": "Sandbox.EntityDefinition, SandboxEditor.Game, Version=1.7.0.0, Culture=neutral, PublicKeyToken=null",
+      "Category": "Weapon",
+      "Id": "weapon_crowbar",
+      "_identifier": "96413efa-5062-4d59-9df5-45ca05fabc4e",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewEntityDefinition"
+    }
+  ],
+  "Children": [
+    {
+      "$id": 4,
+      "Name": "WorldWeapon",
+      "Identifier": "4ae92457-c14f-4770-97f2-78f3bea72b2f",
+      "Static": 0B,
+      "Enabled": 1B,
+      "EnabledInHierarchy": 1B,
+      "TagIndex": 0,
+      "LayerIndex": 0,
+      "HideFlags": 0,
+      "Transform": {
+        "$id": 5,
+        "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+        "_localPosition": {
+          "X": 0F,
+          "Y": 0F,
+          "Z": 0F
+        },
+        "_localScale": {
+          "X": 0.25F,
+          "Y": 0.25F,
+          "Z": 0.25F
+        },
+        "_localRotation": {
+          "X": 0F,
+          "Y": 0F,
+          "Z": 0F,
+          "W": 1F
+        }
+      },
+      "Components": [
+
+      ],
+      "Children": [
+        {
+          "$id": 6,
+          "Name": "part",
+          "Identifier": "b0d5ee04-6501-4cd6-ba5f-63985b088990",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 7,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": -0.17364818F,
+              "W": 0.9848077F
+            }
+          },
+          "Components": [
+            {
+              "$id": 8,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "410febcf-1ef0-4a76-9b6d-c7ccd3f0d08d"
+              },
+              "materials": {
+                "$id": 9,
+                "$values": [
+                  {
+                    "$asset": "7db7c705-c510-4719-bc86-63dee98ee268"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "272c6143-a62e-452b-9033-77090774b154",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 10,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "b0d5ee04-6501-4cd6-ba5f-63985b088990",
+            "Overrides": {
+              "$id": 11,
+              "$values": [
+
+              ]
+            }
+          }
+        },
+        {
+          "$id": 12,
+          "Name": "part",
+          "Identifier": "f4df0033-5287-4024-94a4-c7c358885c8e",
+          "Static": 0B,
+          "Enabled": 1B,
+          "EnabledInHierarchy": 1B,
+          "TagIndex": 0,
+          "LayerIndex": 0,
+          "HideFlags": 0,
+          "Transform": {
+            "$id": 13,
+            "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+            "_localPosition": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": 0F
+            },
+            "_localScale": {
+              "X": 4F,
+              "Y": 4F,
+              "Z": 4F
+            },
+            "_localRotation": {
+              "X": 0F,
+              "Y": 0F,
+              "Z": -0.17364818F,
+              "W": 0.9848077F
+            }
+          },
+          "Components": [
+            {
+              "$id": 14,
+              "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+              "mesh": {
+                "$asset": "32d449ef-dc04-4765-91bf-2f13379cc864"
+              },
+              "materials": {
+                "$id": 15,
+                "$values": [
+                  {
+                    "$asset": "1ee6ee08-eb33-4fce-9831-61014735ac87"
+                  }
+                ]
+              },
+              "shadowCasting": 1L,
+              "receiveShadows": true,
+              "_identifier": "e1acc5e8-8e6f-41bb-a1b1-44edc3950f51",
+              "_enabled": true,
+              "_enabledInHierarchy": true,
+              "HideFlags": 0L,
+              "Name": "NewMeshRenderer"
+            }
+          ],
+          "Children": [
+
+          ],
+          "Prefab": {
+            "$id": 16,
+            "AssetId": "00000000-0000-0000-0000-000000000000",
+            "SourceIdentifier": "f4df0033-5287-4024-94a4-c7c358885c8e",
+            "Overrides": {
+              "$id": 17,
+              "$values": [
+
+              ]
+            }
+          }
+        }
+      ],
+      "Prefab": {
+        "$id": 18,
+        "AssetId": "00000000-0000-0000-0000-000000000000",
+        "SourceIdentifier": "4ae92457-c14f-4770-97f2-78f3bea72b2f",
+        "Overrides": {
+          "$id": 19,
+          "$values": [
+
+          ]
+        }
+      }
+    }
+  ],
+  "Prefab": {
+    "$id": 20,
+    "AssetId": "00000000-0000-0000-0000-000000000000",
+    "SourceIdentifier": "d746e1dd-63a1-4f9b-b820-89849d4fa91d",
+    "Overrides": {
+      "$id": 21,
+      "$values": [
+
+      ]
+    }
+  }
+}
