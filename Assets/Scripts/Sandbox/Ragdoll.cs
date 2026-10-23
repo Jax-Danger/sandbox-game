@@ -18,6 +18,8 @@ public sealed class Ragdoll
     public bool IsDummy { get; set; }
     public NpcTeam Team { get; set; } = NpcTeam.Dummy;
     public Prop Pelvis => Limbs[0];
+    /// <summary>The Y Bot body drawn over the physics limbs (null: code-built look).</summary>
+    public YBotNpc? YBot { get; set; }
     private static int _counter;
 
     private sealed record LimbDef(string Name, Float3 Center, Float3 Size, bool Sphere, int Parent, Float3 Joint, float ConeDeg, float Mass);
@@ -237,6 +239,7 @@ public sealed class Ragdoll
         if (recordUndo) g.Props.PushUndo(new RagdollUndo(g.Props, rd));
         // Stage 4c: meshes/proportions from Prefabs/Npcs (or Ragdolls); clothes and skin stay per-NPC.
         rd.LookFromPrefab = EntityLibrary.ApplyLook(g.World, rd.Limbs.Select(l => l.Go).ToList(), team == NpcTeam.Dummy ? "Ragdoll" : "Npc", team.ToString());
+        YBotNpc.Attach(g, rd, feet, yawDegrees, new Color(shirt.R + (1f - shirt.R) * 0.35f, shirt.G + (1f - shirt.G) * 0.35f, shirt.B + (1f - shirt.B) * 0.35f, 1f));
         return rd;
     }
 

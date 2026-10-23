@@ -2,6 +2,16 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.9.0 — 2026-10-23
+- Player model: the Mixamo Y Bot (Assets/Resources/Player/YBot.fbx, loaded by path so no editor references are needed) replaces the code-built third/first-person body. Prowl imports its skeleton (66 bones, 52 skinned), both skinned meshes (Alpha_Surface, Alpha_Joints) and every clip; skinning runs on the GPU
+- Locomotion clips in Assets/Resources/Player/Animations (Mixamo Locomotion Pack + extras, clean names): Idle, Walk, Run, Jump, StrafeLeft/Right, StrafeWalkLeft/Right, TurnLeft/Right(90), CrouchIdle, CrouchWalk, FallIdle, FallLand
+- New lightweight blender (YRig): clips are sampled straight from Prowl.Motion and blended by speed and direction with one shared gait phase (idle/walk/run, strafes, backwards = forward clips reversed, turn in place, crouch, jump/fall/land). Root motion is stripped: the hips keep only their vertical bob, and each clip's average hips yaw is cancelled so every take faces forward
+- First person: head shrunk away and, on foot, the arms too; the body sits slightly behind the camera so you see your legs and feet
+- Vehicles: procedural seated pose (two-bone IK legs to the floor pan, hands on the steering wheel, turning with it) until a sitting animation is supplied
+- View model: a second, arms-only Y Bot (no shadows, no clip sampling) whose arms IK to the view model's wrists, replacing the code-built sleeves; sway, bob, recoil and the per-weapon clips are unchanged; the sculpted grip-fitted gloves stay on the weapons until hand-pose animations are supplied
+- NPCs and ragdolls are drawn as the Y Bot (shirt-tinted per team): walking NPCs play idle/walk/run from their speed, limp/dead NPCs and ragdolls follow the physics limbs. Physics limbs, AI and the save format are unchanged; far NPCs update at a lower rate
+- The code-built bodies remain the fallback (headless self-test, SANDBOX_YBOT=0, or missing assets)
+
 ## v1.8.3 — 2026-10-23
 - Repo is now just the Prowl editor project: SandboxEditor/ moved to the root (open the repo folder in the editor)
 - Removed the old code-only launcher: src/, Sandbox.csproj, build-all.sh/.ps1, packaging/, the external/Prowl submodule and the CI workflow that built them

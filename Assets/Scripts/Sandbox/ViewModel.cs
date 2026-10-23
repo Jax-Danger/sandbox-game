@@ -165,6 +165,9 @@ public sealed class ViewModel
     public Dictionary<string, GameObject> Bones { get; } = [];
     private readonly Dictionary<string, (Float3 Pos, Float3 Rot)> _rest = [];
     public bool UsingUserModel { get; }
+    /// <summary>Y Bot arms following the hands (null: code-built sleeves / headless).</summary>
+    private readonly YBotArms? _ybotArms;
+    public bool UsingYBotArms => _ybotArms is not null;
     /// <summary>Primitive parts are authored at roughly real-world size and shrunk to sit nicely on screen.</summary>
     public const float PartScale = 1f;
 
@@ -297,6 +300,17 @@ public sealed class ViewModel
                 r.Material = m;
             }
 
+        // Y Bot arms replace the code-built sleeves/gauntlets (the sculpted gloves stay on the grips).
+        if (!UsingUserModel && YBot.Available && Bones.ContainsKey("wrist_r"))
+        {
+            _ybotArms = YBotArms.TryCreate(camera);
+            if (_ybotArms is not null)
+                foreach (string fa in new[] { "forearm_r", "forearm_l" })
+                    if (Bones.TryGetValue(fa, out GameObject? fb))
+                        foreach (GameObject c in fb.GetChildrenDeep())
+                            if (c.GetComponent<MeshRenderer>() is { } mr) mr.Enabled = false;
+        }
+
         // Aim offset: move vm_root so the sight sits on the screen centre line, slightly closer to the eye.
         if (def.AimShift is { } shift) AimOffset = shift;
         else if (def.CanAim && Bones.TryGetValue("sight", out GameObject? sight))
@@ -330,7 +344,7 @@ public sealed class ViewModel
         return v + t * q.W + Float3.Cross(u, t);
     }
 
-    public void SetVisible(bool v) => Root.Enabled = v;
+    public void SetVisible(bool v) { Root.Enabled = v; _ybotArms?.SetVisible(v); }
 
     /// <summary>Renders the rig as if at <paramref name="vmFov"/> while the camera uses <paramref name="cameraFov"/>.</summary>
     public void SetFov(float cameraFov, float vmFov)
@@ -467,6 +481,7 @@ public sealed class ViewModel
                     fb.Transform.LocalPosition = wl;
                     fb.Transform.LocalRotation = Quaternion.LookRotation(Float3.Normalize(dir), up);
                 }
+        _ybotArms?.Pose(Bones.GetValueOrDefault("wrist_r"), Bones.GetValueOrDefault("wrist_l"));
         // A user model's own clip (same name as the playing one-shot) drives its skeleton directly; the skinned
         // mesh follows its bone transforms. Procedural layers still move vm_root on top.
         if (_oneShot is not null && _embedded.TryGetValue(_oneShot, out AnimationClip? emb)) ApplyEmbedded(emb, _oneShotTime);

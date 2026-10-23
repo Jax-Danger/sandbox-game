@@ -5,7 +5,7 @@ using Prowl.Vector;
 namespace Sandbox;
 
 /// <summary>
-/// The local player's visible body, built from the sculpted ragdoll limb meshes and posed procedurally with
+/// The local player's visible body: the Y Bot (<see cref="YBotBody"/>) when its assets load, otherwise built from the sculpted ragdoll limb meshes and posed procedurally with
 /// two-bone IK: walk/crouch legs on foot, and a seated driving pose with hands on the steering wheel in vehicles.
 /// In first person the head, torso and arms are hidden from the camera so you see your legs and feet when looking
 /// down (and the wheel and your hands in a vehicle).
@@ -26,6 +26,10 @@ public sealed class PlayerAvatar
     private float _phase, _move;
     private Float3 _lastFeet;
     private bool _built;
+    private YBotBody? _ybot;
+    private int _ybotFails;
+    /// <summary>True when the body is the Mixamo Y Bot (false = code-built limbs).</summary>
+    public bool UsingYBot => _ybot is not null;
     public static readonly Color Shirt = new(0.22f, 0.36f, 0.62f, 1f), Pants = new(0.16f, 0.17f, 0.2f, 1f), Skin = new(0.62f, 0.45f, 0.34f, 1f);
 
     private const float UpperLeg = 0.44f, LowerLeg = 0.44f, UpperArm = 0.30f, LowerArm = 0.30f;
@@ -124,6 +128,15 @@ public sealed class PlayerAvatar
     /// <summary>Call once per frame after the player / vehicles have moved.</summary>
     public void Tick(float dt, bool hidden)
     {
+        // Y Bot (Assets/Resources/Player) when available; the code-built body below is the headless / fallback look.
+        if (_ybot is { Valid: false }) _ybot = null;
+        if (_ybot is null && !hidden && _ybotFails < 3 && YBot.Available) { _ybot = YBotBody.TryCreate(_g); if (_ybot is null) _ybotFails++; }
+        if (_ybot is not null)
+        {
+            if (_built && _root.IsValid()) { _root!.Destroy(); _built = false; }
+            _ybot.Tick(dt, hidden, this);
+            return;
+        }
         if (_built && (_root is null || !_root.IsValid() || _root.Scene == null)) _built = false;
         if (!_built) { if (hidden) return; Build(); }
         bool visible = !hidden;
