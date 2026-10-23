@@ -1,0 +1,141 @@
+{
+  "$id": 1,
+  "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Name": "Plank",
+  "Identifier": "9187d7c3-107c-445d-9b2a-b93ec75491d0",
+  "Static": 0B,
+  "Enabled": 1B,
+  "EnabledInHierarchy": 1B,
+  "TagIndex": 0,
+  "LayerIndex": 0,
+  "HideFlags": 0,
+  "Transform": {
+    "$id": 2,
+    "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "_localPosition": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F
+    },
+    "_localScale": {
+      "X": 1F,
+      "Y": 1F,
+      "Z": 1F
+    },
+    "_localRotation": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F,
+      "W": 1F
+    }
+  },
+  "Components": [
+    {
+      "$id": 3,
+      "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "mesh": {
+        "$asset": "fd0602cf-8ae6-49b8-a1a0-dba7a6df1309"
+      },
+      "materials": {
+        "$id": 4,
+        "$values": [
+          {
+            "$asset": "a5372ca7-8398-4ffa-9aba-2d8e5713c358"
+          }
+        ]
+      },
+      "shadowCasting": 1L,
+      "receiveShadows": true,
+      "_identifier": "d0f873b1-0ee9-4747-9c30-1a71886921fd",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewMeshRenderer"
+    },
+    {
+      "$id": 5,
+      "$type": "Prowl.Runtime.Rigidbody3D, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "motionType": 0L,
+      "isSpeculative": false,
+      "useGravity": true,
+      "enableGyroscopicForces": false,
+      "mass": 1.5F,
+      "overrideInertia": false,
+      "inertiaOverride": {
+        "X": 1F,
+        "Y": 1F,
+        "Z": 1F
+      },
+      "overrideCenterOfMass": false,
+      "centerOfMassOverride": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "linearDamping": 0.002F,
+      "angularDamping": 0.005F,
+      "friction": 0.7F,
+      "restitution": 0.1F,
+      "deactivationTime": 1F,
+      "linearSleepThreshold": 0.1F,
+      "angularSleepThreshold": 0.1F,
+      "interpolation": 1L,
+      "constraints": 0L,
+      "_identifier": "948e1a31-d7da-4658-aaf7-ccc466cf8188",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewRigidbody3D"
+    },
+    {
+      "$id": 6,
+      "$type": "Prowl.Runtime.BoxCollider, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "size": {
+        "X": 3F,
+        "Y": 0.15F,
+        "Z": 0.6F
+      },
+      "center": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "rotation": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "_identifier": "fe251917-139c-46c0-ad93-52ace6002276",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewBoxCollider"
+    },
+    {
+      "$id": 7,
+      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null",
+      "Kind": 2L,
+      "Surface": "Wood",
+      "HalfHeight": 0.075F,
+      "_identifier": "854a426b-6984-48d1-8ff5-d019f111ebf0",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewPropDefinition"
+    }
+  ],
+  "Children": [
+
+  ],
+  "Prefab": {
+    "$id": 8,
+    "AssetId": "00000000-0000-0000-0000-000000000000",
+    "SourceIdentifier": "9187d7c3-107c-445d-9b2a-b93ec75491d0",
+    "Overrides": {
+      "$id": 9,
+      "$values": [
+
+      ]
+    }
+  }
+}

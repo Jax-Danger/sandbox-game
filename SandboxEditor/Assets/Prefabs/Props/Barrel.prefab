@@ -1,0 +1,138 @@
+{
+  "$id": 1,
+  "$type": "Prowl.Runtime.GameObject, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "Name": "Barrel",
+  "Identifier": "120a9232-2df4-45d3-90ff-ec8e86167a2a",
+  "Static": 0B,
+  "Enabled": 1B,
+  "EnabledInHierarchy": 1B,
+  "TagIndex": 0,
+  "LayerIndex": 0,
+  "HideFlags": 0,
+  "Transform": {
+    "$id": 2,
+    "$type": "Prowl.Vector.Transform, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+    "_localPosition": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F
+    },
+    "_localScale": {
+      "X": 1F,
+      "Y": 1F,
+      "Z": 1F
+    },
+    "_localRotation": {
+      "X": 0F,
+      "Y": 0F,
+      "Z": 0F,
+      "W": 1F
+    }
+  },
+  "Components": [
+    {
+      "$id": 3,
+      "$type": "Prowl.Runtime.MeshRenderer, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "mesh": {
+        "$asset": "f16bfad7-5b77-4899-b672-61e7d9f46267"
+      },
+      "materials": {
+        "$id": 4,
+        "$values": [
+          {
+            "$asset": "6d036242-d0b9-4b5e-b25e-c72f729e6504"
+          }
+        ]
+      },
+      "shadowCasting": 1L,
+      "receiveShadows": true,
+      "_identifier": "4b8a0abc-a542-410b-95ee-a1748c16f66b",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewMeshRenderer"
+    },
+    {
+      "$id": 5,
+      "$type": "Prowl.Runtime.Rigidbody3D, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "motionType": 0L,
+      "isSpeculative": false,
+      "useGravity": true,
+      "enableGyroscopicForces": false,
+      "mass": 2F,
+      "overrideInertia": false,
+      "inertiaOverride": {
+        "X": 1F,
+        "Y": 1F,
+        "Z": 1F
+      },
+      "overrideCenterOfMass": false,
+      "centerOfMassOverride": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "linearDamping": 0.002F,
+      "angularDamping": 0.005F,
+      "friction": 0.45F,
+      "restitution": 0.05F,
+      "deactivationTime": 1F,
+      "linearSleepThreshold": 0.1F,
+      "angularSleepThreshold": 0.1F,
+      "interpolation": 1L,
+      "constraints": 0L,
+      "_identifier": "6ed1a359-9eb0-4364-aef9-02a59b240eed",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewRigidbody3D"
+    },
+    {
+      "$id": 6,
+      "$type": "Prowl.Runtime.CylinderCollider, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+      "radius": 0.4F,
+      "height": 1.1F,
+      "center": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "rotation": {
+        "X": 0F,
+        "Y": 0F,
+        "Z": 0F
+      },
+      "_identifier": "f08dc615-fd46-48b4-a4da-3e11a3ad2e37",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewCylinderCollider"
+    },
+    {
+      "$id": 7,
+      "$type": "Sandbox.PropDefinition, SandboxEditor.Game, Version=1.3.0.0, Culture=neutral, PublicKeyToken=null",
+      "Kind": 3L,
+      "Surface": "Metal",
+      "HalfHeight": 0.55F,
+      "_identifier": "9b1c6012-25d4-46d9-9f43-fb13c7142e64",
+      "_enabled": true,
+      "_enabledInHierarchy": true,
+      "HideFlags": 0L,
+      "Name": "NewPropDefinition"
+    }
+  ],
+  "Children": [
+
+  ],
+  "Prefab": {
+    "$id": 8,
+    "AssetId": "00000000-0000-0000-0000-000000000000",
+    "SourceIdentifier": "120a9232-2df4-45d3-90ff-ec8e86167a2a",
+    "Overrides": {
+      "$id": 9,
+      "$values": [
+
+      ]
+    }
+  }
+}

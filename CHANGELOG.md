@@ -2,6 +2,10 @@
 
 Versioning: patch for minor changes, minor for big features/overhauls. Releases are published only for official versions.
 
+## v1.4.0 — 2026-10-23
+- Stage 4 prefabs: PrefabBaker builds each spawnable prop kind exactly like the game and saves Assets/Prefabs/Props/<Kind>.prefab (10) with its mesh (Assets/Meshes/Props) and material (Assets/Materials/Props) as assets
+- New PropDefinition component (kind, surface, half height) on every prop prefab; Scenes/PropShowcase.scene lays them all out
+
 ## v1.3.0 — 2026-10-23
 - Stage 3 mesh baking: editor-only MeshBaker bakes the 25 parameterless procedural meshes (PropMeshes, VehicleModels, Meshes.RampDeck) to Assets/Meshes/*.mesh; verified they load as Mesh assets in the editor
 

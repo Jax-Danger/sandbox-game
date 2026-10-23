@@ -1,0 +1,136 @@
+{
+  "$id": 1,
+  "$type": "Prowl.Runtime.Resources.Material, Prowl.Runtime, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null",
+  "_shader": {
+    "$asset": "63d5be44-f531-7354-a255-717cb71004bb"
+  },
+  "_parent": NULL,
+  "_properties": {
+    "$id": 2,
+    "_colors": {
+      "$id": 3,
+      "entries": [
+        {
+          "key": "_MainColor",
+          "value": {
+            "R": 0.25F,
+            "G": 0.48F,
+            "B": 0.86F,
+            "A": 1F
+          }
+        }
+      ]
+    },
+    "_vectors2": {
+      "$id": 4,
+      "entries": [
+
+      ]
+    },
+    "_vectors3": {
+      "$id": 5,
+      "entries": [
+
+      ]
+    },
+    "_vectors4": {
+      "$id": 6,
+      "entries": [
+
+      ]
+    },
+    "_floats": {
+      "$id": 7,
+      "entries": [
+
+      ]
+    },
+    "_ints": {
+      "$id": 8,
+      "entries": [
+
+      ]
+    },
+    "_matrices": {
+      "$id": 9,
+      "entries": [
+
+      ]
+    },
+    "_textures": {
+      "$id": 10,
+      "entries": [
+        {
+          "key": "_MainTex",
+          "value": {
+            "$id": 11,
+            "Name": "New Texture",
+            "Width": 2U,
+            "Height": 2U,
+            "Format": 0,
+            "Srgb": false,
+            "Filter": 1,
+            "WrapU": 0,
+            "WrapV": 0,
+            "Anisotropy": 0U,
+            "BorderColor": 0,
+            "Mips": [
+              [B;/////////////////////w==],
+              [B;/////w==]
+            ]
+          }
+        },
+        {
+          "key": "_SurfaceTex",
+          "value": {
+            "$id": 12,
+            "Name": "New Texture",
+            "Width": 2U,
+            "Height": 2U,
+            "Format": 0,
+            "Srgb": false,
+            "Filter": 1,
+            "WrapU": 0,
+            "WrapV": 0,
+            "Anisotropy": 0U,
+            "BorderColor": 0,
+            "Mips": [
+              [B;APIA/wDyAP8A8gD/APIA/w==],
+              [B;APIA/w==]
+            ]
+          }
+        }
+      ]
+    },
+    "_textures3D": {
+      "$id": 13,
+      "entries": [
+
+      ]
+    },
+    "_texturesCube": {
+      "$id": 14,
+      "entries": [
+
+      ]
+    }
+  },
+  "_overrides": {
+    "$id": 15,
+    "$values": [
+      "_MainTex",
+      "_SurfaceTex",
+      "_MainColor"
+    ]
+  },
+  "_keywords": {
+    "$id": 16,
+    "entries": [
+
+    ]
+  },
+  "_renderQueue": -1,
+  "_castShadows": true,
+  "_surface": NULL,
+  "Name": "BigBall"
+}
